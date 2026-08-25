@@ -165,15 +165,19 @@
             margin: 0 auto 5px;
         }
 
-        .phone-pointer {
+        .fixed-kaaba {
             position: absolute;
             top: -25px;
             left: 50%;
             transform: translateX(-50%);
-            color: #1c9e5b;
-            font-size: 32px;
+            color: #fff;
+            background: #111;
+            padding: 5px 8px;
+            border-radius: 8px;
+            font-size: 28px;
             z-index: 10;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+            box-shadow: 0 0 15px rgba(197, 168, 89, 0.4);
+            border: 1px solid var(--gold);
         }
 
         .compass-circle {
@@ -254,22 +258,17 @@
             z-index: 5;
         }
 
-        .kaaba-marker {
+        .qibla-pointer {
             position: absolute;
-            top: -22px; 
+            top: -18px; 
             left: 50%;
             transform: translateX(-50%);
-            background: #111;
-            border-radius: 8px;
-            padding: 5px;
-            box-shadow: 0 0 15px rgba(197, 168, 89, 0.4);
+            color: #1c9e5b;
+            font-size: 32px;
             z-index: 6;
-        }
-
-        .kaaba-icon {
-            font-size: 28px;
-            color: #fff;
-            transform: rotate(0deg); 
+            opacity: 0;
+            transition: opacity 0.5s;
+            filter: drop-shadow(0 0 10px rgba(28, 158, 91, 0.8));
         }
 
         .arrow-line {
@@ -429,8 +428,8 @@
                 <div id="loader"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
 
                 <div class="compass-wrapper">
-                    <!-- Fixed pointer indicating the phone's top -->
-                    <div class="phone-pointer"><i class="fa-solid fa-caret-down"></i></div>
+                    <!-- Fixed Kaaba at the top of the phone -->
+                    <div class="fixed-kaaba"><i class="fa-solid fa-kaaba"></i></div>
                     
                     <div class="compass-circle">
                         <!-- Ticks and styling -->
@@ -445,8 +444,8 @@
                         </div>
                         
                         <div class="compass-arrow" id="compass-arrow">
-                            <div class="kaaba-marker">
-                                <i class="fa-solid fa-kaaba kaaba-icon" id="kaaba-icon" style="opacity: 0;"></i>
+                            <div class="qibla-pointer" id="qibla-pointer">
+                                <i class="fa-solid fa-caret-up"></i>
                             </div>
                             <div class="arrow-line" id="arrow-line"></div>
                         </div>
@@ -661,10 +660,9 @@
                         const arrow = document.getElementById("compass-arrow");
                         arrow.style.transform = `rotate(${qiblaAngle}deg)`;
                         
-                        // Keep Kaaba upright initially
-                        const kaaba = document.getElementById("kaaba-icon");
-                        if(kaaba) kaaba.style.opacity = "1";
-                        if(kaaba) kaaba.style.transform = `rotate(-${qiblaAngle}deg)`;
+                        // Show Qibla pointer and arrow
+                        const pointer = document.getElementById("qibla-pointer");
+                        if(pointer) pointer.style.opacity = "1";
                         
                         const arrowLine = document.getElementById("arrow-line");
                         if(arrowLine) arrowLine.style.opacity = "1";

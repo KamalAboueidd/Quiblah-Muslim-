@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أسماء الله الحسنى - قبلة المسلم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    <style>
+        :root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+        .fullscreen-carousel { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+        .carousel-slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s ease-in-out; }
+        .carousel-slide.active { opacity:1; }
+        .carousel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.60); backdrop-filter:blur(2px); }
+
+        .app-container { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
+        .top-bar { display:flex; justify-content:center; align-items:center; padding:18px 30px 8px; }
+        .top-bar .title { font-weight:900; font-size:28px; color:var(--white); text-shadow:0 4px 15px rgba(0,0,0,0.8); }
+
+        .nav-bar { display:flex; justify-content:center; gap:10px; padding:8px 20px; margin-bottom:10px; flex-wrap:wrap; }
+        .nav-item { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:30px; background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1); color:white; text-decoration:none; font-weight:700; font-size:14px; transition:all 0.3s; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); border-color:var(--gold); color:var(--gold); }
+
+        .main-content { flex-grow:1; display:flex; flex-direction:column; align-items:center; padding:10px 20px 30px; gap:20px; width: 100%; max-width: 1200px; margin: 0 auto; }
+
+        .header-card {
+            background:rgba(0,0,0,0.4); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            padding:20px 30px; text-align:center;
+            width:100%; box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        }
+        .header-title { font-size: 26px; font-weight: 900; color: var(--gold); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header-subtitle { font-size: 15px; color: #ccc; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+
+        .names-table-container {
+            width: 100%;
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            overflow: hidden;
+            box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .names-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        .names-table th {
+            background: rgba(197, 168, 89, 0.15);
+            color: var(--gold);
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 800;
+            border-bottom: 2px solid rgba(197, 168, 89, 0.3);
+        }
+
+        .names-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        .names-table tbody tr:hover td {
+            background: rgba(197, 168, 89, 0.05);
+        }
+
+        .names-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .td-number { width: 50px; text-align: center; color: var(--gold); font-weight: 800; font-size: 18px !important; }
+        .td-name { font-weight: 800; font-size: 20px !important; color: #fff; width: 180px; }
+        .td-meaning { color: #eee; line-height: 1.5; padding-right: 20px; }
+
+        .loader-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:50px; color:var(--gold); }
+        .loader-text { font-size:18px; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .names-table th, .names-table td { padding: 10px; font-size: 13px; }
+            .td-number { width: 30px; font-size: 14px !important; }
+            .td-name { font-size: 16px !important; width: 120px; }
+        }
+    </style>
+</head>
+<body>
+<div class="fullscreen-carousel">
+    <div class="carousel-slide active" style="background-image:url('assets/bg1.jpg');"></div>
+    <div class="carousel-slide" style="background-image:url('assets/bg2.jpg');"></div>
+    <div class="carousel-slide" style="background-image:url('assets/bg3.jpg');"></div>
+    <div class="carousel-overlay"></div>
+</div>
+
+<div class="app-container">
+    <div class="top-bar"><div class="title">قبلة المسلم</div></div>
+
+    <div class="nav-bar">
+        <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+        <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+        <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+        <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+        <a href="names.html" class="nav-item active"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
+        <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
+        <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-card">
+            <div class="header-title"><i class="fa-solid fa-list-ol"></i> أسماء الله الحسنى</div>
+            <div class="header-subtitle">
+                عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ، أَنَّ رَسُولَ اللَّهِ ﷺ قَالَ: «إِنَّ لِلَّهِ تِسْعَةً وَتِسْعِينَ اسْمًا، مِائَةً إِلا وَاحِدًا، مَنْ أَحْصَاهَا دَخَلَ الْجَنَّةَ»
+            </div>
+        </div>
+
+        <div class="names-table-container">
+            <table class="names-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">#</th>
+                        <th>الاسم</th>
+                        <th>المعنى</th>
+                    </tr>
+                </thead>
+                <tbody id="names-tbody">
+                    <tr><td colspan="3">
+                        <div class="loader-box">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                            <div class="loader-text">جاري تحميل الأسماء الحسنى...</div>
+                        </div>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;border-top:1px solid rgba(255,255,255,0.07);margin-top:auto;">
+        جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم &nbsp;|&nbsp; تم التطوير بواسطة <strong style="color:var(--gold);">كمال أبو عيد</strong>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const slides = document.querySelectorAll('.carousel-slide');
+    let cur = 0;
+    setInterval(() => { slides[cur].classList.remove('active'); cur = (cur+1)%slides.length; slides[cur].classList.add('active'); }, 8000);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        axios.get('https://raw.githubusercontent.com/rn0x/Names_Of_Allah_Json/main/Names_Of_Allah.json')
+            .then(res => {
+                if(res.data && res.data.length > 0) {
+                    renderNames(res.data);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('names-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#e74c3c;">حدث خطأ في جلب البيانات. يرجى المحاولة لاحقاً.</td></tr>';
+            });
+    });
+
+    function renderNames(namesArray) {
+        const tbody = document.getElementById('names-tbody');
+        let html = '';
+        namesArray.forEach(item => {
+            html += `
+                <tr>
+                    <td class="td-number">${item.id}</td>
+                    <td class="td-name">${item.name}</td>
+                    <td class="td-meaning">${item.text}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+</script>
+</body>
+</html>

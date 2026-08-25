@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أقرب مسجد - قبلة المسلم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    <style>
+        :root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+        .fullscreen-carousel { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+        .carousel-slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s ease-in-out; }
+        .carousel-slide.active { opacity:1; }
+        .carousel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.60); backdrop-filter:blur(2px); }
+
+        .app-container { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
+        .top-bar { display:flex; justify-content:center; align-items:center; padding:18px 30px 8px; }
+        .top-bar .title { font-weight:900; font-size:28px; color:var(--white); text-shadow:0 4px 15px rgba(0,0,0,0.8); }
+
+        .nav-bar { display:flex; justify-content:center; gap:10px; padding:8px 20px; margin-bottom:10px; flex-wrap:wrap; }
+        .nav-item { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:30px; background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1); color:white; text-decoration:none; font-weight:700; font-size:14px; transition:all 0.3s; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); border-color:var(--gold); color:var(--gold); }
+
+        .main-content { flex-grow:1; display:flex; flex-direction:column; align-items:center; padding:10px 20px 30px; gap:15px; width: 100%; }
+
+        .loader-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:30px; color:var(--gold); }
+        .loader-text { font-size:16px; opacity:0.9; font-weight: 700; }
+
+        .header-card {
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            padding:15px 25px; text-align:center;
+            width:100%; max-width:1100px; box-shadow:0 5px 20px rgba(0,0,0,0.3);
+            display:none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        }
+
+        .header-title { font-size: 20px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+
+        .search-btn {
+            background: rgba(197,168,89,0.2); border: 1px solid var(--gold);
+            color: var(--gold); padding: 8px 15px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif; display: flex; align-items: center; gap: 8px;
+        }
+        .search-btn:hover { background: var(--gold); color: #000; }
+
+        .location-text-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: var(--gold); font-size: 16px; font-weight: 800;
+            cursor: pointer; text-decoration: none; position: relative;
+        }
+        .location-text-link::after {
+            content: ''; position: absolute; bottom: -4px; right: 0; width: 0; height: 2px;
+            background-color: var(--gold); transition: width 0.3s ease;
+        }
+        .location-text-link:hover::after { width: 100%; }
+        .location-text-link i { font-size: 18px; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 1100px;
+        }
+        @media(min-width: 850px) {
+            .content-grid { grid-template-columns: 2fr 1fr; }
+        }
+
+        .map-wrapper { 
+            width:100%; height: 60vh; min-height: 400px; 
+            border-radius:12px; overflow:hidden; border:1px solid rgba(197,168,89,0.2); 
+            box-shadow:0 5px 20px rgba(0,0,0,0.3); position: relative;
+            direction: ltr; /* Fix Leaflet positioning in RTL pages */
+        }
+        #map { width:100%; height:100%; z-index: 1; direction: ltr; }
+
+        .mosques-panel {
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            padding:15px; height: 60vh; min-height: 400px;
+            display: flex; flex-direction: column; box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        }
+        .mosques-list {
+            flex: 1; overflow-y:auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;
+        }
+        
+        .mosques-list::-webkit-scrollbar { width: 6px; }
+        .mosques-list::-webkit-scrollbar-track { background: transparent; }
+        .mosques-list::-webkit-scrollbar-thumb { background: rgba(197,168,89,0.5); border-radius: 10px; }
+
+        .mosque-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;
+            display: flex; flex-direction: column; gap: 5px; text-align: right;
+        }
+        .mosque-item-title { font-weight: 800; color: var(--gold); font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .mosque-item-dist { font-size: 13px; color: #ccc; }
+
+        /* Custom Tooltip Styling */
+        .custom-map-tooltip { 
+            background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(5px); 
+            border: 1px solid var(--gold); border-radius: 8px; 
+            padding: 8px 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            font-family: 'Tajawal', sans-serif;
+        }
+        .leaflet-tooltip-left.custom-map-tooltip::before { border-left-color: var(--gold); }
+        .leaflet-tooltip-right.custom-map-tooltip::before { border-right-color: var(--gold); }
+        .leaflet-tooltip-top.custom-map-tooltip::before { border-top-color: var(--gold); }
+        .leaflet-tooltip-bottom.custom-map-tooltip::before { border-bottom-color: var(--gold); }
+
+.custom-map-popup .leaflet-popup-content-wrapper { background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(5px); border: 1px solid var(--gold); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: 'Tajawal', sans-serif; color: #fff; }
+.custom-map-popup .leaflet-popup-content { margin: 10px; }
+.custom-map-popup .leaflet-popup-tip { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--gold); border-top: none; border-left: none; }
+
+    </style>
+</head>
+<body>
+<div class="fullscreen-carousel">
+    <div class="carousel-slide active" style="background-image:url('assets/bg1.jpg');"></div>
+    <div class="carousel-slide" style="background-image:url('assets/bg2.jpg');"></div>
+    <div class="carousel-slide" style="background-image:url('assets/bg3.jpg');"></div>
+    <div class="carousel-overlay"></div>
+</div>
+
+<div class="app-container">
+    <div class="top-bar"><div class="title">قبلة المسلم</div></div>
+
+    <div class="nav-bar">
+        <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+        <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+        <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+        <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+        <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
+        <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
+        <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item active"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-card" id="header-card" style="display: flex;">
+            <div class="header-title"><i class="fa-solid fa-mosque"></i> المساجد القريبة</div>
+            
+            <div id="user-location-display" style="display: none; color: var(--gold); font-weight: 700; font-size: 15px; margin: 0 10px;">
+                <i class="fa-solid fa-location-dot"></i> <span id="user-location-text"></span>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap: 15px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+                <div style="display:flex; align-items:center; background: rgba(0,0,0,0.4); border: 1px solid rgba(197,168,89,0.3); border-radius: 8px; overflow: hidden; padding: 2px;">
+                    <input type="text" id="search-input" placeholder="ابحث عن منطقة..." style="background: transparent; border: none; color: white; padding: 6px 10px; outline: none; font-family: 'Tajawal'; width: 140px; font-size: 13px;" onkeypress="if(event.key === 'Enter') searchByCityName()">
+                    <button onclick="searchByCityName()" style="background: transparent; border: none; color: var(--gold); padding: 6px 10px; cursor: pointer;"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <span class="location-text-link" id="start-btn" onclick="startLocationSearch()" style="font-size: 14px;">
+                    <i class="fa-solid fa-location-crosshairs"></i> الوصول لموقعي
+                </span>
+                <span id="loader-text" style="display: none; color: var(--gold); font-weight: 700; font-size: 13px; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> جاري...
+                </span>
+                <button class="search-btn" onclick="fetchMosquesInView()" style="font-size: 13px; padding: 6px 12px;"><i class="fa-solid fa-magnifying-glass-location"></i> بحث هنا</button>
+            </div>
+        </div>
+
+        <div class="content-grid" id="content-grid">
+            <div class="map-wrapper" id="map-wrapper">
+                <div id="map"></div>
+            </div>
+            <div class="mosques-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="color:var(--gold); font-weight:800; font-size:16px;"><i class="fa-solid fa-list"></i> قائمة المساجد</div>
+                    <i class="fa-solid fa-magnifying-glass" id="toggle-list-search" style="color:#aaa; cursor:pointer; font-size:16px; padding:5px;" onclick="toggleListSearch()"></i>
+                </div>
+                <input type="text" id="list-search-input" placeholder="تصفية المساجد بالاسم..." style="display:none; background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius:6px; color:white; padding:8px 10px; margin-bottom:10px; outline:none; font-family:'Tajawal';" onkeyup="filterMosqueList()">
+                <div class="mosques-list" id="mosques-list">
+                    <div style="text-align:center; padding:20px; color:#aaa;">قم بتحديد موقعك أو البحث في المنطقة لعرض المساجد</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;border-top:1px solid rgba(255,255,255,0.07);margin-top:auto;">
+        جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم &nbsp;|&nbsp; تم التطوير بواسطة <strong style="color:var(--gold);">كمال أبو عيد</strong>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="toast.js"></script>
+<script>
+    const slides = document.querySelectorAll('.carousel-slide');
+    let cur = 0;
+    setInterval(() => { slides[cur].classList.remove('active'); cur = (cur+1)%slides.length; slides[cur].classList.add('active'); }, 8000);
+
+    let map;
+    let userMarker;
+    let mosqueMarkers = [];
+    let mosqueData = [];
+    let currentPos = null;
+    let distanceLine = null;
+
+    function drawLineToMosque(lat, lng) {
+        if (userMarker) {
+            removeDistanceLine();
+            distanceLine = L.polyline([userMarker.getLatLng(), [lat, lng]], {
+                color: '#c5a859',
+                weight: 3,
+                dashArray: '5, 10',
+                opacity: 0.8
+            }).addTo(map);
+        }
+    }
+
+    function removeDistanceLine() {
+        if (distanceLine) {
+            map.removeLayer(distanceLine);
+            distanceLine = null;
+        }
+    }
+
+    window.toggleLineToMosque = function(lat, lng) {
+        if (!userMarker) return;
+        if (distanceLine) {
+            const coords = distanceLine.getLatLngs();
+            if (coords[1] && Math.abs(coords[1].lat - lat) < 0.0001 && Math.abs(coords[1].lng - lng) < 0.0001) {
+                removeDistanceLine();
+                return;
+            }
+        }
+        drawLineToMosque(lat, lng);
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Center on Egypt
+        map = L.map('map', { zoomControl: true, attributionControl: false }).setView([26.8206, 30.8025], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+    });
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const φ1 = lat1 * Math.PI/180;
+        const φ2 = lat2 * Math.PI/180;
+        const Δφ = (lat2-lat1) * Math.PI/180;
+        const Δλ = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return Math.round(R * c);
+    }
+
+    function setUserLocationAndSearch(lat, lng, popupText = 'موقعك الحالي') {
+        if(userMarker) { map.removeLayer(userMarker); }
+        map.setView([lat, lng], 15);
+
+        userMarker = L.marker([lat, lng], { icon: L.divIcon({
+            className: '',
+            iconSize: [36, 54],
+            iconAnchor: [18, 54],
+            html: '<svg viewBox="0 0 100 150" style="width:36px;height:54px; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.5));"><path fill="#c5a859" stroke="#fff" stroke-width="4" d="M50,4 A46,46 0 0,0 4,50 C4,95 50,146 50,146 C50,146 96,95 96,50 A46,46 0 0,0 50,4 Z"/><circle cx="50" cy="50" r="20" fill="#fff"/></svg>'
+        })}).bindPopup(`<b style="font-family:Tajawal;font-size:15px;color:#000;">${popupText}</b>`).addTo(map);
+
+        fetchMosques(lat, lng, 1000); 
+    }
+
+    function fetchMosquesInView() {
+        const center = map.getCenter();
+        const bounds = map.getBounds();
+        const radius = map.distance(center, bounds.getNorthEast());
+        
+        if (typeof showToast === 'function') showToast('جاري البحث...', 1500, 'info');
+        fetchMosques(center.lat, center.lng, Math.min(Math.round(radius), 7000));
+    }
+
+    function fetchMosques(lat, lng, radius) {
+        mosqueMarkers.forEach(m => map.removeLayer(m));
+        mosqueMarkers = [];
+        mosqueData = [];
+        
+        document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري جلب بيانات المساجد...</div>';
+
+        // Broader query to catch all mosques/places of worship
+        const overpassQuery = `
+            [out:json];
+            (
+              node["amenity"="place_of_worship"](around:${radius},${lat},${lng});
+              way["amenity"="place_of_worship"](around:${radius},${lat},${lng});
+              relation["amenity"="place_of_worship"](around:${radius},${lat},${lng});
+              node["building"="mosque"](around:${radius},${lat},${lng});
+              way["building"="mosque"](around:${radius},${lat},${lng});
+              relation["building"="mosque"](around:${radius},${lat},${lng});
+              node["name"~"مسجد|جامع|زاوية"](around:${radius},${lat},${lng});
+              way["name"~"مسجد|جامع|زاوية"](around:${radius},${lat},${lng});
+            );
+            out center;
+        `;
+
+        axios.post('https://overpass-api.de/api/interpreter', overpassQuery, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }).then(response => {
+            const elements = response.data.elements;
+            if (!elements || elements.length === 0) {
+                document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">لم يتم العثور على مساجد قريبة في هذا النطاق.</div>';
+                if (typeof showToast === 'function') showToast('لا توجد نتائج هنا', 3000, 'warning');
+                return;
+            }
+
+            elements.forEach((el, index) => {
+                const mLat = el.lat || (el.center && el.center.lat);
+                const mLng = el.lon || (el.center && el.center.lon);
+                if (!mLat || !mLng) return;
+                
+                // Filter out non-islamic places if religion tag exists and is not muslim
+                if(el.tags && el.tags.religion && el.tags.religion !== 'muslim') return;
+
+                let name = el.tags && el.tags.name ? el.tags.name : 'مسجد';
+                if(name.startsWith("شارع ")) {
+                    name = name.replace("شارع ", "");
+                }
+                
+                let areaName = '';
+                if(el.tags) {
+                    if(el.tags['addr:suburb']) areaName = el.tags['addr:suburb'];
+                    else if(el.tags['addr:city']) areaName = el.tags['addr:city'];
+                    else if(el.tags['addr:village']) areaName = el.tags['addr:village'];
+                    else if(el.tags['addr:street']) areaName = el.tags['addr:street'];
+                }
+                if(areaName.startsWith("شارع ")) {
+                    areaName = areaName.replace("شارع ", "");
+                }
+                let areaHtml = areaName ? `<span style="color:#aaa; font-size:12px;">${areaName}</span>` : `<span style="color:#aaa; font-size:12px;">جاري جلب المنطقة...</span>`;
+
+                let distHtml = '';
+                let distNum = 0;
+                if (currentPos) {
+                    distNum = getDistance(currentPos.lat, currentPos.lng, mLat, mLng);
+                    distHtml = `<span style="color:var(--gold); font-size:12px; font-weight:bold;">${distNum} متر</span>`;
+                }
+
+                const marker = L.marker([mLat, mLng], { icon: L.divIcon({
+                    className:'', iconSize:[30,30], iconAnchor:[15,30],
+                    html:`<div style="background:var(--gold); width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.5);">
+                        <i class="fa-solid fa-mosque" style="color:#000; font-size:14px; transform:rotate(45deg);"></i>
+                    </div>`
+                })}).bindPopup(`
+                    <div style="text-align:right; direction:rtl;">
+                        <div style="font-size:15px; font-weight:800; color:#fff; margin-bottom:5px;">${name}</div>
+                        <div style="display:flex; justify-content:space-between; gap:15px; align-items:center;">
+                            ${areaHtml}
+                            ${distHtml}
+                        </div>
+                        <div onclick="window.toggleLineToMosque(${mLat}, ${mLng})" style="margin-top:8px; background:rgba(197,168,89,0.1); border:1px solid rgba(197,168,89,0.4); padding:4px 8px; border-radius:5px; text-align:center; color:var(--gold); font-size:12px; cursor:pointer; display:inline-block; width:100%;">
+                            <i class="fa-solid fa-route"></i> رسم خط المسافة
+                        </div>
+                    </div>
+                `, { offset: [0, -20], className: 'custom-map-popup', closeButton: false });
+                  marker.on('mouseover', function(e) { this.openPopup(); });
+
+                marker.addTo(map);
+                mosqueMarkers.push(marker);
+                
+                mosqueData.push({ id: index, name, lat: mLat, lng: mLng, dist: distNum, marker, areaName });
+            });
+            
+            // Sort by distance
+            mosqueData.sort((a, b) => a.dist - b.dist);
+            renderMosqueList();
+
+            if (typeof showToast === 'function' && mosqueData.length > 0) {
+                showToast(`تم العثور على ${mosqueData.length} مسجد`, 3000, 'success');
+            }
+        }).catch(err => {
+            document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#e74c3c;">حدث خطأ في جلب البيانات</div>';
+            console.error(err);
+        });
+    }
+    
+    function renderMosqueList() {
+        const listEl = document.getElementById('mosques-list');
+        if(mosqueData.length === 0) {
+            listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">لم يتم العثور على مساجد</div>';
+            return;
+        }
+        
+        let html = '';
+        mosqueData.forEach(m => {
+            let initialAreaText = (m.areaName && m.areaName !== 'مسجد') ? `<i class="fa-solid fa-map-pin"></i> ${m.areaName}` : `<i class="fa-solid fa-spinner fa-spin"></i> جاري جلب المنطقة...`;
+            html += `
+                <div class="mosque-item" onclick="flyToMosque(${m.lat}, ${m.lng}, ${m.id})">
+                    <div class="mosque-item-title"><i class="fa-solid fa-mosque"></i> ${m.name}</div>
+                    <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px;">
+                        <span id="list-area-${m.id}" style="color:#aaa;">${initialAreaText}</span>
+                        <span style="color:var(--gold); font-weight:bold;">${m.dist} متر</span>
+                    </div>
+                </div>
+            `;
+        });
+        listEl.innerHTML = html;
+
+        // Fetch area names asynchronously
+        mosqueData.forEach((m, idx) => fetchAreaName(m, idx));
+    }
+
+    function fetchAreaName(m, idx) {
+        if(m.areaName && m.areaName !== 'مسجد') {
+            return;
+        }
+
+        setTimeout(() => {
+            axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${m.lat}&longitude=${m.lng}&localityLanguage=ar`)
+                .then(res => {
+                    let area = res.data.locality || res.data.city || res.data.principalSubdivision || 'منطقة غير معروفة';
+                    if(area.startsWith("شارع ")) {
+                        area = area.replace("شارع ", "");
+                    }
+                    updateAreaDOM(m, area);
+                })
+                .catch(() => {
+                    updateAreaDOM(m, 'مسجد');
+                });
+        }, idx * 300); // Stagger requests to avoid overwhelming the API
+    }
+
+    function updateAreaDOM(m, areaText) {
+        const listEl = document.getElementById(`list-area-${m.id}`);
+        if(listEl) listEl.innerHTML = `<i class="fa-solid fa-map-pin"></i> ${areaText}`;
+        
+        if(m.marker) {
+            const oldContent = m.marker.getTooltip().getContent();
+            const newContent = oldContent.replace('جاري جلب المنطقة...', areaText);
+            m.marker.setTooltipContent(newContent);
+        }
+    }
+    
+    window.flyToMosque = function(lat, lng, id) {
+        map.flyTo([lat, lng], 17, { duration: 1.5 });
+        const target = mosqueData.find(m => m.id === id);
+        if(target && target.marker) {
+            setTimeout(() => target.marker.openTooltip(), 1500);
+        }
+        
+        // Scroll map into view on mobile
+        if(window.innerWidth < 850) {
+            document.getElementById('map-wrapper').scrollIntoView({behavior: 'smooth'});
+        }
+    }
+
+    function searchByCityName() {
+        const query = document.getElementById('search-input').value;
+        if(!query) return;
+        
+        if (typeof showToast === 'function') showToast('جاري البحث...', 2000, 'info');
+
+        axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=ar`)
+            .then(res => {
+                if(res.data && res.data.length > 0) {
+                    const place = res.data[0];
+                    const lat = parseFloat(place.lat);
+                    const lng = parseFloat(place.lon);
+                    
+                    document.getElementById('user-location-display').style.display = 'block';
+                    document.getElementById('user-location-text').innerText = place.display_name.split(',')[0];
+                    
+                    setUserLocationAndSearch(lat, lng, 'مركز البحث');
+                } else {
+                    if (typeof showToast === 'function') showToast('لم يتم العثور على المنطقة', 3000, 'warning');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (typeof showToast === 'function') showToast('حدث خطأ أثناء البحث', 3000, 'error');
+            });
+    }
+
+    function fetchUserLocationName(lat, lng) {
+        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+            .then(res => {
+                let city = res.data.city || res.data.principalSubdivision || '';
+                let locality = res.data.locality || '';
+                let text = locality ? `${city}، ${locality}` : city;
+                if(!text) text = 'موقعك الحالي';
+                
+                document.getElementById('user-location-display').style.display = 'block';
+                document.getElementById('user-location-text').innerText = text;
+            })
+            .catch(() => {
+                document.getElementById('user-location-display').style.display = 'block';
+                document.getElementById('user-location-text').innerText = 'موقعك الحالي';
+            });
+    }
+
+    function startLocationSearch() {
+        document.getElementById('start-btn').style.display = 'none';
+        document.getElementById('loader-text').style.display = 'inline-flex';
+        document.getElementById('loader-text').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تحديد موقعك...`;
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            document.getElementById('loader-text').innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i> جاري البحث عن المساجد...
+            `;
+            setTimeout(() => { 
+                setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي'); 
+                fetchUserLocationName(currentPos.lat, currentPos.lng);
+                document.getElementById('loader-text').style.display = 'none';
+                document.getElementById('start-btn').style.display = 'inline-flex';
+            }, 2000);
+        }, () => {
+            document.getElementById('loader-text').innerHTML = `
+                <i class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;"></i> <span style="color:#e74c3c;">تعذر الوصول لموقعك. يرجى تفعيل خدمة الموقع.</span>`;
+            setTimeout(() => {
+                document.getElementById('loader-text').style.display = 'none';
+                document.getElementById('start-btn').style.display = 'inline-flex';
+            }, 5000);
+        }, { enableHighAccuracy: true, timeout: 15000 });
+    }
+
+    function toggleListSearch() {
+        const input = document.getElementById('list-search-input');
+        const icon = document.getElementById('toggle-list-search');
+        if (input.style.display === 'none') {
+            input.style.display = 'block';
+            input.focus();
+            icon.style.color = 'var(--gold)';
+        } else {
+            input.style.display = 'none';
+            input.value = '';
+            icon.style.color = '#aaa';
+            filterMosqueList();
+        }
+    }
+
+    function filterMosqueList() {
+        const query = document.getElementById('list-search-input').value.toLowerCase();
+        const items = document.querySelectorAll('.mosque-item');
+        items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            if (text.includes(query)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

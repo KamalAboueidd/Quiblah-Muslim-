@@ -4,392 +4,274 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحديد القبلة - قبلة المسلم</title>
-    <!-- Tajawal Font -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
     <style>
         :root {
             --gold: #C5A859;
+            --gold-light: #e0c97a;
             --dark: #0f0f0f;
+            --navy: #0d1b2a;
             --white: #ffffff;
-            --glass: rgba(15, 15, 15, 0.6);
+            --green: #1c9e5b;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            margin: 0;
-            padding: 0;
             font-family: 'Tajawal', sans-serif;
-            background-color: transparent; /* Changed from #111 to guarantee background visibility */
+            background: var(--navy);
             color: var(--white);
             overflow-x: hidden;
-        }
-
-        /* --- Fullscreen Background Carousel --- */
-        .fullscreen-carousel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0; /* Changed from -1 to ensure it paints above body background if any */
-        }
-
-        .carousel-slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-        }
-
-        .carousel-slide.active {
-            opacity: 1;
-        }
-
-        .carousel-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.65); /* Dark overlay for text readability */
-            backdrop-filter: blur(3px); /* Slight blur for premium feel */
-        }
-
-        /* --- App Container (On top of carousel) --- */
-        .app-container {
-            width: 100%;
             min-height: 100vh;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
+        }
+
+        /* --- Fullscreen Background --- */
+        .fullscreen-carousel {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 0;
+        }
+        .carousel-slide {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            opacity: 0; transition: opacity 1.5s ease-in-out;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-overlay {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- App Container --- */
+        .app-container {
+            width: 100%; min-height: 100vh;
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
         }
 
         /* Top Bar */
         .top-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 30px 10px 30px;
-            font-size: 26px;
+            display: flex; justify-content: center; align-items: center;
+            padding: 18px 30px 8px;
         }
-        
         .top-bar .title {
-            font-weight: 900;
-            font-size: 32px;
+            font-weight: 900; font-size: 28px;
             color: var(--white);
             text-shadow: 0 4px 15px rgba(0,0,0,0.8);
-            letter-spacing: 1px;
         }
 
-        /* Navigation Bar */
+        /* Navigation */
         .nav-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            padding: 10px 20px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+            display: flex; justify-content: center;
+            gap: 10px; padding: 8px 20px; margin-bottom: 5px; flex-wrap: wrap;
         }
-
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 16px;
-            transition: all 0.3s;
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 30px;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white; text-decoration: none;
+            font-weight: 700; font-size: 14px; transition: all 0.3s;
         }
-
         .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
+            background: rgba(255,255,255,0.12);
+            border-color: var(--gold); color: var(--gold);
         }
 
         /* Main Content */
         .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-grow: 1;
-            padding: 20px;
-            gap: 30px;
+            flex-grow: 1; display: flex;
+            flex-direction: column; align-items: center;
+            padding: 10px 20px 20px;
         }
 
-        /* Qibla Compass UI */
-        .qibla-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-            padding: 10px;
+        /* City + Status Row */
+        .status-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px; font-size: 16px;
+            color: rgba(255,255,255,0.85);
         }
-
-        .qibla-title {
-            font-size: 28px;
-            font-weight: 900;
-            color: var(--gold);
-            margin-bottom: 10px;
+        .status-row .city-name {
+            color: var(--gold); font-weight: 800; font-size: 18px;
         }
+        .status-row .dot { opacity: 0.5; }
 
-        .qibla-desc {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .compass-wrapper {
+        /* =================== COMPASS =================== */
+        .compass-scene {
             position: relative;
-            width: 250px;
-            height: 250px;
-            margin: 0 auto 5px;
+            width: 320px; height: 320px;
+            margin: 0 auto;
         }
 
-        .phone-pointer {
+        /* Fixed top pointer */
+        .top-pointer {
             position: absolute;
-            top: -25px;
-            left: 50%;
+            top: -18px; left: 50%;
             transform: translateX(-50%);
-            color: #1c9e5b;
-            font-size: 32px;
-            z-index: 10;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+            color: var(--gold);
+            font-size: 28px;
+            z-index: 20;
+            filter: drop-shadow(0 2px 8px rgba(197,168,89,0.7));
         }
 
-        .compass-circle {
-            width: 100%;
-            height: 100%;
+        /* Outer ring (static — never rotates) */
+        .compass-ring {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
             border-radius: 50%;
-            border: 4px solid var(--gold);
-            background: rgba(20, 20, 20, 0.8);
-            box-shadow: 0 0 30px rgba(197, 168, 89, 0.2), inset 0 0 20px rgba(0,0,0,0.8);
-            position: absolute;
-            top: 0; left: 0;
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 3px solid rgba(197,168,89,0.5);
+            background: rgba(13, 27, 42, 0.92);
+            box-shadow:
+                0 0 0 1px rgba(197,168,89,0.15),
+                0 0 40px rgba(197,168,89,0.12),
+                inset 0 0 60px rgba(0,0,0,0.6);
+            transition: box-shadow 0.4s, border-color 0.4s;
+        }
+        .compass-ring.aligned {
+            border-color: var(--green);
+            box-shadow: 0 0 50px rgba(28,158,91,0.7), inset 0 0 30px rgba(28,158,91,0.3);
         }
 
-        /* Ticks using conic gradient */
+        /* Tick marks ring */
         .compass-ticks {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; border-radius: 50%;
             background: repeating-conic-gradient(
                 from 0deg,
-                rgba(197, 168, 89, 0.5) 0deg 1deg,
-                transparent 1deg 10deg
+                rgba(197,168,89,0.6) 0deg 1.2deg,
+                transparent 1.2deg 10deg
             );
-            mask-image: radial-gradient(transparent 65%, black 66%);
-            -webkit-mask-image: radial-gradient(transparent 65%, black 66%);
+            mask-image: radial-gradient(transparent 86%, black 87%);
+            -webkit-mask-image: radial-gradient(transparent 86%, black 87%);
         }
 
-        .compass-rose {
+        /* Cardinal directions */
+        .compass-dirs {
+            position: absolute; width: 100%; height: 100%;
+        }
+        .compass-dirs .dir {
+            position: absolute; font-weight: 900; font-size: 15px;
+            opacity: 0.8; letter-spacing: 1px;
+        }
+        .compass-dirs .dir-n {
+            top: 18px; left: 50%; transform: translateX(-50%);
+            color: var(--gold); opacity: 1; font-size: 17px;
+        }
+        .compass-dirs .dir-s { bottom: 18px; left: 50%; transform: translateX(-50%); }
+        .compass-dirs .dir-e { right: 18px; top: 50%; transform: translateY(-50%); }
+        .compass-dirs .dir-w { left: 18px; top: 50%; transform: translateY(-50%); }
+
+        /* Inner info panel */
+        .compass-center {
             position: absolute;
             top: 50%; left: 50%;
-            width: 70%; height: 70%;
             transform: translate(-50%, -50%);
-            background: 
-                linear-gradient(to right, transparent 49%, rgba(197, 168, 89, 0.1) 49%, rgba(197, 168, 89, 0.1) 51%, transparent 51%),
-                linear-gradient(to bottom, transparent 49%, rgba(197, 168, 89, 0.1) 49%, rgba(197, 168, 89, 0.1) 51%, transparent 51%);
-            border-radius: 50%;
+            text-align: center;
+            z-index: 8;
+            pointer-events: none;
+            width: 160px;
         }
-        
-        .compass-circle.aligned {
-            box-shadow: 0 0 40px rgba(28, 158, 91, 0.8), inset 0 0 20px rgba(28, 158, 91, 0.5);
-            border-color: #1c9e5b;
+        .angle-display {
+            font-size: 52px; font-weight: 900;
+            color: var(--white);
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            line-height: 1;
+        }
+        .angle-label {
+            font-size: 12px; font-weight: 500;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px; line-height: 1.4;
+        }
+
+        /* The rotating arrow layer */
+        .compass-arrow {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            transition: transform 0.25s ease-out;
+            transform: rotate(0deg);
+            z-index: 10;
+        }
+
+        /* SVG arrow drawn in JS, sits inside compass-arrow div */
+        .arrow-svg {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            overflow: visible;
+        }
+
+        /* Kaaba icon at the tip of the arrow */
+        .kaaba-tip {
+            position: absolute;
+            top: 14px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            color: var(--green);
+            text-shadow: 0 0 12px rgba(28,158,91,0.9);
+            z-index: 12;
+            opacity: 0; transition: opacity 0.5s;
+        }
+        .kaaba-tip.show { opacity: 1; }
+
+        /* =================== BOTTOM INFO =================== */
+        .compass-footer {
+            margin-top: 20px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
         }
 
         .aligned-msg {
-            color: #1c9e5b;
-            font-weight: 800;
-            font-size: 18px;
-            margin-bottom: 25px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-align: center;
-            min-height: 25px;
+            color: var(--green); font-weight: 800; font-size: 17px;
+            opacity: 0; transition: opacity 0.3s;
+            display: flex; align-items: center; gap: 6px;
+            min-height: 24px;
         }
-        .aligned-msg.show {
-            opacity: 1;
-        }
+        .aligned-msg.show { opacity: 1; }
 
-        .compass-marks {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
+        .calibrate-hint {
+            font-size: 13px; color: rgba(255,255,255,0.45);
+            text-align: center; max-width: 280px; line-height: 1.5;
         }
 
-        .compass-marks .mark-n { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-weight: 900; color: var(--gold); font-size: 20px;}
-        .compass-marks .mark-s { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); font-weight: bold; opacity: 0.6; }
-        .compass-marks .mark-e { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-weight: bold; opacity: 0.6; }
-        .compass-marks .mark-w { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-weight: bold; opacity: 0.6; }
-
-        .compass-arrow {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            /* Smooth transition for the arrow only */
-            transition: transform 0.3s ease-out;
-            transform: rotate(0deg); 
-            z-index: 5;
-        }
-
-        .kaaba-marker {
-            position: absolute;
-            top: -22px; 
-            left: 50%;
-            transform: translateX(-50%);
-            background: #111;
-            border-radius: 8px;
-            padding: 5px;
-            box-shadow: 0 0 15px rgba(197, 168, 89, 0.4);
-            z-index: 6;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-
-        .kaaba-icon {
-            font-size: 28px;
-            color: #fff;
-            transform: rotate(0deg); 
-        }
-
-        .arrow-line {
-            position: absolute;
-            top: 25px; 
-            bottom: 50%; 
-            left: 50%;
-            width: 4px;
-            background: var(--gold);
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-
-        .arrow-line::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 12px solid var(--gold);
-        }
-
-        .location-btn {
-            background: var(--gold);
-            color: var(--dark);
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
+        /* Permission button (shown on iOS when autostart fails) */
+        .perm-btn {
+            background: var(--gold); color: var(--dark);
+            padding: 12px 28px; border-radius: 12px;
+            font-size: 17px; font-weight: 800; border: none; cursor: pointer;
+            display: none; align-items: center; gap: 10px;
+            box-shadow: 0 5px 20px rgba(197,168,89,0.4);
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.4);
         }
+        .perm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(197,168,89,0.6); }
+        .perm-btn.visible { display: flex; }
 
-        .location-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(197, 168, 89, 0.6);
-        }
+        #loader { color: var(--gold); margin: 10px 0; }
 
-        .location-info {
-            margin-top: 20px;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--gold);
-            display: none;
-            line-height: 1.6;
-        }
-
-        #loader {
-            display: none;
-            margin-bottom: 20px;
-            color: var(--gold);
-        }
-
-        /* Tips Section */
+        /* Tips card */
         .tips-card {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.4);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(197, 168, 89, 0.3);
+            border: 1px solid rgba(197,168,89,0.2);
             border-right: 4px solid var(--gold);
-            border-radius: 4px; /* Rectangular shape */
-            padding: 20px 25px;
-            margin-bottom: 40px;
-            text-align: right;
-            width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            text-align: right; width: 100%;
+            max-width: 380px;
         }
+        .tips-title { color: var(--gold); font-weight: 800; font-size: 16px; margin-bottom: 8px; }
+        .tips-list { padding-right: 18px; font-size: 14px; line-height: 1.8; opacity: 0.85; }
 
-        .tips-title {
-            color: var(--gold);
-            font-size: 18px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tips-list {
-            margin: 0;
-            padding-right: 20px;
-            font-size: 15px;
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .tips-list li {
-            margin-bottom: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .nav-bar { gap: 8px; padding: 10px; }
-            .nav-item { padding: 8px 12px; font-size: 14px; }
-            .compass-circle { width: 220px; height: 220px; }
-            .qibla-container { padding: 10px; }
-            .tips-card {
-                background: transparent;
-                backdrop-filter: none;
-                box-shadow: none;
-                padding: 15px;
-                border: 1px solid rgba(197, 168, 89, 0.3);
-                border-right: 3px solid var(--gold);
-            }
+        @media (max-width: 380px) {
+            .compass-scene { width: 280px; height: 280px; }
+            .angle-display { font-size: 44px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Fullscreen Background Carousel -->
     <div class="fullscreen-carousel">
         <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
         <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
@@ -397,15 +279,12 @@
         <div class="carousel-overlay"></div>
     </div>
 
-    <!-- App Content -->
     <div class="app-container">
-        
-        <!-- Top Bar -->
+
         <div class="top-bar">
             <div class="title">قبلة المسلم</div>
         </div>
 
-        <!-- Navigation Bar -->
         <div class="nav-bar">
             <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
             <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
@@ -414,68 +293,104 @@
             <a href="qibla.html" class="nav-item active"><i class="fa-solid fa-compass"></i> القبلة</a>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <div class="qibla-container">
-                <div class="qibla-title">تحديد اتجاه القبلة</div>
-                <div class="qibla-desc">استخدم الموقع الجغرافي الخاص بك لمعرفة الاتجاه الدقيق للقبلة مقارنة بالشمال الجغرافي.</div>
-                
-                <div class="tips-card">
-                    <div class="tips-title"><i class="fa-solid fa-lightbulb"></i> نصائح لقبلة دقيقة:</div>
-                    <ul class="tips-list">
-                        <li>ضع الهاتف على سطح مستوٍ (مثل طاولة أو الأرض)</li>
-                        <li>ابتعد عن الأجهزة الإلكترونية والمعادن لتجنب التشويش</li>
-                        <li>قم بتحريك الهاتف على شكل رقم 8 لمعايرة البوصلة إذا لزم الأمر</li>
-                    </ul>
+
+            <!-- Status Row -->
+            <div class="status-row" id="status-row" style="display:none;">
+                <span id="city-name" class="city-name"></span>
+                <span class="dot">•</span>
+                <span id="status-text">جاري التحديد...</span>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" style="display:block;">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <div style="font-size:14px; margin-top:8px; opacity:0.7;">جاري تحديد موقعك...</div>
+            </div>
+
+            <!-- Compass -->
+            <div class="compass-scene" id="compass-scene" style="opacity:0; transition: opacity 0.6s;">
+
+                <!-- Fixed downward pointer (= phone's top direction on screen) -->
+                <div class="top-pointer">▼</div>
+
+                <!-- Static outer ring -->
+                <div class="compass-ring" id="compass-ring"></div>
+
+                <!-- Static ticks (36 ticks every 10°) -->
+                <div class="compass-ticks"></div>
+
+                <!-- Static cardinal labels -->
+                <div class="compass-dirs">
+                    <div class="dir dir-n">شمال</div>
+                    <div class="dir dir-s">جنوب</div>
+                    <div class="dir dir-e">شرق</div>
+                    <div class="dir dir-w">غرب</div>
                 </div>
 
-                <div id="loader"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+                <!-- Center info (angle + label) -->
+                <div class="compass-center">
+                    <div class="angle-display" id="angle-display">--°</div>
+                    <div class="angle-label">اتجاه القبلة من الشمال الحقيقي</div>
+                </div>
 
-                <div class="compass-wrapper">
-                    <!-- Fixed pointer indicating the phone's top -->
-                    <div class="phone-pointer"><i class="fa-solid fa-caret-down"></i></div>
-                    
-                    <div class="compass-circle">
-                        <!-- Static ring decorations (never rotate) -->
-                        <div class="compass-ticks"></div>
-                        <div class="compass-rose"></div>
-                        <div class="compass-marks">
-                            <div class="mark-n">N</div>
-                            <div class="mark-s">S</div>
-                            <div class="mark-e">E</div>
-                            <div class="mark-w">W</div>
-                        </div>
-                        
-                        <!-- This div ONLY rotates the arrow+kaaba to point to qibla -->
-                        <div class="compass-arrow" id="compass-arrow">
-                            <div class="kaaba-marker" id="kaaba-marker">
-                                <i class="fa-solid fa-kaaba kaaba-icon" id="kaaba-icon"></i>
-                            </div>
-                            <div class="arrow-line" id="arrow-line"></div>
-                        </div>
+                <!-- Rotating arrow layer -->
+                <div class="compass-arrow" id="compass-arrow">
+                    <!-- SVG arrow: tail at center, tip at top -->
+                    <svg class="arrow-svg" viewBox="0 0 320 320">
+                        <!-- Arrow shaft -->
+                        <line x1="160" y1="160" x2="160" y2="55"
+                              stroke="#1c9e5b" stroke-width="3.5"
+                              stroke-linecap="round" opacity="0"/>
+                        <!-- Arrowhead triangle -->
+                        <polygon points="160,30 150,56 170,56"
+                                 fill="#1c9e5b" opacity="0"/>
+                        <!-- Tail dot at center -->
+                        <circle cx="160" cy="160" r="6" fill="#C5A859" opacity="0"/>
+                    </svg>
+                    <!-- Kaaba at the tip -->
+                    <div class="kaaba-tip" id="kaaba-tip">
+                        <i class="fa-solid fa-kaaba"></i>
                     </div>
                 </div>
-                
-                <div class="aligned-msg" id="aligned-msg">أنت تواجه القبلة الآن ✓</div>
 
-                <button class="location-btn" onclick="getQiblaDirection()">
-                    <i class="fa-solid fa-location-crosshairs"></i> تحديد القبلة الآن
-                </button>
-                
-                <div class="location-info" id="location-info"></div>
             </div>
+
+            <!-- Footer actions -->
+            <div class="compass-footer">
+                <div class="aligned-msg" id="aligned-msg">
+                    <i class="fa-solid fa-check-circle"></i> أنت تواجه القبلة الآن
+                </div>
+                <!-- iOS permission button (shown only when needed) -->
+                <button class="perm-btn" id="perm-btn" onclick="requestSensorPermission()">
+                    <i class="fa-solid fa-compass"></i> تفعيل البوصلة
+                </button>
+                <div class="calibrate-hint" id="calibrate-hint" style="display:none;">
+                    حرّك هاتفك على شكل رقم 8 لمعايرة البوصلة إذا كان السهم غير ثابت
+                </div>
+            </div>
+
+            <div class="tips-card">
+                <div class="tips-title"><i class="fa-solid fa-lightbulb"></i> نصائح لدقة أفضل</div>
+                <ul class="tips-list">
+                    <li>ضع الهاتف مستوياً على راحة يدك</li>
+                    <li>ابتعد عن الأجهزة الكهربائية والمعادن</li>
+                    <li>ابدأ بتحريكه على شكل 8 إذا اهتز السهم</li>
+                </ul>
+            </div>
+
         </div>
-        <!-- Footer -->
-        <div style="text-align: center; padding: 20px; margin-top: auto; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 10;">
-            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
-            تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+
+        <div style="text-align:center; padding:20px; color:rgba(255,255,255,0.5); font-size:13px; border-top:1px solid rgba(255,255,255,0.08);">
+            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم<br>
+            تم التطوير بواسطة <strong style="color:var(--gold);">كمال أبو عيد</strong>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="toast.js"></script>
     <script>
-        // Header Carousel Logic
+        // ── Carousel ──────────────────────────────────────
         const slides = document.querySelectorAll('.carousel-slide');
         let currentSlide = 0;
         setInterval(() => {
@@ -484,15 +399,13 @@
             slides[currentSlide].classList.add('active');
         }, 8000);
 
-        let qiblaAngle = null;
-        let userLat = null, userLng = null;
-
-        // --- Compass Advanced Math & Smoothing ---
+        // ── Constants ─────────────────────────────────────
         const rad = d => d * Math.PI / 180;
         const deg = r => r * 180 / Math.PI;
         const norm360 = a => ((a % 360) + 360) % 360;
-        
-        const DECL = [ 
+
+        // Magnetic declination lookup table
+        const DECL = [
             [50,10,4],[50,0,1],[50,30,8],[40,-5,0],[42,12,4],[52,-1,0],[48,2,1.5],
             [52,13,4.5],[41,29,6.5],[56,38,12],[60,18,7],[30,31,4.8],[24,47,3.5],
             [34,-6,-1.5],[36,3,1.5],[33,44,4.8],[25,55,2.2],[15,44,2.5],[15,32,2.2],
@@ -501,112 +414,95 @@
         function declination(lat, lng) {
             let best = 0, bd = 1e9;
             for (const [a, o, d] of DECL) {
-                const dist = (a - lat)**2 + (o - lng)**2;
+                const dist = (a - lat) ** 2 + (o - lng) ** 2;
                 if (dist < bd) { bd = dist; best = d; }
             }
             return best;
         }
 
-        // ============================================================
+        // ══════════════════════════════════════════════════
         // ADVANCED SENSOR FUSION ENGINE
-        // ============================================================
+        // ══════════════════════════════════════════════════
+        const SMOOTH_FACTOR   = 0.08;
+        const NOISE_THRESHOLD = 6;    // ignore micro-jitter (°)
+        const NOISE_SPIKE_CAP = 60;   // ignore wild spikes (°)
+        const STABILITY_WINDOW = 20;
+        const DRIFT_GUARD_COEFF = 0.003;
 
-        // --- Circular Smoothing Buffer (Kalman-like Low-Pass) ---
-        const SMOOTH_FACTOR = 0.08;   // Low = smoother, slower. High = responsive, noisier
-        const NOISE_THRESHOLD = 8;    // Degrees — ignore jumps smaller than this (indoor noise)
-        const NOISE_SPIKE_CAP = 60;   // Degrees — ignore jumps LARGER than this (wild spikes)
-        const STABILITY_WINDOW = 20;  // Frames to assess stability
-        const DRIFT_GUARD_COEFF = 0.003; // How fast gyro drift is corrected by Mag
-
-        let state = {
-            sinS: 0, cosS: 1,
-            hasSmooth: false,
-            isAligned: false,
-            hasAbsolute: false
-        };
+        let sState = { sinS: 0, cosS: 1, hasSmooth: false, hasAbsolute: false };
         let rafId = null;
-
-        // Sensor Fusion State
         let fusedHeading = null;
-        let lastGyroTimestamp = 0;
-        let lastMagReading = null;  // Last accepted mag reading (for noise gate)
-
-        // Stability detection buffer
+        let lastGyroTs = 0;
+        let lastMagReading = null;
         let stabilityBuffer = [];
-        let isDeviceStable = false;
+        let magVariance = 0;
+        let magBuf = [];
 
-        // GPS Fallback State
+        // GPS state
+        let qiblaAngle = null;
+        let userLat = null, userLng = null;
         let userGPSHeading = null;
         let gpsWatchId = null;
 
-        // Variance-based noise level tracker
-        let magVariance = 0;
-        let magRecentReadings = [];
+        // Compass alignment state
+        let isAligned = false;
+        let lastAlignedAt = 0;
 
-
-        // Circular weighted average for smooth angular blending
         function feedHeading(h) {
             const s = Math.sin(rad(h)), c = Math.cos(rad(h));
-            if (!state.hasSmooth) {
-                state.sinS = s; state.cosS = c; state.hasSmooth = true;
+            if (!sState.hasSmooth) {
+                sState.sinS = s; sState.cosS = c; sState.hasSmooth = true;
             } else {
-                state.sinS = SMOOTH_FACTOR * s + (1 - SMOOTH_FACTOR) * state.sinS;
-                state.cosS = SMOOTH_FACTOR * c + (1 - SMOOTH_FACTOR) * state.cosS;
+                sState.sinS = SMOOTH_FACTOR * s + (1 - SMOOTH_FACTOR) * sState.sinS;
+                sState.cosS = SMOOTH_FACTOR * c + (1 - SMOOTH_FACTOR) * sState.cosS;
             }
         }
-        function smoothedHeading() { return norm360(deg(Math.atan2(state.sinS, state.cosS))); }
+        function smoothedHeading() { return norm360(deg(Math.atan2(sState.sinS, sState.cosS))); }
 
-        // Track short-window variance of mag to judge reliability
         function updateMagVariance(h) {
-            magRecentReadings.push(h);
-            if (magRecentReadings.length > 15) magRecentReadings.shift();
-            if (magRecentReadings.length < 3) return;
-            const avg = magRecentReadings.reduce((a, b) => a + b, 0) / magRecentReadings.length;
-            magVariance = magRecentReadings.reduce((s, v) => {
+            magBuf.push(h);
+            if (magBuf.length > 15) magBuf.shift();
+            if (magBuf.length < 3) return;
+            const avg = magBuf.reduce((a, b) => a + b, 0) / magBuf.length;
+            magVariance = magBuf.reduce((s, v) => {
                 let d = Math.abs(v - avg);
-                if (d > 180) d = 360 - d; // circular
+                if (d > 180) d = 360 - d;
                 return s + d * d;
-            }, 0) / magRecentReadings.length;
+            }, 0) / magBuf.length;
         }
-
 
         function onOrientation(e) {
             let h = null;
             const isAbs = e.type === 'deviceorientationabsolute' || e.absolute === true;
-            if (isAbs) state.hasAbsolute = true;
+            if (isAbs) sState.hasAbsolute = true;
 
             if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
-                h = e.webkitCompassHeading; // iOS True North
+                h = e.webkitCompassHeading;
             } else if (e.alpha != null) {
-                if (state.hasAbsolute && !isAbs) return; // drop relative noise if we have absolute
+                if (sState.hasAbsolute && !isAbs) return;
                 h = norm360(360 - e.alpha);
-                if (userLat != null) {
-                    h = norm360(h + declination(userLat, userLng));
-                }
+                if (userLat != null) h = norm360(h + declination(userLat, userLng));
             }
             if (h == null) return;
 
             const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
             let rawMag = norm360(h + so);
 
-            // --- NOISE GATE: Ignore small jitter & wild spikes ---
+            // Noise gate
             if (lastMagReading !== null) {
                 let jump = Math.abs(rawMag - lastMagReading);
                 if (jump > 180) jump = 360 - jump;
-                // Ignore tiny jitter (indoor metal noise) and impossible spikes
                 if (jump < NOISE_THRESHOLD || jump > NOISE_SPIKE_CAP) return;
             }
             lastMagReading = rawMag;
             updateMagVariance(rawMag);
             feedHeading(rawMag);
 
-            // --- SENSOR FUSION: Complementary Filter ---
+            // Complementary filter
             if (fusedHeading === null) {
                 fusedHeading = smoothedHeading();
-                lastGyroTimestamp = Date.now();
+                lastGyroTs = Date.now();
             } else {
-                // How much to trust Mag vs Gyro: inversely proportional to variance
-                // High variance (noisy indoor env) → trust mag less
                 const magTrust = Math.max(0.02, Math.min(0.15, 1 / (1 + magVariance * 0.05)));
                 let diff = smoothedHeading() - fusedHeading;
                 diff = ((diff + 540) % 360) - 180;
@@ -617,23 +513,18 @@
         function onMotion(e) {
             if (fusedHeading === null || !e.rotationRate || e.rotationRate.gamma === null) return;
             const now = Date.now();
-            const dt = Math.min((now - lastGyroTimestamp) / 1000.0, 0.1); // Cap dt to 100ms
-            lastGyroTimestamp = now;
+            const dt = Math.min((now - lastGyroTs) / 1000.0, 0.1);
+            lastGyroTs = now;
 
-            // --- STABILITY CHECK: measure total rotation magnitude ---
             const rr = e.rotationRate;
-            const totalRot = Math.sqrt(
-                (rr.alpha || 0) ** 2 + (rr.beta || 0) ** 2 + (rr.gamma || 0) ** 2
-            );
+            const totalRot = Math.sqrt((rr.alpha||0)**2 + (rr.beta||0)**2 + (rr.gamma||0)**2);
             stabilityBuffer.push(totalRot);
             if (stabilityBuffer.length > STABILITY_WINDOW) stabilityBuffer.shift();
             const avgRot = stabilityBuffer.reduce((a, b) => a + b, 0) / stabilityBuffer.length;
-            isDeviceStable = avgRot < 3.0; // degrees/s threshold for "stable"
+            const isStable = avgRot < 3.0;
 
-            // --- GYRO INTEGRATION: only if device is actually moving ---
-            if (!isDeviceStable) {
+            if (!isStable) {
                 let gyroDelta = (rr.gamma || 0) * dt;
-                // Apply gentle drift correction toward magnetometer
                 if (lastMagReading !== null) {
                     let driftCorr = lastMagReading - fusedHeading;
                     driftCorr = ((driftCorr + 540) % 360) - 180;
@@ -641,156 +532,165 @@
                 }
                 fusedHeading = norm360(fusedHeading + gyroDelta);
             }
-            // If stable → hold fusedHeading steady, no drift accumulation
         }
 
-
-        let lastAlignedAt = 0;
+        // ── Render Loop ───────────────────────────────────
         function renderLoop() {
             rafId = requestAnimationFrame(renderLoop);
-            if ((!state.hasSmooth && fusedHeading === null) || qiblaAngle == null) return;
+            if (qiblaAngle == null) return;
+            if (!sState.hasSmooth && fusedHeading === null) {
+                // No sensor data yet — show static angle, no rotation
+                updateAngleDisplay(qiblaAngle);
+                return;
+            }
 
-            // Get current device heading
-            let h = userGPSHeading !== null
+            const h = userGPSHeading !== null
                 ? userGPSHeading
                 : (fusedHeading !== null ? fusedHeading : smoothedHeading());
 
-            // ✅ CORRECT LOGIC:
-            // The circle is STATIC — N always points up on screen
-            // Only the arrow rotates by (qiblaAngle - h)
-            // When phone faces Qibla: h == qiblaAngle → arrow rotation = 0 → points UP ✅
+            // Arrow rotation: positive = clockwise from top
+            // When phone faces Qibla (h == qiblaAngle), arrowRotation == 0 → arrow points UP ✅
             const arrowRotation = norm360(qiblaAngle - h);
-            const arrow = document.getElementById("compass-arrow");
-            if (arrow) arrow.style.transform = `rotate(${arrowRotation}deg)`;
+            document.getElementById('compass-arrow').style.transform = `rotate(${arrowRotation}deg)`;
 
-            // Keep Kaaba icon upright (counter-rotate)
-            const kaaba = document.getElementById("kaaba-icon");
-            if (kaaba) kaaba.style.transform = `rotate(${-arrowRotation}deg)`;
+            // Keep Kaaba upright
+            document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-arrowRotation}deg)`;
 
-            // Alignment Logic (±5 degrees)
+            // Center display always shows fixed Qibla angle (not device heading)
+            updateAngleDisplay(qiblaAngle);
+
+            // Alignment check (±5°)
             let diff = Math.abs(norm360(h - qiblaAngle));
             if (diff > 180) diff = 360 - diff;
-
-            const circle = document.querySelector('.compass-circle');
-            const aligned = diff <= 5;
-            if (aligned !== state.isAligned) {
-                state.isAligned = aligned;
-                if (circle) circle.classList.toggle('aligned', aligned);
-                const msg = document.getElementById('aligned-msg');
-                if (msg) msg.classList.toggle('show', aligned);
-                if (aligned && navigator.vibrate && Date.now() - lastAlignedAt > 4000) {
+            const nowAligned = diff <= 5;
+            if (nowAligned !== isAligned) {
+                isAligned = nowAligned;
+                document.getElementById('compass-ring').classList.toggle('aligned', nowAligned);
+                document.getElementById('aligned-msg').classList.toggle('show', nowAligned);
+                if (nowAligned && navigator.vibrate && Date.now() - lastAlignedAt > 4000) {
                     navigator.vibrate([60, 40, 60]);
                     lastAlignedAt = Date.now();
                 }
             }
         }
 
-        function getQiblaDirection() {
-            // 1. Request Compass Permission directly from user gesture (Critical for iOS 13+)
-            if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', onOrientation, true);
-                            if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') {
-                                DeviceMotionEvent.requestPermission().then(ms => {
-                                    if (ms === 'granted') window.addEventListener('devicemotion', onMotion, true);
-                                });
-                            } else {
-                                window.addEventListener('devicemotion', onMotion, true);
-                            }
-                            if (!rafId) renderLoop();
-                        } else {
-                            showToast("يرجى إعطاء صلاحية مستشعرات الحركة للبوصلة لتتحرك معك", "fa-solid fa-triangle-exclamation");
+        function updateAngleDisplay(angle) {
+            document.getElementById('angle-display').textContent = Math.round(angle) + '°';
+        }
+
+        // ── Show compass UI ───────────────────────────────
+        function showCompass() {
+            const scene = document.getElementById('compass-scene');
+            scene.style.opacity = '1';
+            // Make SVG elements visible
+            scene.querySelectorAll('line, polygon, circle').forEach(el => el.setAttribute('opacity', '1'));
+            document.getElementById('kaaba-tip').classList.add('show');
+            document.getElementById('calibrate-hint').style.display = 'block';
+        }
+
+        // ── Start sensors ─────────────────────────────────
+        function startSensors() {
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientationabsolute', onOrientation, true);
+                window.addEventListener('deviceorientation', onOrientation, true);
+            }
+            if (window.DeviceMotionEvent) {
+                window.addEventListener('devicemotion', onMotion, true);
+            }
+            if (!rafId) renderLoop();
+        }
+
+        // iOS 13+ requires explicit permission request on user gesture
+        function requestSensorPermission() {
+            document.getElementById('perm-btn').style.display = 'none';
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(state => {
+                    if (state === 'granted') {
+                        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                            DeviceMotionEvent.requestPermission().then(ms => {
+                                if (ms === 'granted') window.addEventListener('devicemotion', onMotion, true);
+                            });
                         }
-                        startGeolocationFlow();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        startGeolocationFlow();
-                    });
-            } else {
-                // 2. Android and older iOS devices
-                if (window.DeviceOrientationEvent) {
-                    window.addEventListener('deviceorientationabsolute', onOrientation, true);
-                    window.addEventListener('deviceorientation', onOrientation, true); // fallback
-                    if (window.DeviceMotionEvent) window.addEventListener('devicemotion', onMotion, true);
-                    if (!rafId) renderLoop();
-                }
-                startGeolocationFlow();
+                        window.addEventListener('deviceorientation', onOrientation, true);
+                        if (!rafId) renderLoop();
+                    } else {
+                        showToast('يرجى السماح بالوصول لمستشعرات الحركة', 'fa-solid fa-triangle-exclamation');
+                    }
+                }).catch(err => console.error(err));
             }
         }
 
+        // ── Geolocation ───────────────────────────────────
         function startGeolocationFlow() {
-            if (!("geolocation" in navigator)) {
-                showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
+            if (!('geolocation' in navigator)) {
+                showToast('متصفحك لا يدعم تحديد الموقع.', 'fa-solid fa-triangle-exclamation');
+                document.getElementById('loader').style.display = 'none';
                 return;
             }
 
-            document.getElementById("loader").style.display = "block";
-            document.querySelector(".location-btn").style.display = "none";
-            
             navigator.geolocation.getCurrentPosition(position => {
                 userLat = position.coords.latitude;
                 userLng = position.coords.longitude;
 
-                // 1. Fetch Qibla Direction
                 axios.get(`https://api.aladhan.com/v1/qibla/${userLat}/${userLng}`)
                     .then(res => {
                         qiblaAngle = res.data.data.direction;
-                        
-                        // Set arrow initially to qiblaAngle (no sensor yet → h=0)
-                        const arrow = document.getElementById("compass-arrow");
-                        if (arrow) arrow.style.transform = `rotate(${qiblaAngle}deg)`;
-                        
-                        // Kaaba icon counter-rotated to stay upright
-                        const kaabaIcon = document.getElementById("kaaba-icon");
-                        if (kaabaIcon) kaabaIcon.style.transform = `rotate(${-qiblaAngle}deg)`;
-                        
-                        const arrowLine = document.getElementById("arrow-line");
-                        if(arrowLine) arrowLine.style.opacity = "1";
-                        
-                        document.getElementById("loader").style.display = "none";
-                        document.querySelector(".location-btn").style.display = "flex";
-                        
-                        const info = document.getElementById("location-info");
-                        info.style.display = "block";
-                        info.innerHTML = `زاوية القبلة: <b>${qiblaAngle.toFixed(2)}°</b> من الشمال الجغرافي`;
-                        
-                        // 2. Fetch City Name (Reverse Geocode)
+
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('status-row').style.display = 'flex';
+                        document.getElementById('status-text').textContent = `القبلة ${Math.round(qiblaAngle)}° من الشمال`;
+
+                        // Set initial arrow (before sensors kick in)
+                        document.getElementById('compass-arrow').style.transform = `rotate(${qiblaAngle}deg)`;
+                        document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-qiblaAngle}deg)`;
+                        updateAngleDisplay(qiblaAngle);
+                        showCompass();
+
+                        if (!rafId) renderLoop();
+
+                        // Reverse geocode city name
                         axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLng}&localityLanguage=ar`)
-                            .then(cityRes => {
-                                let cityName = cityRes.data.city || cityRes.data.principalSubdivision || "";
-                                if (cityName) {
-                                    info.innerHTML += `<br>موقعك: <b>${cityName}</b>`;
-                                }
-                            }).catch(err => console.error(err));
+                            .then(r => {
+                                const city = r.data.city || r.data.principalSubdivision || '';
+                                if (city) document.getElementById('city-name').textContent = city;
+                            }).catch(() => {});
 
-                        // 3. Start GPS watch for Kinematic Fallback
+                        // GPS kinematic fallback (when walking)
                         gpsWatchId = navigator.geolocation.watchPosition(pos => {
-                            if (pos.coords.heading !== null && pos.coords.speed !== null && pos.coords.speed > 1.0) {
+                            if (pos.coords.heading !== null && pos.coords.speed > 1.0) {
                                 userGPSHeading = pos.coords.heading;
-                                if (!info.innerHTML.includes("تصحيح تلقائي")) {
-                                    info.innerHTML += `<br><span style="color:#1c9e5b; font-size: 14px; display: inline-block; margin-top: 5px;"><i class="fa-solid fa-person-walking"></i> تصحيح تلقائي عبر الحركة مفعل</span>`;
-                                }
                             }
-                        }, err => console.warn(err), { enableHighAccuracy: true });
-
+                        }, () => {}, { enableHighAccuracy: true });
                     })
-                    .catch(err => {
-                        console.error(err);
-                        showToast("حدث خطأ أثناء جلب بيانات القبلة.", "fa-solid fa-triangle-exclamation");
-                        document.getElementById("loader").style.display = "none";
-                        document.querySelector(".location-btn").style.display = "flex";
+                    .catch(() => {
+                        showToast('حدث خطأ أثناء جلب بيانات القبلة.', 'fa-solid fa-triangle-exclamation');
+                        document.getElementById('loader').style.display = 'none';
                     });
 
-            }, error => {
-                console.error(error);
-                showToast("لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع وإعطاء الصلاحية.", "fa-solid fa-triangle-exclamation");
-                document.getElementById("loader").style.display = "none";
-                document.querySelector(".location-btn").style.display = "flex";
-            });
+            }, () => {
+                showToast('لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع.', 'fa-solid fa-triangle-exclamation');
+                document.getElementById('loader').style.display = 'none';
+            }, { enableHighAccuracy: true, timeout: 15000 });
         }
+
+        // ── Auto-start on page load ───────────────────────
+        window.addEventListener('DOMContentLoaded', () => {
+            // iOS 13+: need user gesture for sensor permission
+            if (typeof DeviceOrientationEvent !== 'undefined' &&
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // Show the button; start GPS immediately (doesn't need permission)
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('perm-btn').classList.add('visible');
+                document.getElementById('perm-btn').onclick = () => {
+                    requestSensorPermission();
+                    startGeolocationFlow();
+                };
+            } else {
+                // Android / desktop: start everything automatically
+                startSensors();
+                startGeolocationFlow();
+            }
+        });
     </script>
 </body>
 </html>

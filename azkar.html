@@ -807,7 +807,7 @@
 
         window.copyText = function(text) {
             navigator.clipboard.writeText(text).then(() => {
-                alert("تم نسخ الذكر بنجاح!");
+                showToast("تم نسخ الذكر بنجاح!", "fa-solid fa-check");
             });
         }
 

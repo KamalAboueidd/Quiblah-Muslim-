@@ -106,13 +106,20 @@
         .mobile-expand-btn { display: none; }
 
         @media (max-width: 768px) {
-            .player-bar { padding: 8px 12px; cursor: pointer; }
-            .player-bar { padding: 10px; height: auto; }
-            .player-thumb { width: 45px; height: 45px; }
+            .player-bar { padding: 10px; height: auto; flex-direction: row; align-items: center; justify-content: space-between; }
+            .player-info { width: calc(100% - 60px); }
+            .player-thumb { width: 45px; height: 45px; flex-shrink: 0; }
             .player-track { font-size: 14px; }
             .player-artist { font-size: 12px; }
-            .player-controls-wrap { display: none; }
+            
+            .player-controls-wrap { display: flex; width: auto; max-width: none; flex-direction: row; align-items: center; justify-content: flex-end; }
+            .progress-container { display: none; }
             .player-actions { display: none; }
+            
+            .btn-ctrl { display: none; }
+            .player-buttons { margin: 0; gap: 0; }
+            .btn-play { background: transparent; color: #fff; width: 40px; height: 40px; font-size: 18px; box-shadow: none; border-radius: 50%; }
+            .btn-play:hover { background: rgba(255,255,255,0.1); transform: none; }
             
             .player-bar.expanded {
                 flex-direction: column;

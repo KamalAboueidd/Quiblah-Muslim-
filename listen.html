@@ -107,26 +107,116 @@
 
         @media (max-width: 768px) {
             .player-bar { padding: 8px 12px; cursor: pointer; }
-            .player-info { width: 70%; }
-            .player-controls-wrap { width: 30%; align-items: flex-end; }
-            .progress-container, .player-actions, .btn-ctrl { display: none; } /* Hide extra controls on mobile mini player */
-            .btn-play { width: 36px; height: 36px; font-size: 16px; margin-right: 5px; }
+            .player-bar { padding: 10px; height: auto; }
+            .player-thumb { width: 45px; height: 45px; }
+            .player-track { font-size: 14px; }
+            .player-artist { font-size: 12px; }
+            .player-controls-wrap { display: none; }
+            .player-actions { display: none; }
             
-            /* Fullscreen mobile player mode */
-            .player-bar.expanded { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(to bottom, #2b302c, #121212); flex-direction: column; justify-content: flex-start; padding: 20px; z-index: 1000; cursor: default; }
-            .player-bar.expanded .mobile-expand-btn { display: block; background: transparent; border: none; color: #fff; font-size: 24px; position: absolute; top: 20px; left: 20px; cursor: pointer; }
-            .player-bar.expanded .player-info { width: 100%; flex-direction: column; text-align: center; margin-top: 80px; gap: 30px; }
-            .player-bar.expanded .player-thumb { width: 250px; height: 250px; border-radius: 12px; font-size: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-            .player-bar.expanded .player-titles { align-items: center; width: 100%; }
-            .player-bar.expanded .player-track { font-size: 24px; font-weight: 800; white-space: normal; }
-            .player-bar.expanded .player-artist { font-size: 16px; margin-top: 5px; }
+            .player-bar.expanded {
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                height: 100dvh; /* Full viewport height */
+                padding: 20px;
+                background: linear-gradient(to bottom, #2b2b2b, #121212);
+                border-top: none;
+                border-radius: 0;
+            }
             
-            .player-bar.expanded .player-controls-wrap { width: 100%; max-width: 100%; margin-top: 40px; align-items: center; }
-            .player-bar.expanded .progress-container { display: flex; margin-bottom: 25px; }
-            .player-bar.expanded .player-actions { display: none; } /* Hide volume on mobile as OS controls it */
-            .player-bar.expanded .player-buttons { width: 100%; justify-content: space-between; max-width: 250px; }
-            .player-bar.expanded .btn-ctrl { display: block; font-size: 28px; color: #fff; }
-            .player-bar.expanded .btn-play { width: 65px; height: 65px; font-size: 24px; background: var(--gold); }
+            .player-bar.expanded .mobile-expand-btn {
+                display: block;
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                font-size: 24px;
+                color: #fff;
+                background: none;
+                padding: 10px;
+                cursor: pointer;
+            }
+            
+            .player-bar.expanded .player-info {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+                max-width: 350px;
+                margin-top: 60px;
+            }
+            
+            .player-bar.expanded .player-thumb {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1;
+                border-radius: 12px;
+                margin-bottom: 30px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+                background-position: center top;
+            }
+            
+            .player-bar.expanded .player-titles {
+                align-items: flex-start;
+                text-align: right;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .player-bar.expanded .player-track {
+                font-size: 24px;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+            
+            .player-bar.expanded .player-artist {
+                font-size: 16px;
+                color: #b3b3b3;
+            }
+            
+            .player-bar.expanded .player-controls-wrap {
+                display: flex;
+                flex-direction: column-reverse; /* Progress bar on top of buttons */
+                width: 100%;
+                max-width: 350px;
+                margin-top: 0;
+            }
+            
+            .player-bar.expanded .progress-container {
+                display: flex;
+                width: 100%;
+                margin-bottom: 30px;
+                align-items: center;
+            }
+            
+            .player-bar.expanded .progress-bar {
+                height: 6px;
+            }
+            
+            .player-bar.expanded .player-buttons {
+                width: 100%;
+                justify-content: center;
+                gap: 40px; /* More space between buttons */
+                margin-bottom: 20px;
+            }
+            
+            .player-bar.expanded .btn-ctrl {
+                display: block;
+                font-size: 32px;
+                color: #fff;
+            }
+            
+            .player-bar.expanded .btn-play {
+                width: 70px;
+                height: 70px;
+                font-size: 26px;
+                background: #fff;
+                color: #000;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            }
         }
     </style>
 </head>
@@ -247,7 +337,7 @@
         92: "https://tvquran.com/uploads/authors/images/%D9%8A%D8%A7%D8%B3%D8%B1%20%D8%A7%D9%84%D8%AF%D9%88%D8%B3%D8%B1%D9%8A.jpg", // Yasser Al Dosari
         51: "https://tvquran.com/uploads/authors/images/%D8%B9%D8%A8%D8%AF%20%D8%A7%D9%84%D8%A8%D8%A7%D8%B3%D8%B7%20%D8%B9%D8%A8%D8%AF%20%D8%A7%D9%84%D8%B5%D9%85%D8%AF.jpg", // Abdul Basit
         112: "assets/minshawi.jpg", // Minshawi
-        118: "https://tvquran.com/uploads/authors/images/%D9%85%D8%AD%D9%85%D8%AF%20%D8%AE%D9%84%D9%8A%D9%84%20%D8%A7%D9%84%D8%AD%D8%B5%D8%B1%D9%8A.jpg", // Husary
+        118: "https://tvquran.com/uploads/authors/images/%D9%85%D8%AD%D9%85%D9%88%D8%AF%20%D8%AE%D9%84%D9%8A%D9%84%20%D8%A7%D9%84%D8%AD%D8%B5%D8%B1%D9%8A.jpg", // Husary
         123: "https://tvquran.com/uploads/authors/images/%D9%85%D8%B4%D8%A7%D8%B1%D9%8A%20%D8%A7%D9%84%D8%B9%D9%81%D8%A7%D8%B3%D9%8A.jpg", // Mishary
         102: "https://tvquran.com/uploads/authors/images/%D9%85%D8%A7%D9%87%D8%B1%20%D8%A7%D9%84%D9%85%D8%B9%D9%8A%D9%82%D9%84%D9%8A.jpg", // Maher
         86: "https://tvquran.com/uploads/authors/images/%D9%86%D8%A7%D8%B5%D8%B1%20%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D9%85%D9%8A.jpg", // Nasser Al Qatami

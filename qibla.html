@@ -453,8 +453,6 @@
         // GPS state
         let qiblaAngle = null;
         let userLat = null, userLng = null;
-        let userGPSHeading = null;
-        let gpsWatchId = null;
 
         // Compass alignment state
         let isAligned = false;
@@ -483,32 +481,41 @@
             }, 0) / magBuf.length;
         }
 
-        function onOrientation(e) {
-            let h = null;
-            const isAbs = e.type === 'deviceorientationabsolute' || e.absolute === true;
-            if (isAbs) sState.hasAbsolute = true;
-
+        // ── Clean heading extractor ───────────────────────
+        // iOS  → webkitCompassHeading (already True North, no correction needed)
+        // Android → 360 - alpha  (absolute orientation, no screen rotation needed)
+        function getCompassHeading(e) {
             if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
-                h = e.webkitCompassHeading;
-            } else if (e.alpha != null) {
-                if (sState.hasAbsolute && !isAbs) return;
-                h = norm360(360 - e.alpha);
-                if (userLat != null) h = norm360(h + declination(userLat, userLng));
+                return norm360(e.webkitCompassHeading); // iOS: use directly
             }
-            if (h == null) return;
+            if (e.alpha != null && (e.absolute === true || e.type === 'deviceorientationabsolute')) {
+                return norm360(360 - e.alpha); // Android absolute
+            }
+            if (!sState.hasAbsolute && e.alpha != null) {
+                return norm360(360 - e.alpha); // Android fallback (relative)
+            }
+            return null;
+        }
 
-            const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
-            let rawMag = norm360(h + so);
+        function onOrientation(e) {
+            if (e.type === 'deviceorientationabsolute' || e.absolute === true) {
+                sState.hasAbsolute = true;
+            } else if (sState.hasAbsolute) {
+                return; // ignore relative events once we have absolute
+            }
+
+            const h = getCompassHeading(e);
+            if (h === null) return;
 
             // Noise gate
             if (lastMagReading !== null) {
-                let jump = Math.abs(rawMag - lastMagReading);
+                let jump = Math.abs(h - lastMagReading);
                 if (jump > 180) jump = 360 - jump;
                 if (jump < NOISE_THRESHOLD || jump > NOISE_SPIKE_CAP) return;
             }
-            lastMagReading = rawMag;
-            updateMagVariance(rawMag);
-            feedHeading(rawMag);
+            lastMagReading = h;
+            updateMagVariance(h);
+            feedHeading(h);
 
             // Complementary filter
             if (fusedHeading === null) {
@@ -556,9 +563,8 @@
                 return;
             }
 
-            const h = userGPSHeading !== null
-                ? userGPSHeading
-                : (fusedHeading !== null ? fusedHeading : smoothedHeading());
+            // Pure compass heading — no GPS heading override
+            const h = fusedHeading !== null ? fusedHeading : smoothedHeading();
 
             // Arrow rotation: positive = clockwise from top
             // When phone faces Qibla (h == qiblaAngle), arrowRotation == 0 → arrow points UP ✅
@@ -670,13 +676,6 @@
                                 const city = r.data.city || r.data.principalSubdivision || '';
                                 if (city) document.getElementById('city-name').textContent = city;
                             }).catch(() => {});
-
-                        // GPS kinematic fallback (when walking)
-                        gpsWatchId = navigator.geolocation.watchPosition(pos => {
-                            if (pos.coords.heading !== null && pos.coords.speed > 1.0) {
-                                userGPSHeading = pos.coords.heading;
-                            }
-                        }, () => {}, { enableHighAccuracy: true });
                     })
                     .catch(() => {
                         showToast('حدث خطأ أثناء جلب بيانات القبلة.', 'fa-solid fa-triangle-exclamation');

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المسافة إلى الكعبة - قبلة المسلم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    <style>
+        :root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+        .fullscreen-carousel { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+        .carousel-slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s ease-in-out; }
+        .carousel-slide.active { opacity:1; }
+        .carousel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.70); backdrop-filter:blur(3px); }
+
+        .app-container { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
+        .top-bar { display:flex; justify-content:center; align-items:center; padding:18px 30px 8px; }
+        .top-bar .title { font-weight:900; font-size:28px; color:var(--white); text-shadow:0 4px 15px rgba(0,0,0,0.8); }
+
+        .nav-bar { display:flex; justify-content:center; gap:10px; padding:8px 20px; margin-bottom:10px; flex-wrap:wrap; }
+        .nav-item { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:30px; background:rgba(0,0,0,0.4); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); color:white; text-decoration:none; font-weight:700; font-size:14px; transition:all 0.3s; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.12); border-color:var(--gold); color:var(--gold); }
+
+        .main-content { flex-grow:1; display:flex; flex-direction:column; align-items:center; padding:10px 20px 30px; gap:18px; }
+
+        .loader-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:30px; color:var(--gold); }
+        .loader-text { font-size:14px; opacity:0.7; }
+
+        /* Distance Card */
+        .distance-card {
+            background:rgba(0,0,0,0.55); backdrop-filter:blur(20px);
+            border:1px solid rgba(197,168,89,0.3); border-top:4px solid var(--gold);
+            border-radius:16px; padding:24px 30px; text-align:center;
+            width:100%; max-width:500px; box-shadow:0 10px 40px rgba(0,0,0,0.4);
+            display:none;
+        }
+        .distance-label { font-size:14px; color:rgba(255,255,255,0.55); margin-bottom:8px; letter-spacing:1px; }
+        .distance-value { font-size:64px; font-weight:900; color:var(--gold); text-shadow:0 0 30px rgba(197,168,89,0.4); line-height:1; }
+        .distance-unit { font-size:20px; font-weight:700; color:rgba(255,255,255,0.65); margin-top:4px; }
+        .distance-divider { width:60px; height:3px; background:var(--gold); border-radius:2px; margin:16px auto; }
+        .locations-row { display:flex; align-items:center; justify-content:center; gap:12px; font-size:14px; color:rgba(255,255,255,0.7); flex-wrap:wrap; }
+        .loc-pin { display:flex; align-items:center; gap:6px; }
+        .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .dot.user { background:var(--green); }
+        .dot.kaaba { background:var(--gold); }
+
+        /* Stats */
+        .stats-row { display:flex; gap:12px; width:100%; max-width:500px; display:none; }
+        .stat-card { flex:1; background:rgba(0,0,0,0.5); backdrop-filter:blur(15px); border:1px solid rgba(197,168,89,0.2); border-radius:12px; padding:14px 10px; text-align:center; }
+        .stat-icon { font-size:20px; color:var(--gold); margin-bottom:6px; }
+        .stat-value { font-size:17px; font-weight:800; }
+        .stat-label { font-size:11px; color:rgba(255,255,255,0.45); margin-top:3px; }
+
+        /* Map */
+        .map-wrapper { width:100%; max-width:500px; border-radius:16px; overflow:hidden; border:2px solid rgba(197,168,89,0.3); box-shadow:0 10px 40px rgba(0,0,0,0.5); display:none; }
+        #map { width:100%; height:320px; }
+
+        @media (max-width:400px) { .distance-value { font-size:48px; } }
+    </style>
+</head>
+<body>
+<div class="fullscreen-carousel">
+    <div class="carousel-slide active" style="background-image:url('assets/bg1.jpg');"></div>
+    <div class="carousel-slide" style="background-image:url('assets/bg2.jpg');"></div>
+    <div class="carousel-slide" style="background-image:url('assets/bg3.jpg');"></div>
+    <div class="carousel-overlay"></div>
+</div>
+
+<div class="app-container">
+    <div class="top-bar"><div class="title">قبلة المسلم</div></div>
+
+    <div class="nav-bar">
+        <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+        <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+        <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+        <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+        <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
+        <a href="distance.html" class="nav-item active"><i class="fa-solid fa-route"></i> المسافة</a>
+    </div>
+
+    <div class="main-content">
+        <div class="loader-box" id="loader">
+            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+            <div class="loader-text">جاري تحديد موقعك...</div>
+        </div>
+
+        <div class="distance-card" id="distance-card">
+            <div class="distance-label">📍 المسافة إلى الكعبة المشرفة</div>
+            <div class="distance-value" id="dist-km">0</div>
+            <div class="distance-unit">كيلومتر</div>
+            <div class="distance-divider"></div>
+            <div class="locations-row">
+                <div class="loc-pin"><div class="dot user"></div><span id="user-city">موقعك</span></div>
+                <span style="opacity:0.4;">←</span>
+                <div class="loc-pin"><div class="dot kaaba"></div><span>مكة المكرمة</span></div>
+            </div>
+        </div>
+
+        <div class="stats-row" id="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-plane"></i></div>
+                <div class="stat-value" id="flight-time">---</div>
+                <div class="stat-label">وقت الطيران</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
+                <div class="stat-value" id="dist-miles">---</div>
+                <div class="stat-label">ميل</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-kaaba"></i></div>
+                <div class="stat-value" id="qibla-deg">---</div>
+                <div class="stat-label">زاوية القبلة</div>
+            </div>
+        </div>
+
+        <div class="map-wrapper" id="map-wrapper">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;border-top:1px solid rgba(255,255,255,0.07);">
+        جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم &nbsp;|&nbsp; تم التطوير بواسطة <strong style="color:var(--gold);">كمال أبو عيد</strong>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="toast.js"></script>
+<script>
+    // Carousel
+    const slides = document.querySelectorAll('.carousel-slide');
+    let cur = 0;
+    setInterval(() => { slides[cur].classList.remove('active'); cur = (cur+1)%slides.length; slides[cur].classList.add('active'); }, 8000);
+
+    // Kaaba coordinates
+    const KAABA = { lat: 21.4224779, lng: 39.8251832 };
+
+    // Haversine distance in km
+    function haversine(lat1, lon1, lat2, lon2) {
+        const R = 6371, r = Math.PI/180;
+        const dLat = (lat2-lat1)*r, dLon = (lon2-lon1)*r;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // Animated number counter
+    function animateNum(el, target) {
+        const dur = 1400;
+        const t0 = performance.now();
+        function frame(now) {
+            const p = Math.min((now-t0)/dur, 1);
+            const e = 1 - (1-p)**3; // ease-out cubic
+            el.textContent = Math.round(e * target).toLocaleString('ar-EG');
+            if (p < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+    }
+
+    // Main
+    navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const distKm = haversine(lat, lng, KAABA.lat, KAABA.lng);
+        const distMiles = distKm * 0.621371;
+        const fh = distKm / 850;
+        const flH = Math.floor(fh), flM = Math.round((fh-flH)*60);
+
+        // Show UI
+        document.getElementById('loader').style.display = 'none';
+        const card = document.getElementById('distance-card');
+        const statsRow = document.getElementById('stats-row');
+        const mapWrap = document.getElementById('map-wrapper');
+        card.style.display = 'block';
+        statsRow.style.display = 'flex';
+
+        // Fill stats
+        animateNum(document.getElementById('dist-km'), Math.round(distKm));
+        document.getElementById('dist-miles').textContent = Math.round(distMiles).toLocaleString('ar-EG');
+        document.getElementById('flight-time').textContent = flH > 0 ? `${flH}س ${flM}د` : `${flM}د`;
+
+        // Qibla angle
+        axios.get(`https://api.aladhan.com/v1/qibla/${lat}/${lng}`)
+            .then(r => { document.getElementById('qibla-deg').textContent = Math.round(r.data.data.direction) + '°'; })
+            .catch(() => {});
+
+        // City name
+        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+            .then(r => { const c = r.data.city || r.data.principalSubdivision || ''; if (c) document.getElementById('user-city').textContent = c; })
+            .catch(() => {});
+
+        // Map
+        mapWrap.style.display = 'block';
+        const map = L.map('map', { zoomControl: true, attributionControl: false })
+            .setView([(lat+KAABA.lat)/2, (lng+KAABA.lng)/2], 4);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+        // User dot
+        L.marker([lat, lng], { icon: L.divIcon({
+            className:'', iconSize:[16,16], iconAnchor:[8,8],
+            html:`<div style="width:16px;height:16px;border-radius:50%;background:#1c9e5b;border:3px solid #fff;box-shadow:0 0 10px rgba(28,158,91,0.8);"></div>`
+        })}).bindPopup('<b style="font-family:Tajawal;font-size:15px;">موقعك الحالي</b>').addTo(map);
+
+        // Kaaba emoji
+        L.marker([KAABA.lat, KAABA.lng], { icon: L.divIcon({
+            className:'', iconSize:[34,34], iconAnchor:[17,30],
+            html:`<div style="font-size:30px;line-height:1;filter:drop-shadow(0 0 8px rgba(197,168,89,0.9));">🕋</div>`
+        })}).bindPopup('<b style="font-family:Tajawal;font-size:15px;">الكعبة المشرفة</b>').addTo(map);
+
+        // Dashed gold line
+        L.polyline([[lat, lng],[KAABA.lat, KAABA.lng]],
+            { color:'#C5A859', weight:2, opacity:0.85, dashArray:'10 7' }
+        ).addTo(map);
+
+        map.fitBounds([[lat,lng],[KAABA.lat,KAABA.lng]], { padding:[40,40] });
+
+    }, () => {
+        document.getElementById('loader').innerHTML = `
+            <i class="fa-solid fa-triangle-exclamation fa-2x" style="color:#e74c3c;"></i>
+            <div class="loader-text" style="color:#e74c3c;">تعذر الوصول لموقعك. تأكد من تفعيل خدمة الموقع.</div>`;
+    }, { enableHighAccuracy: true, timeout: 15000 });
+</script>
+</body>
+</html>

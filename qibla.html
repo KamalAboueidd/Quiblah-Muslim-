@@ -482,19 +482,45 @@
             }, 0) / magBuf.length;
         }
 
-        // ── Clean heading extractor ───────────────────────
-        // iOS  → webkitCompassHeading (already True North, no correction needed)
-        // Android → 360 - alpha  (absolute orientation, no screen rotation needed)
+        // ── Device heading extractor ──────────────────────
+        //
+        // RULE: arrowRotation = norm360(qiblaBearing - deviceHeading)
+        //       deviceHeading = direction the phone's physical TOP EDGE points, clockwise from True North
+        //
+        // iOS Safari  → webkitCompassHeading
+        //   Already equals the physical top-edge bearing from True North.
+        //   Safari compensates for screen orientation internally.
+        //   → Use directly. Do NOT add screen.orientation.angle (would double-correct).
+        //
+        // Android Chrome → alpha (deviceorientationabsolute)
+        //   alpha = rotation of device coordinate frame around Z-axis.
+        //   In portrait: deviceHeading = (360 - alpha) % 360
+        //   In landscape (screen rotated): must add screen.orientation.angle
+        //   → formula: norm360(360 - alpha + screenAngle)
+        //   Chrome does NOT auto-correct for screen orientation in alpha.
+        //
         function getCompassHeading(e) {
+            // ── iOS Safari ──────────────────────────────────
             if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
-                return norm360(e.webkitCompassHeading); // iOS: use directly
+                // webkitCompassHeading: physical top edge → True North bearing
+                // Safari already handles screen rotation internally — NO screenAngle needed
+                return norm360(e.webkitCompassHeading);
             }
+
+            // ── Android (absolute orientation) ─────────────
             if (e.alpha != null && (e.absolute === true || e.type === 'deviceorientationabsolute')) {
-                return norm360(360 - e.alpha); // Android absolute
+                // alpha does NOT account for screen orientation on Android Chrome
+                // We must add screenAngle to map to physical top-edge heading
+                const screenAngle = (screen.orientation && screen.orientation.angle) || 0;
+                return norm360(360 - e.alpha + screenAngle);
             }
+
+            // ── Android fallback (relative orientation) ─────
             if (!sState.hasAbsolute && e.alpha != null) {
-                return norm360(360 - e.alpha); // Android fallback (relative)
+                const screenAngle = (screen.orientation && screen.orientation.angle) || 0;
+                return norm360(360 - e.alpha + screenAngle);
             }
+
             return null;
         }
 

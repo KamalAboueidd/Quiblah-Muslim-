@@ -5,14 +5,14 @@ const toastCSS = `
 <style>
     #global-toast-container {
         position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: 25px;
+        right: 25px;
         z-index: 9999;
         display: flex;
         flex-direction: column;
         gap: 15px;
         pointer-events: none;
+        align-items: flex-end;
     }
 
     .app-toast {
@@ -29,7 +29,7 @@ const toastCSS = `
         text-align: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(197, 168, 89, 0.2);
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateX(30px);
         transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         pointer-events: auto;
         display: flex;
@@ -42,20 +42,26 @@ const toastCSS = `
     }
 
     @media (max-width: 600px) {
+        #global-toast-container {
+            top: 15px;
+            right: 15px;
+            left: 15px;
+        }
         .app-toast {
-            font-size: 15px;
-            padding: 12px 20px;
-            gap: 10px;
-            width: 85vw;
+            font-size: 13px;
+            padding: 8px 12px;
+            gap: 8px;
+            width: max-content;
+            max-width: 100%;
         }
         .app-toast i {
-            font-size: 20px;
+            font-size: 16px;
         }
     }
 
     .app-toast.show {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
     }
     
     .app-toast i {
@@ -119,5 +125,5 @@ function showRandomZikr() {
 
 // Initialize
 fetchShortAzkar();
-// 3 minutes = 180000 ms
-setInterval(showRandomZikr, 180000);
+// 1 minute = 60000 ms
+setInterval(showRandomZikr, 60000);

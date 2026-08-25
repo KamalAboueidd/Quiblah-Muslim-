@@ -380,6 +380,49 @@
             slides[currentSlide].classList.add('active');
         }, 8000);
 
+        let qiblaAngle = 0;
+
+        function initCompassSensors() {
+            if (window.DeviceOrientationEvent) {
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', handleOrientation);
+                            } else {
+                                showToast("يرجى إعطاء صلاحية مستشعرات الحركة للبوصلة لتتحرك معك", "fa-solid fa-triangle-exclamation");
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    window.addEventListener('deviceorientationabsolute', handleOrientation);
+                    window.addEventListener('deviceorientation', handleOrientation); // fallback
+                }
+            }
+        }
+
+        function handleOrientation(event) {
+            let heading = 0;
+            if (event.webkitCompassHeading) {
+                heading = event.webkitCompassHeading;
+            } else if (event.alpha !== null) {
+                // Approximate heading for Android using absolute orientation
+                // 360 - alpha is commonly used to convert CCW alpha to CW heading
+                heading = 360 - event.alpha;
+            }
+
+            const circle = document.querySelector('.compass-circle');
+            if (circle) {
+                circle.style.transform = `rotate(${-heading}deg)`;
+            }
+            
+            // Keep Kaaba icon inside arrow upright relative to screen
+            const kaaba = document.getElementById("kaaba-icon");
+            if (kaaba) {
+                kaaba.style.transform = `rotate(${heading - qiblaAngle}deg)`;
+            }
+        }
+
         function getQiblaDirection() {
             if (!("geolocation" in navigator)) {
                 showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
@@ -396,23 +439,26 @@
                 // 1. Fetch Qibla Direction
                 axios.get(`https://api.aladhan.com/v1/qibla/${lat}/${lng}`)
                     .then(res => {
-                        const direction = res.data.data.direction; // Angle in degrees
+                        qiblaAngle = res.data.data.direction; // Angle in degrees
                         
-                        // Rotate arrow
+                        // Rotate arrow statically within the circle
                         const arrow = document.getElementById("compass-arrow");
-                        arrow.style.transform = `rotate(${direction}deg)`;
+                        arrow.style.transform = `rotate(${qiblaAngle}deg)`;
                         
-                        // Keep Kaaba upright
+                        // Keep Kaaba upright initially
                         const kaaba = document.getElementById("kaaba-icon");
                         kaaba.style.opacity = "1";
-                        kaaba.style.transform = `rotate(-${direction}deg)`;
+                        kaaba.style.transform = `rotate(-${qiblaAngle}deg)`;
                         
                         document.getElementById("loader").style.display = "none";
                         document.querySelector(".location-btn").style.display = "flex";
                         
                         const info = document.getElementById("location-info");
                         info.style.display = "block";
-                        info.innerHTML = `زاوية القبلة: <b>${direction.toFixed(2)}°</b> من الشمال الجغرافي`;
+                        info.innerHTML = `زاوية القبلة: <b>${qiblaAngle.toFixed(2)}°</b> من الشمال الجغرافي`;
+                        
+                        // Initialize real compass rotation
+                        initCompassSensors();
 
                         // 2. Fetch City Name (Reverse Geocode)
                         axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)

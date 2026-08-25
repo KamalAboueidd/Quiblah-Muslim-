@@ -95,7 +95,14 @@
         .progress-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; right: 0; top: 50%; transform: translate(50%, -50%); opacity: 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
         .progress-bar:hover .progress-thumb { opacity: 1; }
 
-        .player-actions { width: 30%; display: flex; justify-content: flex-end; }
+        .player-actions { width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 10px; color: #a7a7a7; }
+        .volume-container { display: flex; align-items: center; gap: 8px; width: 100px; }
+        .volume-bar { flex-grow: 1; height: 4px; background: #4d4d4d; border-radius: 2px; cursor: pointer; position: relative; display: flex; align-items: center; }
+        .volume-fill { height: 100%; background: var(--white); border-radius: 2px; width: 100%; pointer-events: none; transition: background 0.2s; }
+        .volume-bar:hover .volume-fill { background: var(--gold); }
+        .volume-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; right: 100%; top: 50%; transform: translate(50%, -50%); opacity: 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .volume-bar:hover .volume-thumb { opacity: 1; }
+
         .mobile-expand-btn { display: none; }
 
         @media (max-width: 768px) {
@@ -116,6 +123,8 @@
             
             .player-bar.expanded .player-controls-wrap { width: 100%; max-width: 100%; margin-top: 40px; align-items: center; }
             .player-bar.expanded .progress-container { display: flex; margin-bottom: 25px; }
+            .player-bar.expanded .player-actions { display: flex; width: 100%; justify-content: center; margin-bottom: 30px; }
+            .player-bar.expanded .volume-container { width: 80%; }
             .player-bar.expanded .player-buttons { width: 100%; justify-content: space-between; max-width: 250px; }
             .player-bar.expanded .btn-ctrl { display: block; font-size: 28px; color: #fff; }
             .player-bar.expanded .btn-play { width: 65px; height: 65px; font-size: 24px; background: var(--gold); }
@@ -198,7 +207,13 @@
     </div>
     
     <div class="player-actions">
-        <!-- space for volume control or other actions if needed -->
+        <div class="volume-container">
+            <i class="fa-solid fa-volume-low" id="vol-icon" onclick="toggleMute(event)"></i>
+            <div class="volume-bar" id="volume-bar" onclick="seekVolume(event)">
+                <div class="volume-fill" id="volume-fill"></div>
+                <div class="volume-thumb" id="volume-thumb"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -224,24 +239,24 @@
     ];
 
     // IDs of famous reciters to feature at the top (from API)
-    // 121: Yasser Al Dosari, 12: Abdul Basit, 54: Al Minshawi, 40: Al Husary, 4: Abu Bakr Al Shatri
-    // 10: Ahmed Al Ajmi, 11: Mishary Alafasy, 118: Nasser Al Qatami, 71: Maher Al Muaiqly
-    const CURATED_IDS = [121, 118, 10, 11, 71, 12, 54, 40, 4, 30, 2, 70]; 
+    // 92: Yasser Al Dosari, 51: Abdul Basit, 112: Minshawi, 118: Husary, 123: Mishary
+    // 102: Maher, 86: Nasser Al Qatami, 5: Ahmed Al Ajmi, 30: Saad Al Ghamdi, 31: Saud Al Shuraim, 76: Ali Jaber, 106: Tablawi
+    const CURATED_IDS = [92, 86, 5, 123, 102, 51, 112, 118, 30, 31, 76, 106]; 
 
     // Images for curated reciters
     const RECITER_IMAGES = {
-        121: "https://upload.wikimedia.org/wikipedia/commons/2/23/Yasser_Al-Dosari_%2895595%29.jpg", // Yasser Al Dosari
-        12: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Abdul_Basit_Abdus_Samad.jpg", // Abdul Basit
-        54: "https://upload.wikimedia.org/wikipedia/ar/3/30/Mohamed_Siddiq_El-Minshawi.jpg", // Minshawi
-        40: "https://upload.wikimedia.org/wikipedia/ar/b/bb/Mahmoud_Khalil_Al-Hussary.jpg", // Husary
-        11: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Mishary_Rashid_Alafasy.jpg", // Mishary
-        71: "https://upload.wikimedia.org/wikipedia/commons/6/60/Maher_Al_Muaiqly.jpg", // Maher
-        118: "https://tvquran.com/uploads/authors/images/%D9%86%D8%A7%D8%B5%D8%B1%20%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D9%85%D9%8A.jpg", // Nasser Al Qatami
-        10: "https://tvquran.com/uploads/authors/images/%D8%A3%D8%AD%D9%85%D8%AF%20%D8%A8%D9%86%20%D8%B9%D9%84%D9%8A%20%D8%A7%D9%84%D8%B9%D8%AC%D9%85%D9%8A.jpg", // Ahmed Al Ajmi
-        4: "https://tvquran.com/uploads/authors/images/%D8%A3%D8%A8%D9%88%20%D8%A8%D9%83%D8%B1%20%D8%A7%D9%84%D8%B4%D8%A7%D8%B7%D8%B1%D9%8A.jpg", // Abu Bakr Al Shatri
+        92: "https://upload.wikimedia.org/wikipedia/commons/2/23/Yasser_Al-Dosari_%2895595%29.jpg", // Yasser Al Dosari
+        51: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Abdul_Basit_Abdus_Samad.jpg", // Abdul Basit
+        112: "https://upload.wikimedia.org/wikipedia/ar/3/30/Mohamed_Siddiq_El-Minshawi.jpg", // Minshawi
+        118: "https://upload.wikimedia.org/wikipedia/ar/b/bb/Mahmoud_Khalil_Al-Hussary.jpg", // Husary
+        123: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Mishary_Rashid_Alafasy.jpg", // Mishary
+        102: "https://upload.wikimedia.org/wikipedia/commons/6/60/Maher_Al_Muaiqly.jpg", // Maher
+        86: "https://tvquran.com/uploads/authors/images/%D9%86%D8%A7%D8%B5%D8%B1%20%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D9%85%D9%8A.jpg", // Nasser Al Qatami
+        5: "https://tvquran.com/uploads/authors/images/%D8%A3%D8%AD%D9%85%D8%AF%20%D8%A8%D9%86%20%D8%B9%D9%84%D9%8A%20%D8%A7%D9%84%D8%B9%D8%AC%D9%85%D9%8A.jpg", // Ahmed Al Ajmi
         30: "https://tvquran.com/uploads/authors/images/%D8%B3%D8%B9%D8%AF%20%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A.jpg", // Saad Al Ghamdi
-        2: "https://tvquran.com/uploads/authors/images/%D8%A7%D9%84%D8%B2%D9%8A%D9%86%20%D9%85%D8%AD%D9%85%D8%AF%20%D8%A3%D8%AD%D9%85%D8%AF.jpg", // Alzain
-        70: "https://tvquran.com/uploads/authors/images/%D9%85%D8%A7%D8%AC%D8%AF%20%D8%A7%D9%84%D8%B2%D8%A7%D9%85%D9%84.jpg" // Majed
+        31: "https://tvquran.com/uploads/authors/images/%D8%B3%D8%B9%D9%88%D8%AF%20%D8%A7%D9%84%D8%B4%D8%B1%D9%8A%D9%85.jpg", // Saud Al Shuraim
+        76: "https://tvquran.com/uploads/authors/images/%D8%B9%D9%84%D9%8A%20%D8%AC%D8%A7%D8%A8%D8%B1.jpg", // Ali Jaber
+        106: "https://upload.wikimedia.org/wikipedia/ar/6/6f/Mahmoud_El-Tablawi.jpg" // Tablawi
     };
 
     let allReciters = [];
@@ -527,6 +542,47 @@
         const pct = 1 - (clickX / rect.width); // inverted for RTL
         audio.currentTime = pct * audio.duration;
     }
+
+    // --- Volume Control Logic ---
+    let currentVolume = 1;
+    function seekVolume(e) {
+        e.stopPropagation();
+        const bar = document.getElementById('volume-bar');
+        const rect = bar.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        // RTL logic
+        let pct = 1 - (clickX / rect.width);
+        if (pct < 0) pct = 0;
+        if (pct > 1) pct = 1;
+        
+        audio.volume = pct;
+        currentVolume = pct;
+        updateVolumeUI();
+    }
+
+    function toggleMute(e) {
+        e.stopPropagation();
+        if (audio.volume > 0) {
+            audio.volume = 0;
+        } else {
+            audio.volume = currentVolume > 0 ? currentVolume : 1;
+        }
+        updateVolumeUI();
+    }
+
+    function updateVolumeUI() {
+        const pct = audio.volume * 100;
+        document.getElementById('volume-fill').style.width = `${pct}%`;
+        document.getElementById('volume-thumb').style.right = `${100 - pct}%`;
+        
+        const icon = document.getElementById('vol-icon');
+        if (audio.volume === 0) icon.className = 'fa-solid fa-volume-xmark';
+        else if (audio.volume < 0.5) icon.className = 'fa-solid fa-volume-low';
+        else icon.className = 'fa-solid fa-volume-high';
+    }
+
+    // Initialize volume UI
+    updateVolumeUI();
 </script>
 </body>
 </html>

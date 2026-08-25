@@ -123,8 +123,7 @@
             
             .player-bar.expanded .player-controls-wrap { width: 100%; max-width: 100%; margin-top: 40px; align-items: center; }
             .player-bar.expanded .progress-container { display: flex; margin-bottom: 25px; }
-            .player-bar.expanded .player-actions { display: flex; width: 100%; justify-content: center; margin-bottom: 30px; }
-            .player-bar.expanded .volume-container { width: 80%; }
+            .player-bar.expanded .player-actions { display: none; } /* Hide volume on mobile as OS controls it */
             .player-bar.expanded .player-buttons { width: 100%; justify-content: space-between; max-width: 250px; }
             .player-bar.expanded .btn-ctrl { display: block; font-size: 28px; color: #fff; }
             .player-bar.expanded .btn-play { width: 65px; height: 65px; font-size: 24px; background: var(--gold); }
@@ -440,6 +439,11 @@
         if (currentPlayingSurahNum === num && currentReciterName === reciterName) {
             // Toggle play/pause if clicking the same surah
             togglePlayPause();
+            // Also auto-expand on mobile if clicked again
+            if (window.innerWidth <= 768) {
+                document.getElementById('player-bar').classList.add('expanded');
+                document.body.style.overflow = 'hidden';
+            }
             return;
         }
 
@@ -460,6 +464,12 @@
             isPlaying = true;
             updatePlayPauseIcon();
             updateSurahListUI();
+            
+            // Auto expand the player on mobile just like Spotify
+            if (window.innerWidth <= 768) {
+                document.getElementById('player-bar').classList.add('expanded');
+                document.body.style.overflow = 'hidden';
+            }
         }).catch(err => {
             showToast('حدث خطأ أثناء تشغيل السورة', 'fa-solid fa-triangle-exclamation');
         });

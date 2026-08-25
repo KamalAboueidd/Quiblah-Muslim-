@@ -429,6 +429,15 @@
         let state = { sinS: 0, cosS: 1, hasSmooth: false, isAligned: false, hasAbsolute: false };
         let rafId = null;
 
+        // Sensor Fusion State
+        let fusedHeading = null;
+        let lastGyroTimestamp = 0;
+        const FILTER_COEFF = 0.95; 
+
+        // GPS Fallback State
+        let userGPSHeading = null;
+        let gpsWatchId = null;
+
         function feedHeading(h) {
             const s = Math.sin(rad(h)), c = Math.cos(rad(h));
             if (!state.hasSmooth) { state.sinS = s; state.cosS = c; state.hasSmooth = true; }
@@ -453,15 +462,41 @@
             if (h == null) return;
             
             const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
-            feedHeading(norm360(h + so));
+            let rawMagHeading = norm360(h + so);
+            feedHeading(rawMagHeading);
+
+            // Sensor Fusion logic (Complementary Filter)
+            if (fusedHeading === null) {
+                fusedHeading = smoothedHeading();
+                lastGyroTimestamp = Date.now();
+            } else {
+                let diff = smoothedHeading() - fusedHeading;
+                diff = ((diff + 540) % 360) - 180;
+                fusedHeading = norm360(fusedHeading + (1 - FILTER_COEFF) * diff);
+            }
+        }
+
+        function onMotion(e) {
+            if (fusedHeading === null || !e.rotationRate || e.rotationRate.gamma === null) return;
+            let now = Date.now();
+            let dt = (now - lastGyroTimestamp) / 1000.0;
+            lastGyroTimestamp = now;
+
+            // Simple gyro integration (rotation rate around Z or Y axis depending on device orientation)
+            // Gamma usually tracks rotation when device is held flat.
+            let gyroDelta = e.rotationRate.gamma * dt; 
+            fusedHeading = norm360(fusedHeading + gyroDelta);
         }
 
         let lastAlignedAt = 0;
         function renderLoop() {
             rafId = requestAnimationFrame(renderLoop);
-            if (!state.hasSmooth || qiblaAngle == null) return;
+            if ((!state.hasSmooth && fusedHeading === null) || qiblaAngle == null) return;
             
-            const h = smoothedHeading();
+            // Priority 1: GPS Kinematic Heading (if walking)
+            // Priority 2: Fused Gyro+Mag Heading
+            // Priority 3: Smoothed Mag Heading
+            let h = userGPSHeading !== null ? userGPSHeading : (fusedHeading !== null ? fusedHeading : smoothedHeading());
             
             // Rotate compass circle
             const circle = document.querySelector('.compass-circle');
@@ -496,6 +531,13 @@
                     .then(permissionState => {
                         if (permissionState === 'granted') {
                             window.addEventListener('deviceorientation', onOrientation, true);
+                            if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') {
+                                DeviceMotionEvent.requestPermission().then(ms => {
+                                    if (ms === 'granted') window.addEventListener('devicemotion', onMotion, true);
+                                });
+                            } else {
+                                window.addEventListener('devicemotion', onMotion, true);
+                            }
                             if (!rafId) renderLoop();
                         } else {
                             showToast("يرجى إعطاء صلاحية مستشعرات الحركة للبوصلة لتتحرك معك", "fa-solid fa-triangle-exclamation");
@@ -511,6 +553,7 @@
                 if (window.DeviceOrientationEvent) {
                     window.addEventListener('deviceorientationabsolute', onOrientation, true);
                     window.addEventListener('deviceorientation', onOrientation, true); // fallback
+                    if (window.DeviceMotionEvent) window.addEventListener('devicemotion', onMotion, true);
                     if (!rafId) renderLoop();
                 }
                 startGeolocationFlow();
@@ -551,7 +594,6 @@
                         info.style.display = "block";
                         info.innerHTML = `زاوية القبلة: <b>${qiblaAngle.toFixed(2)}°</b> من الشمال الجغرافي`;
                         
-
                         // 2. Fetch City Name (Reverse Geocode)
                         axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLng}&localityLanguage=ar`)
                             .then(cityRes => {
@@ -560,6 +602,16 @@
                                     info.innerHTML += `<br>موقعك: <b>${cityName}</b>`;
                                 }
                             }).catch(err => console.error(err));
+
+                        // 3. Start GPS watch for Kinematic Fallback
+                        gpsWatchId = navigator.geolocation.watchPosition(pos => {
+                            if (pos.coords.heading !== null && pos.coords.speed !== null && pos.coords.speed > 1.0) {
+                                userGPSHeading = pos.coords.heading;
+                                if (!info.innerHTML.includes("تصحيح تلقائي")) {
+                                    info.innerHTML += `<br><span style="color:#1c9e5b; font-size: 14px; display: inline-block; margin-top: 5px;"><i class="fa-solid fa-person-walking"></i> تصحيح تلقائي عبر الحركة مفعل</span>`;
+                                }
+                            }
+                        }, err => console.warn(err), { enableHighAccuracy: true });
 
                     })
                     .catch(err => {

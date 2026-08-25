@@ -85,22 +85,22 @@
         .player-buttons { display: flex; align-items: center; gap: 20px; margin-bottom: 8px; }
         .btn-ctrl { background: transparent; border: none; color: #a7a7a7; font-size: 18px; cursor: pointer; transition: color 0.2s; }
         .btn-ctrl:hover { color: #fff; }
-        .btn-play { width: 32px; height: 32px; border-radius: 50%; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: transform 0.2s; }
+        .btn-play { width: 32px; height: 32px; border: none; outline: none; border-radius: 50%; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: transform 0.2s; cursor: pointer; }
         .btn-play:hover { transform: scale(1.05); background: var(--gold); color: #fff; }
         
-        .progress-container { display: flex; align-items: center; width: 100%; gap: 10px; font-size: 11px; color: #a7a7a7; }
+        .progress-container { display: flex; align-items: center; width: 100%; gap: 10px; font-size: 11px; color: #a7a7a7; direction: ltr; }
         .progress-bar { flex-grow: 1; height: 4px; background: #4d4d4d; border-radius: 2px; cursor: pointer; position: relative; display: flex; align-items: center; }
         .progress-fill { height: 100%; background: var(--white); border-radius: 2px; width: 0%; pointer-events: none; transition: background 0.2s; }
         .progress-bar:hover .progress-fill { background: var(--gold); }
-        .progress-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; right: 0; top: 50%; transform: translate(50%, -50%); opacity: 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .progress-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; left: 0; top: 50%; transform: translate(-50%, -50%); opacity: 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
         .progress-bar:hover .progress-thumb { opacity: 1; }
 
         .player-actions { width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 10px; color: #a7a7a7; }
-        .volume-container { display: flex; align-items: center; gap: 8px; width: 100px; }
+        .volume-container { display: flex; align-items: center; gap: 8px; width: 100px; direction: ltr; }
         .volume-bar { flex-grow: 1; height: 4px; background: #4d4d4d; border-radius: 2px; cursor: pointer; position: relative; display: flex; align-items: center; }
         .volume-fill { height: 100%; background: var(--white); border-radius: 2px; width: 100%; pointer-events: none; transition: background 0.2s; }
         .volume-bar:hover .volume-fill { background: var(--gold); }
-        .volume-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; right: 100%; top: 50%; transform: translate(50%, -50%); opacity: 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .volume-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; left: 100%; top: 50%; transform: translate(-50%, -50%); opacity: 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
         .volume-bar:hover .volume-thumb { opacity: 1; }
 
         .mobile-expand-btn { display: none; }
@@ -539,7 +539,7 @@
         
         // Reset progress
         document.getElementById('progress-fill').style.width = '0%';
-        document.getElementById('progress-thumb').style.right = '100%';
+        document.getElementById('progress-thumb').style.left = '0%';
         document.getElementById('time-current').textContent = '0:00';
         
         // Auto expand the player immediately on mobile just like Spotify
@@ -615,9 +615,9 @@
         const d = audio.duration;
         if (d) {
             const pct = (c / d) * 100;
-            // Since RTL, width expands from right to left
+            // Since LTR, width expands from left to right
             document.getElementById('progress-fill').style.width = `${pct}%`;
-            document.getElementById('progress-thumb').style.right = `${100 - pct}%`;
+            document.getElementById('progress-thumb').style.left = `${pct}%`;
             document.getElementById('time-current').textContent = formatTime(c);
             document.getElementById('time-total').textContent = formatTime(d);
         }
@@ -630,9 +630,11 @@
         if (!audio.duration) return;
         const bar = document.getElementById('progress-bar');
         const rect = bar.getBoundingClientRect();
-        // RTL logic: x is from left, but progress is from right
+        // LTR logic: x is from left, progress grows to right
         const clickX = e.clientX - rect.left;
-        const pct = 1 - (clickX / rect.width); // inverted for RTL
+        let pct = clickX / rect.width;
+        if (pct < 0) pct = 0;
+        if (pct > 1) pct = 1;
         audio.currentTime = pct * audio.duration;
     }
 
@@ -643,8 +645,8 @@
         const bar = document.getElementById('volume-bar');
         const rect = bar.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
-        // RTL logic
-        let pct = 1 - (clickX / rect.width);
+        // LTR logic
+        let pct = clickX / rect.width;
         if (pct < 0) pct = 0;
         if (pct > 1) pct = 1;
         
@@ -666,7 +668,7 @@
     function updateVolumeUI() {
         const pct = audio.volume * 100;
         document.getElementById('volume-fill').style.width = `${pct}%`;
-        document.getElementById('volume-thumb').style.right = `${100 - pct}%`;
+        document.getElementById('volume-thumb').style.left = `${pct}%`;
         
         const icon = document.getElementById('vol-icon');
         if (audio.volume === 0) icon.className = 'fa-solid fa-volume-xmark';

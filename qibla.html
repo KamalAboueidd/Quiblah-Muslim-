@@ -328,21 +328,25 @@
                 <!-- Fixed downward pointer (= phone's top direction on screen) -->
                 <div class="top-pointer">▼</div>
 
-                <!-- Static outer ring -->
-                <div class="compass-ring" id="compass-ring"></div>
+                <!-- The rotating background (ring + ticks + directions) -->
+                <div class="compass-bg" id="compass-bg" style="position:absolute; width:100%; height:100%; transition: transform 0.25s ease-out;">
+                    <!-- Static outer ring -->
+                    <div class="compass-ring" id="compass-ring"></div>
 
-                <!-- Static ticks (one every 10°) -->
-                <div class="compass-ticks"></div>
+                    <!-- Static ticks (one every 10°) -->
+                    <div class="compass-ticks"></div>
 
-                <!-- Static cardinal labels -->
-                <div class="compass-dirs">
-                    <div class="dir dir-n">شمال</div>
-                    <div class="dir dir-s">جنوب</div>
-                    <div class="dir dir-e">شرق</div>
-                    <div class="dir dir-w">غرب</div>
+                    <!-- Static cardinal labels -->
+                    <div class="compass-dirs">
+                        <div class="dir dir-n">شمال</div>
+                        <div class="dir dir-s">جنوب</div>
+                        <div class="dir dir-e">شرق</div>
+                        <div class="dir dir-w">غرب</div>
+                    </div>
                 </div>
 
                 <!-- Center info (angle + label) -->
+
                 <div class="compass-center">
                     <div class="angle-display" id="angle-display">--°</div>
                     <div class="angle-label" id="angle-label">جاري تحديد الموقع...</div>
@@ -592,6 +596,9 @@
 
             // Pure compass heading — no GPS heading override
             const h = fusedHeading !== null ? fusedHeading : smoothedHeading();
+
+            // Compass background rotation (points to True North)
+            document.getElementById('compass-bg').style.transform = `rotate(${-h}deg)`;
 
             // Arrow rotation: positive = clockwise from top
             // When phone faces Qibla (h == qiblaAngle), arrowRotation == 0 → arrow points UP ✅

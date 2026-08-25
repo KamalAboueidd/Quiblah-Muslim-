@@ -105,6 +105,7 @@
             position: relative;
             width: 320px; height: 320px;
             margin: 0 auto;
+            /* Always visible */
         }
 
         /* Fixed top pointer */
@@ -213,8 +214,20 @@
             text-shadow: 0 0 12px rgba(28,158,91,0.9);
             z-index: 12;
             opacity: 0; transition: opacity 0.5s;
+            /* counter-rotate to stay upright */
         }
         .kaaba-tip.show { opacity: 1; }
+
+        .gps-loading-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 6px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.45; }
+            50% { opacity: 0.9; }
+        }
 
         /* =================== BOTTOM INFO =================== */
         .compass-footer {
@@ -309,7 +322,7 @@
             </div>
 
             <!-- Compass -->
-            <div class="compass-scene" id="compass-scene" style="opacity:0; transition: opacity 0.6s;">
+            <div class="compass-scene" id="compass-scene">
 
                 <!-- Fixed downward pointer (= phone's top direction on screen) -->
                 <div class="top-pointer">▼</div>
@@ -317,7 +330,7 @@
                 <!-- Static outer ring -->
                 <div class="compass-ring" id="compass-ring"></div>
 
-                <!-- Static ticks (36 ticks every 10°) -->
+                <!-- Static ticks (one every 10°) -->
                 <div class="compass-ticks"></div>
 
                 <!-- Static cardinal labels -->
@@ -331,22 +344,21 @@
                 <!-- Center info (angle + label) -->
                 <div class="compass-center">
                     <div class="angle-display" id="angle-display">--°</div>
-                    <div class="angle-label">اتجاه القبلة من الشمال الحقيقي</div>
+                    <div class="angle-label" id="angle-label">جاري تحديد الموقع...</div>
+                    <div class="gps-loading-text" id="gps-loading-text"><i class="fa-solid fa-location-dot fa-beat"></i></div>
                 </div>
 
-                <!-- Rotating arrow layer -->
-                <div class="compass-arrow" id="compass-arrow">
+                <!-- Rotating arrow layer (hidden until GPS ready) -->
+                <div class="compass-arrow" id="compass-arrow" style="opacity:0; transition: opacity 0.6s, transform 0.25s ease-out;">
                     <!-- SVG arrow: tail at center, tip at top -->
                     <svg class="arrow-svg" viewBox="0 0 320 320">
                         <!-- Arrow shaft -->
                         <line x1="160" y1="160" x2="160" y2="55"
-                              stroke="#1c9e5b" stroke-width="3.5"
-                              stroke-linecap="round" opacity="0"/>
+                              stroke="#1c9e5b" stroke-width="3.5" stroke-linecap="round"/>
                         <!-- Arrowhead triangle -->
-                        <polygon points="160,30 150,56 170,56"
-                                 fill="#1c9e5b" opacity="0"/>
+                        <polygon points="160,30 150,56 170,56" fill="#1c9e5b"/>
                         <!-- Tail dot at center -->
-                        <circle cx="160" cy="160" r="6" fill="#C5A859" opacity="0"/>
+                        <circle cx="160" cy="160" r="7" fill="#C5A859"/>
                     </svg>
                     <!-- Kaaba at the tip -->
                     <div class="kaaba-tip" id="kaaba-tip">
@@ -580,12 +592,18 @@
 
         // ── Show compass UI ───────────────────────────────
         function showCompass() {
-            const scene = document.getElementById('compass-scene');
-            scene.style.opacity = '1';
-            // Make SVG elements visible
-            scene.querySelectorAll('line, polygon, circle').forEach(el => el.setAttribute('opacity', '1'));
+            // Arrow becomes visible
+            document.getElementById('compass-arrow').style.opacity = '1';
             document.getElementById('kaaba-tip').classList.add('show');
+            document.getElementById('gps-loading-text').style.display = 'none';
+            document.getElementById('angle-label').textContent = 'اتجاه القبلة من الشمال الحقيقي';
             document.getElementById('calibrate-hint').style.display = 'block';
+        }
+
+        // Always show the compass shell immediately
+        function showCompassShell() {
+            document.getElementById('compass-scene').style.opacity = '1';
+            document.getElementById('loader').style.display = 'none';
         }
 
         // ── Start sensors ─────────────────────────────────
@@ -599,7 +617,6 @@
             }
             if (!rafId) renderLoop();
         }
-
         // iOS 13+ requires explicit permission request on user gesture
         function requestSensorPermission() {
             document.getElementById('perm-btn').style.display = 'none';
@@ -636,11 +653,10 @@
                     .then(res => {
                         qiblaAngle = res.data.data.direction;
 
-                        document.getElementById('loader').style.display = 'none';
                         document.getElementById('status-row').style.display = 'flex';
                         document.getElementById('status-text').textContent = `القبلة ${Math.round(qiblaAngle)}° من الشمال`;
 
-                        // Set initial arrow (before sensors kick in)
+                        // Set arrow to correct Qibla angle
                         document.getElementById('compass-arrow').style.transform = `rotate(${qiblaAngle}deg)`;
                         document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-qiblaAngle}deg)`;
                         updateAngleDisplay(qiblaAngle);
@@ -664,29 +680,31 @@
                     })
                     .catch(() => {
                         showToast('حدث خطأ أثناء جلب بيانات القبلة.', 'fa-solid fa-triangle-exclamation');
-                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('gps-loading-text').textContent = 'تعذر تحديد القبلة';
                     });
 
             }, () => {
                 showToast('لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع.', 'fa-solid fa-triangle-exclamation');
-                document.getElementById('loader').style.display = 'none';
+                document.getElementById('gps-loading-text').textContent = 'تعذر الوصول للموقع';
             }, { enableHighAccuracy: true, timeout: 15000 });
         }
 
         // ── Auto-start on page load ───────────────────────
         window.addEventListener('DOMContentLoaded', () => {
+            // Always show compass shell immediately
+            showCompassShell();
+
             // iOS 13+: need user gesture for sensor permission
             if (typeof DeviceOrientationEvent !== 'undefined' &&
                 typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // Show the button; start GPS immediately (doesn't need permission)
-                document.getElementById('loader').style.display = 'none';
+                // Show the permission button; GPS doesn't need permission
                 document.getElementById('perm-btn').classList.add('visible');
                 document.getElementById('perm-btn').onclick = () => {
                     requestSensorPermission();
                     startGeolocationFlow();
                 };
             } else {
-                // Android / desktop: start everything automatically
+                // Android / desktop: auto-start everything
                 startSensors();
                 startGeolocationFlow();
             }

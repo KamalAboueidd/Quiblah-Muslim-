@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>القرآن الكريم - قراءة</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri+Quran&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    
+    <style>
+        :root {
+            --primary-teal: #2F7A78;
+            --gold: #C5A859;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: "Tajawal", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: var(--white);
+            overflow: hidden; 
+            height: 100vh;
+        }
+
+        /* --- Fullscreen Background Carousel (Same as index.html) --- */
+        .fullscreen-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- App Layout --- */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Navigation Bar */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px 20px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-box input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 14px 15px 14px 45px;
+            border-radius: 12px;
+            outline: none;
+            font-family: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-box input::placeholder { color: rgba(255,255,255,0.4); }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.4);
+        }
+
+        .surah-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 10px;
+        }
+
+        .surah-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            margin-bottom: 5px;
+            gap: 15px;
+        }
+        
+        .surah-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .surah-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .surah-number {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--gold);
+            font-size: 16px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .surah-item.active .surah-number {
+            background: var(--gold);
+            color: #111;
+        }
+
+        .surah-details {
+            flex: 1;
+        }
+
+        .surah-name { font-weight: 900; font-size: 18px; color: white; margin-bottom: 2px;}
+        .surah-info { font-size: 13px; color: #aaa; font-weight: 500;}
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-header {
+            display: none;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+        }
+        
+        .mobile-header .title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .reader-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            scroll-behavior: smooth;
+        }
+
+        .surah-header-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin: 0 auto 40px auto;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .surah-title {
+            font-family: 'Amiri Quran', serif;
+            font-size: 55px;
+            color: var(--gold);
+            margin: 0 0 15px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .surah-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            color: white;
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        .bismillah {
+            text-align: center;
+            font-family: 'Amiri Quran', serif;
+            font-size: 38px;
+            margin-bottom: 50px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .verses-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: justify;
+            direction: rtl;
+            line-height: 2.8;
+            padding-bottom: 100px;
+        }
+
+        .verse {
+            font-family: 'Amiri Quran', serif;
+            font-size: 34px;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .verse-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            margin: 0 15px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            color: var(--gold);
+            font-family: "Tajawal", sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+        /* Loaders & Errors */
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--gold);
+            gap: 15px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            text-align: center;
+            padding: 40px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 90;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .nav-bar { gap: 10px; padding: 10px; }
+            .nav-item { padding: 8px 12px; font-size: 13px; }
+            
+            .sidebar {
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 100%;
+                z-index: 100;
+                transform: translateX(100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            }
+            .sidebar-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+
+            .mobile-header { display: flex; }
+            
+            .reader-area { padding: 20px 15px; }
+            .surah-header-card { padding: 20px; margin-bottom: 30px; }
+            .surah-title { font-size: 42px; }
+            .bismillah { font-size: 32px; margin-bottom: 30px; }
+            
+            .verses-container { line-height: 2.5; }
+            .verse { font-size: 28px; }
+            .verse-number { width: 40px; height: 40px; font-size: 14px; margin: 0 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <!-- Layout -->
+    <div class="app-layout">
+        
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="ابحث عن سورة..." />
+                </div>
+            </div>
+            <div class="surah-list" id="surah-list">
+                <!-- Surahs injected here -->
+                <div style="text-align: center; color: var(--gold); padding: 20px;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Global Navbar inside Main Content -->
+            <div class="nav-bar">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+                <a href="quran.html" class="nav-item active"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+                <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+                <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+                <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
+            </div>
+
+            <!-- Mobile Header -->
+            <div class="mobile-header">
+                <button class="menu-btn" id="menu-btn">
+                    <i class="fa-solid fa-bars"></i> قائمة السور
+                </button>
+                <div class="title" id="mobile-title">القرآن الكريم</div>
+            </div>
+
+            <!-- Reader Area -->
+            <div class="reader-area" id="reader-area">
+                <div id="content-container">
+                    <!-- Default State -->
+                    <div class="loader-container" style="height: 80vh;">
+                        <i class="fa-solid fa-book-open fa-3x" style="margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p style="opacity: 0.7;">اختر سورة من القائمة للقراءة</p>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div style="text-align: center; padding: 20px; margin-top: auto; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 10;">
+                    جميع الحقوق محفوظة &copy; 2026 - البوصلة الإسلامية <br>
+                    تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="node_modules/axios/dist/axios.min.js"></script>
+    <script>
+        // Header Carousel Logic
+        const slides = document.querySelectorAll('.carousel-slide');
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 8000);
+
+        // Sidebar Mobile Toggle
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = document.getElementById('menu-btn');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // API Integration
+        let allSurahs = [];
+        let currentSurahNumber = 1;
+
+        const surahListEl = document.getElementById('surah-list');
+        const searchInput = document.getElementById('search-input');
+        const contentContainer = document.getElementById('content-container');
+        const readerArea = document.getElementById('reader-area');
+        const mobileTitle = document.getElementById('mobile-title');
+
+        // Fetch All Surahs
+        function fetchSurahs() {
+            axios.get('https://api.alquran.cloud/v1/surah')
+                .then(response => {
+                    allSurahs = response.data.data;
+                    renderSurahList(allSurahs);
+                    // Load Fatihah by default
+                    loadSurah(1);
+                })
+                .catch(error => {
+                    surahListEl.innerHTML = `<div class="error-message">حدث خطأ في تحميل السور</div>`;
+                    console.error("Error fetching surahs:", error);
+                });
+        }
+
+        // Render Sidebar List
+        function renderSurahList(surahs) {
+            if (surahs.length === 0) {
+                surahListEl.innerHTML = `<div style="text-align:center; padding: 20px; color:#aaa;">لا توجد نتائج</div>`;
+                return;
+            }
+
+            let html = '';
+            surahs.forEach(surah => {
+                const isActive = surah.number === currentSurahNumber ? 'active' : '';
+                html += `
+                    <div class="surah-item ${isActive}" data-id="${surah.number}">
+                        <div class="surah-number">${surah.number}</div>
+                        <div class="surah-details">
+                            <div class="surah-name">${surah.name}</div>
+                            <div class="surah-info">${surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'} • آياتها ${surah.numberOfAyahs}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            surahListEl.innerHTML = html;
+
+            // Add click events
+            document.querySelectorAll('.surah-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    if (id !== currentSurahNumber) {
+                        currentSurahNumber = id;
+                        // Update active class
+                        document.querySelectorAll('.surah-item').forEach(el => el.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        loadSurah(id);
+                        
+                        // Close sidebar on mobile
+                        if (window.innerWidth <= 900) {
+                            toggleSidebar();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Search filtering
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allSurahs.filter(s => 
+                s.name.includes(query) || s.englishName.toLowerCase().includes(query)
+            );
+            renderSurahList(filtered);
+        });
+
+        // Load Specific Surah Content
+        function loadSurah(id) {
+            contentContainer.innerHTML = `
+                <div class="loader-container">
+                    <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            `;
+            
+            // Scroll to top
+            readerArea.scrollTop = 0;
+
+            axios.get(`https://api.alquran.cloud/v1/surah/${id}/quran-uthmani`)
+                .then(response => {
+                    const data = response.data.data;
+                    mobileTitle.innerText = data.name;
+                    
+                    let html = `
+                        <div class="surah-header-card">
+                            <h1 class="surah-title">${data.name}</h1>
+                            <div class="surah-meta">
+                                <span>${data.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+                                <span>آياتها: ${data.numberOfAyahs}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add Bismillah for all surahs except Fatihah (1) and Tawbah (9)
+                    if (data.number !== 1 && data.number !== 9) {
+                        html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+                    }
+
+                    html += `<div class="verses-container">`;
+                    
+                    data.ayahs.forEach((ayah, index) => {
+                        let text = ayah.text;
+                        // Remove Bismillah from the first ayah text if it exists (for surahs other than Fatihah)
+                        if (data.number !== 1 && index === 0 && text.startsWith('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ')) {
+                            text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '');
+                        }
+                        
+                        html += `
+                            <span class="verse">${text}</span>
+                            <span class="verse-number">${ayah.numberInSurah}</span>
+                        `;
+                    });
+
+                    html += `</div>`;
+                    contentContainer.innerHTML = html;
+                })
+                .catch(error => {
+                    contentContainer.innerHTML = `<div class="error-message">حدث خطأ أثناء جلب الآيات. يرجى التأكد من اتصالك بالإنترنت.</div>`;
+                    console.error("Error fetching surah content:", error);
+                });
+        }
+
+        // Initialize
+        fetchSurahs();
+
+    </script>
+    <script src="toast.js"></script>
+</body>
+</html>

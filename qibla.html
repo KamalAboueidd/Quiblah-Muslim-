@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحديد القبلة - البوصلة الإسلامية</title>
+    <!-- Tajawal Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    <style>
+        :root {
+            --gold: #C5A859;
+            --dark: #0f0f0f;
+            --white: #ffffff;
+            --glass: rgba(15, 15, 15, 0.6);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            background-color: transparent; /* Changed from #111 to guarantee background visibility */
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* --- Fullscreen Background Carousel --- */
+        .fullscreen-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Changed from -1 to ensure it paints above body background if any */
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+        }
+
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65); /* Dark overlay for text readability */
+            backdrop-filter: blur(3px); /* Slight blur for premium feel */
+        }
+
+        /* --- App Container (On top of carousel) --- */
+        .app-container {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 30px 10px 30px;
+            font-size: 26px;
+        }
+        
+        .top-bar .title {
+            font-weight: 900;
+            font-size: 32px;
+            color: var(--white);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px 20px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        /* Qibla Compass UI */
+        .qibla-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .qibla-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .qibla-desc {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .compass-circle {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            border: 4px solid var(--gold);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 30px rgba(197, 168, 89, 0.2), inset 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .compass-marks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .compass-marks .mark-n { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-weight: bold; color: var(--gold); }
+        .compass-marks .mark-s { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-weight: bold; opacity: 0.5; }
+        .compass-marks .mark-e { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-weight: bold; opacity: 0.5; }
+        .compass-marks .mark-w { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: bold; opacity: 0.5; }
+
+        .compass-arrow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(0deg); /* Default pointing up */
+        }
+
+        .kaaba-icon {
+            position: absolute;
+            top: 15%;
+            font-size: 32px;
+            color: var(--white);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            transform: rotate(0deg); /* Counter rotate to keep it upright, done in JS */
+        }
+
+        .location-btn {
+            background: var(--gold);
+            color: var(--dark);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.4);
+        }
+
+        .location-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(197, 168, 89, 0.6);
+        }
+
+        .location-info {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold);
+            display: none;
+            line-height: 1.6;
+        }
+
+        #loader {
+            display: none;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        /* Tips Section */
+        .tips-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            border-right: 4px solid var(--gold);
+            border-radius: 4px; /* Rectangular shape */
+            padding: 20px 25px;
+            margin-bottom: 40px;
+            text-align: right;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .tips-title {
+            color: var(--gold);
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips-list {
+            margin: 0;
+            padding-right: 20px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .tips-list li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .nav-bar { gap: 8px; padding: 10px; }
+            .nav-item { padding: 8px 12px; font-size: 14px; }
+            .compass-circle { width: 220px; height: 220px; }
+            .qibla-container { padding: 10px; }
+            .tips-card {
+                background: transparent;
+                backdrop-filter: none;
+                box-shadow: none;
+                padding: 15px;
+                border: 1px solid rgba(197, 168, 89, 0.3);
+                border-right: 3px solid var(--gold);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <!-- App Content -->
+    <div class="app-container">
+        
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="title">البوصلة الإسلامية</div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="qibla.html" class="nav-item active"><i class="fa-solid fa-compass"></i> القبلة</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="qibla-container">
+                <div class="qibla-title">تحديد اتجاه القبلة</div>
+                <div class="qibla-desc">استخدم الموقع الجغرافي الخاص بك لمعرفة الاتجاه الدقيق للقبلة مقارنة بالشمال الجغرافي.</div>
+                
+                <div class="tips-card">
+                    <div class="tips-title"><i class="fa-solid fa-lightbulb"></i> نصائح لقبلة دقيقة:</div>
+                    <ul class="tips-list">
+                        <li>ضع الهاتف على سطح مستوٍ (مثل طاولة أو الأرض)</li>
+                        <li>ابتعد عن الأجهزة الإلكترونية والمعادن لتجنب التشويش</li>
+                        <li>قم بتحريك الهاتف على شكل رقم 8 لمعايرة البوصلة إذا لزم الأمر</li>
+                    </ul>
+                </div>
+
+                <div id="loader"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+
+                <div class="compass-circle">
+                    <div class="compass-marks">
+                        <div class="mark-n">N</div>
+                        <div class="mark-s">S</div>
+                        <div class="mark-e">E</div>
+                        <div class="mark-w">W</div>
+                    </div>
+                    
+                    <div class="compass-arrow" id="compass-arrow">
+                        <svg viewBox="0 0 24 24" width="60" height="150" style="filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));">
+                            <path d="M12 2L2 22h20L12 2z" fill="#C5A859"/>
+                            <path d="M12 2L2 22h10z" fill="#D4AF37"/>
+                        </svg>
+                        <i class="fa-solid fa-kaaba kaaba-icon" id="kaaba-icon" style="opacity: 0;"></i>
+                    </div>
+                </div>
+
+                <button class="location-btn" onclick="getQiblaDirection()">
+                    <i class="fa-solid fa-location-crosshairs"></i> تحديد القبلة الآن
+                </button>
+                
+                <div class="location-info" id="location-info"></div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div style="text-align: center; padding: 20px; margin-top: auto; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 10;">
+            جميع الحقوق محفوظة &copy; 2026 - البوصلة الإسلامية <br>
+            تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+        </div>
+    </div>
+
+    <script src="node_modules/axios/dist/axios.min.js"></script>
+    <script src="toast.js"></script>
+    <script>
+        // Header Carousel Logic
+        const slides = document.querySelectorAll('.carousel-slide');
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 8000);
+
+        function getQiblaDirection() {
+            if (!("geolocation" in navigator)) {
+                alert("متصفحك لا يدعم تحديد الموقع.");
+                return;
+            }
+
+            document.getElementById("loader").style.display = "block";
+            document.querySelector(".location-btn").style.display = "none";
+            
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // 1. Fetch Qibla Direction
+                axios.get(`https://api.aladhan.com/v1/qibla/${lat}/${lng}`)
+                    .then(res => {
+                        const direction = res.data.data.direction; // Angle in degrees
+                        
+                        // Rotate arrow
+                        const arrow = document.getElementById("compass-arrow");
+                        arrow.style.transform = `rotate(${direction}deg)`;
+                        
+                        // Keep Kaaba upright
+                        const kaaba = document.getElementById("kaaba-icon");
+                        kaaba.style.opacity = "1";
+                        kaaba.style.transform = `rotate(-${direction}deg)`;
+                        
+                        document.getElementById("loader").style.display = "none";
+                        document.querySelector(".location-btn").style.display = "flex";
+                        
+                        const info = document.getElementById("location-info");
+                        info.style.display = "block";
+                        info.innerHTML = `زاوية القبلة: <b>${direction.toFixed(2)}°</b> من الشمال الجغرافي`;
+
+                        // 2. Fetch City Name (Reverse Geocode)
+                        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+                            .then(cityRes => {
+                                let cityName = cityRes.data.city || cityRes.data.principalSubdivision || "";
+                                if (cityName) {
+                                    info.innerHTML += `<br>موقعك: <b>${cityName}</b>`;
+                                }
+                            }).catch(err => console.error(err));
+
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("حدث خطأ أثناء جلب بيانات القبلة.");
+                        document.getElementById("loader").style.display = "none";
+                        document.querySelector(".location-btn").style.display = "flex";
+                    });
+
+            }, error => {
+                console.error(error);
+                alert("لم نتمكن من الوصول لموقعك. يرجى إعطاء الصلاحية للمتصفح.");
+                document.getElementById("loader").style.display = "none";
+                document.querySelector(".location-btn").style.display = "flex";
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الأذكار الإسلامية</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri+Quran&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    
+    <style>
+        :root {
+            --primary-teal: #2F7A78;
+            --gold: #C5A859;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: "Tajawal", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: var(--white);
+            overflow-x: hidden; 
+        }
+
+        /* --- Fullscreen Background Carousel --- */
+        .fullscreen-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- App Layout --- */
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top Bar & Navbar */
+        .top-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 30px 10px 30px;
+            font-size: 26px;
+        }
+        
+        .top-bar .title {
+            font-weight: 900;
+            font-size: 32px;
+            color: var(--white);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 30px 50px 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+            box-sizing: border-box;
+        }
+
+        /* View Switching */
+        .view-section { display: none; width: 100%; animation: fadeIn 0.4s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Search Container */
+        .search-container {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto 40px auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 22px 25px 22px 65px;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: inherit;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--gold);
+            outline: none;
+            box-shadow: 0 10px 30px rgba(197, 168, 89, 0.2);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: var(--gold);
+        }
+
+        /* Categories Stacked Rectangles */
+        .categories-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .category-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 20px 25px;
+            text-align: right;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .category-card > div {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .category-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--gold);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .category-card i {
+            font-size: 32px;
+            color: var(--gold);
+            width: 40px;
+            text-align: center;
+        }
+
+        .category-card .cat-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .category-card .cat-count {
+            font-size: 14px;
+            color: #aaa;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            align-self: flex-start;
+        }
+
+        .category-card.prominent {
+            background: linear-gradient(135deg, rgba(197, 168, 89, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+            border-color: rgba(197, 168, 89, 0.5);
+        }
+        
+        .category-card.prominent:hover {
+            background: linear-gradient(135deg, rgba(197, 168, 89, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+        }
+
+        /* Reader Header */
+        .reader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-sizing: border-box;
+        }
+
+        .reader-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Interactive Azkar Reader */
+        .azkar-reader-list {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+            padding-bottom: 50px;
+        }
+
+        .zikr-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 35px;
+            position: relative;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Completed State */
+        .zikr-card.completed {
+            opacity: 0.6;
+            border-color: #2F7A78;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .zikr-card.completed .zikr-text {
+            color: #ccc;
+        }
+
+        .zikr-number {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 50px;
+            height: 50px;
+            background: #111;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 22px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+        
+        .zikr-card.completed .zikr-number {
+            background: #2F7A78;
+            border-color: #2F7A78;
+        }
+
+        .zikr-text {
+            font-family: 'Amiri Quran', serif;
+            font-size: 32px;
+            line-height: 2.2;
+            color: white;
+            margin-bottom: 20px;
+            text-align: justify;
+            transition: color 0.5s;
+        }
+
+        .zikr-desc {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 25px;
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.05);
+            border-right: 3px solid var(--gold);
+            border-radius: 5px;
+        }
+
+        .zikr-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); color: var(--gold); }
+
+        /* New Counter System */
+        .new-counter {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .counter-btn-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .counter-btn-small:active {
+            transform: scale(0.9);
+        }
+        
+        .counter-btn-small.plus {
+            background: var(--gold);
+            color: #111;
+            border-color: var(--gold);
+            font-weight: 900;
+        }
+
+        .counter-text {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--white);
+            min-width: 130px;
+            text-align: center;
+        }
+
+        .empty-state { text-align: center; color: #aaa; font-size: 20px; padding: 50px; }
+        .loader-container { text-align: center; padding: 50px; color: var(--gold); font-size: 20px; font-weight: 800; }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+        /* --- Responsive --- */
+        /* Removed prominent grid styles as requested to keep cards normal sized */
+
+        @media (max-width: 600px) {
+            .top-bar { padding: 10px 20px 5px 20px; }
+            .top-bar .title { font-size: 24px; }
+            .nav-bar { gap: 8px; padding: 5px 10px; margin-bottom: 15px; }
+            .nav-item { padding: 8px 12px; font-size: 13px; }
+            .main-content { padding: 0 15px 30px 15px; }
+            
+            .search-input { font-size: 18px; padding: 18px 20px 18px 50px; }
+            .search-container i { font-size: 20px; left: 20px; }
+            .search-container { margin-bottom: 25px; }
+            
+            .category-card { padding: 15px 20px; gap: 15px; border-radius: 12px; }
+            .category-card i { font-size: 26px; width: 30px; }
+            .category-card .cat-title { font-size: 18px; }
+            
+            .reader-header { flex-direction: column; gap: 15px; text-align: center; }
+            .reader-title { font-size: 20px; }
+            
+            /* Simplified Azkar Card Mobile */
+            .zikr-card { padding: 20px 15px; border-radius: 16px; }
+            .zikr-text { font-size: 22px; line-height: 1.8; margin-bottom: 15px;}
+            .zikr-number { width: 30px; height: 30px; font-size: 14px; top: -10px; right: -10px; border-width: 1px; }
+            
+            .zikr-footer { flex-direction: column-reverse; gap: 15px; align-items: stretch; padding-top: 15px; }
+            
+            /* New Counter Mobile */
+            .new-counter { justify-content: space-between; padding: 8px 12px; gap: 10px;}
+            .counter-text { font-size: 14px; min-width: 100px; }
+            .counter-btn-small { width: 35px; height: 35px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <div class="app-layout">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="title">البوصلة الإسلامية</div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- VIEW 1: Categories Index -->
+            <div id="categories-view" class="view-section active">
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="ابحث عن قسم الأذكار... (مثال: الصباح، النوم)" />
+                </div>
+                
+                <div class="categories-grid" id="categories-grid">
+                    <div class="loader-container">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x" style="margin-bottom: 15px;"></i>
+                        <div>جاري تحميل الأذكار...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Interactive Reader -->
+            <div id="reader-view" class="view-section">
+                <div class="reader-header">
+                    <div class="reader-title" id="reader-title">
+                        <i class="fa-solid fa-star"></i> أذكار
+                    </div>
+                    <button class="back-btn" onclick="showCategories()">
+                        العودة للأقسام <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+
+                <div class="azkar-reader-list" id="azkar-reader-list"></div>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; padding: 20px; margin-top: auto; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 10;">
+                جميع الحقوق محفوظة &copy; 2026 - البوصلة الإسلامية <br>
+                تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+            </div>
+        </main>
+    </div>
+
+    <script src="node_modules/axios/dist/axios.min.js"></script>
+    <script>
+        // Header Carousel Logic
+        const slides = document.querySelectorAll('.carousel-slide');
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 8000);
+
+        // State
+        let allAzkar = [];
+        let groupedAzkar = {};
+        let activeCategoryAzkar = [];
+        let completedCount = 0;
+
+        // Elements
+        const categoriesView = document.getElementById('categories-view');
+        const readerView = document.getElementById('reader-view');
+        const categoriesGrid = document.getElementById('categories-grid');
+        const searchInput = document.getElementById('search-input');
+        const readerList = document.getElementById('azkar-reader-list');
+        const readerTitle = document.getElementById('reader-title');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Fetch & Group
+        function fetchAzkar() {
+            axios.get('azkar.json')
+                .then(response => {
+                    allAzkar = response.data;
+                    groupAzkar(allAzkar);
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const mode = urlParams.get('m');
+                    
+                    let categoriesToShow = Object.keys(groupedAzkar);
+                    if (mode === 'sm') {
+                        categoriesToShow = ['أذكار الصباح', 'أذكار المساء'];
+                        document.querySelector('.search-container').style.display = 'none'; // Hide search for SM
+                        document.querySelector('.nav-item[href="azkar.html?m=sm"]').classList.add('active');
+                    } else {
+                        categoriesToShow = categoriesToShow.filter(cat => cat !== 'أذكار الصباح' && cat !== 'أذكار المساء');
+                        document.querySelector('.nav-item[href="azkar.html"]').classList.add('active');
+                    }
+                    
+                    renderCategories(categoriesToShow);
+                })
+                .catch(error => {
+                    categoriesGrid.innerHTML = `<div class="empty-state">حدث خطأ أثناء تحميل الأذكار.</div>`;
+                    console.error("Error fetching Azkar:", error);
+                });
+        }
+
+        function groupAzkar(azkarArray) {
+            groupedAzkar = {};
+            azkarArray.forEach(zikr => {
+                const cat = zikr.category || "أخرى";
+                if(!groupedAzkar[cat]) {
+                    groupedAzkar[cat] = [];
+                }
+                // Convert count string to int securely
+                zikr.targetCount = parseInt(zikr.count) || 1;
+                zikr.currentCount = zikr.targetCount;
+                groupedAzkar[cat].push(zikr);
+            });
+        }
+
+        // Render Categories
+        function renderCategories(categoryNames) {
+            const gridContainer = document.getElementById('categories-grid');
+            if (categoryNames.length === 0) {
+                gridContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-box-open fa-2x" style="margin-bottom: 15px;"></i><br/>لا توجد أقسام مطابقة للبحث</div>`;
+                return;
+            }
+
+            // Sort so Morning & Evening are first
+            categoryNames.sort((a, b) => {
+                if(a.includes("الصباح")) return -1;
+                if(b.includes("الصباح")) return 1;
+                if(a.includes("المساء")) return -1;
+                if(b.includes("المساء")) return 1;
+                return 0;
+            });
+
+            let html = '';
+            categoryNames.forEach(cat => {
+                let icon = "fa-star";
+                
+                if (cat.includes("الصباح")) icon = "fa-sun";
+                else if (cat.includes("المساء")) icon = "fa-moon";
+                else if (cat.includes("النوم")) icon = "fa-bed";
+                else if (cat.includes("الصلاة")) icon = "fa-person-praying";
+                else if (cat.includes("الوضوء")) icon = "fa-hands-bubbles";
+                else if (cat.includes("المسجد")) icon = "fa-mosque";
+                else if (cat.includes("المنزل")) icon = "fa-house";
+
+                const itemsCount = groupedAzkar[cat] ? groupedAzkar[cat].length : 0;
+
+                html += `
+                    <div class="category-card" onclick="openCategory('${cat}')">
+                        <i class="fa-solid ${icon}"></i>
+                        <div>
+                            <div class="cat-title">${cat}</div>
+                            <div class="cat-count mt-2">${itemsCount} أذكار</div>
+                        </div>
+                    </div>
+                `;
+            });
+            gridContainer.innerHTML = html;
+        }
+
+        // Search Filter
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            const allCats = Object.keys(groupedAzkar);
+            const filtered = allCats.filter(cat => cat.toLowerCase().includes(query));
+            renderCategories(filtered);
+        });
+
+        // Navigation
+        window.showCategories = function() {
+            readerView.classList.remove('active');
+            categoriesView.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        window.openCategory = function(categoryName) {
+            activeCategoryAzkar = JSON.parse(JSON.stringify(groupedAzkar[categoryName])); // Deep copy to reset counts
+            completedCount = 0;
+            
+            let icon = "fa-star";
+            if (categoryName.includes("الصباح")) icon = "fa-sun";
+            else if (categoryName.includes("المساء")) icon = "fa-moon";
+            
+            readerTitle.innerHTML = `<i class="fa-solid ${icon}"></i> ${categoryName}`;
+            updateProgress();
+            
+            renderReader();
+            
+            categoriesView.classList.remove('active');
+            readerView.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Reader View Rendering
+        function renderReader() {
+            let html = '';
+            activeCategoryAzkar.forEach((zikr, index) => {
+                const isCompleted = zikr.currentCount <= 0;
+                const completedClass = isCompleted ? 'completed' : '';
+                const btnContent = isCompleted ? '<i class="fa-solid fa-check"></i>' : zikr.currentCount;
+                const btnClass = isCompleted ? 'done' : '';
+                
+                const descHtml = zikr.description ? `<div class="zikr-desc">${zikr.description}</div>` : '';
+
+                html += `
+                    <div class="zikr-card ${completedClass}" id="zikr-${index}">
+                        <div class="zikr-number">${index + 1}</div>
+                        <div class="zikr-text">${zikr.zekr}</div>
+                        ${descHtml}
+                        
+                        <div class="zikr-footer">
+                            <div class="action-btns">
+                                <button class="copy-btn" onclick="copyText('${zikr.zekr.replace(/'/g, "\\'").replace(/\n/g, ' ')}')">
+                                    <i class="fa-regular fa-copy"></i> نسخ
+                                </button>
+                            </div>
+                            
+                            <div class="counter-container new-counter">
+                                <button class="counter-btn-small" onclick="adjustCount(${index}, -1)" title="تراجع">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <div class="counter-text" id="counter-text-${index}">
+                                    تمت القراءة: ${zikr.targetCount - zikr.currentCount} / ${zikr.targetCount}
+                                </div>
+                                <button class="counter-btn-small plus" onclick="adjustCount(${index}, 1)" title="زيادة">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            readerList.innerHTML = html;
+        }
+
+        window.adjustCount = function(index, amount) {
+            let zikr = activeCategoryAzkar[index];
+            
+            let newCurrentCount = zikr.currentCount - amount;
+            if (newCurrentCount < 0) newCurrentCount = 0;
+            if (newCurrentCount > zikr.targetCount) newCurrentCount = zikr.targetCount;
+            
+            if (newCurrentCount === zikr.currentCount) return; // No change
+            
+            let wasCompleted = (zikr.currentCount === 0);
+            zikr.currentCount = newCurrentCount;
+            let isCompleted = (zikr.currentCount === 0);
+            
+            const textEl = document.getElementById(`counter-text-${index}`);
+            if (textEl) {
+                textEl.innerHTML = `تمت القراءة: ${zikr.targetCount - zikr.currentCount} / ${zikr.targetCount}`;
+            }
+            
+            const card = document.getElementById(`zikr-${index}`);
+            if (isCompleted && !wasCompleted) {
+                card.classList.add('completed');
+                completedCount++;
+                updateProgress();
+                
+                // Add pop animation to the card to signify completion
+                card.style.transform = "scale(0.98)";
+                setTimeout(() => card.style.transform = "scale(1)", 150);
+                
+                // Optional: scroll to next uncompleted zikr
+                if (index + 1 < activeCategoryAzkar.length) {
+                    setTimeout(() => {
+                        document.getElementById(`zikr-${index + 1}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500);
+                }
+            } else if (!isCompleted && wasCompleted) {
+                card.classList.remove('completed');
+                completedCount--;
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            if (activeCategoryAzkar.length === 0) return;
+            const percentage = (completedCount / activeCategoryAzkar.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        window.copyText = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("تم نسخ الذكر بنجاح!");
+            });
+        }
+
+        // Initialize
+        fetchAzkar();
+    </script>
+    <script src="toast.js"></script>
+</body>
+</html>

@@ -249,7 +249,8 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Smooth transition for the arrow only */
+            transition: transform 0.3s ease-out;
             transform: rotate(0deg); 
             z-index: 5;
         }
@@ -435,10 +436,9 @@
                     <div class="phone-pointer"><i class="fa-solid fa-caret-down"></i></div>
                     
                     <div class="compass-circle">
-                        <!-- Ticks and styling -->
+                        <!-- Static ring decorations (never rotate) -->
                         <div class="compass-ticks"></div>
                         <div class="compass-rose"></div>
-                        
                         <div class="compass-marks">
                             <div class="mark-n">N</div>
                             <div class="mark-s">S</div>
@@ -446,6 +446,7 @@
                             <div class="mark-w">W</div>
                         </div>
                         
+                        <!-- This div ONLY rotates the arrow+kaaba to point to qibla -->
                         <div class="compass-arrow" id="compass-arrow">
                             <div class="kaaba-marker" id="kaaba-marker">
                                 <i class="fa-solid fa-kaaba kaaba-icon" id="kaaba-icon"></i>
@@ -649,25 +650,28 @@
             rafId = requestAnimationFrame(renderLoop);
             if ((!state.hasSmooth && fusedHeading === null) || qiblaAngle == null) return;
 
-            // Priority 1: GPS Kinematic Heading (walking)
-            // Priority 2: Sensor-fused heading
-            // Priority 3: Raw smoothed Mag heading
+            // Get current device heading
             let h = userGPSHeading !== null
                 ? userGPSHeading
                 : (fusedHeading !== null ? fusedHeading : smoothedHeading());
 
-            // Rotate entire compass circle opposite to heading (so N stays fixed relative to ground)
-            const circle = document.querySelector('.compass-circle');
-            if (circle) circle.style.transform = `rotate(${-h}deg)`;
+            // ✅ CORRECT LOGIC:
+            // The circle is STATIC — N always points up on screen
+            // Only the arrow rotates by (qiblaAngle - h)
+            // When phone faces Qibla: h == qiblaAngle → arrow rotation = 0 → points UP ✅
+            const arrowRotation = norm360(qiblaAngle - h);
+            const arrow = document.getElementById("compass-arrow");
+            if (arrow) arrow.style.transform = `rotate(${arrowRotation}deg)`;
 
-            // Keep Kaaba icon upright inside rotating arrow
+            // Keep Kaaba icon upright (counter-rotate)
             const kaaba = document.getElementById("kaaba-icon");
-            if (kaaba) kaaba.style.transform = `rotate(${h - qiblaAngle}deg)`;
+            if (kaaba) kaaba.style.transform = `rotate(${-arrowRotation}deg)`;
 
             // Alignment Logic (±5 degrees)
             let diff = Math.abs(norm360(h - qiblaAngle));
             if (diff > 180) diff = 360 - diff;
 
+            const circle = document.querySelector('.compass-circle');
             const aligned = diff <= 5;
             if (aligned !== state.isAligned) {
                 state.isAligned = aligned;
@@ -733,19 +737,15 @@
                 // 1. Fetch Qibla Direction
                 axios.get(`https://api.aladhan.com/v1/qibla/${userLat}/${userLng}`)
                     .then(res => {
-                        qiblaAngle = res.data.data.direction; // Angle in degrees
+                        qiblaAngle = res.data.data.direction;
                         
-                        // Rotate arrow statically within the circle
+                        // Set arrow initially to qiblaAngle (no sensor yet → h=0)
                         const arrow = document.getElementById("compass-arrow");
-                        arrow.style.transform = `rotate(${qiblaAngle}deg)`;
+                        if (arrow) arrow.style.transform = `rotate(${qiblaAngle}deg)`;
                         
-                        // Show Kaaba marker and line
-                        const kaabaMarker = document.getElementById("kaaba-marker");
-                        if(kaabaMarker) kaabaMarker.style.opacity = "1";
-                        
-                        // Keep Kaaba upright
+                        // Kaaba icon counter-rotated to stay upright
                         const kaabaIcon = document.getElementById("kaaba-icon");
-                        if(kaabaIcon) kaabaIcon.style.transform = `rotate(-${qiblaAngle}deg)`;
+                        if (kaabaIcon) kaabaIcon.style.transform = `rotate(${-qiblaAngle}deg)`;
                         
                         const arrowLine = document.getElementById("arrow-line");
                         if(arrowLine) arrowLine.style.opacity = "1";

@@ -489,27 +489,35 @@
             }
         }
 
-        function initCompassSensors() {
-            if (window.DeviceOrientationEvent) {
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                window.addEventListener('deviceorientation', onOrientation, true);
-                            } else {
-                                showToast("يرجى إعطاء صلاحية مستشعرات الحركة للبوصلة لتتحرك معك", "fa-solid fa-triangle-exclamation");
-                            }
-                        })
-                        .catch(console.error);
-                } else {
+        function getQiblaDirection() {
+            // 1. Request Compass Permission directly from user gesture (Critical for iOS 13+)
+            if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', onOrientation, true);
+                            if (!rafId) renderLoop();
+                        } else {
+                            showToast("يرجى إعطاء صلاحية مستشعرات الحركة للبوصلة لتتحرك معك", "fa-solid fa-triangle-exclamation");
+                        }
+                        startGeolocationFlow();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        startGeolocationFlow();
+                    });
+            } else {
+                // 2. Android and older iOS devices
+                if (window.DeviceOrientationEvent) {
                     window.addEventListener('deviceorientationabsolute', onOrientation, true);
                     window.addEventListener('deviceorientation', onOrientation, true); // fallback
+                    if (!rafId) renderLoop();
                 }
-                if (!rafId) renderLoop();
+                startGeolocationFlow();
             }
         }
 
-        function getQiblaDirection() {
+        function startGeolocationFlow() {
             if (!("geolocation" in navigator)) {
                 showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
                 return;
@@ -543,8 +551,6 @@
                         info.style.display = "block";
                         info.innerHTML = `زاوية القبلة: <b>${qiblaAngle.toFixed(2)}°</b> من الشمال الجغرافي`;
                         
-                        // Initialize real compass rotation
-                        initCompassSensors();
 
                         // 2. Fetch City Name (Reverse Geocode)
                         axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLng}&localityLanguage=ar`)

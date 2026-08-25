@@ -506,25 +506,68 @@
             return best;
         }
 
-        const ALPHA = 0.15; // Smoothing weight
-        let state = { sinS: 0, cosS: 1, hasSmooth: false, isAligned: false, hasAbsolute: false };
+        // ============================================================
+        // ADVANCED SENSOR FUSION ENGINE
+        // ============================================================
+
+        // --- Circular Smoothing Buffer (Kalman-like Low-Pass) ---
+        const SMOOTH_FACTOR = 0.08;   // Low = smoother, slower. High = responsive, noisier
+        const NOISE_THRESHOLD = 8;    // Degrees — ignore jumps smaller than this (indoor noise)
+        const NOISE_SPIKE_CAP = 60;   // Degrees — ignore jumps LARGER than this (wild spikes)
+        const STABILITY_WINDOW = 20;  // Frames to assess stability
+        const DRIFT_GUARD_COEFF = 0.003; // How fast gyro drift is corrected by Mag
+
+        let state = {
+            sinS: 0, cosS: 1,
+            hasSmooth: false,
+            isAligned: false,
+            hasAbsolute: false
+        };
         let rafId = null;
 
         // Sensor Fusion State
         let fusedHeading = null;
         let lastGyroTimestamp = 0;
-        const FILTER_COEFF = 0.95; 
+        let lastMagReading = null;  // Last accepted mag reading (for noise gate)
+
+        // Stability detection buffer
+        let stabilityBuffer = [];
+        let isDeviceStable = false;
 
         // GPS Fallback State
         let userGPSHeading = null;
         let gpsWatchId = null;
 
+        // Variance-based noise level tracker
+        let magVariance = 0;
+        let magRecentReadings = [];
+
+
+        // Circular weighted average for smooth angular blending
         function feedHeading(h) {
             const s = Math.sin(rad(h)), c = Math.cos(rad(h));
-            if (!state.hasSmooth) { state.sinS = s; state.cosS = c; state.hasSmooth = true; }
-            else { state.sinS = ALPHA * s + (1 - ALPHA) * state.sinS; state.cosS = ALPHA * c + (1 - ALPHA) * state.cosS; }
+            if (!state.hasSmooth) {
+                state.sinS = s; state.cosS = c; state.hasSmooth = true;
+            } else {
+                state.sinS = SMOOTH_FACTOR * s + (1 - SMOOTH_FACTOR) * state.sinS;
+                state.cosS = SMOOTH_FACTOR * c + (1 - SMOOTH_FACTOR) * state.cosS;
+            }
         }
         function smoothedHeading() { return norm360(deg(Math.atan2(state.sinS, state.cosS))); }
+
+        // Track short-window variance of mag to judge reliability
+        function updateMagVariance(h) {
+            magRecentReadings.push(h);
+            if (magRecentReadings.length > 15) magRecentReadings.shift();
+            if (magRecentReadings.length < 3) return;
+            const avg = magRecentReadings.reduce((a, b) => a + b, 0) / magRecentReadings.length;
+            magVariance = magRecentReadings.reduce((s, v) => {
+                let d = Math.abs(v - avg);
+                if (d > 180) d = 360 - d; // circular
+                return s + d * d;
+            }, 0) / magRecentReadings.length;
+        }
+
 
         function onOrientation(e) {
             let h = null;
@@ -535,71 +578,104 @@
                 h = e.webkitCompassHeading; // iOS True North
             } else if (e.alpha != null) {
                 if (state.hasAbsolute && !isAbs) return; // drop relative noise if we have absolute
-                h = norm360(360 - e.alpha); // Android Magnetic North approx
+                h = norm360(360 - e.alpha);
                 if (userLat != null) {
-                    h = norm360(h + declination(userLat, userLng)); // Adjust to True North
+                    h = norm360(h + declination(userLat, userLng));
                 }
             }
             if (h == null) return;
-            
-            const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
-            let rawMagHeading = norm360(h + so);
-            feedHeading(rawMagHeading);
 
-            // Sensor Fusion logic (Complementary Filter)
+            const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+            let rawMag = norm360(h + so);
+
+            // --- NOISE GATE: Ignore small jitter & wild spikes ---
+            if (lastMagReading !== null) {
+                let jump = Math.abs(rawMag - lastMagReading);
+                if (jump > 180) jump = 360 - jump;
+                // Ignore tiny jitter (indoor metal noise) and impossible spikes
+                if (jump < NOISE_THRESHOLD || jump > NOISE_SPIKE_CAP) return;
+            }
+            lastMagReading = rawMag;
+            updateMagVariance(rawMag);
+            feedHeading(rawMag);
+
+            // --- SENSOR FUSION: Complementary Filter ---
             if (fusedHeading === null) {
                 fusedHeading = smoothedHeading();
                 lastGyroTimestamp = Date.now();
             } else {
+                // How much to trust Mag vs Gyro: inversely proportional to variance
+                // High variance (noisy indoor env) → trust mag less
+                const magTrust = Math.max(0.02, Math.min(0.15, 1 / (1 + magVariance * 0.05)));
                 let diff = smoothedHeading() - fusedHeading;
                 diff = ((diff + 540) % 360) - 180;
-                fusedHeading = norm360(fusedHeading + (1 - FILTER_COEFF) * diff);
+                fusedHeading = norm360(fusedHeading + magTrust * diff);
             }
         }
 
         function onMotion(e) {
             if (fusedHeading === null || !e.rotationRate || e.rotationRate.gamma === null) return;
-            let now = Date.now();
-            let dt = (now - lastGyroTimestamp) / 1000.0;
+            const now = Date.now();
+            const dt = Math.min((now - lastGyroTimestamp) / 1000.0, 0.1); // Cap dt to 100ms
             lastGyroTimestamp = now;
 
-            // Simple gyro integration (rotation rate around Z or Y axis depending on device orientation)
-            // Gamma usually tracks rotation when device is held flat.
-            let gyroDelta = e.rotationRate.gamma * dt; 
-            fusedHeading = norm360(fusedHeading + gyroDelta);
+            // --- STABILITY CHECK: measure total rotation magnitude ---
+            const rr = e.rotationRate;
+            const totalRot = Math.sqrt(
+                (rr.alpha || 0) ** 2 + (rr.beta || 0) ** 2 + (rr.gamma || 0) ** 2
+            );
+            stabilityBuffer.push(totalRot);
+            if (stabilityBuffer.length > STABILITY_WINDOW) stabilityBuffer.shift();
+            const avgRot = stabilityBuffer.reduce((a, b) => a + b, 0) / stabilityBuffer.length;
+            isDeviceStable = avgRot < 3.0; // degrees/s threshold for "stable"
+
+            // --- GYRO INTEGRATION: only if device is actually moving ---
+            if (!isDeviceStable) {
+                let gyroDelta = (rr.gamma || 0) * dt;
+                // Apply gentle drift correction toward magnetometer
+                if (lastMagReading !== null) {
+                    let driftCorr = lastMagReading - fusedHeading;
+                    driftCorr = ((driftCorr + 540) % 360) - 180;
+                    gyroDelta += DRIFT_GUARD_COEFF * driftCorr;
+                }
+                fusedHeading = norm360(fusedHeading + gyroDelta);
+            }
+            // If stable → hold fusedHeading steady, no drift accumulation
         }
+
 
         let lastAlignedAt = 0;
         function renderLoop() {
             rafId = requestAnimationFrame(renderLoop);
             if ((!state.hasSmooth && fusedHeading === null) || qiblaAngle == null) return;
-            
-            // Priority 1: GPS Kinematic Heading (if walking)
-            // Priority 2: Fused Gyro+Mag Heading
-            // Priority 3: Smoothed Mag Heading
-            let h = userGPSHeading !== null ? userGPSHeading : (fusedHeading !== null ? fusedHeading : smoothedHeading());
-            
-            // Rotate compass circle
+
+            // Priority 1: GPS Kinematic Heading (walking)
+            // Priority 2: Sensor-fused heading
+            // Priority 3: Raw smoothed Mag heading
+            let h = userGPSHeading !== null
+                ? userGPSHeading
+                : (fusedHeading !== null ? fusedHeading : smoothedHeading());
+
+            // Rotate entire compass circle opposite to heading (so N stays fixed relative to ground)
             const circle = document.querySelector('.compass-circle');
             if (circle) circle.style.transform = `rotate(${-h}deg)`;
-            
-            // Keep Kaaba icon upright inside arrow
+
+            // Keep Kaaba icon upright inside rotating arrow
             const kaaba = document.getElementById("kaaba-icon");
             if (kaaba) kaaba.style.transform = `rotate(${h - qiblaAngle}deg)`;
 
             // Alignment Logic (±5 degrees)
-            let diff = Math.abs(norm360(h - qiblaAngle)); 
+            let diff = Math.abs(norm360(h - qiblaAngle));
             if (diff > 180) diff = 360 - diff;
-            
+
             const aligned = diff <= 5;
             if (aligned !== state.isAligned) {
                 state.isAligned = aligned;
                 if (circle) circle.classList.toggle('aligned', aligned);
                 const msg = document.getElementById('aligned-msg');
                 if (msg) msg.classList.toggle('show', aligned);
-                
                 if (aligned && navigator.vibrate && Date.now() - lastAlignedAt > 4000) {
-                    navigator.vibrate([60, 40, 60]); 
+                    navigator.vibrate([60, 40, 60]);
                     lastAlignedAt = Date.now();
                 }
             }

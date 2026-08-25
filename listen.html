@@ -556,11 +556,16 @@
         }
         
         audio.src = url;
-        audio.play().then(() => {
-            isPlaying = true;
+        
+        // Optimistic UI update: instantly show pause icon while buffering
+        isPlaying = true;
+        updatePlayPauseIcon();
+        updateSurahListUI();
+        
+        audio.play().catch(err => {
+            isPlaying = false;
             updatePlayPauseIcon();
             updateSurahListUI();
-        }).catch(err => {
             showToast('حدث خطأ أثناء تشغيل السورة', 'fa-solid fa-triangle-exclamation');
         });
     }

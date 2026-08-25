@@ -333,7 +333,7 @@
         /* Completed State */
         .zikr-card.completed {
             opacity: 0.6;
-            border-color: #2F7A78;
+            border-color: rgba(197, 168, 89, 0.5); /* Faded gold border */
             background: rgba(0, 0, 0, 0.3);
         }
 
@@ -361,8 +361,9 @@
         }
         
         .zikr-card.completed .zikr-number {
-            background: #2F7A78;
-            border-color: #2F7A78;
+            background: var(--gold);
+            border-color: var(--gold);
+            color: #111; /* Dark text for contrast */
         }
 
         .zikr-text {

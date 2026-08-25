@@ -169,7 +169,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 5px;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .compass-circle.aligned {
+            box-shadow: 0 0 40px rgba(28, 158, 91, 0.8), inset 0 0 20px rgba(28, 158, 91, 0.5);
+            border-color: #1c9e5b;
+        }
+
+        .aligned-msg {
+            color: #1c9e5b;
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 25px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center;
+            min-height: 25px;
+        }
+        .aligned-msg.show {
+            opacity: 1;
         }
 
         .compass-marks {
@@ -353,6 +373,8 @@
                         <i class="fa-solid fa-kaaba kaaba-icon" id="kaaba-icon" style="opacity: 0;"></i>
                     </div>
                 </div>
+                
+                <div class="aligned-msg" id="aligned-msg">أنت تواجه القبلة الآن ✓</div>
 
                 <button class="location-btn" onclick="getQiblaDirection()">
                     <i class="fa-solid fa-location-crosshairs"></i> تحديد القبلة الآن
@@ -380,7 +402,92 @@
             slides[currentSlide].classList.add('active');
         }, 8000);
 
-        let qiblaAngle = 0;
+        let qiblaAngle = null;
+        let userLat = null, userLng = null;
+
+        // --- Compass Advanced Math & Smoothing ---
+        const rad = d => d * Math.PI / 180;
+        const deg = r => r * 180 / Math.PI;
+        const norm360 = a => ((a % 360) + 360) % 360;
+        
+        const DECL = [ 
+            [50,10,4],[50,0,1],[50,30,8],[40,-5,0],[42,12,4],[52,-1,0],[48,2,1.5],
+            [52,13,4.5],[41,29,6.5],[56,38,12],[60,18,7],[30,31,4.8],[24,47,3.5],
+            [34,-6,-1.5],[36,3,1.5],[33,44,4.8],[25,55,2.2],[15,44,2.5],[15,32,2.2],
+            [21,40,3.2],[44,18,4.5],[55,13,5],[2,45,1.5],[43,5,1.8]
+        ];
+        function declination(lat, lng) {
+            let best = 0, bd = 1e9;
+            for (const [a, o, d] of DECL) {
+                const dist = (a - lat)**2 + (o - lng)**2;
+                if (dist < bd) { bd = dist; best = d; }
+            }
+            return best;
+        }
+
+        const ALPHA = 0.15; // Smoothing weight
+        let state = { sinS: 0, cosS: 1, hasSmooth: false, isAligned: false, hasAbsolute: false };
+        let rafId = null;
+
+        function feedHeading(h) {
+            const s = Math.sin(rad(h)), c = Math.cos(rad(h));
+            if (!state.hasSmooth) { state.sinS = s; state.cosS = c; state.hasSmooth = true; }
+            else { state.sinS = ALPHA * s + (1 - ALPHA) * state.sinS; state.cosS = ALPHA * c + (1 - ALPHA) * state.cosS; }
+        }
+        function smoothedHeading() { return norm360(deg(Math.atan2(state.sinS, state.cosS))); }
+
+        function onOrientation(e) {
+            let h = null;
+            const isAbs = e.type === 'deviceorientationabsolute' || e.absolute === true;
+            if (isAbs) state.hasAbsolute = true;
+
+            if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
+                h = e.webkitCompassHeading; // iOS True North
+            } else if (e.alpha != null) {
+                if (state.hasAbsolute && !isAbs) return; // drop relative noise if we have absolute
+                h = norm360(360 - e.alpha); // Android Magnetic North approx
+                if (userLat != null) {
+                    h = norm360(h + declination(userLat, userLng)); // Adjust to True North
+                }
+            }
+            if (h == null) return;
+            
+            const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+            feedHeading(norm360(h + so));
+        }
+
+        let lastAlignedAt = 0;
+        function renderLoop() {
+            rafId = requestAnimationFrame(renderLoop);
+            if (!state.hasSmooth || qiblaAngle == null) return;
+            
+            const h = smoothedHeading();
+            
+            // Rotate compass circle
+            const circle = document.querySelector('.compass-circle');
+            if (circle) circle.style.transform = `rotate(${-h}deg)`;
+            
+            // Keep Kaaba icon upright inside arrow
+            const kaaba = document.getElementById("kaaba-icon");
+            if (kaaba) kaaba.style.transform = `rotate(${h - qiblaAngle}deg)`;
+
+            // Alignment Logic (±5 degrees)
+            let diff = Math.abs(norm360(h - qiblaAngle)); 
+            if (diff > 180) diff = 360 - diff;
+            
+            const aligned = diff <= 5;
+            if (aligned !== state.isAligned) {
+                state.isAligned = aligned;
+                if (circle) circle.classList.toggle('aligned', aligned);
+                const msg = document.getElementById('aligned-msg');
+                if (msg) msg.classList.toggle('show', aligned);
+                
+                if (aligned && navigator.vibrate && Date.now() - lastAlignedAt > 4000) {
+                    navigator.vibrate([60, 40, 60]); 
+                    lastAlignedAt = Date.now();
+                }
+            }
+        }
 
         function initCompassSensors() {
             if (window.DeviceOrientationEvent) {
@@ -388,38 +495,17 @@
                     DeviceOrientationEvent.requestPermission()
                         .then(permissionState => {
                             if (permissionState === 'granted') {
-                                window.addEventListener('deviceorientation', handleOrientation);
+                                window.addEventListener('deviceorientation', onOrientation, true);
                             } else {
                                 showToast("يرجى إعطاء صلاحية مستشعرات الحركة للبوصلة لتتحرك معك", "fa-solid fa-triangle-exclamation");
                             }
                         })
                         .catch(console.error);
                 } else {
-                    window.addEventListener('deviceorientationabsolute', handleOrientation);
-                    window.addEventListener('deviceorientation', handleOrientation); // fallback
+                    window.addEventListener('deviceorientationabsolute', onOrientation, true);
+                    window.addEventListener('deviceorientation', onOrientation, true); // fallback
                 }
-            }
-        }
-
-        function handleOrientation(event) {
-            let heading = 0;
-            if (event.webkitCompassHeading) {
-                heading = event.webkitCompassHeading;
-            } else if (event.alpha !== null) {
-                // Approximate heading for Android using absolute orientation
-                // 360 - alpha is commonly used to convert CCW alpha to CW heading
-                heading = 360 - event.alpha;
-            }
-
-            const circle = document.querySelector('.compass-circle');
-            if (circle) {
-                circle.style.transform = `rotate(${-heading}deg)`;
-            }
-            
-            // Keep Kaaba icon inside arrow upright relative to screen
-            const kaaba = document.getElementById("kaaba-icon");
-            if (kaaba) {
-                kaaba.style.transform = `rotate(${heading - qiblaAngle}deg)`;
+                if (!rafId) renderLoop();
             }
         }
 
@@ -433,11 +519,11 @@
             document.querySelector(".location-btn").style.display = "none";
             
             navigator.geolocation.getCurrentPosition(position => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
+                userLat = position.coords.latitude;
+                userLng = position.coords.longitude;
 
                 // 1. Fetch Qibla Direction
-                axios.get(`https://api.aladhan.com/v1/qibla/${lat}/${lng}`)
+                axios.get(`https://api.aladhan.com/v1/qibla/${userLat}/${userLng}`)
                     .then(res => {
                         qiblaAngle = res.data.data.direction; // Angle in degrees
                         
@@ -461,7 +547,7 @@
                         initCompassSensors();
 
                         // 2. Fetch City Name (Reverse Geocode)
-                        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+                        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLng}&localityLanguage=ar`)
                             .then(cityRes => {
                                 let cityName = cityRes.data.city || cityRes.data.principalSubdivision || "";
                                 if (cityName) {

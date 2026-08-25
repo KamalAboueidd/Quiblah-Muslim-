@@ -382,7 +382,7 @@
 
         function getQiblaDirection() {
             if (!("geolocation" in navigator)) {
-                alert("متصفحك لا يدعم تحديد الموقع.");
+                showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
                 return;
             }
 
@@ -426,14 +426,14 @@
                     })
                     .catch(err => {
                         console.error(err);
-                        alert("حدث خطأ أثناء جلب بيانات القبلة.");
+                        showToast("حدث خطأ أثناء جلب بيانات القبلة.", "fa-solid fa-triangle-exclamation");
                         document.getElementById("loader").style.display = "none";
                         document.querySelector(".location-btn").style.display = "flex";
                     });
 
             }, error => {
                 console.error(error);
-                alert("لم نتمكن من الوصول لموقعك. يرجى إعطاء الصلاحية للمتصفح.");
+                showToast("لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع وإعطاء الصلاحية.", "fa-solid fa-triangle-exclamation");
                 document.getElementById("loader").style.display = "none";
                 document.querySelector(".location-btn").style.display = "flex";
             });

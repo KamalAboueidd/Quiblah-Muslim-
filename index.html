@@ -942,11 +942,11 @@
                         });
                 }, function(error) {
                     console.error(error);
-                    alert("لم نتمكن من الوصول لموقعك. تأكد من إعطاء الصلاحية للمتصفح.");
+                    showToast("لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع وإعطاء الصلاحية.", "fa-solid fa-triangle-exclamation");
                     document.getElementById("loader").style.display = "none";
                 });
             } else {
-                alert("متصفحك لا يدعم تحديد الموقع.");
+                showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
             }
         }
 

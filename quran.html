@@ -26,7 +26,7 @@
             background-color: #111;
             color: var(--white);
             overflow: hidden; 
-            height: 100vh;
+            height: 100dvh;
         }
 
         /* --- Fullscreen Background Carousel (Same as index.html) --- */
@@ -63,7 +63,7 @@
         /* --- App Layout --- */
         .app-layout {
             display: flex;
-            height: 100vh;
+            height: 100dvh;
             width: 100%;
             position: relative;
             z-index: 10;
@@ -157,13 +157,13 @@
         .surah-item {
             display: flex;
             align-items: center;
-            padding: 15px;
+            padding: 10px 12px;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
             margin-bottom: 5px;
-            gap: 15px;
+            gap: 12px;
         }
         
         .surah-item:hover {
@@ -177,16 +177,16 @@
         }
 
         .surah-number {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
             color: var(--gold);
-            font-size: 16px;
+            font-size: 14px;
             flex-shrink: 0;
             border: 1px solid rgba(255,255,255,0.05);
         }
@@ -199,8 +199,8 @@
             flex: 1;
         }
 
-        .surah-name { font-weight: 900; font-size: 18px; color: white; margin-bottom: 2px;}
-        .surah-info { font-size: 13px; color: #aaa; font-weight: 500;}
+        .surah-name { font-weight: 900; font-size: 15px; color: white; margin-bottom: 2px;}
+        .surah-info { font-size: 11px; color: #aaa; font-weight: 500;}
 
         /* --- Main Content --- */
         .main-content {
@@ -492,8 +492,10 @@
                 .then(response => {
                     allSurahs = response.data.data;
                     renderSurahList(allSurahs);
-                    // Load Fatihah by default
-                    loadSurah(1);
+                    
+                    if (window.innerWidth <= 900) {
+                        toggleSidebar();
+                    }
                 })
                 .catch(error => {
                     surahListEl.innerHTML = `<div class="error-message">حدث خطأ في تحميل السور</div>`;

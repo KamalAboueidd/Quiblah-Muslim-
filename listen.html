@@ -335,10 +335,10 @@
         const div = document.createElement('div');
         div.className = 'reciter-card';
         
-        let iconHtml = `<div class="reciter-icon"><i class="fa-solid fa-microphone-lines"></i></div>`;
-        if (RECITER_IMAGES[reciter.id]) {
-            iconHtml = `<div class="reciter-icon" style="background-image: url('${RECITER_IMAGES[reciter.id]}'); background-size: cover; background-position: top center;"></div>`;
-        }
+        // Use provided real image, or fallback to a generated avatar with their name
+        const imgUrl = RECITER_IMAGES[reciter.id] || `https://ui-avatars.com/api/?name=${encodeURIComponent(reciter.name)}&background=116035&color=C5A859&size=150&font-size=0.33&bold=true`;
+        
+        const iconHtml = `<div class="reciter-icon" style="background-image: url('${imgUrl}'); background-size: cover; background-position: top center;"></div>`;
 
         div.innerHTML = `
             ${iconHtml}
@@ -364,26 +364,19 @@
         document.getElementById('current-moshaf-name').textContent = moshaf.name;
         
         const headerIcon = document.querySelector('.reciter-header .reciter-icon');
-        if (RECITER_IMAGES[reciter.id]) {
-            headerIcon.style.backgroundImage = `url('${RECITER_IMAGES[reciter.id]}')`;
-            headerIcon.style.backgroundSize = 'cover';
-            headerIcon.style.backgroundPosition = 'top center';
-            headerIcon.innerHTML = '';
-            
-            // Set player thumb image too
-            const playerThumb = document.querySelector('.player-thumb');
-            playerThumb.style.backgroundImage = `url('${RECITER_IMAGES[reciter.id]}')`;
-            playerThumb.style.backgroundSize = 'cover';
-            playerThumb.style.backgroundPosition = 'top center';
-            playerThumb.innerHTML = '';
-        } else {
-            headerIcon.style.backgroundImage = 'linear-gradient(135deg, #1c9e5b, #116035)';
-            headerIcon.innerHTML = '<i class="fa-solid fa-microphone-lines"></i>';
-            
-            const playerThumb = document.querySelector('.player-thumb');
-            playerThumb.style.backgroundImage = 'none';
-            playerThumb.innerHTML = '<i class="fa-solid fa-book-quran"></i>';
-        }
+        const imgUrl = RECITER_IMAGES[reciter.id] || `https://ui-avatars.com/api/?name=${encodeURIComponent(reciter.name)}&background=116035&color=C5A859&size=150&font-size=0.33&bold=true`;
+        
+        headerIcon.style.backgroundImage = `url('${imgUrl}')`;
+        headerIcon.style.backgroundSize = 'cover';
+        headerIcon.style.backgroundPosition = 'top center';
+        headerIcon.innerHTML = '';
+        
+        // Set player thumb image too
+        const playerThumb = document.querySelector('.player-thumb');
+        playerThumb.style.backgroundImage = `url('${imgUrl}')`;
+        playerThumb.style.backgroundSize = 'cover';
+        playerThumb.style.backgroundPosition = 'top center';
+        playerThumb.innerHTML = '';
 
         renderSurahs();
         

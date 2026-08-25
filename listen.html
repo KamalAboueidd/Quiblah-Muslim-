@@ -228,6 +228,22 @@
     // 10: Ahmed Al Ajmi, 11: Mishary Alafasy, 118: Nasser Al Qatami, 71: Maher Al Muaiqly
     const CURATED_IDS = [121, 118, 10, 11, 71, 12, 54, 40, 4, 30, 2, 70]; 
 
+    // Images for curated reciters
+    const RECITER_IMAGES = {
+        121: "https://upload.wikimedia.org/wikipedia/commons/2/23/Yasser_Al-Dosari_%2895595%29.jpg", // Yasser Al Dosari
+        12: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Abdul_Basit_Abdus_Samad.jpg", // Abdul Basit
+        54: "https://upload.wikimedia.org/wikipedia/ar/3/30/Mohamed_Siddiq_El-Minshawi.jpg", // Minshawi
+        40: "https://upload.wikimedia.org/wikipedia/ar/b/bb/Mahmoud_Khalil_Al-Hussary.jpg", // Husary
+        11: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Mishary_Rashid_Alafasy.jpg", // Mishary
+        71: "https://upload.wikimedia.org/wikipedia/commons/6/60/Maher_Al_Muaiqly.jpg", // Maher
+        118: "https://tvquran.com/uploads/authors/images/%D9%86%D8%A7%D8%B5%D8%B1%20%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D9%85%D9%8A.jpg", // Nasser Al Qatami
+        10: "https://tvquran.com/uploads/authors/images/%D8%A3%D8%AD%D9%85%D8%AF%20%D8%A8%D9%86%20%D8%B9%D9%84%D9%8A%20%D8%A7%D9%84%D8%B9%D8%AC%D9%85%D9%8A.jpg", // Ahmed Al Ajmi
+        4: "https://tvquran.com/uploads/authors/images/%D8%A3%D8%A8%D9%88%20%D8%A8%D9%83%D8%B1%20%D8%A7%D9%84%D8%B4%D8%A7%D8%B7%D8%B1%D9%8A.jpg", // Abu Bakr Al Shatri
+        30: "https://tvquran.com/uploads/authors/images/%D8%B3%D8%B9%D8%AF%20%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A.jpg", // Saad Al Ghamdi
+        2: "https://tvquran.com/uploads/authors/images/%D8%A7%D9%84%D8%B2%D9%8A%D9%86%20%D9%85%D8%AD%D9%85%D8%AF%20%D8%A3%D8%AD%D9%85%D8%AF.jpg", // Alzain
+        70: "https://tvquran.com/uploads/authors/images/%D9%85%D8%A7%D8%AC%D8%AF%20%D8%A7%D9%84%D8%B2%D8%A7%D9%85%D9%84.jpg" // Majed
+    };
+
     let allReciters = [];
     let currentServer = "";
     let currentReciterName = "";
@@ -304,8 +320,14 @@
     function createReciterCard(reciter) {
         const div = document.createElement('div');
         div.className = 'reciter-card';
+        
+        let iconHtml = `<div class="reciter-icon"><i class="fa-solid fa-microphone-lines"></i></div>`;
+        if (RECITER_IMAGES[reciter.id]) {
+            iconHtml = `<div class="reciter-icon" style="background-image: url('${RECITER_IMAGES[reciter.id]}'); background-size: cover; background-position: top center;"></div>`;
+        }
+
         div.innerHTML = `
-            <div class="reciter-icon"><i class="fa-solid fa-microphone-lines"></i></div>
+            ${iconHtml}
             <div class="reciter-name">${reciter.name}</div>
         `;
         div.onclick = () => openReciter(reciter);
@@ -326,6 +348,28 @@
 
         document.getElementById('current-reciter-name').textContent = reciter.name;
         document.getElementById('current-moshaf-name').textContent = moshaf.name;
+        
+        const headerIcon = document.querySelector('.reciter-header .reciter-icon');
+        if (RECITER_IMAGES[reciter.id]) {
+            headerIcon.style.backgroundImage = `url('${RECITER_IMAGES[reciter.id]}')`;
+            headerIcon.style.backgroundSize = 'cover';
+            headerIcon.style.backgroundPosition = 'top center';
+            headerIcon.innerHTML = '';
+            
+            // Set player thumb image too
+            const playerThumb = document.querySelector('.player-thumb');
+            playerThumb.style.backgroundImage = `url('${RECITER_IMAGES[reciter.id]}')`;
+            playerThumb.style.backgroundSize = 'cover';
+            playerThumb.style.backgroundPosition = 'top center';
+            playerThumb.innerHTML = '';
+        } else {
+            headerIcon.style.backgroundImage = 'linear-gradient(135deg, #1c9e5b, #116035)';
+            headerIcon.innerHTML = '<i class="fa-solid fa-microphone-lines"></i>';
+            
+            const playerThumb = document.querySelector('.player-thumb');
+            playerThumb.style.backgroundImage = 'none';
+            playerThumb.innerHTML = '<i class="fa-solid fa-book-quran"></i>';
+        }
 
         renderSurahs();
         
@@ -375,7 +419,8 @@
 
     function playSurah(num, server, reciterName) {
         const numStr = String(num).padStart(3, '0');
-        const url = `${server}${numStr}.mp3`;
+        const serverUrl = server.endsWith('/') ? server : server + '/';
+        const url = `${serverUrl}${numStr}.mp3`;
         
         if (currentPlayingSurahNum === num && currentReciterName === reciterName) {
             // Toggle play/pause if clicking the same surah

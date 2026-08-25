@@ -542,17 +542,17 @@
         document.getElementById('progress-thumb').style.right = '100%';
         document.getElementById('time-current').textContent = '0:00';
         
+        // Auto expand the player immediately on mobile just like Spotify
+        if (window.innerWidth <= 768) {
+            document.getElementById('player-bar').classList.add('expanded');
+            document.body.style.overflow = 'hidden';
+        }
+        
         audio.src = url;
         audio.play().then(() => {
             isPlaying = true;
             updatePlayPauseIcon();
             updateSurahListUI();
-            
-            // Auto expand the player on mobile just like Spotify
-            if (window.innerWidth <= 768) {
-                document.getElementById('player-bar').classList.add('expanded');
-                document.body.style.overflow = 'hidden';
-            }
         }).catch(err => {
             showToast('حدث خطأ أثناء تشغيل السورة', 'fa-solid fa-triangle-exclamation');
         });

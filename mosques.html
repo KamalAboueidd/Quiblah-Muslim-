@@ -313,8 +313,8 @@
             out center;
         `;
 
-        const runQuery = (url) => axios.post(url, 'data=' + encodeURIComponent(overpassQuery), {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        const runQuery = (url) => axios.post(url, overpassQuery, {
+            headers: { 'Content-Type': 'text/plain' }
         });
 
         runQuery('https://overpass-api.de/api/interpreter')

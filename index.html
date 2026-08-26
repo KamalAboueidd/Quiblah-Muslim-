@@ -24,7 +24,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
     
     <style>
@@ -624,8 +625,8 @@
     <!-- Fullscreen Background Carousel -->
     <div class="fullscreen-carousel">
         <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
-        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
-        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-slide" data-bg="assets/bg2.jpg"></div>
+        <div class="carousel-slide" data-bg="assets/bg3.jpg"></div>
         <div class="carousel-overlay"></div>
     </div>
 
@@ -772,6 +773,14 @@
         // Header Carousel Logic
         const slides = document.querySelectorAll('.carousel-slide');
         let currentSlide = 0;
+
+        window.addEventListener('load', () => {
+            slides.forEach(slide => {
+                if (slide.dataset.bg) {
+                    slide.style.backgroundImage = `url('${slide.dataset.bg}')`;
+                }
+            });
+        });
 
         function nextSlide() {
             slides[currentSlide].classList.remove('active');

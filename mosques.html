@@ -313,9 +313,14 @@
             out center;
         `;
 
-        axios.post('https://overpass-api.de/api/interpreter', overpassQuery, {
+        const runQuery = (url) => axios.post(url, overpassQuery, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }).then(response => {
+        });
+
+        runQuery('https://overpass-api.de/api/interpreter')
+        .catch(() => runQuery('https://overpass.kumi.systems/api/interpreter'))
+        .catch(() => runQuery('https://overpass.openstreetmap.ru/cgi/interpreter'))
+        .then(response => {
             const elements = response.data.elements;
             if (!elements || elements.length === 0) {
                 document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">لم يتم العثور على مساجد قريبة في هذا النطاق.</div>';
@@ -444,9 +449,9 @@
         if(listEl) listEl.innerHTML = `<i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${areaText}`;
         
         if(m.marker) {
-            const oldContent = m.marker.getTooltip().getContent();
+            const oldContent = m.marker.getPopup().getContent();
             const newContent = oldContent.replace('جاري جلب المنطقة...', areaText);
-            m.marker.setTooltipContent(newContent);
+            m.marker.setPopupContent(newContent);
         }
     }
     

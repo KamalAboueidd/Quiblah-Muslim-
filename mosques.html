@@ -323,13 +323,30 @@
         let elements = null;
         for (const api of apis) {
             try {
-                const response = await axios.get(`${api}?data=${encodeURIComponent(overpassQuery)}`, { timeout: 10000 });
-                if (response.data && response.data.elements) {
-                    elements = response.data.elements;
-                    break; // Success
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                
+                const response = await fetch(api, {
+                    method: 'POST',
+                    body: overpassQuery,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'text/plain;charset=UTF-8'
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.elements) {
+                        elements = data.elements;
+                        break; // Success
+                    }
                 }
             } catch (err) {
-                console.warn(`Failed fetching from ${api}`);
+                console.warn(`Failed fetching from ${api}`, err);
             }
         }
 

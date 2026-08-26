@@ -133,6 +133,11 @@
 .custom-map-popup .leaflet-popup-content { margin: 10px; }
 .custom-map-popup .leaflet-popup-tip { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--gold); border-top: none; border-left: none; }
 
+/* Make standard OSM tiles dark to fit the theme */
+.leaflet-tile {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
     </style>
 </head>
 <body>
@@ -253,7 +258,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         // Center on Egypt
         map = L.map('map', { zoomControl: true, attributionControl: false }).setView([26.8206, 30.8025], 6);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     });
 
     function getDistance(lat1, lon1, lat2, lon2) {

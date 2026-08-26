@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحديد القبلة - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
+    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="قبلة المسلم">
+    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="قبلة المسلم">
+    <meta name="twitter:description" content="تطبيق إسلامي شامل لأوقات الصلاة، القبلة، القرآن، والأذكار.">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
@@ -299,15 +314,15 @@
         </div>
 
         <div class="nav-bar">
-            <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
-            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-            <a href="qibla.html" class="nav-item active"><i class="fa-solid fa-compass"></i> القبلة</a>
-            <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+            <a href="index.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+            <a href="qibla.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+            <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
         </div>
 
         <div class="main-content">
@@ -321,7 +336,7 @@
 
             <!-- Loader -->
             <div id="loader" style="display:block;">
-                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i>
                 <div style="font-size:14px; margin-top:8px; opacity:0.7;">جاري تحديد موقعك...</div>
             </div>
 
@@ -353,7 +368,7 @@
                 <div class="compass-center">
                     <div class="angle-display" id="angle-display">--°</div>
                     <div class="angle-label" id="angle-label">جاري تحديد الموقع...</div>
-                    <div class="gps-loading-text" id="gps-loading-text"><i class="fa-solid fa-location-dot fa-beat"></i></div>
+                    <div class="gps-loading-text" id="gps-loading-text"><i aria-hidden="true" class="fa-solid fa-location-dot fa-beat"></i></div>
                 </div>
 
                 <!-- Rotating arrow layer (hidden until GPS ready) -->
@@ -370,7 +385,7 @@
                     </svg>
                     <!-- Kaaba at the tip -->
                     <div class="kaaba-tip" id="kaaba-tip">
-                        <i class="fa-solid fa-kaaba"></i>
+                        <i aria-hidden="true" class="fa-solid fa-kaaba"></i>
                     </div>
                 </div>
 
@@ -379,11 +394,11 @@
             <!-- Footer actions -->
             <div class="compass-footer">
                 <div class="aligned-msg" id="aligned-msg">
-                    <i class="fa-solid fa-check-circle"></i> أنت تواجه القبلة الآن
+                    <i aria-hidden="true" class="fa-solid fa-check-circle"></i> أنت تواجه القبلة الآن
                 </div>
                 <!-- iOS permission button (shown only when needed) -->
                 <button class="perm-btn" id="perm-btn" onclick="requestSensorPermission()">
-                    <i class="fa-solid fa-compass"></i> تفعيل البوصلة
+                    <i aria-hidden="true" class="fa-solid fa-compass"></i> تفعيل البوصلة
                 </button>
                 <div class="calibrate-hint" id="calibrate-hint" style="display:none;">
                     حرّك هاتفك على شكل رقم 8 لمعايرة البوصلة إذا كان السهم غير ثابت
@@ -391,7 +406,7 @@
             </div>
 
             <div class="tips-card">
-                <div class="tips-title"><i class="fa-solid fa-lightbulb"></i> نصائح لدقة أفضل</div>
+                <div class="tips-title"><i aria-hidden="true" class="fa-solid fa-lightbulb"></i> نصائح لدقة أفضل</div>
                 <ul class="tips-list">
                     <li>ضع الهاتف مستوياً على راحة يدك</li>
                     <li>ابتعد عن الأجهزة الكهربائية والمعادن</li>
@@ -407,8 +422,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="toast.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="toast.js"></script>
     <script>
         // ── Carousel ──────────────────────────────────────
         const slides = document.querySelectorAll('.carousel-slide');

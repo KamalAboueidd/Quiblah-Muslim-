@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>أقرب مسجد - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
+    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="قبلة المسلم">
+    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="قبلة المسلم">
+    <meta name="twitter:description" content="تطبيق إسلامي شامل لأوقات الصلاة، القبلة، القرآن، والأذكار.">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -132,38 +147,38 @@
     <div class="top-bar"><div class="title">قبلة المسلم</div></div>
 
     <div class="nav-bar">
-        <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
-        <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-        <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-        <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-        <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-        <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
-        <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item active"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+        <a href="index.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+        <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+        <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+        <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+        <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+        <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+        <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
     </div>
 
     <div class="main-content">
         <div class="header-card" id="header-card" style="display: flex;">
-            <div class="header-title"><i class="fa-solid fa-mosque"></i> المساجد القريبة</div>
+            <div class="header-title"><i aria-hidden="true" class="fa-solid fa-mosque"></i> المساجد القريبة</div>
             
             <div id="user-location-display" style="display: none; color: var(--gold); font-weight: 700; font-size: 15px; margin: 0 10px;">
-                <i class="fa-solid fa-location-dot"></i> <span id="user-location-text"></span>
+                <i aria-hidden="true" class="fa-solid fa-location-dot"></i> <span id="user-location-text"></span>
             </div>
             
             <div style="display:flex; align-items:center; gap: 15px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
                 <div style="display:flex; align-items:center; background: rgba(0,0,0,0.4); border: 1px solid rgba(197,168,89,0.3); border-radius: 8px; overflow: hidden; padding: 2px;">
                     <input type="text" id="search-input" placeholder="ابحث عن منطقة..." style="background: transparent; border: none; color: white; padding: 6px 10px; outline: none; font-family: 'Tajawal'; width: 140px; font-size: 13px;" onkeypress="if(event.key === 'Enter') searchByCityName()">
-                    <button onclick="searchByCityName()" style="background: transparent; border: none; color: var(--gold); padding: 6px 10px; cursor: pointer;"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <button onclick="searchByCityName()" style="background: transparent; border: none; color: var(--gold); padding: 6px 10px; cursor: pointer;"><i aria-hidden="true" class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
 
                 <span class="location-text-link" id="start-btn" onclick="startLocationSearch()" style="font-size: 14px;">
-                    <i class="fa-solid fa-location-crosshairs"></i> الوصول لموقعي
+                    <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> الوصول لموقعي
                 </span>
                 <span id="loader-text" style="display: none; color: var(--gold); font-weight: 700; font-size: 13px; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-spinner fa-spin"></i> جاري...
+                    <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري...
                 </span>
-                <button class="search-btn" onclick="fetchMosquesInView()" style="font-size: 13px; padding: 6px 12px;"><i class="fa-solid fa-magnifying-glass-location"></i> بحث هنا</button>
+                <button class="search-btn" onclick="fetchMosquesInView()" style="font-size: 13px; padding: 6px 12px;"><i aria-hidden="true" class="fa-solid fa-magnifying-glass-location"></i> بحث هنا</button>
             </div>
         </div>
 
@@ -173,8 +188,8 @@
             </div>
             <div class="mosques-panel">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="color:var(--gold); font-weight:800; font-size:16px;"><i class="fa-solid fa-list"></i> قائمة المساجد</div>
-                    <i class="fa-solid fa-magnifying-glass" id="toggle-list-search" style="color:#aaa; cursor:pointer; font-size:16px; padding:5px;" onclick="toggleListSearch()"></i>
+                    <div style="color:var(--gold); font-weight:800; font-size:16px;"><i aria-hidden="true" class="fa-solid fa-list"></i> قائمة المساجد</div>
+                    <i aria-hidden="true" class="fa-solid fa-magnifying-glass" id="toggle-list-search" style="color:#aaa; cursor:pointer; font-size:16px; padding:5px;" onclick="toggleListSearch()"></i>
                 </div>
                 <input type="text" id="list-search-input" placeholder="تصفية المساجد بالاسم..." style="display:none; background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius:6px; color:white; padding:8px 10px; margin-bottom:10px; outline:none; font-family:'Tajawal';" onkeyup="filterMosqueList()">
                 <div class="mosques-list" id="mosques-list">
@@ -189,9 +204,9 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="toast.js"></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script defer src="toast.js"></script>
 <script>
     const slides = document.querySelectorAll('.carousel-slide');
     let cur = 0;
@@ -280,7 +295,7 @@
         mosqueMarkers = [];
         mosqueData = [];
         
-        document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري جلب بيانات المساجد...</div>';
+        document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري جلب بيانات المساجد...</div>';
 
         // Broader query to catch all mosques/places of worship
         const overpassQuery = `
@@ -343,7 +358,7 @@
                 const marker = L.marker([mLat, mLng], { icon: L.divIcon({
                     className:'', iconSize:[30,30], iconAnchor:[15,30],
                     html:`<div style="background:var(--gold); width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.5);">
-                        <i class="fa-solid fa-mosque" style="color:#000; font-size:14px; transform:rotate(45deg);"></i>
+                        <i aria-hidden="true" class="fa-solid fa-mosque" style="color:#000; font-size:14px; transform:rotate(45deg);"></i>
                     </div>`
                 })}).bindPopup(`
                     <div style="text-align:right; direction:rtl;">
@@ -352,8 +367,8 @@
                             ${areaHtml}
                             ${distHtml}
                         </div>
-                        <div onclick="window.toggleLineToMosque(${mLat}, ${mLng})" style="margin-top:8px; background:rgba(197,168,89,0.1); border:1px solid rgba(197,168,89,0.4); padding:4px 8px; border-radius:5px; text-align:center; color:var(--gold); font-size:12px; cursor:pointer; display:inline-block; width:100%;">
-                            <i class="fa-solid fa-route"></i> رسم خط المسافة
+                        <div role="button" tabindex="0" onclick="window.toggleLineToMosque(${mLat}, ${mLng})" style="margin-top:8px; background:rgba(197,168,89,0.1); border:1px solid rgba(197,168,89,0.4); padding:4px 8px; border-radius:5px; text-align:center; color:var(--gold); font-size:12px; cursor:pointer; display:inline-block; width:100%;">
+                            <i aria-hidden="true" class="fa-solid fa-route"></i> رسم خط المسافة
                         </div>
                     </div>
                 `, { offset: [0, -20], className: 'custom-map-popup', closeButton: false });
@@ -387,10 +402,10 @@
         
         let html = '';
         mosqueData.forEach(m => {
-            let initialAreaText = (m.areaName && m.areaName !== 'مسجد') ? `<i class="fa-solid fa-map-pin"></i> ${m.areaName}` : `<i class="fa-solid fa-spinner fa-spin"></i> جاري جلب المنطقة...`;
+            let initialAreaText = (m.areaName && m.areaName !== 'مسجد') ? `<i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${m.areaName}` : `<i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري جلب المنطقة...`;
             html += `
                 <div class="mosque-item" onclick="flyToMosque(${m.lat}, ${m.lng}, ${m.id})">
-                    <div class="mosque-item-title"><i class="fa-solid fa-mosque"></i> ${m.name}</div>
+                    <div class="mosque-item-title"><i aria-hidden="true" class="fa-solid fa-mosque"></i> ${m.name}</div>
                     <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px;">
                         <span id="list-area-${m.id}" style="color:#aaa;">${initialAreaText}</span>
                         <span style="color:var(--gold); font-weight:bold;">${m.dist} متر</span>
@@ -426,7 +441,7 @@
 
     function updateAreaDOM(m, areaText) {
         const listEl = document.getElementById(`list-area-${m.id}`);
-        if(listEl) listEl.innerHTML = `<i class="fa-solid fa-map-pin"></i> ${areaText}`;
+        if(listEl) listEl.innerHTML = `<i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${areaText}`;
         
         if(m.marker) {
             const oldContent = m.marker.getTooltip().getContent();
@@ -495,12 +510,12 @@
     function startLocationSearch() {
         document.getElementById('start-btn').style.display = 'none';
         document.getElementById('loader-text').style.display = 'inline-flex';
-        document.getElementById('loader-text').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تحديد موقعك...`;
+        document.getElementById('loader-text').innerHTML = `<i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري تحديد موقعك...`;
 
         navigator.geolocation.getCurrentPosition(pos => {
             currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             document.getElementById('loader-text').innerHTML = `
-                <i class="fa-solid fa-spinner fa-spin"></i> جاري البحث عن المساجد...
+                <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري البحث عن المساجد...
             `;
             setTimeout(() => { 
                 setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي'); 
@@ -510,7 +525,7 @@
             }, 2000);
         }, () => {
             document.getElementById('loader-text').innerHTML = `
-                <i class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;"></i> <span style="color:#e74c3c;">تعذر الوصول لموقعك. يرجى تفعيل خدمة الموقع.</span>`;
+                <i aria-hidden="true" class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;"></i> <span style="color:#e74c3c;">تعذر الوصول لموقعك. يرجى تفعيل خدمة الموقع.</span>`;
             setTimeout(() => {
                 document.getElementById('loader-text').style.display = 'none';
                 document.getElementById('start-btn').style.display = 'inline-flex';

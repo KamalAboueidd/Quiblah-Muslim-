@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
+    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="قبلة المسلم">
+    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="قبلة المسلم">
+    <meta name="twitter:description" content="تطبيق إسلامي شامل لأوقات الصلاة، القبلة، القرآن، والأذكار.">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -624,15 +639,15 @@
 
         <!-- Navigation Bar -->
         <div class="nav-bar">
-            <a href="index.html" class="nav-item active"><i class="fa-solid fa-clock"></i> المواقيت</a>
-            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-            <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
-            <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+            <a href="index.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+            <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+            <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
         </div>
 
         <!-- Main Content -->
@@ -641,7 +656,7 @@
             <!-- Circular Timer -->
             <div class="countdown-area">
                 <div class="circle-countdown">
-                    <i class="fa-solid fa-mosque circle-top-icon"></i>
+                    <i aria-hidden="true" class="fa-solid fa-mosque circle-top-icon"></i>
                     <div class="next-prayer-label" id="next-prayer-name">...</div>
                     <div class="after-label">بعد</div>
                     <div class="timer" id="countdown-timer">00:00:00</div>
@@ -653,7 +668,7 @@
                 <!-- Date Card -->
                 <div class="info-card">
                     <div class="icon-text">
-                        <i class="fa-regular fa-calendar-days"></i>
+                        <i aria-hidden="true" class="fa-regular fa-calendar-days"></i>
                         <span id="hijri-date">...</span>
                     </div>
                     <div class="sub-text" id="greg-date">...</div>
@@ -665,7 +680,7 @@
                     <div class="custom-select" id="custom-city-select">
                         <div class="custom-select-trigger">
                             <span id="selected-city-text">القاهرة</span>
-                            <i class="fa-solid fa-chevron-down"></i>
+                            <i aria-hidden="true" class="fa-solid fa-chevron-down"></i>
                         </div>
                         <div class="custom-options" id="custom-city-options">
                             <!-- Options injected by JS -->
@@ -675,13 +690,13 @@
 
                 <!-- Auto Detect Location Button -->
                 <div class="location-btn" onclick="detectLocation()">
-                    <i class="fa-solid fa-location-crosshairs"></i> حدد مواقيت صلاتك بناءً على موقعك
+                    <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> حدد مواقيت صلاتك بناءً على موقعك
                 </div>
 
                 <!-- Sunrise -->
                 <div class="sunrise-card">
                     <div>
-                        <i class="fa-solid fa-sun" style="color: #FFD54F; margin-left: 10px;"></i>
+                        <i aria-hidden="true" class="fa-solid fa-sun" style="color: #FFD54F; margin-left: 10px;"></i>
                         الشروق
                     </div>
                     <div class="time" id="shrouq-time" style="direction: ltr;">--:--</div>
@@ -689,37 +704,37 @@
             </div>
         </div>
         
-        <div id="loader"><i class="fa-solid fa-spinner fa-spin fa-3x"></i></div>
+        <div id="loader"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-3x"></i></div>
 
         <!-- Prayer Times Grid -->
         <div class="prayers-container">
             <div class="prayers-row">
                 <div class="prayer-card" id="card-fajr">
-                    <i class="fa-solid fa-cloud-moon prayer-icon"></i>
+                    <i aria-hidden="true" class="fa-solid fa-cloud-moon prayer-icon"></i>
                     <div class="prayer-name">الفجر</div>
                     <div class="prayer-time" id="fajr-time">--:--</div>
                 </div>
                 
                 <div class="prayer-card" id="card-dhuhr">
-                    <i class="fa-regular fa-sun prayer-icon"></i>
+                    <i aria-hidden="true" class="fa-regular fa-sun prayer-icon"></i>
                     <div class="prayer-name">الظهر</div>
                     <div class="prayer-time" id="dhuhr-time">--:--</div>
                 </div>
                 
                 <div class="prayer-card" id="card-asr">
-                    <i class="fa-solid fa-cloud-sun prayer-icon"></i>
+                    <i aria-hidden="true" class="fa-solid fa-cloud-sun prayer-icon"></i>
                     <div class="prayer-name">العصر</div>
                     <div class="prayer-time" id="aser-time">--:--</div>
                 </div>
                 
                 <div class="prayer-card" id="card-maghrib">
-                    <i class="fa-solid fa-moon prayer-icon"></i>
+                    <i aria-hidden="true" class="fa-solid fa-moon prayer-icon"></i>
                     <div class="prayer-name">المغرب</div>
                     <div class="prayer-time" id="maghreb-time">--:--</div>
                 </div>
                 
                 <div class="prayer-card" id="card-isha">
-                    <i class="fa-solid fa-star-and-crescent prayer-icon"></i>
+                    <i aria-hidden="true" class="fa-solid fa-star-and-crescent prayer-icon"></i>
                     <div class="prayer-name">العشاء</div>
                     <div class="prayer-time" id="isha-time">--:--</div>
                 </div>
@@ -730,7 +745,7 @@
         <div class="quran-section">
             <div class="quran-header">
                 <div class="title-inner">
-                    <i class="fa-solid fa-book-quran"></i>
+                    <i aria-hidden="true" class="fa-solid fa-book-quran"></i>
                     آية اليوم
                 </div>
             </div>
@@ -739,7 +754,7 @@
                 <div class="verse-ref" id="verse-ref"></div>
             </div>
             <a href="quran.html" class="quran-footer" style="text-decoration: none;">
-                <i class="fa-solid fa-book-open-reader"></i> تصفح المصحف الشريف
+                <i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> تصفح المصحف الشريف
             </a>
         </div>
         
@@ -751,8 +766,8 @@
     </div>
 
     <audio id="azan-audio" src="assets/Azan/456572.mp3" preload="auto"></audio>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="toast.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="toast.js"></script>
     <script>
         // Header Carousel Logic
         const slides = document.querySelectorAll('.carousel-slide');

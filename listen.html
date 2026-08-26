@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الاستماع - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
+    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="قبلة المسلم">
+    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="قبلة المسلم">
+    <meta name="twitter:description" content="تطبيق إسلامي شامل لأوقات الصلاة، القبلة، القرآن، والأذكار.">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
@@ -235,22 +250,22 @@
     <div class="top-bar"><div class="title">قبلة المسلم</div></div>
 
     <div class="nav-bar">
-        <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
-        <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-        <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-        <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-        <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
-        <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item active"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+        <a href="index.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+        <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+        <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+        <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+        <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+        <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
     </div>
 
     <!-- View: Reciters List -->
     <div class="view-section active" id="view-reciters">
         <input type="text" id="search-input" class="search-box" placeholder="ابحث عن قارئ...">
         
-        <div id="loader-reciters" class="loader"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">جاري تحميل القراء...</p></div>
+        <div id="loader-reciters" class="loader"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">جاري تحميل القراء...</p></div>
         
         <div id="curated-container">
             <div class="section-title">قراء مختارون</div>
@@ -265,9 +280,9 @@
 
     <!-- View: Surahs List -->
     <div class="view-section" id="view-surahs">
-        <button class="back-btn" onclick="showReciters()"><i class="fa-solid fa-arrow-right"></i> عودة للقراء</button>
+        <button class="back-btn" onclick="showReciters()"><i aria-hidden="true" class="fa-solid fa-arrow-right"></i> عودة للقراء</button>
         <div class="reciter-header">
-            <div class="reciter-icon"><i class="fa-solid fa-microphone-lines"></i></div>
+            <div class="reciter-icon"><i aria-hidden="true" class="fa-solid fa-microphone-lines"></i></div>
             <div>
                 <h2 id="current-reciter-name">اسم القارئ</h2>
                 <p id="current-moshaf-name">الرواية</p>
@@ -279,9 +294,9 @@
 
 <!-- Player Bar -->
 <div class="player-bar" id="player-bar">
-    <button class="mobile-expand-btn" onclick="togglePlayerExpand(event)"><i class="fa-solid fa-chevron-down"></i></button>
+    <button class="mobile-expand-btn" onclick="togglePlayerExpand(event)"><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button>
     <div class="player-info">
-        <div class="player-thumb"><i class="fa-solid fa-book-quran"></i></div>
+        <div class="player-thumb"><i aria-hidden="true" class="fa-solid fa-book-quran"></i></div>
         <div class="player-titles">
             <div class="player-track" id="player-surah-name">---</div>
             <div class="player-artist" id="player-reciter-name">---</div>
@@ -290,9 +305,9 @@
     
     <div class="player-controls-wrap">
         <div class="player-buttons">
-            <button class="btn-ctrl" onclick="playNext(event)" title="السورة التالية (للخلف)"><i class="fa-solid fa-backward-step"></i></button>
-            <button class="btn-play" id="btn-play-pause" onclick="togglePlayPause(event)"><i class="fa-solid fa-play"></i></button>
-            <button class="btn-ctrl" onclick="playPrev(event)" title="السورة السابقة (للأمام)"><i class="fa-solid fa-forward-step"></i></button>
+            <button class="btn-ctrl" onclick="playNext(event)" title="السورة التالية (للخلف)"><i aria-hidden="true" class="fa-solid fa-backward-step"></i></button>
+            <button class="btn-play" id="btn-play-pause" onclick="togglePlayPause(event)"><i aria-hidden="true" class="fa-solid fa-play"></i></button>
+            <button class="btn-ctrl" onclick="playPrev(event)" title="السورة السابقة (للأمام)"><i aria-hidden="true" class="fa-solid fa-forward-step"></i></button>
         </div>
         <div class="progress-container">
             <span id="time-current">0:00</span>
@@ -306,7 +321,7 @@
     
     <div class="player-actions">
         <div class="volume-container">
-            <i class="fa-solid fa-volume-low" id="vol-icon" onclick="toggleMute(event)"></i>
+            <i aria-hidden="true" class="fa-solid fa-volume-low" id="vol-icon" onclick="toggleMute(event)"></i>
             <div class="volume-bar" id="volume-bar" onclick="seekVolume(event)">
                 <div class="volume-fill" id="volume-fill"></div>
                 <div class="volume-thumb" id="volume-thumb"></div>
@@ -317,8 +332,8 @@
 
 <audio id="audio-player" style="display:none;"></audio>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="toast.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script defer src="toast.js"></script>
 <script>
     // 114 Surah Names
     const SURAH_NAMES = [
@@ -507,7 +522,7 @@
             item.innerHTML = `
                 <div class="surah-num">${num}</div>
                 <div class="surah-name">سورة ${SURAH_NAMES[num - 1]}</div>
-                <div class="play-icon"><i class="fa-solid ${playIconClass}"></i></div>
+                <div class="play-icon"><i aria-hidden="true" class="fa-solid ${playIconClass}"></i></div>
             `;
             
             item.onclick = () => playSurah(num, currentServer, currentReciterName);
@@ -611,9 +626,9 @@
     }
 
     function updatePlayPauseIcon() {
-        playPauseBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+        playPauseBtn.innerHTML = isPlaying ? '<i aria-hidden="true" class="fa-solid fa-pause"></i>' : '<i aria-hidden="true" class="fa-solid fa-play"></i>';
         if (window.innerWidth <= 768 && document.getElementById('player-bar').classList.contains('expanded')) {
-             playPauseBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+             playPauseBtn.innerHTML = isPlaying ? '<i aria-hidden="true" class="fa-solid fa-pause"></i>' : '<i aria-hidden="true" class="fa-solid fa-play"></i>';
         }
     }
 

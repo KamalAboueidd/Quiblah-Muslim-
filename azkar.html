@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>الأذكار الإسلامية</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
+    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="قبلة المسلم">
+    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="قبلة المسلم">
+    <meta name="twitter:description" content="تطبيق إسلامي شامل لأوقات الصلاة، القبلة، القرآن، والأذكار.">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -520,15 +535,15 @@
 
         <!-- Navigation Bar -->
         <div class="nav-bar">
-            <a href="index.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
-            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-            <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
-            <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+            <a href="index.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+            <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+            <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
         </div>
 
         <!-- Main Content -->
@@ -537,13 +552,13 @@
             <!-- VIEW 1: Categories Index -->
             <div id="categories-view" class="view-section active">
                 <div class="search-container">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <i aria-hidden="true" class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="search-input" class="search-input" placeholder="ابحث عن قسم الأذكار... (مثال: الصباح، النوم)" />
                 </div>
                 
                 <div class="categories-grid" id="categories-grid">
                     <div class="loader-container">
-                        <i class="fa-solid fa-spinner fa-spin fa-2x" style="margin-bottom: 15px;"></i>
+                        <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x" style="margin-bottom: 15px;"></i>
                         <div>جاري تحميل الأذكار...</div>
                     </div>
                 </div>
@@ -553,10 +568,10 @@
             <div id="reader-view" class="view-section">
                 <div class="reader-header">
                     <div class="reader-title" id="reader-title">
-                        <i class="fa-solid fa-star"></i> أذكار
+                        <i aria-hidden="true" class="fa-solid fa-star"></i> أذكار
                     </div>
                     <button class="back-btn" onclick="showCategories()">
-                        العودة للأقسام <i class="fa-solid fa-arrow-left"></i>
+                        العودة للأقسام <i aria-hidden="true" class="fa-solid fa-arrow-left"></i>
                     </button>
                 </div>
                 
@@ -575,7 +590,7 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         // Header Carousel Logic
         const slides = document.querySelectorAll('.carousel-slide');
@@ -647,7 +662,7 @@
         function renderCategories(categoryNames) {
             const gridContainer = document.getElementById('categories-grid');
             if (categoryNames.length === 0) {
-                gridContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-box-open fa-2x" style="margin-bottom: 15px;"></i><br/>لا توجد أقسام مطابقة للبحث</div>`;
+                gridContainer.innerHTML = `<div class="empty-state"><i aria-hidden="true" class="fa-solid fa-box-open fa-2x" style="margin-bottom: 15px;"></i><br/>لا توجد أقسام مطابقة للبحث</div>`;
                 return;
             }
 
@@ -676,7 +691,7 @@
 
                 html += `
                     <div class="category-card" onclick="openCategory('${cat}')">
-                        <i class="fa-solid ${icon}"></i>
+                        <i aria-hidden="true" class="fa-solid ${icon}"></i>
                         <div>
                             <div class="cat-title">${cat}</div>
                             <div class="cat-count mt-2">${itemsCount} أذكار</div>
@@ -710,7 +725,7 @@
             if (categoryName.includes("الصباح")) icon = "fa-sun";
             else if (categoryName.includes("المساء")) icon = "fa-moon";
             
-            readerTitle.innerHTML = `<i class="fa-solid ${icon}"></i> ${categoryName}`;
+            readerTitle.innerHTML = `<i aria-hidden="true" class="fa-solid ${icon}"></i> ${categoryName}`;
             updateProgress();
             
             renderReader();
@@ -726,7 +741,7 @@
             activeCategoryAzkar.forEach((zikr, index) => {
                 const isCompleted = zikr.currentCount <= 0;
                 const completedClass = isCompleted ? 'completed' : '';
-                const btnContent = isCompleted ? '<i class="fa-solid fa-check"></i>' : zikr.currentCount;
+                const btnContent = isCompleted ? '<i aria-hidden="true" class="fa-solid fa-check"></i>' : zikr.currentCount;
                 const btnClass = isCompleted ? 'done' : '';
                 
                 const descHtml = zikr.description ? `<div class="zikr-desc">${zikr.description}</div>` : '';
@@ -740,19 +755,19 @@
                         <div class="zikr-footer">
                             <div class="action-btns">
                                 <button class="copy-btn" onclick="copyText('${zikr.zekr.replace(/'/g, "\\'").replace(/\n/g, ' ')}')">
-                                    <i class="fa-regular fa-copy"></i> نسخ
+                                    <i aria-hidden="true" class="fa-regular fa-copy"></i> نسخ
                                 </button>
                             </div>
                             
                             <div class="counter-container new-counter">
                                 <button class="counter-btn-small" onclick="adjustCount(${index}, -1)" title="تراجع">
-                                    <i class="fa-solid fa-minus"></i>
+                                    <i aria-hidden="true" class="fa-solid fa-minus"></i>
                                 </button>
                                 <div class="counter-text" id="counter-text-${index}">
                                     تمت القراءة: ${zikr.targetCount - zikr.currentCount} / ${zikr.targetCount}
                                 </div>
                                 <button class="counter-btn-small plus" onclick="adjustCount(${index}, 1)" title="زيادة">
-                                    <i class="fa-solid fa-plus"></i>
+                                    <i aria-hidden="true" class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
                         </div>
@@ -818,7 +833,7 @@
         // Initialize
         fetchAzkar();
     </script>
-    <script src="toast.js"></script>
+    <script defer src="toast.js"></script>
 </body>
 </html>
 

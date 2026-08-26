@@ -299,16 +299,14 @@
 
         // Broader query to catch all mosques/places of worship
         const overpassQuery = `
-            [out:json][timeout:10];
+            [out:json][timeout:15];
             (
-              node["amenity"="place_of_worship"](around:${radius},${lat},${lng});
-              way["amenity"="place_of_worship"](around:${radius},${lat},${lng});
-              relation["amenity"="place_of_worship"](around:${radius},${lat},${lng});
+              node["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
+              way["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
+              relation["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
               node["building"="mosque"](around:${radius},${lat},${lng});
               way["building"="mosque"](around:${radius},${lat},${lng});
               relation["building"="mosque"](around:${radius},${lat},${lng});
-              node["name"~"مسجد|جامع|زاوية"](around:${radius},${lat},${lng});
-              way["name"~"مسجد|جامع|زاوية"](around:${radius},${lat},${lng});
             );
             out center;
         `;

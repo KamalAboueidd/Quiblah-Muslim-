@@ -23,6 +23,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1F5F5D">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <style>
         :root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -212,6 +220,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="toast.js"></script>
+<script src="pwa.js"></script>
 <script>
     const slides = document.querySelectorAll('.carousel-slide');
     let cur = 0;

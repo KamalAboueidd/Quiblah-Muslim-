@@ -46,31 +46,26 @@
             --gold: #C5A859;
             --gold-hover: #dfc274;
             --white: #FFFFFF;
-            --dark-card: rgba(18, 20, 24, 0.72);
-            --dark-card-border: rgba(197, 168, 89, 0.22);
-            --tafseer-font-size: 17px;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: "Tajawal", sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #0d0f12;
+            background: #000;
             color: var(--white);
             overflow: hidden;
             height: 100dvh;
         }
 
-        /* Fullscreen Carousel */
+        /* Fullscreen Carousel (Matching names.html and other pages) */
         .fullscreen-carousel {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 0;
         }
         .carousel-slide {
             position: absolute;
@@ -90,9 +85,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, rgba(8, 10, 14, 0.82) 0%, rgba(12, 14, 18, 0.88) 100%);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, 0.60);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
         }
 
         /* App Layout */
@@ -104,48 +99,48 @@
             z-index: 10;
         }
 
-        /* Navigation Bar */
+        /* Top Navigation Bar */
         .nav-bar {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            padding: 12px 20px;
+            gap: 10px;
+            padding: 10px 20px;
             flex-wrap: wrap;
-            background: rgba(10, 12, 16, 0.55);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
+            gap: 6px;
+            padding: 7px 15px;
             border-radius: 30px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             text-decoration: none;
-            font-weight: 800;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 13px;
             transition: all 0.25s ease;
         }
 
         .nav-item:hover, .nav-item.active {
-            background: rgba(197, 168, 89, 0.18);
-            border: 1px solid var(--gold);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--gold);
             color: var(--gold);
-            box-shadow: 0 4px 15px rgba(197, 168, 89, 0.25);
         }
 
-        /* Sidebar (Surah List) */
+        /* Sidebar (Surahs Drawer) */
         .sidebar {
-            width: 330px;
-            background: rgba(14, 16, 20, 0.78);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            width: 320px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-left: 1px solid rgba(197, 168, 89, 0.2);
             display: flex;
             flex-direction: column;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -153,7 +148,7 @@
         }
 
         .sidebar-header {
-            padding: 18px;
+            padding: 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             background: rgba(0, 0, 0, 0.2);
         }
@@ -163,7 +158,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             color: var(--gold);
         }
@@ -171,7 +166,7 @@
         .sidebar-title span { display: flex; align-items: center; gap: 8px; }
 
         .surah-counter {
-            font-size: 12px;
+            font-size: 11px;
             background: rgba(197, 168, 89, 0.15);
             color: var(--gold);
             padding: 2px 8px;
@@ -183,27 +178,26 @@
 
         .search-box input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.12);
             color: white;
-            padding: 12px 14px 12px 42px;
-            border-radius: 12px;
+            padding: 10px 14px 10px 38px;
+            border-radius: 10px;
             outline: none;
             font-family: inherit;
-            font-size: 15px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 14px;
+            transition: border-color 0.2s;
         }
 
         .search-box input:focus {
             border-color: var(--gold);
-            box-shadow: 0 0 10px rgba(197, 168, 89, 0.2);
         }
 
         .search-box input::placeholder { color: rgba(255, 255, 255, 0.4); }
 
         .search-box i {
             position: absolute;
-            left: 14px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: rgba(255, 255, 255, 0.45);
@@ -212,46 +206,43 @@
         .surah-list {
             flex: 1;
             overflow-y: auto;
-            padding: 12px 10px;
+            padding: 10px 8px;
         }
 
         .surah-item {
             display: flex;
             align-items: center;
-            padding: 10px 14px;
-            border-radius: 12px;
+            padding: 9px 12px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-            margin-bottom: 6px;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.02);
+            transition: background 0.2s;
+            margin-bottom: 4px;
+            gap: 10px;
+            background: transparent;
         }
 
         .surah-item:hover {
-            background: rgba(255, 255, 255, 0.07);
-            transform: translateX(-3px);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .surah-item.active {
             background: rgba(197, 168, 89, 0.15);
-            border: 1px solid var(--gold);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(197, 168, 89, 0.4);
         }
 
         .surah-number {
-            width: 32px;
-            height: 32px;
-            background: rgba(0, 0, 0, 0.55);
-            border-radius: 9px;
+            width: 30px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
+            font-weight: 800;
             color: var(--gold);
-            font-size: 13px;
+            font-size: 12px;
             flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(197, 168, 89, 0.25);
         }
 
         .surah-item.active .surah-number {
@@ -261,29 +252,21 @@
 
         .surah-details { flex: 1; min-width: 0; }
         .surah-name {
-            font-weight: 900;
-            font-size: 15px;
+            font-weight: 800;
+            font-size: 14px;
             color: white;
-            margin-bottom: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .surah-info {
-            font-size: 12px;
+            font-size: 11px;
             color: #aaa;
             font-weight: 500;
             display: flex;
             gap: 8px;
-        }
-
-        .surah-type-tag {
-            color: var(--gold);
-            background: rgba(197, 168, 89, 0.1);
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-size: 11px;
+            margin-top: 2px;
         }
 
         /* Main Content */
@@ -293,23 +276,25 @@
             flex-direction: column;
             position: relative;
             min-width: 0;
+            overflow: hidden;
         }
 
         /* Mobile Header */
         .mobile-header {
             display: none;
-            padding: 12px 16px;
-            background: rgba(12, 14, 18, 0.75);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             align-items: center;
             justify-content: space-between;
             z-index: 50;
+            flex-shrink: 0;
         }
 
         .mobile-header .title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--gold);
             display: flex;
@@ -318,17 +303,17 @@
         }
 
         .menu-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            font-size: 15px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            color: var(--gold);
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-family: inherit;
         }
 
@@ -336,26 +321,25 @@
         .reader-area {
             flex: 1;
             overflow-y: auto;
-            padding: 24px 35px;
+            padding: 20px 25px 60px;
             scroll-behavior: smooth;
         }
 
-        /* Controls Bar */
+        /* Clean Transparent Controls Bar */
         .tafseer-controls-bar {
-            max-width: 960px;
-            margin: 0 auto 25px auto;
-            background: rgba(18, 20, 26, 0.75);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 18px;
-            padding: 14px 20px;
+            max-width: 1100px;
+            margin: 0 auto 20px auto;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(197, 168, 89, 0.2);
+            border-radius: 12px;
+            padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 15px;
             flex-wrap: wrap;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
         .control-group {
@@ -378,133 +362,67 @@
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(197, 168, 89, 0.3);
             color: white;
-            padding: 8px 14px;
-            border-radius: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             outline: none;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .select-tafseer:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 10px rgba(197, 168, 89, 0.2);
-        }
-
-        .select-tafseer option { background: #1a1d24; color: white; }
+        .select-tafseer option { background: #111; color: white; }
 
         .jump-box { display: flex; align-items: center; gap: 6px; }
 
         .jump-input {
-            width: 70px;
+            width: 65px;
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: white;
-            padding: 7px 10px;
-            border-radius: 10px;
+            padding: 6px 8px;
+            border-radius: 8px;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px;
             text-align: center;
             outline: none;
             font-weight: 700;
         }
 
         .jump-btn {
-            background: rgba(197, 168, 89, 0.2);
+            background: transparent;
             border: 1px solid var(--gold);
             color: var(--gold);
-            padding: 7px 12px;
-            border-radius: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
             cursor: pointer;
             font-family: inherit;
             font-size: 13px;
             font-weight: 700;
-            transition: all 0.2s;
+            transition: background 0.2s, color 0.2s;
         }
 
         .jump-btn:hover { background: var(--gold); color: #111; }
 
-        .font-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(0, 0, 0, 0.35);
-            padding: 4px 6px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .font-btn {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 4px 9px;
-            border-radius: 6px;
-            font-family: inherit;
-            font-weight: 800;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .font-btn:hover { background: rgba(197, 168, 89, 0.2); color: var(--gold); }
-
-        .read-mode-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .read-mode-btn:hover {
-            border-color: var(--gold);
-            color: var(--gold);
-            background: rgba(197, 168, 89, 0.15);
-        }
-
-        /* Surah Header Card */
-        .surah-header-card {
-            max-width: 960px;
-            margin: 0 auto 30px auto;
+        /* Surah Header Section - Fully Transparent, No Big Card! */
+        .surah-header-section {
+            max-width: 1100px;
+            margin: 0 auto 20px auto;
             text-align: center;
-            background: linear-gradient(135deg, rgba(24, 28, 36, 0.75) 0%, rgba(18, 20, 26, 0.85) 100%);
-            border: 1px solid var(--dark-card-border);
-            border-radius: 20px;
-            padding: 26px 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .surah-header-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            background: transparent;
+            padding: 10px 0;
         }
 
         .surah-title {
             font-family: 'Amiri Quran', serif;
-            font-size: 48px;
+            font-size: 44px;
             color: var(--gold);
             margin: 0 0 10px 0;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
             line-height: 1.3;
         }
 
+        /* Meta details: NO black or blue backgrounds, just icon + text! */
         .surah-meta {
             display: flex;
             justify-content: center;
@@ -517,186 +435,251 @@
         }
 
         .surah-meta-item {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(0, 0, 0, 0.35);
-            padding: 5px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: #e2e8f0;
         }
 
         .surah-meta-item i { color: var(--gold); }
 
+        .surah-header-actions {
+            margin-top: 14px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .header-action-link:hover {
+            background: rgba(197, 168, 89, 0.2);
+            border-color: var(--gold);
+        }
+
         .bismillah {
             text-align: center;
             font-family: 'Amiri Quran', serif;
-            font-size: 32px;
-            margin: 25px auto 10px auto;
-            color: #f1f1f1;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            font-size: 30px;
+            margin: 15px auto 20px auto;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
         }
 
-        /* Ayahs Container */
-        .ayahs-container {
-            max-width: 960px;
+        /* Tafseer Table Container (Styled like names.html) */
+        .tafseer-table-container {
+            width: 100%;
+            max-width: 1100px;
             margin: 0 auto;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 89, 0.2);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Table Header */
+        .tafseer-table-header {
+            display: grid;
+            grid-template-columns: 85px 1fr 1.15fr;
+            background: rgba(197, 168, 89, 0.15);
+            border-bottom: 2px solid rgba(197, 168, 89, 0.3);
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 15px;
+            padding: 14px 18px;
+            align-items: center;
+        }
+
+        .th-num { text-align: center; }
+        .th-ayah { padding-right: 10px; }
+        .th-tafseer { padding-right: 15px; }
+
+        /* Table Row (Ayah on one side, Tafseer on other side) */
+        .tafseer-row {
+            display: grid;
+            grid-template-columns: 85px 1fr 1.15fr;
+            padding: 18px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            align-items: start;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .tafseer-row:last-child {
+            border-bottom: none;
+        }
+
+        .tafseer-row:hover {
+            background: rgba(197, 168, 89, 0.04);
+        }
+
+        .tafseer-row.highlighted {
+            background: rgba(197, 168, 89, 0.15) !important;
+            border-left: 3px solid var(--gold);
+            border-right: 3px solid var(--gold);
+        }
+
+        /* Column 1: Number & Actions */
+        .td-controls {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            padding-bottom: 70px;
-        }
-
-        .ayah-card {
-            background: var(--dark-card);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            padding: 24px;
-            transition: all 0.3s ease;
-            position: relative;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .ayah-card:hover {
-            border-color: rgba(197, 168, 89, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(197, 168, 89, 0.1);
-        }
-
-        .ayah-card.highlighted {
-            border: 2px solid var(--gold);
-            box-shadow: 0 0 30px rgba(197, 168, 89, 0.4);
-            animation: pulseGlow 2.5s ease-in-out;
-        }
-
-        @keyframes pulseGlow {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.015); }
-            100% { transform: scale(1); }
-        }
-
-        .ayah-card-header {
-            display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            justify-content: flex-start;
+            gap: 12px;
+            padding-top: 4px;
         }
 
-        .ayah-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(197, 168, 89, 0.15);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-size: 13px;
-        }
-
-        .ayah-actions { display: flex; align-items: center; gap: 8px; }
-
-        .ayah-action-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #ddd;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+        .ayah-circle-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid var(--gold);
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 11px;
+            background: transparent;
+        }
+
+        /* Action buttons: Transparent background, golden color, NO movement on hover */
+        .row-action-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ayah-action-btn {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
+            font-size: 15px;
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, color 0.2s;
+            transform: none !important; /* Never move/jump on hover */
         }
 
         .ayah-action-btn:hover {
-            background: rgba(197, 168, 89, 0.2);
-            border-color: var(--gold);
-            color: var(--gold);
-            transform: translateY(-2px);
+            color: #ffffff;
+            opacity: 0.85;
+            transform: none !important;
         }
 
         .ayah-action-btn.playing {
-            background: var(--gold);
-            color: #111;
-            border-color: var(--gold);
-            animation: audioPulse 1.2s infinite alternate;
+            color: #4ade80 !important;
         }
 
-        @keyframes audioPulse {
-            from { box-shadow: 0 0 5px rgba(197, 168, 89, 0.4); }
-            to { box-shadow: 0 0 15px rgba(197, 168, 89, 0.8); }
+        /* Column 2: Ayah Text */
+        .td-ayah {
+            padding: 0 12px;
+            text-align: right;
+            direction: rtl;
         }
-
-        .ayah-text-box { margin-bottom: 20px; text-align: right; direction: rtl; }
 
         .ayah-arabic-text {
             font-family: 'Amiri Quran', serif;
-            font-size: 28px;
-            line-height: 2.2;
+            font-size: 25px;
+            line-height: 2.1;
             color: #ffffff;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-            position: relative;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
         }
 
-        /* Compact Ayah Number Badge */
-        .ayah-end-ornament {
+        .ayah-inline-num {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 26px;
-            height: 26px;
-            margin: 0 4px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            border: 1.5px solid var(--gold);
-            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--gold);
             color: var(--gold);
             font-family: "Tajawal", sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
+            margin: 0 3px;
             vertical-align: middle;
         }
 
-        .tafseer-box {
-            background: rgba(10, 12, 16, 0.6);
-            border-radius: 14px;
-            border: 1px solid rgba(197, 168, 89, 0.18);
-            border-right: 4px solid var(--gold);
-            padding: 16px 20px;
-            position: relative;
+        /* Column 3: Tafseer Text */
+        .td-tafseer {
+            padding: 0 16px;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .tafseer-title {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--gold);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tafseer-content {
-            font-size: var(--tafseer-font-size);
-            line-height: 2;
+        .tafseer-text {
+            font-size: 15px;
+            line-height: 1.85;
             color: #e2e8f0;
             text-align: justify;
             font-weight: 500;
         }
 
-        /* Sadaqallah Al-Azeem */
+        /* Load More Button (Pagination / Chunking) */
+        .load-more-container {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0 10px 0;
+            width: 100%;
+        }
+
+        .load-more-btn {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            padding: 10px 26px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .load-more-btn:hover {
+            background: rgba(197, 168, 89, 0.2);
+            color: #ffffff;
+        }
+
+        /* Centered Sadaqallah Al-Azeem in Gold with Tashkeel */
         .sadaqallah-box {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 15px;
-            margin: 40px auto 25px auto;
+            margin: 35px auto 20px auto;
             text-align: center;
             width: 100%;
             max-width: 600px;
@@ -704,9 +687,9 @@
 
         .sadaqallah-text {
             font-family: 'Amiri Quran', serif;
-            font-size: 30px;
+            font-size: 28px;
             color: var(--gold);
-            text-shadow: 0 2px 12px rgba(197, 168, 89, 0.4);
+            text-shadow: 0 2px 10px rgba(197, 168, 89, 0.4);
             white-space: nowrap;
             letter-spacing: 1px;
         }
@@ -715,55 +698,57 @@
             height: 1.5px;
             background: linear-gradient(90deg, transparent, var(--gold), transparent);
             flex: 1;
-            max-width: 120px;
+            max-width: 100px;
         }
 
+        /* Scroll to Top Button: NO background, NO border, just the icon! */
         .scroll-top-btn {
             position: fixed;
-            bottom: 30px;
-            left: 30px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(18, 20, 26, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1.5px solid var(--gold);
+            bottom: 28px;
+            left: 28px;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
             color: var(--gold);
+            font-size: 32px;
             cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
             z-index: 100;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-            transition: all 0.25s;
+            padding: 0;
+            transition: opacity 0.2s, color 0.2s;
+            transform: none !important;
         }
 
-        .scroll-top-btn:hover { background: var(--gold); color: #111; transform: translateY(-3px); }
+        .scroll-top-btn:hover {
+            color: #dfc274;
+            transform: none !important;
+        }
 
         .loader-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 50vh;
+            min-height: 40vh;
             color: var(--gold);
-            gap: 16px;
-            font-size: 18px;
-            font-weight: 800;
+            gap: 14px;
+            font-size: 16px;
+            font-weight: 700;
         }
 
         .error-message {
             color: #f87171;
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.25);
-            border-radius: 14px;
+            border-radius: 12px;
             text-align: center;
-            padding: 30px;
-            font-size: 18px;
-            font-weight: 800;
-            max-width: 600px;
-            margin: 40px auto;
+            padding: 24px;
+            font-size: 16px;
+            font-weight: 700;
+            max-width: 500px;
+            margin: 30px auto;
         }
 
         .sidebar-overlay {
@@ -779,14 +764,12 @@
             transition: opacity 0.3s;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 7px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
         ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
 
-        @media (max-width: 900px) {
-            .nav-bar { gap: 8px; padding: 10px; }
-            .nav-item { padding: 6px 12px; font-size: 12px; }
-
+        /* Responsive Breakpoints */
+        @media (max-width: 850px) {
             .sidebar {
                 position: absolute;
                 right: 0;
@@ -800,20 +783,47 @@
             .sidebar-overlay.active { display: block; opacity: 1; }
 
             .mobile-header { display: flex; }
-            .reader-area { padding: 16px 12px; }
-            .tafseer-controls-bar { padding: 12px 14px; gap: 10px; }
-            .control-group { width: 100%; justify-content: space-between; }
-            .surah-header-card { padding: 18px 12px; border-radius: 16px; margin-bottom: 20px; }
-            .surah-title { font-size: 38px; }
-            .bismillah { font-size: 26px; }
-            .ayah-card { padding: 16px; border-radius: 14px; }
-            .ayah-arabic-text { font-size: 23px; line-height: 2; }
-            .ayah-end-ornament { width: 22px; height: 22px; font-size: 10px; margin: 0 3px; border-width: 1px; }
-            .tafseer-box { padding: 12px 14px; }
-            .sadaqallah-text { font-size: 24px; }
-            .sadaqallah-line { max-width: 60px; }
-            .sadaqallah-box { margin: 30px auto 15px auto; }
-            .scroll-top-btn { bottom: 20px; left: 20px; width: 40px; height: 40px; font-size: 15px; }
+            .reader-area { padding: 14px 10px 40px; }
+
+            /* Switch Table Grid to Stacked Card on Mobile */
+            .tafseer-table-header { display: none; }
+
+            .tafseer-row {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px 14px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .td-controls {
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+                padding: 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding-bottom: 8px;
+            }
+
+            .row-action-buttons {
+                flex-direction: row;
+                gap: 16px;
+            }
+
+            .td-ayah { padding: 0; width: 100%; }
+            .ayah-arabic-text { font-size: 22px; line-height: 2; }
+
+            .td-tafseer {
+                padding: 10px 0 0 0;
+                border-right: none;
+                border-top: 1px solid rgba(197, 168, 89, 0.15);
+                width: 100%;
+            }
+
+            .tafseer-text { font-size: 14px; line-height: 1.8; }
+            .surah-title { font-size: 34px; }
+            .bismillah { font-size: 24px; }
+            .scroll-top-btn { bottom: 18px; left: 18px; font-size: 28px; }
         }
     </style>
 </head>
@@ -827,11 +837,11 @@
         <div class="carousel-overlay"></div>
     </div>
 
-    <!-- Layout -->
+    <!-- Main Layout -->
     <div class="app-layout">
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <!-- Sidebar -->
+        <!-- Sidebar (Surahs Drawer) -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-title">
@@ -851,7 +861,7 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="main-content">
             <!-- Global Navbar -->
             <div class="nav-bar">
@@ -867,7 +877,7 @@
                 <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
             </div>
 
-            <!-- Mobile Header -->
+            <!-- Mobile Header Bar -->
             <div class="mobile-header">
                 <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
                     <i class="fa-solid fa-bars"></i> قائمة السور
@@ -877,7 +887,7 @@
                 </div>
             </div>
 
-            <!-- Reader Area -->
+            <!-- Reader Scroll Container -->
             <div class="reader-area" id="reader-area">
                 <!-- Controls Bar -->
                 <div class="tafseer-controls-bar">
@@ -896,20 +906,9 @@
                             <button id="jump-ayah-btn" class="jump-btn">انتقال</button>
                         </div>
                     </div>
-
-                    <div class="control-group">
-                        <div class="font-controls">
-                            <button class="font-btn" id="font-decrease" title="تصغير خط التفسير">A-</button>
-                            <button class="font-btn" id="font-reset" title="حجم الخط الافتراضي">إعادة</button>
-                            <button class="font-btn" id="font-increase" title="تكبير خط التفسير">A+</button>
-                        </div>
-                        <a id="quran-read-link" href="quran.html" class="read-mode-btn" title="الانتقال إلى وضع قراءة المصحف لهذه السورة">
-                            <i class="fa-solid fa-book-quran"></i> وضع القراءة
-                        </a>
-                    </div>
                 </div>
 
-                <!-- Content Container -->
+                <!-- Surah Tafseer Container -->
                 <div id="content-container">
                     <div class="loader-container">
                         <i class="fa-solid fa-book-open-reader fa-3x" style="opacity: 0.6;"></i>
@@ -918,7 +917,7 @@
                 </div>
 
                 <!-- Footer -->
-                <div style="text-align: center; padding: 25px 20px; margin-top: 50px; color: rgba(255,255,255,0.65); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.08); width: 100%; box-sizing: border-box; line-height: 1.8;">
+                <div style="text-align: center; padding: 25px 20px; margin-top: 40px; color: rgba(255,255,255,0.55); font-size: 13px; border-top: 1px solid rgba(255,255,255,0.06); width: 100%; box-sizing: border-box; line-height: 1.8;">
                     جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
                     تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
                 </div>
@@ -926,7 +925,7 @@
         </main>
     </div>
 
-    <!-- Scroll to Top Button -->
+    <!-- Scroll to Top: NO background, NO border, just the floating arrow -->
     <button class="scroll-top-btn" id="scroll-top-btn" title="العودة للأعلى" aria-label="العودة للأعلى">
         <i class="fa-solid fa-chevron-up"></i>
     </button>
@@ -935,6 +934,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        // Carousel Rotation
         const slides = document.querySelectorAll('.carousel-slide');
         let currentSlide = 0;
         setInterval(() => {
@@ -954,13 +954,8 @@
         const tafseerSelect = document.getElementById('tafseer-select');
         const jumpAyahInput = document.getElementById('jump-ayah-input');
         const jumpAyahBtn = document.getElementById('jump-ayah-btn');
-        const quranReadLink = document.getElementById('quran-read-link');
         const scrollTopBtn = document.getElementById('scroll-top-btn');
         const ayahAudio = document.getElementById('ayah-audio');
-        const fontIncrease = document.getElementById('font-increase');
-        const fontDecrease = document.getElementById('font-decrease');
-        const fontReset = document.getElementById('font-reset');
-        const surahCounter = document.getElementById('surah-counter');
 
         let allSurahs = [];
         let currentSurahNumber = 1;
@@ -968,9 +963,10 @@
         let currentSurahData = null;
         let tafseerCache = {};
         let currentPlayingAyahBtn = null;
-        let tafseerFontSize = parseInt(localStorage.getItem('quiblah_tafseer_font_size')) || 17;
 
-        document.documentElement.style.setProperty('--tafseer-font-size', `${tafseerFontSize}px`);
+        // Chunk / Pagination settings
+        const BATCH_SIZE = 10;
+        let currentRenderedAyahsCount = 0;
 
         function toggleSidebar() {
             sidebar.classList.toggle('open');
@@ -981,7 +977,7 @@
         overlay.addEventListener('click', toggleSidebar);
 
         readerArea.addEventListener('scroll', () => {
-            if (readerArea.scrollTop > 350) {
+            if (readerArea.scrollTop > 300) {
                 scrollTopBtn.style.display = 'flex';
             } else {
                 scrollTopBtn.style.display = 'none';
@@ -990,28 +986,6 @@
 
         scrollTopBtn.addEventListener('click', () => {
             readerArea.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        fontIncrease.addEventListener('click', () => {
-            if (tafseerFontSize < 28) {
-                tafseerFontSize += 1;
-                document.documentElement.style.setProperty('--tafseer-font-size', `${tafseerFontSize}px`);
-                localStorage.setItem('quiblah_tafseer_font_size', tafseerFontSize);
-            }
-        });
-
-        fontDecrease.addEventListener('click', () => {
-            if (tafseerFontSize > 13) {
-                tafseerFontSize -= 1;
-                document.documentElement.style.setProperty('--tafseer-font-size', `${tafseerFontSize}px`);
-                localStorage.setItem('quiblah_tafseer_font_size', tafseerFontSize);
-            }
-        });
-
-        fontReset.addEventListener('click', () => {
-            tafseerFontSize = 17;
-            document.documentElement.style.setProperty('--tafseer-font-size', '17px');
-            localStorage.setItem('quiblah_tafseer_font_size', 17);
         });
 
         function getQueryParams() {
@@ -1077,7 +1051,7 @@
                         <div class="surah-details">
                             <div class="surah-name">${surah.name}</div>
                             <div class="surah-info">
-                                <span class="surah-type-tag">${typeText}</span>
+                                <span style="color: var(--gold);">${typeText}</span>
                                 <span>${surah.numberOfAyahs} آية</span>
                             </div>
                         </div>
@@ -1094,7 +1068,7 @@
                         updateActiveSurahSidebar();
                         loadSurahTafseer(id);
 
-                        if (window.innerWidth <= 900) {
+                        if (window.innerWidth <= 850) {
                             toggleSidebar();
                         }
                     }
@@ -1132,17 +1106,28 @@
             if (!num) num = parseInt(jumpAyahInput.value);
             if (!num || isNaN(num)) return;
 
-            const targetAyahCard = document.getElementById(`ayah-${num}`);
-            if (targetAyahCard) {
-                targetAyahCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetAyahCard.classList.add('highlighted');
-                setTimeout(() => {
-                    targetAyahCard.classList.remove('highlighted');
-                }, 3000);
-            } else {
+            if (!currentSurahData) return;
+            if (num < 1 || num > currentSurahData.numberOfAyahs) {
                 if (window.showToast) {
                     window.showToast(`الآية رقم (${num}) غير موجودة في هذه السورة`, "fa-solid fa-circle-exclamation", 3500);
                 }
+                return;
+            }
+
+            // Ensure the ayah is rendered in the DOM if beyond current batch
+            if (num > currentRenderedAyahsCount) {
+                while (currentRenderedAyahsCount < num) {
+                    appendNextBatch();
+                }
+            }
+
+            const targetRow = document.getElementById(`ayah-row-${num}`);
+            if (targetRow) {
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetRow.classList.add('highlighted');
+                setTimeout(() => {
+                    targetRow.classList.remove('highlighted');
+                }, 3000);
             }
         }
 
@@ -1153,7 +1138,6 @@
 
         function loadSurahTafseer(surahNumber, targetAyahNumber = null) {
             stopAudio();
-            quranReadLink.href = `quran.html?surah=${surahNumber}`;
 
             contentContainer.innerHTML = `
                 <div class="loader-container">
@@ -1166,7 +1150,7 @@
 
             const cacheKey = `tafseer_${currentTafseerEdition}_${surahNumber}`;
             if (tafseerCache[cacheKey]) {
-                renderSurahTafseer(tafseerCache[cacheKey], targetAyahNumber);
+                initSurahDisplay(tafseerCache[cacheKey], targetAyahNumber);
                 return;
             }
 
@@ -1175,7 +1159,7 @@
                 try {
                     const parsed = JSON.parse(localSaved);
                     tafseerCache[cacheKey] = parsed;
-                    renderSurahTafseer(parsed, targetAyahNumber);
+                    initSurahDisplay(parsed, targetAyahNumber);
                     return;
                 } catch(e) {
                     localStorage.removeItem(cacheKey);
@@ -1217,7 +1201,7 @@
                         console.warn("Storage full");
                     }
 
-                    renderSurahTafseer(combinedData, targetAyahNumber);
+                    initSurahDisplay(combinedData, targetAyahNumber);
                 })
                 .catch(error => {
                     console.error("Error fetching tafseer:", error);
@@ -1233,28 +1217,34 @@
                 });
         }
 
-        function renderSurahTafseer(data, targetAyahNumber = null) {
+        function initSurahDisplay(data, targetAyahNumber = null) {
             currentSurahData = data;
+            currentRenderedAyahsCount = 0;
             mobileTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${data.name}`;
             jumpAyahInput.max = data.numberOfAyahs;
             jumpAyahInput.placeholder = `1 - ${data.numberOfAyahs}`;
 
             const revelationLabel = data.revelationType === 'Meccan' ? 'مكية' : 'مدنية';
 
-            let html = `
-                <div class="surah-header-card">
+            // Clean Header - No large card box, no dark/blue badges!
+            let headerHtml = `
+                <div class="surah-header-section">
                     <h1 class="surah-title">${data.name}</h1>
                     <div class="surah-meta">
-                        <div class="surah-meta-item"><i class="fa-solid fa-kaaba"></i> ${revelationLabel}</div>
-                        <div class="surah-meta-item"><i class="fa-solid fa-list-check"></i> آياتها: ${data.numberOfAyahs}</div>
-                        <div class="surah-meta-item"><i class="fa-solid fa-book-bookmark"></i> الجزء ${data.ayahs[0].juz}</div>
-                        <div class="surah-meta-item"><i class="fa-solid fa-file-lines"></i> صفحة ${data.ayahs[0].page}</div>
+                        <span class="surah-meta-item"><i class="fa-solid fa-kaaba"></i> ${revelationLabel}</span>
+                        <span style="color: rgba(255,255,255,0.2);">|</span>
+                        <span class="surah-meta-item"><i class="fa-solid fa-list-check"></i> آياتها ${data.numberOfAyahs}</span>
+                        <span style="color: rgba(255,255,255,0.2);">|</span>
+                        <span class="surah-meta-item"><i class="fa-solid fa-book-bookmark"></i> الجزء ${data.ayahs[0].juz}</span>
+                        <span style="color: rgba(255,255,255,0.2);">|</span>
+                        <span class="surah-meta-item"><i class="fa-solid fa-file-lines"></i> صفحة ${data.ayahs[0].page}</span>
                     </div>
-                    <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                        <a href="quran.html?surah=${data.number}" class="nav-item" style="font-size: 13px; padding: 6px 16px; border-color: var(--gold); color: var(--gold); text-decoration: none;">
+
+                    <div class="surah-header-actions">
+                        <a href="quran.html?surah=${data.number}" class="header-action-link">
                             <i class="fa-solid fa-book-quran"></i> قراءة في المصحف
                         </a>
-                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="nav-item" style="font-size: 13px; padding: 6px 16px; border-color: var(--gold); background: rgba(197, 168, 89, 0.2); color: var(--gold); cursor: pointer; font-family: inherit;">
+                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="header-action-link">
                             <i class="fa-solid fa-circle-play"></i> استمع للسورة
                         </button>
                     </div>
@@ -1262,71 +1252,121 @@
             `;
 
             if (data.number !== 1 && data.number !== 9) {
-                html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+                headerHtml += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
             }
 
-            html += `<div class="ayahs-container">`;
+            // Table Structure (Names of Allah style)
+            headerHtml += `
+                <div class="tafseer-table-container">
+                    <div class="tafseer-table-header">
+                        <div class="th-num">الآية</div>
+                        <div class="th-ayah">نص الآية الكريمة</div>
+                        <div class="th-tafseer">التفسير (${data.tafseerName || 'المعتمد'})</div>
+                    </div>
+                    <div id="tafseer-rows-body"></div>
+                </div>
+                <div id="load-more-section"></div>
+                <div id="sadaqallah-section" style="display: none;">
+                    <div class="sadaqallah-box">
+                        <span class="sadaqallah-line"></span>
+                        <span class="sadaqallah-text">« صَدَقَ اللَّهُ الْعَظِيمُ »</span>
+                        <span class="sadaqallah-line"></span>
+                    </div>
+                </div>
+            `;
 
-            data.ayahs.forEach((ayah, index) => {
+            contentContainer.innerHTML = headerHtml;
+
+            // Determine how many ayahs to render initially
+            const initialCount = targetAyahNumber ? Math.max(targetAyahNumber, BATCH_SIZE) : BATCH_SIZE;
+            renderBatch(initialCount);
+
+            if (targetAyahNumber) {
+                setTimeout(() => {
+                    jumpToAyah(targetAyahNumber);
+                }, 200);
+            }
+        }
+
+        function renderBatch(count) {
+            if (!currentSurahData) return;
+            const rowsBody = document.getElementById('tafseer-rows-body');
+            const total = currentSurahData.ayahs.length;
+            const targetCount = Math.min(currentRenderedAyahsCount + count, total);
+
+            let rowsHtml = '';
+            for (let i = currentRenderedAyahsCount; i < targetCount; i++) {
+                const ayah = currentSurahData.ayahs[i];
                 let text = ayah.text;
-                if (data.number !== 1 && index === 0 && text.startsWith('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ')) {
+                if (currentSurahData.number !== 1 && i === 0 && text.startsWith('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ')) {
                     text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '');
                 }
 
-                html += `
-                    <div class="ayah-card" id="ayah-${ayah.numberInSurah}" data-ayah-num="${ayah.numberInSurah}" data-global-num="${ayah.number}">
-                        <div class="ayah-card-header">
-                            <div class="ayah-badge">
-                                <i class="fa-solid fa-feather-pointed"></i> آية رقم ${ayah.numberInSurah}
-                            </div>
-                            <div class="ayah-actions">
-                                <button class="ayah-action-btn audio-btn" title="استمع للآية" aria-label="استمع للآية" onclick="togglePlayAyah(this, ${ayah.number})">
+                rowsHtml += `
+                    <div class="tafseer-row" id="ayah-row-${ayah.numberInSurah}">
+                        <!-- Col 1: Number and Transparent Actions -->
+                        <div class="td-controls">
+                            <div class="ayah-circle-badge">${ayah.numberInSurah}</div>
+                            <div class="row-action-buttons">
+                                <button class="ayah-action-btn" title="استمع للآية" aria-label="استمع للآية" onclick="togglePlayAyah(this, ${ayah.number})">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
-                                <button class="ayah-action-btn copy-btn" title="نسخ الآية والتفسير" aria-label="نسخ الآية والتفسير" onclick="copyAyahTafseer(${ayah.numberInSurah})">
+                                <button class="ayah-action-btn" title="نسخ الآية والتفسير" aria-label="نسخ الآية والتفسير" onclick="copyAyahTafseer(${ayah.numberInSurah})">
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
-                                <button class="ayah-action-btn share-btn" title="مشاركة الآية والتفسير" aria-label="مشاركة الآية والتفسير" onclick="shareAyahTafseer(${ayah.numberInSurah})">
+                                <button class="ayah-action-btn" title="مشاركة الآية والتفسير" aria-label="مشاركة الآية والتفسير" onclick="shareAyahTafseer(${ayah.numberInSurah})">
                                     <i class="fa-solid fa-share-nodes"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="ayah-text-box">
+                        <!-- Col 2: The Quranic Verse -->
+                        <div class="td-ayah">
                             <div class="ayah-arabic-text">
                                 ${text}
-                                <span class="ayah-end-ornament">${ayah.numberInSurah}</span>
+                                <span class="ayah-inline-num">${ayah.numberInSurah}</span>
                             </div>
                         </div>
 
-                        <div class="tafseer-box">
-                            <div class="tafseer-title">
-                                <i class="fa-solid fa-book-open"></i> ${data.tafseerName || 'التفسير'}
-                            </div>
-                            <div class="tafseer-content">
+                        <!-- Col 3: The Tafseer -->
+                        <div class="td-tafseer">
+                            <div class="tafseer-text">
                                 ${ayah.tafseer}
                             </div>
                         </div>
                     </div>
                 `;
-            });
+            }
 
-            // Sadaqallah Al-Azeem in Center
-            html += `
-                <div class="sadaqallah-box">
-                    <span class="sadaqallah-line"></span>
-                    <span class="sadaqallah-text">« صَدَقَ اللَّهُ الْعَظِيمُ »</span>
-                    <span class="sadaqallah-line"></span>
-                </div>
-            `;
+            rowsBody.insertAdjacentHTML('beforeend', rowsHtml);
+            currentRenderedAyahsCount = targetCount;
 
-            html += `</div>`;
-            contentContainer.innerHTML = html;
+            updateLoadMoreSection();
+        }
 
-            if (targetAyahNumber) {
-                setTimeout(() => {
-                    jumpToAyah(targetAyahNumber);
-                }, 300);
+        function appendNextBatch() {
+            renderBatch(BATCH_SIZE);
+        }
+
+        function updateLoadMoreSection() {
+            const loadMoreSection = document.getElementById('load-more-section');
+            const sadaqallahSection = document.getElementById('sadaqallah-section');
+            if (!loadMoreSection || !currentSurahData) return;
+
+            const remaining = currentSurahData.numberOfAyahs - currentRenderedAyahsCount;
+
+            if (remaining > 0) {
+                loadMoreSection.innerHTML = `
+                    <div class="load-more-container">
+                        <button id="load-more-btn" class="load-more-btn" onclick="appendNextBatch()">
+                            <i class="fa-solid fa-angles-down"></i> تحميل باقي الآيات (متبقي ${remaining} آية)
+                        </button>
+                    </div>
+                `;
+                if (sadaqallahSection) sadaqallahSection.style.display = 'none';
+            } else {
+                loadMoreSection.innerHTML = '';
+                if (sadaqallahSection) sadaqallahSection.style.display = 'block';
             }
         }
 

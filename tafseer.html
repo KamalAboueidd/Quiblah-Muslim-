@@ -99,38 +99,67 @@
             z-index: 10;
         }
 
-        /* Top Navigation Bar */
-        .nav-bar {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 20px;
-            flex-wrap: wrap;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            flex-shrink: 0;
-        }
-
-        .nav-item {
+        /* Top Navigation Header - Clean Minimalist Bar */
+        .top-nav-header {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 15px;
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 13px;
-            transition: all 0.25s ease;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(197, 168, 89, 0.2);
+            flex-shrink: 0;
+            gap: 15px;
         }
 
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13.5px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .back-home-btn:hover {
+            background: rgba(197, 168, 89, 0.2);
             border-color: var(--gold);
+            color: #ffffff;
+        }
+
+        .back-home-btn i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .back-home-btn:hover i {
+            transform: translateX(3px);
+        }
+
+        .header-surah-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-page-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-page-title i {
             color: var(--gold);
         }
 
@@ -458,11 +487,18 @@
         }
 
         /* Ayah Search Input */
+        /* Ayah Search Group & Jump Button */
+        .ayah-search-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .ayah-search-box {
             position: relative;
             display: flex;
             align-items: center;
-            width: 280px;
+            width: 250px;
         }
 
         .ayah-search-box .search-icon {
@@ -516,22 +552,44 @@
             color: #fff;
         }
 
+        .search-jump-btn {
+            background: rgba(197, 168, 89, 0.2);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .search-jump-btn:hover {
+            background: var(--gold);
+            color: #111;
+        }
+
         /* Surah Header Section - Generous Breathing Room & Spacing */
         .surah-header-section {
             max-width: 1100px;
-            margin: 0 auto 30px auto;
+            margin: 0 auto 35px auto;
             text-align: center;
             background: transparent;
-            padding: 25px 0 10px 0;
+            padding: 30px 0 15px 0;
         }
 
         .surah-title {
             font-family: 'Amiri Quran', serif;
-            font-size: 48px;
+            font-size: 52px;
             color: var(--gold);
-            margin: 0 0 22px 0; /* Clear breathing room below title! */
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
-            line-height: 1.3;
+            margin: 0 0 28px 0; /* Significant, comfortable distance beneath the title! */
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
+            line-height: 1.35;
         }
 
         /* Meta details: NO black or blue backgrounds, generous spacing */
@@ -539,12 +597,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 22px;
+            gap: 26px;
             color: #ddd;
             font-weight: 700;
             font-size: 14px;
             flex-wrap: wrap;
-            margin-bottom: 24px; /* Clear breathing room below meta */
+            margin-bottom: 28px; /* Clear breathing room below meta */
         }
 
         .surah-meta-item {
@@ -977,27 +1035,19 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Global Navbar -->
-            <div class="nav-bar">
-                <a href="home.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
-                <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-                <a href="tafseer.html" class="nav-item active"><i class="fa-solid fa-book-open-reader"></i> التفسير</a>
-                <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-                <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-                <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-                <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
-                <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-                <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-                <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
-            </div>
-
-            <!-- Mobile Header Bar -->
-            <div class="mobile-header">
-                <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
-                    <i class="fa-solid fa-bars"></i> قائمة السور
-                </button>
-                <div class="title" id="mobile-title">
-                    <i class="fa-solid fa-book-open-reader"></i> تفسير القرآن
+            <!-- Clean Header with Back to Prayer Times -->
+            <div class="top-nav-header">
+                <a href="home.html" class="back-home-btn" title="الرجوع لصفحة المواقيت الرئيسية">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>الرجوع للمواقيت</span>
+                </a>
+                <div class="header-surah-indicator">
+                    <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
+                        <i class="fa-solid fa-bars"></i> قائمة السور
+                    </button>
+                    <span class="header-page-title">
+                        <i class="fa-solid fa-book-open-reader"></i> تفسير القرآن
+                    </span>
                 </div>
             </div>
 
@@ -1026,10 +1076,15 @@
                     </div>
 
                     <div class="control-group">
-                        <div class="ayah-search-box">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" id="ayah-search-input" class="ayah-search-input" placeholder="ابحث برقم الآية أو كلماتها..." autocomplete="off" />
-                            <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="ayah-search-group">
+                            <div class="ayah-search-box">
+                                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                <input type="text" id="ayah-search-input" class="ayah-search-input" placeholder="ابحث برقم الآية أو كلماتها..." autocomplete="off" />
+                                <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <button id="search-jump-btn" class="search-jump-btn" title="انتقال للآية">
+                                <i class="fa-solid fa-arrow-down"></i> انتقال
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1293,6 +1348,13 @@
             clearSearchBtn.style.display = 'none';
             ayahSearchInput.focus();
         });
+
+        const searchJumpBtn = document.getElementById('search-jump-btn');
+        if (searchJumpBtn) {
+            searchJumpBtn.addEventListener('click', () => {
+                handleAyahSearch(ayahSearchInput.value.trim());
+            });
+        }
 
         ayahSearchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

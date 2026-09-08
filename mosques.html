@@ -26,7 +26,7 @@
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1F5F5D">
+    <meta name="theme-color" content="#C5A859">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
@@ -150,9 +150,9 @@
 </head>
 <body>
 <div class="fullscreen-carousel">
-    <div class="carousel-slide active" style="background-image:url('assets/bg1.jpg');"></div>
-    <div class="carousel-slide" data-bg="assets/bg2.jpg"></div>
-    <div class="carousel-slide" data-bg="assets/bg3.jpg"></div>
+    <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+    <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+    <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
     <div class="carousel-overlay"></div>
 </div>
 
@@ -282,8 +282,9 @@
     }
 
     function setUserLocationAndSearch(lat, lng, popupText = 'موقعك الحالي') {
+        currentPos = { lat: lat, lng: lng };
         if(userMarker) { map.removeLayer(userMarker); }
-        map.setView([lat, lng], 15);
+        map.setView([lat, lng], 14);
 
         userMarker = L.marker([lat, lng], { icon: L.divIcon({
             className: '',
@@ -292,7 +293,7 @@
             html: '<svg viewBox="0 0 100 150" style="width:36px;height:54px; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.5));"><path fill="#c5a859" stroke="#fff" stroke-width="4" d="M50,4 A46,46 0 0,0 4,50 C4,95 50,146 50,146 C50,146 96,95 96,50 A46,46 0 0,0 50,4 Z"/><circle cx="50" cy="50" r="20" fill="#fff"/></svg>'
         })}).bindPopup(`<b style="font-family:Tajawal;font-size:15px;color:#000;">${popupText}</b>`).addTo(map);
 
-        fetchMosques(lat, lng, 1000); 
+        fetchMosques(lat, lng, 3500); 
     }
 
     function fetchMosquesInView() {
@@ -309,7 +310,7 @@
         mosqueMarkers = [];
         mosqueData = [];
         
-        document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري جلب بيانات المساجد...</div>';
+        document.getElementById('mosques-list').innerHTML = `<div style="text-align:center; padding:20px; color:#aaa;"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>جاري البحث عن المساجد في نطاق ${Math.round(radius/1000)} كم...</div>`;
 
         // Broader query to catch all mosques/places of worship
         const overpassQuery = `
@@ -333,7 +334,7 @@
         for (const api of apis) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 25000);
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
                 
                 const response = await fetch(api, {
                     method: 'POST',
@@ -366,8 +367,19 @@
         }
 
         if (elements.length === 0) {
-            document.getElementById('mosques-list').innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">لم يتم العثور على مساجد قريبة في هذا النطاق.</div>';
-            if (typeof showToast === 'function') showToast('لا توجد نتائج هنا', 3000, 'warning');
+            if (radius < 5000) {
+                console.log(`No mosques found within ${radius}m, expanding search to 6000m...`);
+                return fetchMosques(lat, lng, 6000);
+            }
+            document.getElementById('mosques-list').innerHTML = `
+                <div style="text-align:center; padding:25px; color:#aaa;">
+                    <i class="fa-solid fa-mosque" style="font-size:32px; color:rgba(197,168,89,0.5); margin-bottom:12px;"></i><br>
+                    لم يتم العثور على مساجد مسجلة في نطاق ${Math.round(radius/1000)} كم.<br>
+                    <button type="button" onclick="fetchMosques(${lat}, ${lng}, ${radius + 4000})" style="margin-top:15px; background:rgba(197,168,89,0.2); border:1px solid var(--gold); color:var(--gold); padding:8px 18px; border-radius:20px; cursor:pointer; font-family:Tajawal; font-weight:700; font-size:13px;">
+                        <i class="fa-solid fa-arrows-maximize"></i> توسيع نطاق البحث أكثر (+4 كم)
+                    </button>
+                </div>`;
+            if (typeof showToast === 'function') showToast('لم يتم العثور على مساجد في هذا النطاق', 3000, 'warning');
             return;
         }
 
@@ -564,20 +576,18 @@
             document.getElementById('loader-text').innerHTML = `
                 <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري البحث عن المساجد...
             `;
-            setTimeout(() => { 
-                setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي'); 
-                fetchUserLocationName(currentPos.lat, currentPos.lng);
-                document.getElementById('loader-text').style.display = 'none';
-                document.getElementById('start-btn').style.display = 'inline-flex';
-            }, 2000);
+            setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي'); 
+            fetchUserLocationName(currentPos.lat, currentPos.lng);
+            document.getElementById('loader-text').style.display = 'none';
+            document.getElementById('start-btn').style.display = 'inline-flex';
         }, () => {
             document.getElementById('loader-text').innerHTML = `
                 <i aria-hidden="true" class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;"></i> <span style="color:#e74c3c;">تعذر الوصول لموقعك. يرجى تفعيل خدمة الموقع.</span>`;
             setTimeout(() => {
                 document.getElementById('loader-text').style.display = 'none';
                 document.getElementById('start-btn').style.display = 'inline-flex';
-            }, 5000);
-        }, { enableHighAccuracy: true, timeout: 15000 });
+            }, 4000);
+        }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
     }
 
     function toggleListSearch() {

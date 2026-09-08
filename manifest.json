@@ -8,7 +8,7 @@
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#111111",
-  "theme_color": "#1F5F5D",
+  "theme_color": "#C5A859",
   "dir": "rtl",
   "lang": "ar",
   "categories": ["lifestyle", "utilities", "books"],

@@ -25,7 +25,7 @@
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1F5F5D">
+    <meta name="theme-color" content="#C5A859">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
@@ -310,8 +310,8 @@
 
     <div class="fullscreen-carousel">
         <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
-        <div class="carousel-slide" data-bg="assets/bg2.jpg"></div>
-        <div class="carousel-slide" data-bg="assets/bg3.jpg"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
         <div class="carousel-overlay"></div>
     </div>
 
@@ -704,49 +704,65 @@
             }
         }
 
+        function computeQiblaAngle(lat, lng) {
+            const kaabaLat = 21.422487 * (Math.PI / 180);
+            const kaabaLng = 39.826206 * (Math.PI / 180);
+            const uLat = lat * (Math.PI / 180);
+            const uLng = lng * (Math.PI / 180);
+
+            const deltaLng = kaabaLng - uLng;
+            const y = Math.sin(deltaLng);
+            const x = Math.cos(uLat) * Math.tan(kaabaLat) - Math.sin(uLat) * Math.cos(deltaLng);
+            let qAngle = Math.atan2(y, x) * (180 / Math.PI);
+            return Math.round((qAngle + 360) % 360);
+        }
+
+        function applyQiblaData(lat, lng, cityName = '') {
+            userLat = lat;
+            userLng = lng;
+            qiblaAngle = computeQiblaAngle(lat, lng);
+
+            document.getElementById('status-row').style.display = 'flex';
+            document.getElementById('status-text').textContent = `القبلة ${Math.round(qiblaAngle)}° من الشمال`;
+            if (cityName) {
+                document.getElementById('city-name').textContent = cityName;
+            }
+
+            // Set arrow to correct Qibla angle
+            document.getElementById('compass-arrow').style.transform = `rotate(${qiblaAngle}deg)`;
+            document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-qiblaAngle}deg)`;
+            updateAngleDisplay(qiblaAngle);
+            showCompass();
+
+            if (!rafId) renderLoop();
+        }
+
         // ── Geolocation ───────────────────────────────────
         function startGeolocationFlow() {
             if (!('geolocation' in navigator)) {
                 showToast('متصفحك لا يدعم تحديد الموقع.', 'fa-solid fa-triangle-exclamation');
                 document.getElementById('loader').style.display = 'none';
+                applyQiblaData(30.0444, 31.2357, 'القاهرة (افتراضي)');
                 return;
             }
 
             navigator.geolocation.getCurrentPosition(position => {
-                userLat = position.coords.latitude;
-                userLng = position.coords.longitude;
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                applyQiblaData(lat, lng);
 
-                axios.get(`https://api.aladhan.com/v1/qibla/${userLat}/${userLng}`)
-                    .then(res => {
-                        qiblaAngle = res.data.data.direction;
-
-                        document.getElementById('status-row').style.display = 'flex';
-                        document.getElementById('status-text').textContent = `القبلة ${Math.round(qiblaAngle)}° من الشمال`;
-
-                        // Set arrow to correct Qibla angle
-                        document.getElementById('compass-arrow').style.transform = `rotate(${qiblaAngle}deg)`;
-                        document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-qiblaAngle}deg)`;
-                        updateAngleDisplay(qiblaAngle);
-                        showCompass();
-
-                        if (!rafId) renderLoop();
-
-                        // Reverse geocode city name
-                        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLng}&localityLanguage=ar`)
-                            .then(r => {
-                                const city = r.data.city || r.data.principalSubdivision || '';
-                                if (city) document.getElementById('city-name').textContent = city;
-                            }).catch(() => {});
-                    })
-                    .catch(() => {
-                        showToast('حدث خطأ أثناء جلب بيانات القبلة.', 'fa-solid fa-triangle-exclamation');
-                        document.getElementById('gps-loading-text').textContent = 'تعذر تحديد القبلة';
-                    });
+                // Reverse geocode city name in background
+                axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+                    .then(r => {
+                        const city = r.data.city || r.data.principalSubdivision || '';
+                        if (city) document.getElementById('city-name').textContent = city;
+                    }).catch(() => {});
 
             }, () => {
-                showToast('لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع.', 'fa-solid fa-triangle-exclamation');
-                document.getElementById('gps-loading-text').textContent = 'تعذر الوصول للموقع';
-            }, { enableHighAccuracy: true, timeout: 15000 });
+                // If GPS is unavailable or slow, fallback quickly to Cairo so the user is not stuck
+                applyQiblaData(30.0444, 31.2357, 'القاهرة (افتراضي)');
+                showToast('تم تعيين القبلة على القاهرة. فعّل خدمة الموقع لتحديد دقيق.', 'fa-solid fa-location-dot', 5000);
+            }, { enableHighAccuracy: false, timeout: 6000, maximumAge: 60000 });
         }
 
         // ── Auto-start on page load ───────────────────────

@@ -25,7 +25,7 @@
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1F5F5D">
+    <meta name="theme-color" content="#C5A859">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
@@ -113,9 +113,9 @@
 </head>
 <body>
 <div class="fullscreen-carousel">
-    <div class="carousel-slide active" style="background-image:url('assets/bg1.jpg');"></div>
-    <div class="carousel-slide" data-bg="assets/bg2.jpg"></div>
-    <div class="carousel-slide" data-bg="assets/bg3.jpg"></div>
+    <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+    <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+    <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
     <div class="carousel-overlay"></div>
 </div>
 
@@ -175,15 +175,25 @@
     setInterval(() => { slides[cur].classList.remove('active'); cur = (cur+1)%slides.length; slides[cur].classList.add('active'); }, 8000);
 
     document.addEventListener("DOMContentLoaded", () => {
-        axios.get('https://raw.githubusercontent.com/rn0x/Names_Of_Allah_Json/main/Names_Of_Allah.json')
-            .then(res => {
-                if(res.data && res.data.length > 0) {
-                    renderNames(res.data);
+        fetch('names.json')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    renderNames(data);
                 }
             })
             .catch(err => {
-                console.error(err);
-                document.getElementById('names-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#e74c3c;">حدث خطأ في جلب البيانات. يرجى المحاولة لاحقاً.</td></tr>';
+                console.error("Error loading names.json:", err);
+                // Fallback to axios if fetch failed
+                if (typeof axios !== 'undefined') {
+                    axios.get('names.json')
+                        .then(res => renderNames(res.data))
+                        .catch(() => {
+                            document.getElementById('names-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#e74c3c;">حدث خطأ في جلب البيانات. يرجى المحاولة لاحقاً.</td></tr>';
+                        });
+                } else {
+                    document.getElementById('names-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#e74c3c;">حدث خطأ في جلب البيانات. يرجى المحاولة لاحقاً.</td></tr>';
+                }
             });
     });
 

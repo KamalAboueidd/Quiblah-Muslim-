@@ -17,6 +17,7 @@ const STATIC_ASSETS = [
     './pwa.js',
     './manifest.json',
     './azkar.json',
+    './names.json',
     './short_azkar.json',
     './verses.json',
     './assets/mosque.svg',

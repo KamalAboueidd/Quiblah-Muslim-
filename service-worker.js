@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v6';
+const CACHE_NAME = 'quiblah-muslim-v7';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -16,6 +16,7 @@ const STATIC_ASSETS = [
     './listen.html',
     './mosques.html',
     './surahs_meta.js',
+    './quran_data.js',
     './player-bridge.js',
     './toast.js',
     './pwa.js',

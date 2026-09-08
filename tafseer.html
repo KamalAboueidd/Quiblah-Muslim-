@@ -359,9 +359,11 @@
         .tafseer-controls-bar {
             max-width: 1100px;
             margin: 0 auto 12px auto;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(197, 168, 89, 0.25);
             border-radius: 12px;
             padding: 8px 14px;
@@ -376,7 +378,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: nowrap; /* Keep label and dropdown on the same line */
+            flex-wrap: nowrap; /* Keep label and dropdown on the same line on desktop */
         }
 
         .control-label {
@@ -390,7 +392,7 @@
             flex-shrink: 0;
         }
 
-        /* Custom Luxury Dropdown - NO Native Blue Browser Box! */
+        /* Custom Luxury Dropdown - Transparent Glassmorphism (No Blue!) */
         .custom-dropdown {
             position: relative;
             display: inline-block;
@@ -398,10 +400,10 @@
         }
 
         .dropdown-trigger {
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.45);
             border: 1px solid rgba(197, 168, 89, 0.35);
             color: #ffffff;
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 9px;
             font-family: inherit;
             font-size: 12.5px;
@@ -417,8 +419,8 @@
 
         .dropdown-trigger:hover, .dropdown-trigger.open {
             border-color: var(--gold);
-            box-shadow: 0 0 15px rgba(197, 168, 89, 0.2);
-            background: rgba(197, 168, 89, 0.1);
+            box-shadow: 0 0 15px rgba(197, 168, 89, 0.25);
+            background: rgba(197, 168, 89, 0.12);
         }
 
         .dropdown-arrow {
@@ -433,17 +435,17 @@
 
         .dropdown-menu {
             position: absolute;
-            top: calc(100% + 8px);
+            top: calc(100% + 6px);
             right: 0;
-            min-width: 270px;
-            background: rgba(16, 18, 24, 0.97);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1.5px solid rgba(197, 168, 89, 0.4);
+            min-width: 260px;
+            background: rgba(14, 12, 9, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(197, 168, 89, 0.15);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 15px rgba(197, 168, 89, 0.12);
             padding: 6px;
-            z-index: 200;
+            z-index: 250;
             display: none;
         }
 
@@ -458,9 +460,9 @@
         }
 
         .dropdown-item {
-            padding: 11px 14px;
+            padding: 10px 14px;
             border-radius: 8px;
-            color: #e2e8f0;
+            color: #f1f5f9;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
@@ -468,10 +470,11 @@
             align-items: center;
             gap: 10px;
             transition: all 0.15s;
+            background: transparent;
         }
 
         .dropdown-item:hover {
-            background: rgba(197, 168, 89, 0.18);
+            background: rgba(197, 168, 89, 0.16);
             color: var(--gold);
         }
 
@@ -592,9 +595,9 @@
             font-family: 'Amiri Quran', serif;
             font-size: 38px;
             color: var(--gold);
-            margin: 0 0 4px 0;
+            margin: 0 0 16px 0;
             text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
-            line-height: 1.25;
+            line-height: 1.6;
         }
 
         /* Meta details: Compact, elegant, luxury gold accents */
@@ -607,7 +610,7 @@
             font-weight: 700;
             font-size: 13px;
             flex-wrap: wrap;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
         }
 
         .surah-meta-item {
@@ -965,11 +968,11 @@
             .back-home-btn { font-size: 13px; gap: 5px; }
             .nav-right-cluster { gap: 10px; }
 
-            .surah-header-section { margin: 0 auto 6px auto; padding: 2px 0; }
-            .surah-title { font-size: 28px; margin: 0 0 4px 0; }
-            .surah-meta { gap: 10px; font-size: 11.5px; margin-bottom: 6px; }
-            .surah-header-actions { gap: 8px; margin-bottom: 6px; }
-            .header-action-link { padding: 4px 12px; font-size: 11.5px; }
+            .surah-header-section { margin: 0 auto 10px auto; padding: 4px 0; }
+            .surah-title { font-size: 30px; margin: 0 0 14px 0; line-height: 1.6; }
+            .surah-meta { gap: 12px; font-size: 12px; margin-bottom: 12px; }
+            .surah-header-actions { gap: 8px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
+            .header-action-link { padding: 5px 12px; font-size: 11.5px; white-space: nowrap; }
 
             .tafseer-controls-bar {
                 padding: 8px 10px;
@@ -981,18 +984,35 @@
 
             .control-group {
                 width: 100%;
-                justify-content: space-between;
-                flex-wrap: nowrap;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
                 gap: 6px;
             }
 
             .control-label {
                 font-size: 12px;
+                color: var(--gold);
+            }
+
+            .custom-dropdown {
+                width: 100%;
             }
 
             .dropdown-trigger {
-                padding: 5px 10px;
-                font-size: 11.5px;
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: space-between;
+                padding: 7px 12px;
+                font-size: 12px;
+            }
+
+            .dropdown-menu {
+                width: 100%;
+                min-width: 100%;
+                box-sizing: border-box;
+                left: 0;
+                right: 0;
             }
 
             .ayah-search-group {

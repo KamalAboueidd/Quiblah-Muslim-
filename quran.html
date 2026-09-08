@@ -714,7 +714,30 @@
         </main>
     </div>
 
+    <!-- Quick Tafseer Modal -->
+    <div class="tafseer-modal-backdrop" id="tafseer-modal-backdrop">
+        <div class="tafseer-modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title"><i class="fa-solid fa-book-open-reader"></i> تفسير الآية</div>
+                <button class="modal-close-btn" id="modal-close-btn" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-ayah-text" id="modal-ayah-text"></div>
+                <div style="font-weight: 800; color: var(--gold); margin-bottom: 8px; font-size: 14px;">
+                    <i class="fa-solid fa-book-open"></i> التفسير الميسر:
+                </div>
+                <div class="modal-tafseer-text" id="modal-tafseer-text"></div>
+            </div>
+            <div class="modal-footer">
+                <a id="modal-full-link" href="tafseer.html" style="border: 1px solid var(--gold); background: rgba(197, 168, 89, 0.15); color: var(--gold); text-decoration: none; padding: 8px 18px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> عرض في صفحة التفسير الشاملة
+                </a>
+            </div>
+        </div>
+    </div>
+
     <script src="surahs_meta.js"></script>
+    <script src="quran_data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         // Header Carousel Logic
@@ -758,6 +781,18 @@
             // 1. Instant local metadata (0ms load guaranteed, works offline)
             if (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.length > 0) {
                 allSurahs = window.QURAN_SURAHS_DATA;
+                renderSurahList(allSurahs);
+                return;
+            }
+
+            if (window.QURAN_FULL_DATA) {
+                allSurahs = Object.values(window.QURAN_FULL_DATA).map(s => ({
+                    number: s.number,
+                    name: s.name,
+                    englishName: s.englishName,
+                    revelationType: s.revelationType,
+                    numberOfAyahs: s.numberOfAyahs
+                }));
                 renderSurahList(allSurahs);
                 return;
             }
@@ -836,18 +871,16 @@
             document.querySelectorAll('.surah-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const id = parseInt(this.getAttribute('data-id'));
-                    if (id !== currentSurahNumber) {
-                        currentSurahNumber = id;
-                        // Update active class
-                        document.querySelectorAll('.surah-item').forEach(el => el.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        loadSurah(id);
-                        
-                        // Close sidebar on mobile
-                        if (window.innerWidth <= 900) {
-                            toggleSidebar();
-                        }
+                    currentSurahNumber = id;
+                    // Update active class
+                    document.querySelectorAll('.surah-item').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    loadSurah(id);
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 900) {
+                        toggleSidebar();
                     }
                 });
             });
@@ -944,6 +977,12 @@
             const surahMeta = (allSurahs && allSurahs.find(s => s.number === id)) || 
                               (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === id));
 
+            // 0. Full local Quran data (all 114 surahs, 0ms instant load, 100% offline!)
+            if (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[id]) {
+                renderSurahView(window.QURAN_FULL_DATA[id]);
+                return;
+            }
+
             // 1. Built-in initial cache (e.g. Al-Fatihah, 0ms instant load!)
             if (window.SURAHS_INITIAL_CACHE && window.SURAHS_INITIAL_CACHE[id]) {
                 renderSurahView(window.SURAHS_INITIAL_CACHE[id]);
@@ -1020,9 +1059,9 @@
             html += `<div class="verses-container">`;
             
             data.ayahs.forEach((ayah, index) => {
-                let text = ayah.text;
-                if (data.number !== 1 && index === 0 && text.startsWith('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ')) {
-                    text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '');
+                let text = (ayah.text || '').replace(/^\ufeff/, '');
+                if (data.number !== 1 && index === 0) {
+                    text = text.replace(/^[\ufeff]?بّ?ِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '');
                 }
                 
                 html += `
@@ -1101,10 +1140,16 @@
             modalBackdrop.classList.remove('show');
         }
 
-        document.getElementById('modal-close-btn').addEventListener('click', closeQuickTafseer);
-        document.getElementById('tafseer-modal-backdrop').addEventListener('click', (e) => {
-            if (e.target.id === 'tafseer-modal-backdrop') closeQuickTafseer();
-        });
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeQuickTafseer);
+
+        const modalBackdropEl = document.getElementById('tafseer-modal-backdrop');
+        if (modalBackdropEl) {
+            modalBackdropEl.addEventListener('click', (e) => {
+                if (e.target.id === 'tafseer-modal-backdrop') closeQuickTafseer();
+            });
+        }
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeQuickTafseer();
         });
@@ -1121,28 +1166,6 @@
         loadSurah(currentSurahNumber);
 
     </script>
-
-    <!-- Quick Tafseer Modal -->
-    <div class="tafseer-modal-backdrop" id="tafseer-modal-backdrop">
-        <div class="tafseer-modal-card">
-            <div class="modal-header">
-                <div class="modal-title" id="modal-title"><i class="fa-solid fa-book-open-reader"></i> تفسير الآية</div>
-                <button class="modal-close-btn" id="modal-close-btn" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-ayah-text" id="modal-ayah-text"></div>
-                <div style="font-weight: 800; color: var(--gold); margin-bottom: 8px; font-size: 14px;">
-                    <i class="fa-solid fa-book-open"></i> التفسير الميسر:
-                </div>
-                <div class="modal-tafseer-text" id="modal-tafseer-text"></div>
-            </div>
-            <div class="modal-footer">
-                <a id="modal-full-link" href="tafseer.html" style="border: 1px solid var(--gold); background: rgba(197, 168, 89, 0.15); color: var(--gold); text-decoration: none; padding: 8px 18px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700;">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> عرض في صفحة التفسير الشاملة
-                </a>
-            </div>
-        </div>
-    </div>
 
     <script src="toast.js"></script>
     <script src="pwa.js"></script>

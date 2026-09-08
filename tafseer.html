@@ -99,40 +99,96 @@
             z-index: 10;
         }
 
-        /* Top Navigation Header - Clean Minimalist Bar */
-        .top-nav-header {
+        /* Reader Top Navigation Bar - Borderless & Backgroundless */
+        .reader-top-bar {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto 12px auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 24px;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(197, 168, 89, 0.2);
+            gap: 12px;
+            padding: 4px 6px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             flex-shrink: 0;
-            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        .nav-right-cluster {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            white-space: nowrap !important;
+            flex-shrink: 0;
+        }
+
+        .menu-btn {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 4px 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-family: inherit;
+            white-space: nowrap !important;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .menu-btn:hover {
+            color: #ffffff;
+            opacity: 0.9;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .menu-btn i {
+            font-size: 15px;
+        }
+
+        .header-page-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap !important;
+        }
+
+        .header-page-title i {
+            color: var(--gold);
+            font-size: 15px;
         }
 
         .back-home-btn {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 18px;
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(197, 168, 89, 0.4);
+            gap: 7px;
+            padding: 4px 6px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             color: var(--gold);
             text-decoration: none;
             font-weight: 800;
-            font-size: 13.5px;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            font-size: 14px;
+            font-family: inherit;
+            white-space: nowrap !important;
+            cursor: pointer;
+            transition: color 0.2s ease;
         }
 
         .back-home-btn:hover {
-            background: rgba(197, 168, 89, 0.2);
-            border-color: var(--gold);
             color: #ffffff;
+            background: transparent !important;
+            border: none !important;
         }
 
         .back-home-btn i {
@@ -142,25 +198,6 @@
 
         .back-home-btn:hover i {
             transform: translateX(3px);
-        }
-
-        .header-surah-indicator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .header-page-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .header-page-title i {
-            color: var(--gold);
         }
 
         /* Sidebar (Surahs Drawer) */
@@ -308,43 +345,7 @@
             overflow: hidden;
         }
 
-        /* Mobile Header */
-        .mobile-header {
-            display: none;
-            padding: 10px 14px;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            align-items: center;
-            justify-content: space-between;
-            z-index: 50;
-            flex-shrink: 0;
-        }
 
-        .mobile-header .title {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .menu-btn {
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(197, 168, 89, 0.3);
-            color: var(--gold);
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: inherit;
-        }
 
         /* Reader Area */
         .reader-area {
@@ -357,25 +358,25 @@
         /* Clean Transparent Controls Bar */
         .tafseer-controls-bar {
             max-width: 1100px;
-            margin: 0 auto 25px auto;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(197, 168, 89, 0.2);
-            border-radius: 14px;
-            padding: 12px 20px;
+            margin: 0 auto 12px auto;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 89, 0.25);
+            border-radius: 12px;
+            padding: 8px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .control-group {
             display: flex;
             align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 8px;
+            flex-wrap: nowrap; /* Keep label and dropdown on the same line */
         }
 
         .control-label {
@@ -385,29 +386,33 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap; /* Never break */
+            flex-shrink: 0;
         }
 
         /* Custom Luxury Dropdown - NO Native Blue Browser Box! */
         .custom-dropdown {
             position: relative;
             display: inline-block;
+            flex-shrink: 0;
         }
 
         .dropdown-trigger {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.55);
             border: 1px solid rgba(197, 168, 89, 0.35);
             color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 10px;
+            padding: 6px 14px;
+            border-radius: 9px;
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             transition: all 0.2s;
             user-select: none;
+            white-space: nowrap;
         }
 
         .dropdown-trigger:hover, .dropdown-trigger.open {
@@ -574,41 +579,41 @@
             color: #111;
         }
 
-        /* Surah Header Section - Generous Breathing Room & Spacing */
+        /* Surah Header Section - Elevated at Top with Sleek Spacing */
         .surah-header-section {
             max-width: 1100px;
-            margin: 0 auto 35px auto;
+            margin: 0 auto 10px auto;
             text-align: center;
             background: transparent;
-            padding: 30px 0 15px 0;
+            padding: 4px 0 2px 0;
         }
 
         .surah-title {
             font-family: 'Amiri Quran', serif;
-            font-size: 52px;
+            font-size: 38px;
             color: var(--gold);
-            margin: 0 0 28px 0; /* Significant, comfortable distance beneath the title! */
+            margin: 0 0 4px 0;
             text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
-            line-height: 1.35;
+            line-height: 1.25;
         }
 
-        /* Meta details: NO black or blue backgrounds, generous spacing */
+        /* Meta details: Compact, elegant, luxury gold accents */
         .surah-meta {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 26px;
+            gap: 16px;
             color: #ddd;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             flex-wrap: wrap;
-            margin-bottom: 28px; /* Clear breathing room below meta */
+            margin-bottom: 8px;
         }
 
         .surah-meta-item {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: transparent;
             border: none;
             padding: 0;
@@ -618,26 +623,26 @@
         .surah-meta-item i { color: var(--gold); }
 
         .surah-header-actions {
-            margin-top: 10px;
-            margin-bottom: 26px; /* Clear breathing room below actions */
+            margin-top: 4px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: center;
-            gap: 14px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .header-action-link {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 7px 18px;
+            gap: 6px;
+            padding: 5px 14px;
             border-radius: 20px;
             background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(197, 168, 89, 0.4);
+            border: 1px solid rgba(197, 168, 89, 0.35);
             color: var(--gold);
             text-decoration: none;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             font-family: inherit;
             transition: background 0.2s, border-color 0.2s;
@@ -953,9 +958,61 @@
             }
             .sidebar.open { transform: translateX(0); box-shadow: -10px 0 35px rgba(0, 0, 0, 0.9); }
             .sidebar-overlay.active { display: block; opacity: 1; }
+            .reader-area { padding: 10px 10px 30px; }
+            .reader-top-bar { margin-bottom: 8px; padding: 2px 2px; }
+            .menu-btn { font-size: 13px; gap: 5px; }
+            .header-page-title { font-size: 13px; gap: 5px; }
+            .back-home-btn { font-size: 13px; gap: 5px; }
+            .nav-right-cluster { gap: 10px; }
 
-            .mobile-header { display: flex; }
-            .reader-area { padding: 14px 10px 40px; }
+            .surah-header-section { margin: 0 auto 6px auto; padding: 2px 0; }
+            .surah-title { font-size: 28px; margin: 0 0 4px 0; }
+            .surah-meta { gap: 10px; font-size: 11.5px; margin-bottom: 6px; }
+            .surah-header-actions { gap: 8px; margin-bottom: 6px; }
+            .header-action-link { padding: 4px 12px; font-size: 11.5px; }
+
+            .tafseer-controls-bar {
+                padding: 8px 10px;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+                gap: 6px;
+            }
+
+            .control-label {
+                font-size: 12px;
+            }
+
+            .dropdown-trigger {
+                padding: 5px 10px;
+                font-size: 11.5px;
+            }
+
+            .ayah-search-group {
+                width: 100%;
+            }
+
+            .ayah-search-box {
+                flex: 1;
+                width: 100%;
+            }
+
+            .ayah-search-input {
+                padding: 6px 30px 6px 28px;
+                font-size: 12px;
+            }
+
+            .search-jump-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
 
             /* Switch Table Grid to Stacked Card on Mobile */
             .tafseer-table-header { display: none; }
@@ -993,8 +1050,7 @@
             }
 
             .tafseer-text { font-size: 14px; line-height: 1.8; }
-            .surah-title { font-size: 34px; }
-            .bismillah { font-size: 24px; }
+            .bismillah { font-size: 20px; margin: 4px 0 10px 0; }
             .scroll-top-btn { bottom: 18px; left: 18px; font-size: 28px; }
         }
     </style>
@@ -1035,24 +1091,29 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Clean Header with Back to Prayer Times -->
-            <div class="top-nav-header">
-                <a href="home.html" class="back-home-btn" title="الرجوع لصفحة المواقيت الرئيسية">
-                    <i class="fa-solid fa-arrow-right"></i>
-                    <span>الرجوع للمواقيت</span>
-                </a>
-                <div class="header-surah-indicator">
-                    <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
-                        <i class="fa-solid fa-bars"></i> قائمة السور
-                    </button>
-                    <span class="header-page-title">
-                        <i class="fa-solid fa-book-open-reader"></i> تفسير القرآن
-                    </span>
-                </div>
-            </div>
-
             <!-- Reader Scroll Container -->
             <div class="reader-area" id="reader-area">
+                <!-- Top Navigation & Action Row (Borderless, Backgroundless, Straight) -->
+                <div class="reader-top-bar">
+                    <div class="nav-right-cluster">
+                        <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
+                            <i class="fa-solid fa-bars"></i>
+                            <span>قائمة السور</span>
+                        </button>
+                        <span class="header-page-title" id="mobile-title">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                            <span>تفسير القرآن</span>
+                        </span>
+                    </div>
+                    <a href="home.html" class="back-home-btn" title="الرجوع لصفحة المواقيت الرئيسية">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <span>الرجوع للمواقيت</span>
+                    </a>
+                </div>
+
+                <!-- Top Surah Header Info (Title, Revelation, Ayahs count, Juz, Action buttons) -->
+                <div id="surah-header-container" class="surah-header-section"></div>
+
                 <!-- Controls Bar with Custom Luxury Dropdown and Ayah Search -->
                 <div class="tafseer-controls-bar">
                     <div class="control-group">
@@ -1075,21 +1136,19 @@
                         </div>
                     </div>
 
-                    <div class="control-group">
-                        <div class="ayah-search-group">
-                            <div class="ayah-search-box">
-                                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                                <input type="text" id="ayah-search-input" class="ayah-search-input" placeholder="ابحث برقم الآية أو كلماتها..." autocomplete="off" />
-                                <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
-                            <button id="search-jump-btn" class="search-jump-btn" title="انتقال للآية">
-                                <i class="fa-solid fa-arrow-down"></i> انتقال
-                            </button>
+                    <div class="ayah-search-group">
+                        <div class="ayah-search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="ayah-search-input" class="ayah-search-input" placeholder="ابحث برقم الآية أو كلماتها..." autocomplete="off" />
+                            <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث"><i class="fa-solid fa-xmark"></i></button>
                         </div>
+                        <button id="search-jump-btn" class="search-jump-btn" title="انتقال للآية">
+                            <i class="fa-solid fa-arrow-down"></i> انتقال
+                        </button>
                     </div>
                 </div>
 
-                <!-- Surah Tafseer Container -->
+                <!-- Surah Tafseer Container (Bismillah & Ayah Rows) -->
                 <div id="content-container">
                     <div class="loader-container">
                         <i class="fa-solid fa-book-open-reader fa-3x" style="opacity: 0.6;"></i>
@@ -1113,6 +1172,7 @@
 
     <audio id="ayah-audio" preload="none"></audio>
 
+    <script src="surahs_meta.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         // Carousel Rotation
@@ -1181,6 +1241,14 @@
         }
 
         function fetchSurahs() {
+            // 1. Instant local metadata (0ms load guaranteed, works offline)
+            if (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.length > 0) {
+                allSurahs = window.QURAN_SURAHS_DATA;
+                renderSurahList(allSurahs);
+                checkInitialLoad();
+                return;
+            }
+
             const cachedIndex = localStorage.getItem('quiblah_surah_index');
             if (cachedIndex) {
                 try {
@@ -1201,7 +1269,13 @@
                     checkInitialLoad();
                 })
                 .catch(error => {
-                    surahListEl.innerHTML = `<div class="error-message">حدث خطأ في تحميل قائمة السور. يرجى التحقق من اتصال الإنترنت.</div>`;
+                    if (window.QURAN_SURAHS_DATA) {
+                        allSurahs = window.QURAN_SURAHS_DATA;
+                        renderSurahList(allSurahs);
+                        checkInitialLoad();
+                    } else {
+                        surahListEl.innerHTML = `<div class="error-message">حدث خطأ في تحميل قائمة السور. يرجى التحقق من اتصال الإنترنت.</div>`;
+                    }
                     console.error("Error fetching surahs list:", error);
                 });
         }
@@ -1421,8 +1495,45 @@
             }
         }
 
+        function renderSurahTopHeader(meta) {
+            const container = document.getElementById('surah-header-container');
+            if (!container || !meta) return;
+            const revelationLabel = meta.revelationType === 'Meccan' ? 'مكية' : 'مدنية';
+            const juzHtml = meta.juz ? `<span style="color: rgba(255,255,255,0.2);">|</span><span class="surah-meta-item"><i class="fa-solid fa-book-bookmark"></i> الجزء ${meta.juz}</span>` : '';
+            const pageHtml = meta.page ? `<span style="color: rgba(255,255,255,0.2);">|</span><span class="surah-meta-item"><i class="fa-solid fa-file-lines"></i> صفحة ${meta.page}</span>` : '';
+
+            container.innerHTML = `
+                <h1 class="surah-title">${meta.name}</h1>
+                <div class="surah-meta">
+                    <span class="surah-meta-item"><i class="fa-solid fa-kaaba"></i> ${revelationLabel}</span>
+                    <span style="color: rgba(255,255,255,0.2);">|</span>
+                    <span class="surah-meta-item"><i class="fa-solid fa-list-check"></i> آياتها ${meta.numberOfAyahs}</span>
+                    ${juzHtml}
+                    ${pageHtml}
+                </div>
+                <div class="surah-header-actions">
+                    <a href="quran.html?surah=${meta.number}" class="header-action-link">
+                        <i class="fa-solid fa-book-quran"></i> قراءة في المصحف
+                    </a>
+                    <button onclick="playSurahGlobalAudio(${meta.number}, '${meta.name}')" class="header-action-link">
+                        <i class="fa-solid fa-circle-play"></i> استمع للسورة
+                    </button>
+                </div>
+            `;
+        }
+
         function loadSurahTafseer(surahNumber, targetAyahNumber = null) {
             stopAudio();
+
+            // 0ms instant surah header update from static metadata
+            const cachedSurahMeta = (allSurahs && allSurahs.find(s => s.number === surahNumber)) || 
+                                    (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === surahNumber));
+            if (cachedSurahMeta) {
+                renderSurahTopHeader(cachedSurahMeta);
+                if (mobileTitle) {
+                    mobileTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${cachedSurahMeta.name}`;
+                }
+            }
 
             contentContainer.innerHTML = `
                 <div class="loader-container">
@@ -1505,42 +1616,24 @@
         function initSurahDisplay(data, targetAyahNumber = null) {
             currentSurahData = data;
             currentRenderedAyahsCount = 0;
-            mobileTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${data.name}`;
+            if (mobileTitle) {
+                mobileTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${data.name}`;
+            }
             ayahSearchInput.placeholder = `ابحث برقم الآية (1 - ${data.numberOfAyahs}) أو كلماتها...`;
 
-            const revelationLabel = data.revelationType === 'Meccan' ? 'مكية' : 'مدنية';
+            renderSurahTopHeader({
+                ...data,
+                juz: data.ayahs && data.ayahs[0] ? data.ayahs[0].juz : '',
+                page: data.ayahs && data.ayahs[0] ? data.ayahs[0].page : ''
+            });
 
-            // Clean Header - No large card box, no dark/blue badges!
-            let headerHtml = `
-                <div class="surah-header-section">
-                    <h1 class="surah-title">${data.name}</h1>
-                    <div class="surah-meta">
-                        <span class="surah-meta-item"><i class="fa-solid fa-kaaba"></i> ${revelationLabel}</span>
-                        <span style="color: rgba(255,255,255,0.2);">|</span>
-                        <span class="surah-meta-item"><i class="fa-solid fa-list-check"></i> آياتها ${data.numberOfAyahs}</span>
-                        <span style="color: rgba(255,255,255,0.2);">|</span>
-                        <span class="surah-meta-item"><i class="fa-solid fa-book-bookmark"></i> الجزء ${data.ayahs[0].juz}</span>
-                        <span style="color: rgba(255,255,255,0.2);">|</span>
-                        <span class="surah-meta-item"><i class="fa-solid fa-file-lines"></i> صفحة ${data.ayahs[0].page}</span>
-                    </div>
-
-                    <div class="surah-header-actions">
-                        <a href="quran.html?surah=${data.number}" class="header-action-link">
-                            <i class="fa-solid fa-book-quran"></i> قراءة في المصحف
-                        </a>
-                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="header-action-link">
-                            <i class="fa-solid fa-circle-play"></i> استمع للسورة
-                        </button>
-                    </div>
-                </div>
-            `;
-
+            // Table Structure (Ayahs and Tafseer) inside contentContainer
+            let bodyHtml = '';
             if (data.number !== 1 && data.number !== 9) {
-                headerHtml += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+                bodyHtml += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
             }
 
-            // Table Structure (Names of Allah style)
-            headerHtml += `
+            bodyHtml += `
                 <div class="tafseer-table-container">
                     <div class="tafseer-table-header">
                         <div class="th-num">الآية</div>
@@ -1559,7 +1652,7 @@
                 </div>
             `;
 
-            contentContainer.innerHTML = headerHtml;
+            contentContainer.innerHTML = bodyHtml;
 
             // Determine how many ayahs to render initially
             const initialCount = targetAyahNumber ? Math.max(targetAyahNumber, BATCH_SIZE) : BATCH_SIZE;

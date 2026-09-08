@@ -688,7 +688,7 @@
                 <!-- Top Navigation & Action Row (Borderless, Backgroundless, Straight) -->
                 <div class="reader-top-bar">
                     <div class="nav-right-cluster">
-                        <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
+                        <button type="button" class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
                             <i class="fa-solid fa-bars"></i>
                             <span>قائمة السور</span>
                         </button>
@@ -736,7 +736,11 @@
             overlay.classList.toggle('active');
         }
 
-        menuBtn.addEventListener('click', toggleSidebar);
+        menuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSidebar();
+        });
         overlay.addEventListener('click', toggleSidebar);
 
         // API Integration
@@ -749,7 +753,7 @@
         const readerArea = document.getElementById('reader-area');
         const mobileTitle = document.getElementById('mobile-title');
 
-        // Fetch All Surahs (with Instant Local Cache)
+        // Fetch All Surahs (with Instant Local Cache & Multi-tier Fallback)
         function fetchSurahs() {
             // 1. Instant local metadata (0ms load guaranteed, works offline)
             if (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.length > 0) {
@@ -769,20 +773,40 @@
                 }
             }
 
-            axios.get('https://api.alquran.cloud/v1/surah')
+            fetchWithTimeout('https://api.alquran.cloud/v1/surah', 6000)
                 .then(response => {
-                    allSurahs = response.data.data;
-                    localStorage.setItem('quiblah_surah_index', JSON.stringify(allSurahs));
+                    allSurahs = response.data;
+                    try { localStorage.setItem('quiblah_surah_index', JSON.stringify(allSurahs)); } catch(e){}
                     renderSurahList(allSurahs);
                 })
                 .catch(error => {
-                    if (window.QURAN_SURAHS_DATA) {
-                        allSurahs = window.QURAN_SURAHS_DATA;
-                        renderSurahList(allSurahs);
-                    } else {
-                        surahListEl.innerHTML = `<div class="error-message" style="text-align: center; padding: 20px; color: #ff9999;">حدث خطأ في تحميل السور</div>`;
-                    }
-                    console.error("Error fetching surahs:", error);
+                    console.warn("Alquran API surah list failed, trying Quran.com API...", error);
+                    fetchWithTimeout('https://api.quran.com/api/v4/chapters?language=ar', 6000)
+                        .then(r2 => {
+                            allSurahs = r2.chapters.map(c => ({
+                                number: c.id,
+                                name: c.name_arabic,
+                                englishName: c.name_simple,
+                                revelationType: c.revelation_place === 'makkah' ? 'Meccan' : 'Medinan',
+                                numberOfAyahs: c.verses_count
+                            }));
+                            renderSurahList(allSurahs);
+                        })
+                        .catch(() => {
+                            if (window.QURAN_SURAHS_DATA) {
+                                allSurahs = window.QURAN_SURAHS_DATA;
+                                renderSurahList(allSurahs);
+                            } else {
+                                surahListEl.innerHTML = `
+                                    <div style="text-align: center; padding: 25px; color: var(--gold);">
+                                        <p style="margin-bottom: 12px; font-size: 14px;">تعذر تحميل قائمة السور</p>
+                                        <button type="button" onclick="fetchSurahs()" style="cursor: pointer; border: 1px solid var(--gold); color: var(--gold); background: rgba(0,0,0,0.4); padding: 7px 18px; border-radius: 20px; font-family: inherit; font-size: 13px; font-weight: 700;">
+                                            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                        });
                 });
         }
 
@@ -838,9 +862,87 @@
             renderSurahList(filtered);
         });
 
-        // Load Specific Surah Content (with instant caching)
-        function loadSurah(id) {
+        // Resilient Helper: fetch with timeout using native fetch (independent of CDN/axios)
+        async function fetchWithTimeout(url, timeoutMs = 6000) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timer);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch(e) {
+                clearTimeout(timer);
+                throw e;
+            }
+        }
+
+        // Multi-tier Quran Surah Fetcher:
+        // Tier 1: Al-Quran Cloud (Uthmani)
+        // Tier 2: Quran.com API v4 (Official Cloudflare high-availability)
+        // Tier 3: jsdelivr mirror
+        async function smartFetchSurah(id, surahMeta) {
+            // Tier 1: Al-Quran Cloud
+            try {
+                const json = await fetchWithTimeout(`https://api.alquran.cloud/v1/surah/${id}/quran-uthmani`, 6000);
+                if (json && json.data && json.data.ayahs && json.data.ayahs.length > 0) {
+                    return json.data;
+                }
+            } catch(err1) {
+                console.warn(`Tier 1 (alquran.cloud) failed for surah ${id}:`, err1.message);
+            }
+
+            // Tier 2: Quran.com API v4
+            try {
+                const json2 = await fetchWithTimeout(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`, 6500);
+                if (json2 && json2.verses && json2.verses.length > 0) {
+                    return {
+                        number: id,
+                        name: surahMeta ? surahMeta.name : `سورة ${id}`,
+                        englishName: surahMeta ? surahMeta.englishName : `Surah ${id}`,
+                        revelationType: surahMeta ? surahMeta.revelationType : 'Meccan',
+                        numberOfAyahs: json2.verses.length,
+                        ayahs: json2.verses.map((v, idx) => ({
+                            number: v.id || idx + 1,
+                            numberInSurah: idx + 1,
+                            text: v.text_uthmani
+                        }))
+                    };
+                }
+            } catch(err2) {
+                console.warn(`Tier 2 (quran.com) failed for surah ${id}:`, err2.message);
+            }
+
+            // Tier 3: jsdelivr mirror
+            try {
+                const json3 = await fetchWithTimeout(`https://cdn.jsdelivr.net/gh/risan/quran-json@main/data/surahs/${id}.json`, 6500);
+                if (json3 && json3.verses && json3.verses.length > 0) {
+                    return {
+                        number: id,
+                        name: json3.name || (surahMeta ? surahMeta.name : `سورة ${id}`),
+                        englishName: json3.transliteration || (surahMeta ? surahMeta.englishName : `Surah ${id}`),
+                        revelationType: json3.type || (surahMeta ? surahMeta.revelationType : 'Meccan'),
+                        numberOfAyahs: json3.total_verses || json3.verses.length,
+                        ayahs: json3.verses.map((v, idx) => ({
+                            number: v.id || idx + 1,
+                            numberInSurah: v.id || idx + 1,
+                            text: v.text
+                        }))
+                    };
+                }
+            } catch(err3) {
+                console.warn(`Tier 3 (jsdelivr mirror) failed for surah ${id}:`, err3.message);
+            }
+
+            throw new Error("جميع خوادم القرآن غير متاحة حالياً");
+        }
+
+        // Load Specific Surah Content (with instant caching & multi-tier resilience)
+        async function loadSurah(id) {
             readerArea.scrollTop = 0;
+
+            const surahMeta = (allSurahs && allSurahs.find(s => s.number === id)) || 
+                              (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === id));
 
             // 1. Built-in initial cache (e.g. Al-Fatihah, 0ms instant load!)
             if (window.SURAHS_INITIAL_CACHE && window.SURAHS_INITIAL_CACHE[id]) {
@@ -863,32 +965,30 @@
             contentContainer.innerHTML = `
                 <div class="loader-container">
                     <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-3x"></i>
-                    <p>جاري تحميل آيات السورة...</p>
+                    <p>جاري تحميل آيات سورة ${surahMeta ? surahMeta.name : id}...</p>
                 </div>
             `;
 
-            axios.get(`https://api.alquran.cloud/v1/surah/${id}/quran-uthmani`)
-                .then(response => {
-                    const data = response.data.data;
-                    try {
-                        localStorage.setItem(cacheKey, JSON.stringify(data));
-                    } catch(e) {
-                        console.warn("Storage full", e);
-                    }
-                    renderSurahView(data);
-                })
-                .catch(error => {
-                    contentContainer.innerHTML = `
-                        <div class="error-message" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius: 16px; padding: 25px; text-align: center; max-width: 500px; margin: 40px auto;">
-                            <i class="fa-solid fa-circle-exclamation fa-2x" style="color: var(--gold); margin-bottom: 12px;"></i>
-                            <p style="color: #fff; font-size: 15px; margin-bottom: 15px;">حدث خطأ أثناء جلب الآيات. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
-                            <button onclick="loadSurah(${id})" style="cursor: pointer; border: 1px solid var(--gold); color: var(--gold); background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 20px; font-family: inherit; font-size: 13.5px; font-weight: 700; transition: all 0.2s;">
-                                <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
-                            </button>
-                        </div>
-                    `;
-                    console.error("Error fetching surah content:", error);
-                });
+            try {
+                const data = await smartFetchSurah(id, surahMeta);
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
+                } catch(e) {
+                    console.warn("Storage full", e);
+                }
+                renderSurahView(data);
+            } catch(error) {
+                contentContainer.innerHTML = `
+                    <div class="error-message" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius: 16px; padding: 25px; text-align: center; max-width: 500px; margin: 40px auto;">
+                        <i class="fa-solid fa-circle-exclamation fa-2x" style="color: var(--gold); margin-bottom: 12px;"></i>
+                        <p style="color: #fff; font-size: 15px; margin-bottom: 15px;">تعذر تحميل آيات السورة حالياً. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
+                        <button onclick="loadSurah(${id})" style="cursor: pointer; border: 1px solid var(--gold); color: var(--gold); background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 20px; font-family: inherit; font-size: 13.5px; font-weight: 700; transition: all 0.2s;">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة الآن
+                        </button>
+                    </div>
+                `;
+                console.error("Error fetching surah content:", error);
+            }
         }
 
         function renderSurahView(data) {
@@ -967,9 +1067,9 @@
             modalTafseerText.innerHTML = `جاري جلب التفسير الميسر...`;
             modalFullLink.href = `tafseer.html?surah=${surahNum}&ayah=${ayahNum}`;
 
-            axios.get(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani,ar.muyassar`)
+            fetchWithTimeout(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani,ar.muyassar`, 6000)
                 .then(res => {
-                    const editions = res.data.data;
+                    const editions = res.data;
                     const quranAyah = editions.find(e => e.edition.identifier === 'quran-uthmani') || editions[0];
                     const tafseerAyah = editions.find(e => e.edition.identifier === 'ar.muyassar') || editions[1];
 
@@ -978,8 +1078,21 @@
                     modalTafseerText.innerText = tafseerAyah.text;
                 })
                 .catch(err => {
-                    modalAyahText.innerText = `تعذر جلب نص الآية`;
-                    modalTafseerText.innerText = `حدث خطأ أثناء جلب التفسير. يرجى التأكد من اتصالك بالإنترنت.`;
+                    console.warn("Alquran quick tafseer failed, trying fallback...", err);
+                    fetchWithTimeout(`https://api.quran.com/api/v4/verses/by_key/${surahNum}:${ayahNum}?words=false&tafsirs=16`, 6000)
+                        .then(r2 => {
+                            if (r2 && r2.verse) {
+                                modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> آية (${ayahNum})`;
+                                modalAyahText.innerText = r2.verse.text_uthmani || `آية ${ayahNum}`;
+                                modalTafseerText.innerText = (r2.verse.tafsirs && r2.verse.tafsirs[0] ? r2.verse.tafsirs[0].text : "التفسير متاح في صفحة التفسير الشاملة");
+                                return;
+                            }
+                            throw new Error();
+                        })
+                        .catch(() => {
+                            modalAyahText.innerText = `تعذر جلب نص الآية`;
+                            modalTafseerText.innerText = `حدث خطأ أثناء جلب التفسير المباشر. يرجى الضغط على زر 'عرض في صفحة التفسير الشاملة' بالأسفل.`;
+                        });
                 });
         }
 

@@ -1261,22 +1261,41 @@
                 }
             }
 
-            axios.get('https://api.alquran.cloud/v1/surah')
+            fetchWithTimeout('https://api.alquran.cloud/v1/surah', 6000)
                 .then(response => {
-                    allSurahs = response.data.data;
-                    localStorage.setItem('quiblah_surah_index', JSON.stringify(allSurahs));
+                    allSurahs = response.data;
+                    try { localStorage.setItem('quiblah_surah_index', JSON.stringify(allSurahs)); } catch(e){}
                     renderSurahList(allSurahs);
                     checkInitialLoad();
                 })
                 .catch(error => {
-                    if (window.QURAN_SURAHS_DATA) {
-                        allSurahs = window.QURAN_SURAHS_DATA;
-                        renderSurahList(allSurahs);
-                        checkInitialLoad();
-                    } else {
-                        surahListEl.innerHTML = `<div class="error-message">حدث خطأ في تحميل قائمة السور. يرجى التحقق من اتصال الإنترنت.</div>`;
-                    }
-                    console.error("Error fetching surahs list:", error);
+                    console.warn("Alquran API surahs failed, trying Quran.com API...", error);
+                    fetchWithTimeout('https://api.quran.com/api/v4/chapters?language=ar', 6000)
+                        .then(r2 => {
+                            allSurahs = r2.chapters.map(c => ({
+                                number: c.id,
+                                name: c.name_arabic,
+                                englishName: c.name_simple,
+                                revelationType: c.revelation_place === 'makkah' ? 'Meccan' : 'Medinan',
+                                numberOfAyahs: c.verses_count
+                            }));
+                            renderSurahList(allSurahs);
+                            checkInitialLoad();
+                        })
+                        .catch(() => {
+                            if (window.QURAN_SURAHS_DATA) {
+                                allSurahs = window.QURAN_SURAHS_DATA;
+                                renderSurahList(allSurahs);
+                                checkInitialLoad();
+                            } else {
+                                surahListEl.innerHTML = `<div class="error-message" style="text-align: center; padding: 20px; color: var(--gold);">
+                                    <p style="margin-bottom: 12px; font-size: 14px;">حدث خطأ في تحميل قائمة السور</p>
+                                    <button type="button" onclick="fetchSurahs()" style="cursor: pointer; border: 1px solid var(--gold); color: var(--gold); background: rgba(0,0,0,0.4); padding: 7px 18px; border-radius: 20px; font-family: inherit; font-size: 13px; font-weight: 700;">
+                                        <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+                                    </button>
+                                </div>`;
+                            }
+                        });
                 });
         }
 
@@ -1522,7 +1541,22 @@
             `;
         }
 
-        function loadSurahTafseer(surahNumber, targetAyahNumber = null) {
+        // Resilient fetch with timeout
+        async function fetchWithTimeout(url, timeoutMs = 6500) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timer);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch(e) {
+                clearTimeout(timer);
+                throw e;
+            }
+        }
+
+        async function loadSurahTafseer(surahNumber, targetAyahNumber = null) {
             stopAudio();
 
             // 0ms instant surah header update from static metadata
@@ -1562,55 +1596,53 @@
                 }
             }
 
-            const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,${currentTafseerEdition}`;
+            try {
+                const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,${currentTafseerEdition}`;
+                const response = await fetchWithTimeout(url, 7000);
+                const editionsData = response.data;
+                const quranEdition = editionsData.find(e => e.edition.identifier === 'quran-uthmani') || editionsData[0];
+                const tafseerEdition = editionsData.find(e => e.edition.identifier === currentTafseerEdition) || editionsData[1];
 
-            axios.get(url)
-                .then(response => {
-                    const editionsData = response.data.data;
-                    const quranEdition = editionsData.find(e => e.edition.identifier === 'quran-uthmani') || editionsData[0];
-                    const tafseerEdition = editionsData.find(e => e.edition.identifier === currentTafseerEdition) || editionsData[1];
+                const combinedData = {
+                    number: quranEdition.number,
+                    name: quranEdition.name,
+                    englishName: quranEdition.englishName,
+                    revelationType: quranEdition.revelationType,
+                    numberOfAyahs: quranEdition.numberOfAyahs,
+                    tafseerName: tafseerEdition.edition ? tafseerEdition.edition.name : (currentTafseerEdition === 'ar.muyassar' ? 'التفسير الميسر' : 'تفسير الجلالين'),
+                    ayahs: quranEdition.ayahs.map((ayah, index) => {
+                        const tafseerAyah = (tafseerEdition && tafseerEdition.ayahs) ? (tafseerEdition.ayahs[index] || {}) : {};
+                        return {
+                            number: ayah.number,
+                            numberInSurah: ayah.numberInSurah,
+                            text: ayah.text,
+                            juz: ayah.juz,
+                            page: ayah.page,
+                            tafseer: tafseerAyah.text || 'لا يتوفر تفسير لهذه الآية'
+                        };
+                    })
+                };
 
-                    const combinedData = {
-                        number: quranEdition.number,
-                        name: quranEdition.name,
-                        englishName: quranEdition.englishName,
-                        revelationType: quranEdition.revelationType,
-                        numberOfAyahs: quranEdition.numberOfAyahs,
-                        tafseerName: tafseerEdition.edition.name,
-                        ayahs: quranEdition.ayahs.map((ayah, index) => {
-                            const tafseerAyah = tafseerEdition.ayahs[index] || {};
-                            return {
-                                number: ayah.number,
-                                numberInSurah: ayah.numberInSurah,
-                                text: ayah.text,
-                                juz: ayah.juz,
-                                page: ayah.page,
-                                tafseer: tafseerAyah.text || 'لا يتوفر تفسير لهذه الآية'
-                            };
-                        })
-                    };
+                tafseerCache[cacheKey] = combinedData;
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify(combinedData));
+                } catch(e) {
+                    console.warn("Storage full");
+                }
 
-                    tafseerCache[cacheKey] = combinedData;
-                    try {
-                        localStorage.setItem(cacheKey, JSON.stringify(combinedData));
-                    } catch(e) {
-                        console.warn("Storage full");
-                    }
-
-                    initSurahDisplay(combinedData, targetAyahNumber);
-                })
-                .catch(error => {
-                    console.error("Error fetching tafseer:", error);
-                    contentContainer.innerHTML = `
-                        <div class="error-message">
-                            <i class="fa-solid fa-triangle-exclamation fa-2x" style="margin-bottom: 10px;"></i>
-                            <p>تعذر جلب تفسير السورة حالياً. يرجى التأكد من اتصال الإنترنت والمحاولة مرة أخرى.</p>
-                            <button onclick="loadSurahTafseer(${surahNumber})" class="jump-btn" style="margin-top: 15px; padding: 10px 20px;">
-                                <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
-                            </button>
-                        </div>
-                    `;
-                });
+                initSurahDisplay(combinedData, targetAyahNumber);
+            } catch(error) {
+                console.error("Error fetching tafseer:", error);
+                contentContainer.innerHTML = `
+                    <div class="error-message" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius: 16px; padding: 25px; text-align: center; max-width: 500px; margin: 40px auto;">
+                        <i class="fa-solid fa-triangle-exclamation fa-2x" style="color: var(--gold); margin-bottom: 12px;"></i>
+                        <p style="color: #fff; font-size: 15px; margin-bottom: 15px;">تعذر جلب تفسير السورة حالياً. يرجى التأكد من اتصال الإنترنت والمحاولة مرة أخرى.</p>
+                        <button onclick="loadSurahTafseer(${surahNumber})" class="jump-btn" style="padding: 10px 24px; border-radius: 20px; font-weight: 700; cursor: pointer;">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة الآن
+                        </button>
+                    </div>
+                `;
+            }
         }
 
         function initSurahDisplay(data, targetAyahNumber = null) {

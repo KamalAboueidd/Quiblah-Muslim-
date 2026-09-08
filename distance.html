@@ -2,260 +2,1162 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>من بيتك للكعبة - قبلة المسلم</title>
 
     <!-- SEO & Open Graph Tags -->
-    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
-    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="description" content="احسب المسافة المباشرة الدقيقة من منزلك ومدينتك إلى الكعبة المشرفة بمكة المكرمة مع خريطة تفاعلية ومسار الطيران ووقت السفر وزاوية القبلة.">
+    <meta name="keywords" content="من بيتك للكعبة, مسافة الكعبة, اتجاه القبلة, مكة المكرمة, المسجد الحرام, قبلة المسلم">
     <meta name="author" content="كمال أبو عيد">
-    <meta property="og:title" content="قبلة المسلم">
-    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:title" content="من بيتك للكعبة - قبلة المسلم">
+    <meta property="og:description" content="احسب المسافة المباشرة وزاوية القبلة ووقت الرحلة من بيتك إلى الكعبة المشرفة.">
     <meta property="og:image" content="assets/bg1.jpg">
     <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
     <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="قبلة المسلم">
-    <meta name="twitter:description" content="تطبيق إسلامي شامل لأوقات الصلاة، القبلة، القرآن، والأذكار.">
     <link rel="preload" as="image" href="assets/bg1.jpg">
 
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
     <script src="player-bridge.js"></script>
-    
+
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#C5A859">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <meta name="apple-mobile-web-app-title" content="من بيتك للكعبة">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
     <style>
-        :root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
-
-        .fullscreen-carousel { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
-        .carousel-slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s ease-in-out; }
-        .carousel-slide.active { opacity:1; }
-        .carousel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.70); backdrop-filter:blur(3px); }
-
-        .app-container { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
-        .top-bar { display:flex; justify-content:center; align-items:center; padding:18px 30px 8px; }
-        .top-bar .title { font-weight:900; font-size:28px; color:var(--white); text-shadow:0 4px 15px rgba(0,0,0,0.8); }
-
-        .nav-bar { display:flex; justify-content:center; gap:10px; padding:8px 20px; margin-bottom:10px; flex-wrap:wrap; }
-        .nav-item { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:30px; background:rgba(0,0,0,0.4); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); color:white; text-decoration:none; font-weight:700; font-size:14px; transition:all 0.3s; }
-        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.12); border-color:var(--gold); color:var(--gold); }
-
-        .main-content { flex-grow:1; display:flex; flex-direction:column; align-items:center; padding:10px 20px 30px; gap:18px; }
-
-        .loader-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:30px; color:var(--gold); }
-        .loader-text { font-size:14px; opacity:0.7; }
-
-        /* Distance Card */
-        .distance-card {
-            background:rgba(0,0,0,0.55); backdrop-filter:blur(20px);
-            border:1px solid rgba(197,168,89,0.3); border-top:4px solid var(--gold);
-            border-radius:16px; padding:24px 30px; text-align:center;
-            width:100%; max-width:500px; box-shadow:0 10px 40px rgba(0,0,0,0.4);
-            display:none;
+        :root {
+            --gold: #C5A859;
+            --gold-hover: #dfc274;
+            --primary-teal: #2F7A78;
+            --white: #FFFFFF;
+            --green: #2ecc71;
         }
-        .distance-label { font-size:14px; color:rgba(255,255,255,0.55); margin-bottom:8px; letter-spacing:1px; }
-        .distance-value { font-size:64px; font-weight:900; color:var(--gold); text-shadow:0 0 30px rgba(197,168,89,0.4); line-height:1; }
-        .distance-unit { font-size:20px; font-weight:700; color:rgba(255,255,255,0.65); margin-top:4px; }
-        .distance-divider { width:60px; height:3px; background:var(--gold); border-radius:2px; margin:16px auto; }
-        .locations-row { display:flex; align-items:center; justify-content:center; gap:12px; font-size:14px; color:rgba(255,255,255,0.7); flex-wrap:wrap; }
-        .loc-pin { display:flex; align-items:center; gap:6px; }
-        .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-        .dot.user { background:var(--green); }
-        .dot.kaaba { background:var(--gold); }
 
-        /* Stats */
-        .stats-row { display:flex; gap:12px; width:100%; max-width:500px; display:none; }
-        .stat-card { flex:1; background:rgba(0,0,0,0.5); backdrop-filter:blur(15px); border:1px solid rgba(197,168,89,0.2); border-radius:12px; padding:14px 10px; text-align:center; }
-        .stat-icon { font-size:20px; color:var(--gold); margin-bottom:6px; }
-        .stat-value { font-size:17px; font-weight:800; }
-        .stat-label { font-size:11px; color:rgba(255,255,255,0.45); margin-top:3px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        /* Map */
-        .map-wrapper { width:100%; max-width:500px; border-radius:16px; overflow:hidden; border:2px solid rgba(197,168,89,0.3); box-shadow:0 10px 40px rgba(0,0,0,0.5); display:none; }
-        #map { width:100%; height:320px; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #0a0c10;
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-        @media (max-width:400px) { .distance-value { font-size:48px; } }
+        /* Fullscreen Carousel Background */
+        .fullscreen-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(11, 14, 20, 0.72) 0%, rgba(5, 7, 10, 0.92) 100%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px 20px 6px;
+        }
+        .top-bar .title {
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--white);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Bar (Floating, Borderless) */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 6px 15px 12px;
+            flex-wrap: wrap;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13.5px;
+            transition: all 0.25s ease;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(197, 168, 89, 0.25);
+            color: var(--gold);
+        }
+
+        /* Main Content Container */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px 40px;
+            gap: 22px;
+            max-width: 1050px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* =======================================================
+           Controls Section: Floating, NO Background, NO Borders
+           ======================================================= */
+        .controls-card {
+            width: 100%;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .city-picker-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .city-picker-label {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--gold);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* Custom Dropdown Trigger (Floating, Borderless with subtle golden underline) */
+        .custom-dropdown-container {
+            position: relative;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .dropdown-trigger-btn {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--gold);
+            border-radius: 0;
+            padding: 6px 4px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            transition: all 0.2s ease;
+        }
+        .dropdown-trigger-btn:hover {
+            color: var(--gold);
+        }
+        .dropdown-trigger-btn i {
+            color: var(--gold);
+            font-size: 13px;
+            transition: transform 0.25s ease;
+        }
+        .dropdown-trigger-btn.open i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu-box {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #14171e;
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 14px;
+            padding: 6px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+        }
+        .dropdown-menu-box.show {
+            display: block;
+            animation: fadeInMenu 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        @keyframes fadeInMenu {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-option {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.15s ease;
+        }
+        .dropdown-option:hover {
+            background: rgba(197, 168, 89, 0.15);
+            color: var(--gold);
+        }
+        .dropdown-option.selected {
+            background: rgba(197, 168, 89, 0.25);
+            color: var(--gold);
+            font-weight: 800;
+        }
+
+        /* GPS Button: Clean, Floating, NO Border */
+        .gps-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--gold);
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .gps-action-btn:hover {
+            color: #ffffff;
+            transform: scale(1.03);
+        }
+
+        /* =======================================================
+           Distance Hero Display: Floating, NO Background, NO Borders
+           ======================================================= */
+        .distance-hero-card {
+            width: 100%;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 5px 0 10px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--gold);
+            padding: 0;
+            font-size: 14.5px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            border: none;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .hero-distance-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .hero-number {
+            font-size: clamp(64px, 13vw, 100px);
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9), 0 0 40px rgba(197, 168, 89, 0.45);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hero-unit {
+            font-size: clamp(22px, 4vw, 32px);
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero-route-pills {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .route-pill {
+            background: transparent;
+            border: none;
+            padding: 4px 6px;
+            font-size: 15.5px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .route-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .route-dot.green { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+        .route-dot.gold { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+
+        .route-arrow {
+            color: var(--gold);
+            font-size: 16px;
+            opacity: 0.85;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* =======================================================
+           Stats Grid: Floating Items, NO Background, NO Borders, NO Hover Jump
+           ======================================================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            width: 100%;
+            margin: 5px 0 10px;
+        }
+
+        .stat-box {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 10px 6px;
+            text-align: center;
+            transition: none; /* No movement */
+        }
+        .stat-box:hover {
+            transform: none; /* Stay in place as requested */
+            border: none;
+        }
+
+        .stat-box-icon {
+            font-size: 30px;
+            color: var(--gold);
+            margin-bottom: 8px;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
+        }
+
+        .stat-box-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .stat-box-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        }
+
+        /* =======================================================
+           Map Section: Borderless, Floating Map Frame
+           ======================================================= */
+        .map-section-card {
+            width: 100%;
+            background: transparent;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-header {
+            padding: 10px 4px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .map-header-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .map-reset-btn {
+            background: transparent;
+            border: none;
+            color: var(--gold);
+            padding: 6px 8px;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            transition: color 0.2s ease;
+        }
+        .map-reset-btn:hover {
+            color: #ffffff;
+        }
+
+        #map {
+            width: 100%;
+            height: 380px;
+            border-radius: 20px;
+            background: #11141a;
+            border: none;
+        }
+
+        /* =======================================================
+           Spiritual Ayah & Facts Card: Floating, NO Background, NO Borders
+           ======================================================= */
+        .spiritual-card {
+            width: 100%;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 15px 10px 5px;
+            text-align: center;
+        }
+
+        .spiritual-ayah {
+            font-family: 'Amiri', serif;
+            font-size: 26px;
+            color: var(--gold);
+            line-height: 1.8;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+        }
+
+        .spiritual-desc {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.7;
+            max-width: 750px;
+            margin: 0 auto 16px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .kaaba-facts-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding-top: 10px;
+            border-top: none;
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.75);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .kaaba-fact-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .kaaba-fact-item strong {
+            color: var(--gold);
+        }
+
+        /* Pulsing Radar Marker Animation for Leaflet */
+        .pulsing-marker {
+            position: relative;
+        }
+        .pulse-ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(197, 168, 89, 0.4);
+            animation: pulseWave 2s infinite ease-out;
+            pointer-events: none;
+        }
+        @keyframes pulseWave {
+            0% { transform: scale(0.6); opacity: 0.9; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* Footer */
+        .app-footer {
+            text-align: center;
+            padding: 22px;
+            color: rgba(255,255,255,0.45);
+            font-size: 13px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            width: 100%;
+            line-height: 1.6;
+        }
+        .app-footer strong {
+            color: var(--gold);
+        }
+
+        @media (max-width: 600px) {
+            #map { height: 300px; }
+            .hero-number { font-size: 52px; }
+            .controls-card { flex-direction: column; align-items: stretch; }
+            .city-picker-cluster { width: 100%; }
+            .gps-action-btn { justify-content: center; width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-box { padding: 10px 4px; }
+            .stat-box-value { font-size: 17px; }
+            .spiritual-ayah { font-size: 22px; }
+        }
     </style>
 </head>
 <body>
-<div class="fullscreen-carousel">
-    <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
-    <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
-    <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
-    <div class="carousel-overlay"></div>
-</div>
 
-<div class="app-container">
-    <div class="top-bar"><div class="title">قبلة المسلم</div></div>
-
-    <div class="nav-bar">
-        <a href="home.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
-        <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
-        <a href="tafseer.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> التفسير</a>
-        <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
-        <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
-        <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
-        <a href="distance.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+    <!-- Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
     </div>
 
-    <div class="main-content">
-        <div class="loader-box" id="loader">
-            <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i>
-            <div class="loader-text">جاري تحديد موقعك...</div>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="title">قبلة المسلم</div>
         </div>
 
-        <div class="distance-card" id="distance-card">
-            <div class="distance-label">📍 من بيتك للكعبة المشرفة</div>
-            <div class="distance-value" id="dist-km">0</div>
-            <div class="distance-unit">كيلومتر</div>
-            <div class="distance-divider"></div>
-            <div class="locations-row">
-                <div class="loc-pin"><div class="dot user"></div><span id="user-city">موقعك</span></div>
-                <span style="opacity:0.4;">←</span>
-                <div class="loc-pin"><div class="dot kaaba"></div><span>مكة المكرمة</span></div>
-            </div>
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="home.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="tafseer.html" class="nav-item"><i class="fa-solid fa-book-open-reader"></i> التفسير</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
+            <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
+            <a href="distance.html" class="nav-item active"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+            <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
+            <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
         </div>
 
-        <div class="stats-row" id="stats-row">
-            <div class="stat-card">
-                <div class="stat-icon"><i aria-hidden="true" class="fa-solid fa-plane"></i></div>
-                <div class="stat-value" id="flight-time">---</div>
-                <div class="stat-label">وقت الطيران</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i aria-hidden="true" class="fa-solid fa-arrows-left-right"></i></div>
-                <div class="stat-value" id="dist-miles">---</div>
-                <div class="stat-label">ميل</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i aria-hidden="true" class="fa-solid fa-kaaba"></i></div>
-                <div class="stat-value" id="qibla-deg">---</div>
-                <div class="stat-label">زاوية القبلة</div>
-            </div>
-        </div>
+        <main class="main-content">
+            <!-- Controls Bar: Floating, Borderless City Selector & GPS Button -->
+            <div class="controls-card">
+                <div class="city-picker-cluster">
+                    <span class="city-picker-label"><i class="fa-solid fa-location-dot"></i> مدينتك / محافظتك:</span>
+                    <div class="custom-dropdown-container" id="city-dropdown-container">
+                        <button type="button" class="dropdown-trigger-btn" id="city-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="current-city-label">القاهرة</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu-box" id="city-dropdown-menu" role="listbox"></div>
+                    </div>
+                </div>
 
-        <div class="map-wrapper" id="map-wrapper">
-            <div id="map"></div>
-        </div>
+                <button type="button" class="gps-action-btn" id="btn-gps" title="تحديد موقعك الدقيق عبر GPS">
+                    <i class="fa-solid fa-crosshairs"></i> موقعي الدقيق عبر GPS
+                </button>
+            </div>
+
+            <!-- Hero Distance: Floating, NO background, NO borders -->
+            <div class="distance-hero-card">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-kaaba"></i> المسافة المباشرة إلى بيت الله الحرام
+                </div>
+
+                <div class="hero-distance-row">
+                    <span class="hero-number" id="dist-km">1,285</span>
+                    <span class="hero-unit">كيلومتر</span>
+                </div>
+
+                <div class="hero-route-pills">
+                    <div class="route-pill user">
+                        <span class="route-dot green"></span>
+                        <span id="user-location-text">القاهرة، مصر</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-left-long route-arrow"></i>
+                    <div class="route-pill kaaba">
+                        <span class="route-dot gold"></span>
+                        <span>الكعبة المشرفة (مكة المكرمة)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Multi-Mode Stats Grid: Floating Icons & Text, NO Borders, NO Movement -->
+            <div class="stats-grid">
+                <!-- Flight Time -->
+                <div class="stat-box">
+                    <div class="stat-box-icon"><i class="fa-solid fa-plane-departure"></i></div>
+                    <div class="stat-box-value" id="stat-flight">ساعة و 35 دقيقة</div>
+                    <div class="stat-box-label">وقت الطيران المباشر</div>
+                </div>
+
+                <!-- Driving Estimate -->
+                <div class="stat-box">
+                    <div class="stat-box-icon"><i class="fa-solid fa-car-side"></i></div>
+                    <div class="stat-box-value" id="stat-drive">16 ساعة و 40 دقيقة</div>
+                    <div class="stat-box-label">تقدير السفر البري</div>
+                </div>
+
+                <!-- Walking Estimate -->
+                <div class="stat-box">
+                    <div class="stat-box-icon"><i class="fa-solid fa-person-walking"></i></div>
+                    <div class="stat-box-value" id="stat-walk">43 يوماً</div>
+                    <div class="stat-box-label">مسار القوافل سيراً</div>
+                </div>
+
+                <!-- Qibla Direction Angle -->
+                <div class="stat-box">
+                    <div class="stat-box-icon"><i class="fa-solid fa-compass"></i></div>
+                    <div class="stat-box-value" id="stat-qibla">136° جنوب شرق</div>
+                    <div class="stat-box-label">زاوية القبلة الدقيقة</div>
+                </div>
+
+                <!-- Miles -->
+                <div class="stat-box">
+                    <div class="stat-box-icon"><i class="fa-solid fa-ruler-combined"></i></div>
+                    <div class="stat-box-value" id="stat-miles">798 ميل</div>
+                    <div class="stat-box-label">المسافة بالأميال</div>
+                </div>
+            </div>
+
+            <!-- Interactive Map Card -->
+            <div class="map-section-card">
+                <div class="map-header">
+                    <div class="map-header-title">
+                        <i class="fa-solid fa-map-location-dot"></i> الخريطة التفاعلية ومسار الرحلة للكعبة المشرفة
+                    </div>
+                    <button type="button" class="map-reset-btn" id="btn-fit-map" title="إعادة ضبط زوايا العرض">
+                        <i class="fa-solid fa-arrows-to-eye"></i> إعادة ضبط العرض
+                    </button>
+                </div>
+                <div id="map"></div>
+            </div>
+
+            <!-- Spiritual Inspiration: Floating, NO Background, NO Borders -->
+            <div class="spiritual-card">
+                <div class="spiritual-ayah">
+                    ﴿ إِنَّ أَوَّلَ بَيْتٍ وُضِعَ لِلنَّاسِ لَلَّذِي بِبَكَّةَ مُبَارَكًا وَهُدًى لِّلْعَالَمِينَ ﴾
+                </div>
+                <div class="spiritual-desc">
+                    الكعبة المشرفة هي قبلة المسلمين ومهوى أفئدتهم في كل بقاع الأرض؛ حيث يتجه إليها أكثر من ملياري مسلم في صلواتهم خمس مرات يومياً تفيض قلوبهم بالشوق والرجاء لرب العالمين.
+                </div>
+                <div class="kaaba-facts-row">
+                    <div class="kaaba-fact-item"><i class="fa-solid fa-location-crosshairs" style="color: var(--gold);"></i> <strong>إحداثيات الكعبة:</strong> 21.4225° N, 39.8262° E</div>
+                    <div class="kaaba-fact-item"><i class="fa-solid fa-mountain" style="color: var(--gold);"></i> <strong>الارتفاع:</strong> 277 متراً عن مستوى سطح البحر</div>
+                    <div class="kaaba-fact-item"><i class="fa-solid fa-rotate-left" style="color: var(--gold);"></i> <strong>الطواف:</strong> عكس عقارب الساعة</div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
+            تم التطوير بواسطة <strong>كمال أبو عيد</strong>
+        </footer>
     </div>
 
-    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;border-top:1px solid rgba(255,255,255,0.07);">
-        جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم &nbsp;|&nbsp; تم التطوير بواسطة <strong style="color:var(--gold);">كمال أبو عيد</strong>
-    </div>
-</div>
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="toast.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+        // Carousel Background Rotation
+        const slides = document.querySelectorAll('.carousel-slide');
+        let curSlide = 0;
+        setInterval(() => {
+            slides[curSlide].classList.remove('active');
+            curSlide = (curSlide + 1) % slides.length;
+            slides[curSlide].classList.add('active');
+        }, 8000);
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="toast.js"></script>
-<script src="pwa.js"></script>
-<script>
-    // Carousel
-    const slides = document.querySelectorAll('.carousel-slide');
-    let cur = 0;
-    setInterval(() => { slides[cur].classList.remove('active'); cur = (cur+1)%slides.length; slides[cur].classList.add('active'); }, 8000);
+        // Coordinates of the Holy Kaaba in Mecca
+        const KAABA = { lat: 21.4224779, lng: 39.8251832 };
 
-    // Kaaba coordinates
-    const KAABA = { lat: 21.4224779, lng: 39.8251832 };
+        // Supported Cities & Egyptian Governorates with Exact Geographic Coordinates
+        const CITIES_DB = [
+            { key: "Cairo", nameAr: "القاهرة", lat: 30.0444, lng: 31.2357, country: "مصر" },
+            { key: "Giza", nameAr: "الجيزة", lat: 30.0131, lng: 31.2089, country: "مصر" },
+            { key: "Alexandria", nameAr: "الإسكندرية", lat: 31.2001, lng: 29.9187, country: "مصر" },
+            { key: "Suez", nameAr: "السويس", lat: 29.9668, lng: 32.5498, country: "مصر" },
+            { key: "Port Said", nameAr: "بورسعيد", lat: 31.2653, lng: 32.3019, country: "مصر" },
+            { key: "Ismailia", nameAr: "الإسماعيلية", lat: 30.5965, lng: 32.2715, country: "مصر" },
+            { key: "Dakahlia", nameAr: "المنصورة (الدقهلية)", lat: 31.0409, lng: 31.3785, country: "مصر" },
+            { key: "Gharbia", nameAr: "طنطا (الغربية)", lat: 30.7865, lng: 31.0004, country: "مصر" },
+            { key: "Al Sharqia", nameAr: "الزقازيق (الشرقية)", lat: 30.5765, lng: 31.5041, country: "مصر" },
+            { key: "Qalyubia", nameAr: "بنها (القليوبية)", lat: 30.4660, lng: 31.1856, country: "مصر" },
+            { key: "Beheira", nameAr: "دمنهور (البحيرة)", lat: 31.0425, lng: 30.4703, country: "مصر" },
+            { key: "Kafr el-Sheikh", nameAr: "كفر الشيخ", lat: 31.1107, lng: 30.9388, country: "مصر" },
+            { key: "Damietta", nameAr: "دمياط", lat: 31.4175, lng: 31.8144, country: "مصر" },
+            { key: "Monufia", nameAr: "شبين الكوم (المنوفية)", lat: 30.5525, lng: 31.0094, country: "مصر" },
+            { key: "Faiyum", nameAr: "الفيوم", lat: 29.3084, lng: 30.8428, country: "مصر" },
+            { key: "Beni Suef", nameAr: "بني سويف", lat: 29.0661, lng: 31.0994, country: "مصر" },
+            { key: "Minya", nameAr: "المنيا", lat: 28.0871, lng: 30.7618, country: "مصر" },
+            { key: "Asyut", nameAr: "أسيوط", lat: 27.1783, lng: 31.1859, country: "مصر" },
+            { key: "Sohag", nameAr: "سوهاج", lat: 26.5569, lng: 31.6948, country: "مصر" },
+            { key: "Qena", nameAr: "قنا", lat: 26.1551, lng: 32.7160, country: "مصر" },
+            { key: "Luxor", nameAr: "الأقصر", lat: 25.6872, lng: 32.6396, country: "مصر" },
+            { key: "Aswan", nameAr: "أسوان", lat: 24.0889, lng: 32.8998, country: "مصر" },
+            { key: "Matrouh", nameAr: "مرسى مطروح", lat: 31.3543, lng: 27.2373, country: "مصر" },
+            { key: "Red Sea", nameAr: "الغردقة (البحر الأحمر)", lat: 27.2579, lng: 33.8116, country: "مصر" },
+            { key: "New Valley", nameAr: "الخارجة (الوادي الجديد)", lat: 25.4514, lng: 30.5464, country: "مصر" },
+            { key: "South Sinai", nameAr: "شرم الشيخ / الطور", lat: 27.9158, lng: 34.3299, country: "مصر" },
+            { key: "Riyadh", nameAr: "الرياض", lat: 24.7136, lng: 46.6753, country: "السعودية" },
+            { key: "Medina", nameAr: "المدينة المنورة", lat: 24.5247, lng: 39.5692, country: "السعودية" },
+            { key: "Jeddah", nameAr: "جدة", lat: 21.5433, lng: 39.1728, country: "السعودية" },
+            { key: "Jerusalem", nameAr: "القدس الشريف", lat: 31.7683, lng: 35.2137, country: "فلسطين" },
+            { key: "Dubai", nameAr: "دبي", lat: 25.2048, lng: 55.2708, country: "الإمارات" },
+            { key: "Amman", nameAr: "عمّان", lat: 31.9454, lng: 35.9284, country: "الأردن" },
+            { key: "Istanbul", nameAr: "إسطنبول", lat: 41.0082, lng: 28.9784, country: "تركيا" }
+        ];
 
-    // Haversine distance in km
-    function haversine(lat1, lon1, lat2, lon2) {
-        const R = 6371, r = Math.PI/180;
-        const dLat = (lat2-lat1)*r, dLon = (lon2-lon1)*r;
-        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
+        // Active State
+        let currentCityKey = localStorage.getItem("selectedCity") || "Cairo";
+        let activeCoords = { lat: 30.0444, lng: 31.2357 };
+        let activeLocationTitle = "القاهرة، مصر";
+        let map = null;
+        let flightPolyline = null;
+        let userMarker = null;
+        let kaabaMarker = null;
+        let airplaneMarker = null;
+        let planeAnimInterval = null;
 
-    // Animated number counter
-    function animateNum(el, target) {
-        const dur = 1400;
-        const t0 = performance.now();
-        function frame(now) {
-            const p = Math.min((now-t0)/dur, 1);
-            const e = 1 - (1-p)**3; // ease-out cubic
-            el.textContent = Math.round(e * target).toLocaleString('ar-EG');
-            if (p < 1) requestAnimationFrame(frame);
+        // Haversine Distance in Kilometers
+        function calculateHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
-        requestAnimationFrame(frame);
-    }
 
-    // Main
-    navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const distKm = haversine(lat, lng, KAABA.lat, KAABA.lng);
-        const distMiles = distKm * 0.621371;
-        const fh = distKm / 850;
-        const flH = Math.floor(fh), flM = Math.round((fh-flH)*60);
+        // Qibla Great-Circle Bearing
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const toRad = Math.PI / 180;
+            const toDeg = 180 / Math.PI;
+            const phi1 = lat1 * toRad;
+            const phi2 = lat2 * toRad;
+            const deltaLambda = (lon2 - lon1) * toRad;
+            const y = Math.sin(deltaLambda) * Math.cos(phi2);
+            const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+            const deg = (Math.atan2(y, x) * toDeg + 360) % 360;
+            return Math.round(deg);
+        }
 
-        // Show UI
-        document.getElementById('loader').style.display = 'none';
-        const card = document.getElementById('distance-card');
-        const statsRow = document.getElementById('stats-row');
-        const mapWrap = document.getElementById('map-wrapper');
-        card.style.display = 'block';
-        statsRow.style.display = 'flex';
+        // Compass Direction Label in Arabic
+        function getCompassDirectionText(bearing) {
+            if (bearing >= 337.5 || bearing < 22.5) return "شمال";
+            if (bearing >= 22.5 && bearing < 67.5) return "شمال شرق";
+            if (bearing >= 67.5 && bearing < 112.5) return "شرق";
+            if (bearing >= 112.5 && bearing < 157.5) return "جنوب شرق";
+            if (bearing >= 157.5 && bearing < 202.5) return "جنوب";
+            if (bearing >= 202.5 && bearing < 247.5) return "جنوب غرب";
+            if (bearing >= 247.5 && bearing < 292.5) return "غرب";
+            return "شمال غرب";
+        }
 
-        // Fill stats
-        animateNum(document.getElementById('dist-km'), Math.round(distKm));
-        document.getElementById('dist-miles').textContent = Math.round(distMiles).toLocaleString('ar-EG');
-        document.getElementById('flight-time').textContent = flH > 0 ? `${flH}س ${flM}د` : `${flM}د`;
+        // Animated Number Counter
+        function animateCounter(elementId, targetValue, duration = 1200) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const start = 0;
+            const startTime = performance.now();
 
-        // Qibla angle
-        axios.get(`https://api.aladhan.com/v1/qibla/${lat}/${lng}`)
-            .then(r => { document.getElementById('qibla-deg').textContent = Math.round(r.data.data.direction) + '°'; })
-            .catch(() => {});
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease out cubic
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(start + (targetValue - start) * easeOut);
+                el.textContent = current.toLocaleString('ar-EG');
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            requestAnimationFrame(update);
+        }
 
-        // City name
-        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
-            .then(r => { const c = r.data.city || r.data.principalSubdivision || ''; if (c) document.getElementById('user-city').textContent = c; })
-            .catch(() => {});
+        // Calculate and Render All Values
+        function updateCalculations(lat, lng, locationLabel) {
+            const distKm = calculateHaversine(lat, lng, KAABA.lat, KAABA.lng);
+            const distMiles = distKm * 0.621371;
 
-        // Map
-        mapWrap.style.display = 'block';
-        const map = L.map('map', { zoomControl: true, attributionControl: false })
-            .setView([(lat+KAABA.lat)/2, (lng+KAABA.lng)/2], 4);
+            // 1. Hero Number with animated counter
+            animateCounter('dist-km', Math.round(distKm));
+            document.getElementById('user-location-text').textContent = locationLabel;
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+            // 2. Flight Duration (commercial passenger jet at ~800 km/h)
+            const flightHoursTotal = distKm / 800;
+            const flHours = Math.floor(flightHoursTotal);
+            const flMinutes = Math.round((flightHoursTotal - flHours) * 60);
+            document.getElementById('stat-flight').textContent = 
+                flHours > 0 ? `${flHours} س و ${flMinutes} دقيقة` : `${flMinutes} دقيقة`;
 
-        // User dot
-        L.marker([lat, lng], { icon: L.divIcon({
-            className:'', iconSize:[16,16], iconAnchor:[8,8],
-            html:`<div style="width:16px;height:16px;border-radius:50%;background:#1c9e5b;border:3px solid #fff;box-shadow:0 0 10px rgba(28,158,91,0.8);"></div>`
-        })}).bindPopup('<b style="font-family:Tajawal;font-size:15px;">موقعك الحالي</b>').addTo(map);
+            // 3. Driving / Road Route Estimate (winding factor 1.28 + average speed 85 km/h)
+            const driveHoursTotal = (distKm * 1.28) / 85;
+            const drHours = Math.floor(driveHoursTotal);
+            const drMinutes = Math.round((driveHoursTotal - drHours) * 60);
+            document.getElementById('stat-drive').textContent = `${drHours} س و ${drMinutes} دقيقة`;
 
-        // Kaaba emoji
-        L.marker([KAABA.lat, KAABA.lng], { icon: L.divIcon({
-            className:'', iconSize:[34,34], iconAnchor:[17,30],
-            html:`<div style="font-size:30px;line-height:1;filter:drop-shadow(0 0 8px rgba(197,168,89,0.9));">🕋</div>`
-        })}).bindPopup('<b style="font-family:Tajawal;font-size:15px;">الكعبة المشرفة</b>').addTo(map);
+            // 4. Walking / Pilgrim Caravan Trek (estimated 28 km / day)
+            const walkDays = Math.ceil(distKm / 28);
+            document.getElementById('stat-walk').textContent = `${walkDays} يوماً سيراً`;
 
-        // Dashed gold line
-        L.polyline([[lat, lng],[KAABA.lat, KAABA.lng]],
-            { color:'#C5A859', weight:2, opacity:0.85, dashArray:'10 7' }
-        ).addTo(map);
+            // 5. Qibla Bearing
+            const bearing = calculateBearing(lat, lng, KAABA.lat, KAABA.lng);
+            const directionName = getCompassDirectionText(bearing);
+            document.getElementById('stat-qibla').textContent = `${bearing}° (${directionName})`;
 
-        map.fitBounds([[lat,lng],[KAABA.lat,KAABA.lng]], { padding:[40,40] });
+            // 6. Miles
+            document.getElementById('stat-miles').textContent = `${Math.round(distMiles).toLocaleString('ar-EG')} ميل`;
 
-    }, () => {
-        document.getElementById('loader').innerHTML = `
-            <i aria-hidden="true" class="fa-solid fa-triangle-exclamation fa-2x" style="color:#e74c3c;"></i>
-            <div class="loader-text" style="color:#e74c3c;">تعذر الوصول لموقعك. تأكد من تفعيل خدمة الموقع.</div>`;
-    }, { enableHighAccuracy: true, timeout: 15000 });
-</script>
+            // Update map
+            updateMap(lat, lng, locationLabel);
+        }
+
+        // Geodesic Curve Interpolator (creates a smooth curved flight path)
+        function generateArcPoints(lat1, lon1, lat2, lon2, segments = 80) {
+            const points = [];
+            for (let i = 0; i <= segments; i++) {
+                const f = i / segments;
+                const deltaLat = lat2 - lat1;
+                const deltaLon = lon2 - lon1;
+                const arcLift = Math.sin(f * Math.PI) * (Math.abs(deltaLon) * 0.08);
+                const curLat = lat1 + deltaLat * f + arcLift;
+                const curLng = lon1 + deltaLon * f;
+                points.push([curLat, curLng]);
+            }
+            return points;
+        }
+
+        // Initialize / Update Leaflet Map
+        function updateMap(userLat, userLng, userLabel) {
+            if (!window.L) return;
+
+            const mapCenter = [(userLat + KAABA.lat) / 2, (userLng + KAABA.lng) / 2];
+
+            if (!map) {
+                map = L.map('map', {
+                    zoomControl: true,
+                    attributionControl: false,
+                    scrollWheelZoom: false
+                }).setView(mapCenter, 5);
+
+                // Luxury Dark Tiles
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 19,
+                    subdomains: 'abcd'
+                }).addTo(map);
+            }
+
+            // Clear previous elements
+            if (userMarker) map.removeLayer(userMarker);
+            if (kaabaMarker) map.removeLayer(kaabaMarker);
+            if (flightPolyline) map.removeLayer(flightPolyline);
+            if (airplaneMarker) map.removeLayer(airplaneMarker);
+            if (planeAnimInterval) clearInterval(planeAnimInterval);
+
+            // User Marker (Glowing Green Ring)
+            const userIcon = L.divIcon({
+                className: '',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11],
+                html: `
+                    <div style="position: relative; width: 22px; height: 22px;">
+                        <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(46, 204, 113, 0.35); animation: pulseWave 1.8s infinite ease-out;"></div>
+                        <div style="position: absolute; top: 4px; left: 4px; width: 14px; height: 14px; border-radius: 50%; background: #2ecc71; border: 2.5px solid #fff; box-shadow: 0 0 12px #2ecc71;"></div>
+                    </div>
+                `
+            });
+            userMarker = L.marker([userLat, userLng], { icon: userIcon })
+                .bindPopup(`<b style="font-family: Tajawal; font-size: 14px; color: #111;">📍 ${userLabel}</b>`)
+                .addTo(map);
+
+            // Kaaba Marker (Glowing Gold Mosque/Cube with Pulsing Wave)
+            const kaabaIcon = L.divIcon({
+                className: '',
+                iconSize: [42, 42],
+                iconAnchor: [21, 21],
+                html: `
+                    <div class="pulsing-marker" style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <div class="pulse-ring"></div>
+                        <div style="font-size: 34px; line-height: 1; filter: drop-shadow(0 0 12px rgba(197, 168, 89, 0.95)); cursor: pointer;">🕋</div>
+                    </div>
+                `
+            });
+            kaabaMarker = L.marker([KAABA.lat, KAABA.lng], { icon: kaabaIcon })
+                .bindPopup(`<div style="font-family: Tajawal; text-align: center; color: #111;"><b style="font-size: 15px; color: #9d8036;">🕋 الكعبة المشرفة</b><br><span style="font-size: 12px;">المسجد الحرام، مكة المكرمة</span></div>`)
+                .addTo(map);
+
+            // Curved Geodesic Flight Path
+            const arcPoints = generateArcPoints(userLat, userLng, KAABA.lat, KAABA.lng, 90);
+            flightPolyline = L.polyline(arcPoints, {
+                color: '#C5A859',
+                weight: 3,
+                opacity: 0.85,
+                dashArray: '8, 8'
+            }).addTo(map);
+
+            // Fit Bounds
+            map.fitBounds([[userLat, userLng], [KAABA.lat, KAABA.lng]], {
+                padding: [45, 45],
+                maxZoom: 7
+            });
+
+            // Smooth Animated Airplane gliding along the flight route towards the Kaaba
+            const planeIcon = L.divIcon({
+                className: '',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14],
+                html: `<div id="flight-plane" style="font-size: 24px; color: #dfc274; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)); transform: rotate(0deg); transition: transform 0.1s linear;"><i class="fa-solid fa-plane"></i></div>`
+            });
+
+            let pointIndex = 0;
+            airplaneMarker = L.marker(arcPoints[0], { icon: planeIcon }).addTo(map);
+
+            planeAnimInterval = setInterval(() => {
+                pointIndex = (pointIndex + 1) % arcPoints.length;
+                const pNow = arcPoints[pointIndex];
+                const pNext = arcPoints[(pointIndex + 1) % arcPoints.length];
+                airplaneMarker.setLatLng(pNow);
+
+                // Rotate plane icon toward next waypoint
+                const deg = calculateBearing(pNow[0], pNow[1], pNext[0], pNext[1]);
+                const planeEl = document.getElementById('flight-plane');
+                if (planeEl) {
+                    planeEl.style.transform = `rotate(${deg - 45}deg)`;
+                }
+            }, 120);
+        }
+
+        // Custom City Dropdown Population & Handling
+        function setupCityDropdown() {
+            const container = document.getElementById('city-dropdown-container');
+            const trigger = document.getElementById('city-dropdown-trigger');
+            const menu = document.getElementById('city-dropdown-menu');
+            const currentLabel = document.getElementById('current-city-label');
+
+            // Populate options
+            let html = '';
+            CITIES_DB.forEach(c => {
+                const isSel = c.key === currentCityKey;
+                html += `
+                    <div class="dropdown-option ${isSel ? 'selected' : ''}" data-key="${c.key}">
+                        <span>${c.nameAr}</span>
+                        <span style="font-size: 11px; opacity: 0.6;">${c.country}</span>
+                    </div>
+                `;
+            });
+            menu.innerHTML = html;
+
+            // Toggle Dropdown
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = menu.classList.contains('show');
+                if (isOpen) {
+                    menu.classList.remove('show');
+                    trigger.classList.remove('open');
+                } else {
+                    menu.classList.add('show');
+                    trigger.classList.add('open');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    menu.classList.remove('show');
+                    trigger.classList.remove('open');
+                }
+            });
+
+            // Option selection
+            menu.querySelectorAll('.dropdown-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const key = this.getAttribute('data-key');
+                    selectCity(key);
+                    menu.classList.remove('show');
+                    trigger.classList.remove('open');
+                });
+            });
+        }
+
+        function selectCity(cityKey) {
+            currentCityKey = cityKey;
+            localStorage.setItem("selectedCity", cityKey);
+
+            const cityObj = CITIES_DB.find(c => c.key === cityKey) || CITIES_DB[0];
+            document.getElementById('current-city-label').textContent = cityObj.nameAr;
+
+            // Update selected class in dropdown
+            document.querySelectorAll('.dropdown-option').forEach(el => {
+                if (el.getAttribute('data-key') === cityKey) el.classList.add('selected');
+                else el.classList.remove('selected');
+            });
+
+            activeCoords = { lat: cityObj.lat, lng: cityObj.lng };
+            activeLocationTitle = `${cityObj.nameAr}، ${cityObj.country}`;
+            updateCalculations(cityObj.lat, cityObj.lng, activeLocationTitle);
+
+            if (window.showToast) {
+                window.showToast(`تم التحديث لموقع ${cityObj.nameAr}`, 'fa-solid fa-location-dot', 2500);
+            }
+        }
+
+        // GPS Geolocation Handler (High Accuracy, Safe Fallback)
+        document.getElementById('btn-gps').addEventListener('click', () => {
+            const gpsBtn = document.getElementById('btn-gps');
+            const origHtml = gpsBtn.innerHTML;
+            gpsBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تحديد الإحداثيات...`;
+            gpsBtn.style.opacity = '0.75';
+
+            if (!navigator.geolocation) {
+                gpsBtn.innerHTML = origHtml;
+                gpsBtn.style.opacity = '1';
+                if (window.showToast) {
+                    window.showToast('متصفحك لا يدعم خدمة GPS', 'fa-solid fa-triangle-exclamation', 3500);
+                }
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    gpsBtn.innerHTML = origHtml;
+                    gpsBtn.style.opacity = '1';
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    activeCoords = { lat, lng };
+
+                    // Fetch address or city name
+                    activeLocationTitle = "موقعي الحالي الدقيق (GPS)";
+                    document.getElementById('current-city-label').textContent = "📍 موقعي الحالي (GPS)";
+
+                    // Reverse geocode optionally
+                    fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const locality = data.locality || data.city || data.principalSubdivision;
+                            if (locality) {
+                                activeLocationTitle = `موقعي: ${locality}`;
+                                document.getElementById('current-city-label').textContent = `📍 ${locality}`;
+                            }
+                            updateCalculations(lat, lng, activeLocationTitle);
+                        })
+                        .catch(() => {
+                            updateCalculations(lat, lng, activeLocationTitle);
+                        });
+
+                    updateCalculations(lat, lng, activeLocationTitle);
+                    if (window.showToast) {
+                        window.showToast('تم تحديد موقعك بدقة عالية عبر GPS!', 'fa-solid fa-circle-check', 3000);
+                    }
+                },
+                (err) => {
+                    gpsBtn.innerHTML = origHtml;
+                    gpsBtn.style.opacity = '1';
+                    console.warn("GPS failed or denied:", err.message);
+                    if (window.showToast) {
+                        window.showToast('تعذر الوصول للـ GPS، تم الاعتماد على موقع المدينة المحددة', 'fa-solid fa-circle-exclamation', 3500);
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+            );
+        });
+
+        // Fit Map Bounds Button
+        document.getElementById('btn-fit-map').addEventListener('click', () => {
+            if (map && activeCoords) {
+                map.fitBounds([[activeCoords.lat, activeCoords.lng], [KAABA.lat, KAABA.lng]], {
+                    padding: [45, 45]
+                });
+            }
+        });
+
+        // Initial Load (Instant, Guaranteed 0ms without GPS blocking)
+        setupCityDropdown();
+        const initialCity = CITIES_DB.find(c => c.key === currentCityKey) || CITIES_DB[0];
+        document.getElementById('current-city-label').textContent = initialCity.nameAr;
+        activeCoords = { lat: initialCity.lat, lng: initialCity.lng };
+        activeLocationTitle = `${initialCity.nameAr}، ${initialCity.country}`;
+        updateCalculations(initialCity.lat, initialCity.lng, activeLocationTitle);
+
+    </script>
 </body>
 </html>
-
-

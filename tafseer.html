@@ -328,13 +328,13 @@
         /* Clean Transparent Controls Bar */
         .tafseer-controls-bar {
             max-width: 1100px;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 25px auto;
             background: rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(197, 168, 89, 0.2);
-            border-radius: 12px;
-            padding: 12px 18px;
+            border-radius: 14px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -345,7 +345,7 @@
         .control-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
@@ -358,86 +358,199 @@
             gap: 6px;
         }
 
-        .select-tafseer {
+        /* Custom Luxury Dropdown - NO Native Blue Browser Box! */
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-trigger {
             background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(197, 168, 89, 0.3);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 10px;
             font-family: inherit;
             font-size: 13px;
             font-weight: 700;
-            outline: none;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            user-select: none;
         }
 
-        .select-tafseer option { background: #111; color: white; }
-
-        .jump-box { display: flex; align-items: center; gap: 6px; }
-
-        .jump-input {
-            width: 65px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            padding: 6px 8px;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 13px;
-            text-align: center;
-            outline: none;
-            font-weight: 700;
+        .dropdown-trigger:hover, .dropdown-trigger.open {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(197, 168, 89, 0.2);
+            background: rgba(197, 168, 89, 0.1);
         }
 
-        .jump-btn {
-            background: transparent;
-            border: 1px solid var(--gold);
+        .dropdown-arrow {
+            font-size: 11px;
             color: var(--gold);
-            padding: 6px 12px;
+            transition: transform 0.25s ease;
+        }
+
+        .dropdown-trigger.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 270px;
+            background: rgba(16, 18, 24, 0.97);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1.5px solid rgba(197, 168, 89, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(197, 168, 89, 0.15);
+            padding: 6px;
+            z-index: 200;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeInDrop 0.2s ease;
+        }
+
+        @keyframes fadeInDrop {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            padding: 11px 14px;
             border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(197, 168, 89, 0.18);
+            color: var(--gold);
+        }
+
+        .dropdown-item.active {
+            background: rgba(197, 168, 89, 0.22);
+            color: var(--gold);
+            font-weight: 800;
+        }
+
+        .dropdown-item .item-check {
+            opacity: 0;
+            font-size: 12px;
+            color: var(--gold);
+        }
+
+        .dropdown-item.active .item-check {
+            opacity: 1;
+        }
+
+        /* Ayah Search Input */
+        .ayah-search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 280px;
+        }
+
+        .ayah-search-box .search-icon {
+            position: absolute;
+            right: 12px;
+            color: var(--gold);
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .ayah-search-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: #ffffff;
+            padding: 8px 36px 8px 32px;
+            border-radius: 10px;
             font-family: inherit;
             font-size: 13px;
             font-weight: 700;
-            transition: background 0.2s, color 0.2s;
+            outline: none;
+            transition: all 0.2s;
         }
 
-        .jump-btn:hover { background: var(--gold); color: #111; }
+        .ayah-search-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 14px rgba(197, 168, 89, 0.25);
+            background: rgba(0, 0, 0, 0.7);
+        }
 
-        /* Surah Header Section - Fully Transparent, No Big Card! */
+        .ayah-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 12px;
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            left: 8px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-search-btn:hover {
+            color: #fff;
+        }
+
+        /* Surah Header Section - Generous Breathing Room & Spacing */
         .surah-header-section {
             max-width: 1100px;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 30px auto;
             text-align: center;
             background: transparent;
-            padding: 10px 0;
+            padding: 25px 0 10px 0;
         }
 
         .surah-title {
             font-family: 'Amiri Quran', serif;
-            font-size: 44px;
+            font-size: 48px;
             color: var(--gold);
-            margin: 0 0 10px 0;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+            margin: 0 0 22px 0; /* Clear breathing room below title! */
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
             line-height: 1.3;
         }
 
-        /* Meta details: NO black or blue backgrounds, just icon + text! */
+        /* Meta details: NO black or blue backgrounds, generous spacing */
         .surah-meta {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 16px;
+            gap: 22px;
             color: #ddd;
             font-weight: 700;
             font-size: 14px;
             flex-wrap: wrap;
+            margin-bottom: 24px; /* Clear breathing room below meta */
         }
 
         .surah-meta-item {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             background: transparent;
             border: none;
             padding: 0;
@@ -447,18 +560,19 @@
         .surah-meta-item i { color: var(--gold); }
 
         .surah-header-actions {
-            margin-top: 14px;
+            margin-top: 10px;
+            margin-bottom: 26px; /* Clear breathing room below actions */
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 14px;
             flex-wrap: wrap;
         }
 
         .header-action-link {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
+            gap: 8px;
+            padding: 7px 18px;
             border-radius: 20px;
             background: rgba(0, 0, 0, 0.35);
             border: 1px solid rgba(197, 168, 89, 0.4);
@@ -479,8 +593,8 @@
         .bismillah {
             text-align: center;
             font-family: 'Amiri Quran', serif;
-            font-size: 30px;
-            margin: 15px auto 20px auto;
+            font-size: 32px;
+            margin: 25px auto 35px auto; /* Generous breathing room */
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
         }
@@ -889,21 +1003,33 @@
 
             <!-- Reader Scroll Container -->
             <div class="reader-area" id="reader-area">
-                <!-- Controls Bar -->
+                <!-- Controls Bar with Custom Luxury Dropdown and Ayah Search -->
                 <div class="tafseer-controls-bar">
                     <div class="control-group">
                         <span class="control-label"><i class="fa-solid fa-book"></i> كتاب التفسير:</span>
-                        <select id="tafseer-select" class="select-tafseer" aria-label="اختر كتاب التفسير">
-                            <option value="ar.muyassar" selected>التفسير الميسر (مجمع الملك فهد)</option>
-                            <option value="ar.jalalayn">تفسير الجلالين</option>
-                        </select>
+                        <div class="custom-dropdown" id="tafseer-dropdown">
+                            <button type="button" class="dropdown-trigger" id="dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="selected-tafseer-label">التفسير الميسر (مجمع الملك فهد)</span>
+                                <i class="fa-solid fa-chevron-down dropdown-arrow" id="dropdown-arrow"></i>
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-menu" role="listbox">
+                                <div class="dropdown-item active" data-value="ar.muyassar" role="option">
+                                    <i class="fa-solid fa-check item-check"></i>
+                                    <span>التفسير الميسر (مجمع الملك فهد)</span>
+                                </div>
+                                <div class="dropdown-item" data-value="ar.jalalayn" role="option">
+                                    <i class="fa-solid fa-check item-check"></i>
+                                    <span>تفسير الجلالين</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="control-group">
-                        <span class="control-label"><i class="fa-solid fa-arrow-down-1-9"></i> آية رقم:</span>
-                        <div class="jump-box">
-                            <input type="number" id="jump-ayah-input" class="jump-input" min="1" placeholder="1" />
-                            <button id="jump-ayah-btn" class="jump-btn">انتقال</button>
+                        <div class="ayah-search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="ayah-search-input" class="ayah-search-input" placeholder="ابحث برقم الآية أو كلماتها..." autocomplete="off" />
+                            <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
@@ -951,9 +1077,12 @@
         const contentContainer = document.getElementById('content-container');
         const readerArea = document.getElementById('reader-area');
         const mobileTitle = document.getElementById('mobile-title');
-        const tafseerSelect = document.getElementById('tafseer-select');
-        const jumpAyahInput = document.getElementById('jump-ayah-input');
-        const jumpAyahBtn = document.getElementById('jump-ayah-btn');
+        const dropdownTrigger = document.getElementById('dropdown-trigger');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const selectedTafseerLabel = document.getElementById('selected-tafseer-label');
+        const dropdownItems = document.querySelectorAll('.dropdown-item');
+        const ayahSearchInput = document.getElementById('ayah-search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
         const scrollTopBtn = document.getElementById('scroll-top-btn');
         const ayahAudio = document.getElementById('ayah-audio');
 
@@ -1026,7 +1155,7 @@
             const { surah, ayah, edition } = getQueryParams();
             if (edition && (edition === 'ar.muyassar' || edition === 'ar.jalalayn')) {
                 currentTafseerEdition = edition;
-                tafseerSelect.value = edition;
+                updateDropdownUI(edition);
             }
             if (surah >= 1 && surah <= 114) {
                 currentSurahNumber = surah;
@@ -1097,13 +1226,112 @@
             renderSurahList(filtered);
         });
 
-        tafseerSelect.addEventListener('change', (e) => {
-            currentTafseerEdition = e.target.value;
-            loadSurahTafseer(currentSurahNumber);
+        // --- Custom Dropdown Handlers ---
+        dropdownTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdownMenu.classList.contains('show');
+            if (isOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
         });
 
+        function openDropdown() {
+            dropdownMenu.classList.add('show');
+            dropdownTrigger.classList.add('open');
+            dropdownTrigger.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeDropdown() {
+            dropdownMenu.classList.remove('show');
+            dropdownTrigger.classList.remove('open');
+            dropdownTrigger.setAttribute('aria-expanded', 'false');
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdownEl = document.getElementById('tafseer-dropdown');
+            if (dropdownEl && !dropdownEl.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const val = this.getAttribute('data-value');
+                selectTafseerEdition(val);
+                closeDropdown();
+            });
+        });
+
+        function updateDropdownUI(edition) {
+            dropdownItems.forEach(it => {
+                if (it.getAttribute('data-value') === edition) {
+                    it.classList.add('active');
+                    selectedTafseerLabel.textContent = it.querySelector('span').textContent;
+                } else {
+                    it.classList.remove('active');
+                }
+            });
+        }
+
+        function selectTafseerEdition(edition) {
+            if (currentTafseerEdition === edition) return;
+            currentTafseerEdition = edition;
+            updateDropdownUI(edition);
+            loadSurahTafseer(currentSurahNumber);
+        }
+
+        // --- Ayah Search Logic ---
+        ayahSearchInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            clearSearchBtn.style.display = val ? 'flex' : 'none';
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            ayahSearchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            ayahSearchInput.focus();
+        });
+
+        ayahSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleAyahSearch(ayahSearchInput.value.trim());
+            }
+        });
+
+        function handleAyahSearch(query) {
+            if (!query) return;
+
+            // 1. If query is a pure number (e.g. 7 or 255)
+            const num = parseInt(query);
+            if (!isNaN(num) && num.toString() === query) {
+                jumpToAyah(num);
+                return;
+            }
+
+            if (!currentSurahData) return;
+
+            // 2. Text search in verses or tafseer text
+            const q = query.toLowerCase();
+            const matchIndex = currentSurahData.ayahs.findIndex(a => 
+                a.text.includes(q) || a.tafseer.includes(q)
+            );
+
+            if (matchIndex !== -1) {
+                const matchedAyah = currentSurahData.ayahs[matchIndex];
+                jumpToAyah(matchedAyah.numberInSurah);
+                if (window.showToast) {
+                    window.showToast(`تم العثور على نتيجة في الآية (${matchedAyah.numberInSurah})`, "fa-solid fa-magnifying-glass", 3000);
+                }
+            } else {
+                if (window.showToast) {
+                    window.showToast(`لم يتم العثور على نتائج مطابقة لـ "${query}" في هذه السورة`, "fa-solid fa-circle-exclamation", 3500);
+                }
+            }
+        }
+
         function jumpToAyah(num) {
-            if (!num) num = parseInt(jumpAyahInput.value);
             if (!num || isNaN(num)) return;
 
             if (!currentSurahData) return;
@@ -1130,11 +1358,6 @@
                 }, 3000);
             }
         }
-
-        jumpAyahBtn.addEventListener('click', () => jumpToAyah());
-        jumpAyahInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') jumpToAyah();
-        });
 
         function loadSurahTafseer(surahNumber, targetAyahNumber = null) {
             stopAudio();
@@ -1221,8 +1444,7 @@
             currentSurahData = data;
             currentRenderedAyahsCount = 0;
             mobileTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${data.name}`;
-            jumpAyahInput.max = data.numberOfAyahs;
-            jumpAyahInput.placeholder = `1 - ${data.numberOfAyahs}`;
+            ayahSearchInput.placeholder = `ابحث برقم الآية (1 - ${data.numberOfAyahs}) أو كلماتها...`;
 
             const revelationLabel = data.revelationType === 'Meccan' ? 'مكية' : 'مدنية';
 

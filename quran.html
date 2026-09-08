@@ -692,16 +692,24 @@
         const readerArea = document.getElementById('reader-area');
         const mobileTitle = document.getElementById('mobile-title');
 
-        // Fetch All Surahs
+        // Fetch All Surahs (with Instant Local Cache)
         function fetchSurahs() {
+            const cachedIndex = localStorage.getItem('quiblah_surah_index');
+            if (cachedIndex) {
+                try {
+                    allSurahs = JSON.parse(cachedIndex);
+                    renderSurahList(allSurahs);
+                    return;
+                } catch(e) {
+                    localStorage.removeItem('quiblah_surah_index');
+                }
+            }
+
             axios.get('https://api.alquran.cloud/v1/surah')
                 .then(response => {
                     allSurahs = response.data.data;
+                    localStorage.setItem('quiblah_surah_index', JSON.stringify(allSurahs));
                     renderSurahList(allSurahs);
-                    
-                    if (window.innerWidth <= 900) {
-                        toggleSidebar();
-                    }
                 })
                 .catch(error => {
                     surahListEl.innerHTML = `<div class="error-message">حدث خطأ في تحميل السور</div>`;
@@ -761,86 +769,113 @@
             renderSurahList(filtered);
         });
 
-        // Load Specific Surah Content
+        // Load Specific Surah Content (with instant caching)
         function loadSurah(id) {
+            readerArea.scrollTop = 0;
+
+            const cacheKey = 'quiblah_surah_uthmani_' + id;
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                try {
+                    const data = JSON.parse(cachedData);
+                    renderSurahView(data);
+                    return;
+                } catch(e) {
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+
             contentContainer.innerHTML = `
                 <div class="loader-container">
                     <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-3x"></i>
                     <p>جاري التحميل...</p>
                 </div>
             `;
-            
-            // Scroll to top
-            readerArea.scrollTop = 0;
 
             axios.get(`https://api.alquran.cloud/v1/surah/${id}/quran-uthmani`)
                 .then(response => {
                     const data = response.data.data;
-                    mobileTitle.innerText = data.name;
-                    
-                    let html = `
-                        <div class="surah-header-card">
-                            <h1 class="surah-title">${data.name}</h1>
-                            <div class="surah-meta">
-                                <span>${data.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
-                                <span>آياتها: ${data.numberOfAyahs}</span>
-                            </div>
-                            <div style="margin-top: 14px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                                <a href="tafseer.html?surah=${data.number}" class="nav-item" style="font-size: 13px; padding: 6px 16px; border-color: var(--gold); color: var(--gold); text-decoration: none;">
-                                    <i class="fa-solid fa-book-open-reader"></i> تفسير سورة ${data.name}
-                                </a>
-                                <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="nav-item" style="font-size: 13px; padding: 6px 16px; border-color: var(--gold); background: rgba(197, 168, 89, 0.2); color: var(--gold); cursor: pointer; font-family: inherit;">
-                                    <i class="fa-solid fa-circle-play"></i> استمع للسورة
-                                </button>
-                            </div>
-                        </div>
-                    `;
-
-                    // Add Bismillah for all surahs except Fatihah (1) and Tawbah (9)
-                    if (data.number !== 1 && data.number !== 9) {
-                        html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+                    try {
+                        localStorage.setItem(cacheKey, JSON.stringify(data));
+                    } catch(e) {
+                        console.warn("Storage full", e);
                     }
-
-                    html += `<div class="verses-container">`;
-                    
-                    data.ayahs.forEach((ayah, index) => {
-                        let text = ayah.text;
-                        // Remove Bismillah from the first ayah text if it exists (for surahs other than Fatihah)
-                        if (data.number !== 1 && index === 0 && text.startsWith('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ')) {
-                            text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '');
-                        }
-                        
-                        html += `
-                            <span class="verse">${text}</span>
-                            <span class="verse-number" onclick="showQuickTafseer(${data.number}, ${ayah.numberInSurah})" title="اضغط لعرض تفسير الآية (${ayah.numberInSurah})">${ayah.numberInSurah}</span>
-                        `;
-                    });
-
-                    // Add Sadaqallah Al-Azeem in center
-                    html += `
-                        <div class="sadaqallah-box">
-                            <span class="sadaqallah-line"></span>
-                            <span class="sadaqallah-text">« صَدَقَ اللَّهُ الْعَظِيمُ »</span>
-                            <span class="sadaqallah-line"></span>
-                        </div>
-                    `;
-
-                    html += `</div>`;
-                    
-                    // Append Footer
-                    html += `
-                        <div style="text-align: center; padding: 20px; margin-top: 40px; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6;">
-                            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
-                            تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
-                        </div>
-                    `;
-
-                    contentContainer.innerHTML = html;
+                    renderSurahView(data);
                 })
                 .catch(error => {
-                    contentContainer.innerHTML = `<div class="error-message">حدث خطأ أثناء جلب الآيات. يرجى التأكد من اتصالك بالإنترنت.</div>`;
+                    contentContainer.innerHTML = `
+                        <div class="error-message">
+                            <i class="fa-solid fa-circle-exclamation fa-2x" style="margin-bottom: 10px;"></i>
+                            <p>حدث خطأ أثناء جلب الآيات. يرجى التأكد من اتصالك بالإنترنت والمحاولة مجدداً.</p>
+                            <button onclick="loadSurah(${id})" class="nav-item" style="margin: 15px auto 0; cursor: pointer; border-color: var(--gold); color: var(--gold); background: rgba(0,0,0,0.4);">
+                                <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+                            </button>
+                        </div>
+                    `;
                     console.error("Error fetching surah content:", error);
                 });
+        }
+
+        function renderSurahView(data) {
+            mobileTitle.innerText = data.name;
+            
+            let html = `
+                <div class="surah-header-card">
+                    <h1 class="surah-title">${data.name}</h1>
+                    <div class="surah-meta">
+                        <span>${data.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+                        <span>آياتها: ${data.numberOfAyahs}</span>
+                    </div>
+                    <div style="margin-top: 14px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                        <a href="tafseer.html?surah=${data.number}" class="nav-item" style="font-size: 13px; padding: 6px 16px; border-color: var(--gold); color: var(--gold); text-decoration: none;">
+                            <i class="fa-solid fa-book-open-reader"></i> تفسير سورة ${data.name}
+                        </a>
+                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="nav-item" style="font-size: 13px; padding: 6px 16px; border-color: var(--gold); background: rgba(197, 168, 89, 0.2); color: var(--gold); cursor: pointer; font-family: inherit;">
+                            <i class="fa-solid fa-circle-play"></i> استمع للسورة
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Add Bismillah for all surahs except Fatihah (1) and Tawbah (9)
+            if (data.number !== 1 && data.number !== 9) {
+                html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+            }
+
+            html += `<div class="verses-container">`;
+            
+            data.ayahs.forEach((ayah, index) => {
+                let text = ayah.text;
+                if (data.number !== 1 && index === 0 && text.startsWith('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ')) {
+                    text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '');
+                }
+                
+                html += `
+                    <span class="verse">${text}</span>
+                    <span class="verse-number" onclick="showQuickTafseer(${data.number}, ${ayah.numberInSurah})" title="اضغط لعرض تفسير الآية (${ayah.numberInSurah})">${ayah.numberInSurah}</span>
+                `;
+            });
+
+            // Add Sadaqallah Al-Azeem in center
+            html += `
+                <div class="sadaqallah-box">
+                    <span class="sadaqallah-line"></span>
+                    <span class="sadaqallah-text">« صَدَقَ اللَّهُ الْعَظِيمُ »</span>
+                    <span class="sadaqallah-line"></span>
+                </div>
+            `;
+
+            html += `</div>`;
+            
+            // Append Footer
+            html += `
+                <div style="text-align: center; padding: 20px; margin-top: 40px; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6;">
+                    جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
+                    تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                </div>
+            `;
+
+            contentContainer.innerHTML = html;
         }
 
         // --- Quick Tafseer Modal Logic ---
@@ -894,10 +929,8 @@
         }
 
         fetchSurahs();
-        // Load target surah immediately if specified
-        if (urlSurah && urlSurah >= 1 && urlSurah <= 114) {
-            loadSurah(urlSurah);
-        }
+        // Load target surah immediately (defaults to Surah 1 Al-Fatihah)
+        loadSurah(currentSurahNumber);
 
     </script>
 

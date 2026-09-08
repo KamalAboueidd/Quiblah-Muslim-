@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>قبلة المسلم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>قبلة المسلم - رفيقك الإسلامي الشامل</title>
 
     <!-- SEO & Open Graph Tags -->
-    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
-    <meta name="keywords" content="صلاة, قبلة, قرآن, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
+    <meta name="description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، تفسير الآيات، الأذكار، وأسماء الله الحسنى في مكان واحد بتصميم عصري.">
+    <meta name="keywords" content="صلاة, قبلة, قرآن, تفسير, أذكار, أسماء الله الحسنى, أوقات الصلاة, مواقيت, مسلم">
     <meta name="author" content="كمال أبو عيد">
     <meta property="og:title" content="قبلة المسلم">
-    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، الأذكار، وأسماء الله الحسنى.">
+    <meta property="og:description" content="تطبيق قبلة المسلم: أوقات الصلاة الدقيقة، اتجاه القبلة، القرآن الكريم، وتفسير الآيات.">
     <meta property="og:image" content="assets/bg1.jpg">
     <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
     <meta property="og:type" content="website">
@@ -22,13 +22,12 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri+Quran&display=swap" rel="stylesheet" />
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
-    
+
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#C5A859">
@@ -36,30 +35,33 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    
+
     <style>
         :root {
             --primary-teal: #2F7A78;
-            --dark-teal: #1F5F5D;
             --gold: #C5A859;
-            --red-accent: #D32F2F;
+            --gold-hover: #dfc274;
             --white: #FFFFFF;
+            --player-height: 72px;
         }
 
-        *, *::before, *::after {
+        * {
             box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Tajawal", sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #111;
-            color: var(--white);
-            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- Fullscreen Background Carousel --- */
+        html, body {
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #0b0d10;
+            font-family: "Tajawal", sans-serif;
+            color: var(--white);
+        }
+
+        /* Fullscreen Carousel Background */
         .fullscreen-carousel {
             position: fixed;
             top: 0;
@@ -68,7 +70,6 @@
             height: 100%;
             z-index: -1;
         }
-
         .carousel-slide {
             position: absolute;
             top: 0;
@@ -80,595 +81,418 @@
             opacity: 0;
             transition: opacity 1.5s ease-in-out;
         }
-
-        .carousel-slide.active {
-            opacity: 1;
-        }
-
+        .carousel-slide.active { opacity: 1; }
         .carousel-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.65); /* Dark overlay for text readability */
-            backdrop-filter: blur(3px); /* Slight blur for premium feel */
+            background: rgba(0, 0, 0, 0.45);
         }
 
-        /* --- App Container (On top of carousel) --- */
-        .app-container {
+        /* Top Page Progress Indicator */
+        #nav-loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-teal), var(--gold));
+            z-index: 99999;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        /* App Frame */
+        #app-frame-container {
             width: 100%;
-            min-height: 100vh;
+            height: 100%;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
+            transition: height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* Top Bar */
-        .top-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 30px 10px 30px;
-            font-size: 26px;
-        }
-        
-        .top-bar .title {
-            font-weight: 900;
-            font-size: 32px;
-            color: var(--white);
-            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
-            letter-spacing: 1px;
+        body.player-active #app-frame-container {
+            height: calc(100% - var(--player-height));
         }
 
-        /* Navigation Bar */
-        .nav-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            padding: 10px 20px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
-        }
-
-        /* Main Desktop Grid */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr;
-            padding: 30px;
-            gap: 40px;
-            flex-grow: 1;
-            max-width: 1200px;
-            margin: 0 auto;
+        #app-frame {
             width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background: transparent;
         }
 
-        @media (min-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr 1fr;
-                align-items: center;
-            }
-        }
-
-        /* Countdown Area */
-        .countdown-area {
-            text-align: center;
-            margin-top: 40px; /* Strong space from top nav */
-            margin-bottom: 30px; /* Strong space from info area */
+        /* =========================================
+           Persistent Global Audio Player (Spotify Style)
+           ========================================= */
+        .global-player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
             width: 100%;
-        }
-
-        .circle-countdown {
-            width: clamp(200px, 65vw, 300px);
-            height: clamp(200px, 65vw, 300px);
-            margin: 0 auto; /* Center as a block element */
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            background-color: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.1);
-            position: relative;
-        }
-        
-        .circle-top-icon {
-            position: absolute;
-            top: clamp(-30px, -5vw, -20px);
-            color: var(--gold);
-            font-size: clamp(20px, 4vw, 35px);
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            border-radius: 50%;
-            padding: clamp(10px, 2vw, 15px);
-            border: 2px solid var(--gold);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        .next-prayer-label {
-            font-size: clamp(24px, 6vw, 48px);
-            font-weight: 900;
-            color: var(--white);
-            margin-bottom: 0;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-        }
-
-        .after-label {
-            font-size: clamp(14px, 3vw, 20px);
-            color: var(--gold);
-            font-weight: 800;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .timer {
-            font-size: clamp(28px, 7vw, 48px);
-            font-weight: 900;
-            letter-spacing: 2px;
-            direction: ltr;
-            color: var(--white);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        /* Info & Setup Area */
-        .info-area {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        @media (min-width: 900px) {
-            .info-area { margin: 0; }
-        }
-
-        .info-card, .sunrise-card {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 18px 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            color: var(--white);
-        }
-
-        .info-card .icon-text {
+            height: var(--player-height);
+            background: rgba(16, 18, 23, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(197, 168, 89, 0.25);
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--gold);
-        }
-
-        .info-card .sub-text {
-            font-size: 16px;
-            margin-top: 8px;
-            opacity: 0.9;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 10000;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
             direction: rtl;
         }
-        
-        .sunrise-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 800;
-            font-size: 20px;
-        }
 
-        .location-btn {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--white);
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 800;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .location-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: var(--gold);
-            color: var(--gold);
-        }
-
-        /* Custom Select UI - No background as requested */
-        .custom-select-wrapper {
-            display: flex;
-            align-items: center;
-            background: transparent;
-            color: white;
-            position: relative;
-            z-index: 100;
-            padding: 5px 0;
-        }
-
-        .custom-select-wrapper label {
-            font-weight: 800;
-            margin-left: 15px;
-            white-space: nowrap;
-            font-size: 22px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
-        }
-
-        .custom-select {
-            position: relative;
-            user-select: none;
-            flex-grow: 1;
-            min-width: 150px;
-        }
-
-        .custom-select-trigger {
-            display: flex;
-            justify-content: flex-start;
-            gap: 15px;
-            align-items: center;
-            cursor: pointer;
-            font-weight: 900;
-            font-size: 24px;
-            padding: 5px 10px;
-            color: var(--gold);
-            background: transparent;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-            transition: opacity 0.2s;
-        }
-
-        .custom-select-trigger:hover {
-            opacity: 0.8;
-        }
-        
-        .custom-select-trigger i {
-            transition: transform 0.3s;
-            font-size: 20px;
-            margin-right: 15px;
-        }
-
-        .custom-select.open .custom-select-trigger i {
-            transform: rotate(180deg);
-        }
-
-        .custom-options {
-            position: absolute;
-            display: block;
-            top: 100%;
-            right: 0;
-            left: 0;
-            background-color: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            margin-top: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow: hidden;
-            max-height: 250px;
-            overflow-y: auto;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .custom-select.open .custom-options {
-            opacity: 1;
-            visibility: visible;
+        .global-player-bar.visible {
             transform: translateY(0);
         }
 
-        .custom-option {
-            padding: 12px 20px;
-            color: var(--white);
-            font-weight: 700;
-            font-size: 18px;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-            text-align: right;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .custom-option:last-child {
-            border-bottom: none;
-        }
-
-        .custom-option:hover, .custom-option.selected {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--gold);
-        }
-
-        .custom-options::-webkit-scrollbar { width: 6px; }
-        .custom-options::-webkit-scrollbar-track { background: transparent; }
-        .custom-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-
-
-        /* Prayer Times Grid */
-        .prayers-container {
-            padding: 0 30px;
-            margin-bottom: 40px;
-            max-width: 1200px;
-            margin: 0 auto 40px auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .prayers-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .prayer-card {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            border-radius: 16px;
-            flex: 1 1 15%;
-            min-width: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            border-top: 4px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .prayer-card.active {
-            background: rgba(255, 255, 255, 0.15);
-            border-top: 4px solid var(--gold);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-        }
-
-        .prayer-icon {
-            font-size: 28px;
-            margin-bottom: 12px;
-            color: rgba(255,255,255,0.9);
-        }
-        
-        .prayer-card.active .prayer-icon {
-            color: var(--gold);
-        }
-
-        .prayer-name {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .prayer-time {
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 1px;
-        }
-
-        /* Quran Section */
-        .quran-section {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            overflow: hidden;
-            max-width: 1200px;
-            margin: 0 auto 50px auto;
-            width: calc(100% - 60px);
-        }
-
-        .quran-header {
-            background-color: rgba(0, 0, 0, 0.3);
-            padding: 18px 25px;
-            font-weight: 800;
-            font-size: 20px;
-            color: var(--gold);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .quran-header .title-inner {
+        /* Track Info (Right in RTL) */
+        .player-info-section {
             display: flex;
             align-items: center;
             gap: 12px;
+            width: 28%;
+            min-width: 160px;
+            cursor: pointer;
         }
 
-        .quran-header i {
-            font-size: 22px;
+        .player-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: #20242c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--gold);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
-        .quran-body {
-            padding: 50px 30px;
-            text-align: center;
-            min-height: 150px;
+        .player-titles {
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .player-track-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .player-artist-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gold);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        /* Controls & Scrubber (Center) */
+        .player-center-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 44%;
+            max-width: 520px;
+        }
+
+        .player-buttons-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 6px;
+        }
+
+        .ctrl-btn {
+            background: transparent;
+            border: none;
+            color: #b3b3b3;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
             justify-content: center;
         }
 
-        .verse-text {
-            font-family: 'Amiri', serif;
-            font-size: 38px;
-            line-height: 1.8;
-            color: var(--white);
-            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
-            margin-bottom: 25px;
-            transition: opacity 0.5s ease;
+        .ctrl-btn:hover {
+            color: #ffffff;
+            transform: scale(1.1);
         }
 
-        .verse-ref {
-            font-size: 18px;
-            color: var(--gold);
-            font-weight: 700;
+        .ctrl-btn-play {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--gold);
+            color: #111;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(197, 168, 89, 0.4);
         }
 
-        .quran-footer {
-            padding: 18px 25px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 16px;
-            color: #ccc;
+        .ctrl-btn-play:hover {
+            background: var(--gold-hover);
+            transform: scale(1.08);
+            color: #000;
+        }
+
+        .scrubber-row {
             display: flex;
             align-items: center;
+            width: 100%;
             gap: 10px;
-            font-weight: 700;
+            font-size: 11px;
+            color: #94a3b8;
+            direction: ltr;
+        }
+
+        .scrubber-bar {
+            flex-grow: 1;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
             cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .scrubber-fill {
+            height: 100%;
+            background: var(--gold);
+            border-radius: 3px;
+            width: 0%;
+            pointer-events: none;
+            transition: background 0.2s;
+        }
+
+        .scrubber-thumb {
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .scrubber-bar:hover .scrubber-thumb {
+            opacity: 1;
+        }
+
+        /* Right Actions (Volume & Close) */
+        .player-actions-section {
+            width: 28%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 14px;
+            color: #b3b3b3;
+        }
+
+        .volume-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 110px;
+            direction: ltr;
+        }
+
+        .volume-bar {
+            flex-grow: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: #ffffff;
+            border-radius: 2px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .player-close-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 16px;
             transition: color 0.2s;
         }
-        .quran-footer:hover { color: var(--white); }
 
-        /* Loader */
-        #loader {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            color: var(--gold);
-        }
+        .player-close-btn:hover { color: #f87171; }
 
-        /* Mobile & Tablet specific adjustments */
-        @media (max-width: 850px) {
-            .top-bar { padding: 10px 20px 5px 20px; }
-            .top-bar .title { font-size: clamp(20px, 5vw, 28px); }
-            
-            .nav-bar { gap: 10px; padding: 5px 10px; margin-bottom: 5px; }
-            .nav-item { padding: 8px 15px; font-size: 14px; }
-            
-            .main-content {
-                padding: 10px 15px;
-                gap: 15px;
-                margin-top: 30px; /* Stronger margin to prevent overlap */
+        .mobile-expand-toggle { display: none; }
+
+        /* Mobile Expanded View (Spotify Fullscreen Mode) */
+        @media (max-width: 768px) {
+            :root { --player-height: 64px; }
+
+            .global-player-bar {
+                padding: 8px 14px;
             }
-            
-            /* Circle and text sizes are now handled by clamp() in main CSS */
-            
-            .prayers-container { padding: 0 10px; margin-bottom: 20px; }
-            .prayers-row { 
-                flex-wrap: nowrap; 
-                gap: 5px; 
+
+            .player-info-section {
+                width: calc(100% - 100px);
             }
-            .prayer-card { 
-                flex: 1; 
-                min-width: 0; 
-                padding: 10px 2px; 
-                border-radius: 10px;
+
+            .player-thumb {
+                width: 44px;
+                height: 44px;
             }
-            .prayer-icon { font-size: 16px; margin-bottom: 6px; }
-            .prayer-name { font-size: 12px; margin-bottom: 2px; }
-            .prayer-time { font-size: 13px; }
-            
-            .quran-section { width: calc(100% - 20px); margin: 0 auto 20px auto; }
-            .quran-header { padding: 12px 15px; font-size: 16px; }
-            .quran-body { padding: 25px 20px; min-height: 100px; }
-            .verse-text { font-size: 22px; margin-bottom: 15px; }
-            .quran-footer { padding: 12px 15px; font-size: 14px; }
-            
-            /* Info Area Adjustments */
-            .info-area {
-                width: 90%;
-                margin-right: 5%;
-                margin-left: auto;
+
+            .player-track-title { font-size: 14px; }
+            .player-artist-title { font-size: 11px; }
+
+            .player-center-section {
+                width: auto;
+                flex-direction: row;
             }
-            .info-card {
-                text-align: center;
-                padding: 12px 15px;
+
+            .player-buttons-row {
+                margin: 0;
+                gap: 8px;
             }
-            .info-card .icon-text {
+
+            .btn-skip-prev, .btn-skip-next {
+                display: none;
+            }
+
+            .scrubber-row { display: none; }
+            .player-actions-section { display: none; }
+
+            .ctrl-btn-play {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            /* Fullscreen Expanded Player Mode */
+            .global-player-bar.expanded {
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                height: 100dvh;
+                padding: 25px 20px 40px 20px;
+                background: linear-gradient(180deg, #181d26 0%, #0d0f14 100%);
+                border-top: none;
+            }
+
+            .global-player-bar.expanded .mobile-expand-toggle {
+                display: flex;
+                align-items: center;
                 justify-content: center;
-                font-size: 15px;
+                width: 40px;
+                height: 40px;
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                font-size: 22px;
+                color: var(--gold);
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 50%;
+                cursor: pointer;
             }
-            .info-card .sub-text {
-                font-size: 13px;
-                margin-top: 4px;
-            }
-            
-            .sunrise-card { font-size: 15px; padding: 12px 15px; }
-            .custom-select-wrapper label { font-size: 16px; margin-left: 10px;}
-            .custom-select-trigger { font-size: 18px; padding: 0 5px; gap: 5px; }
-            #selected-city-text { margin-right: 12px; }
-        }
 
-        /* Desktop Compact Tweaks to fit everything on one screen */
-        @media (min-width: 900px) {
-            .top-bar { padding: 10px 30px 5px 30px; }
-            .top-bar .title { font-size: 28px; }
-            .nav-bar { padding: 5px 20px; margin-bottom: 5px; gap: 10px; }
-            .nav-item { padding: 8px 15px; font-size: 14px; }
-            
-            .main-content { padding: 10px 30px; gap: 20px; }
-            .countdown-area { margin-top: 5px; margin-bottom: 10px; }
-            .circle-countdown { width: 220px; height: 220px; }
-            .circle-top-icon { top: -20px; font-size: 22px; padding: 12px; }
-            .next-prayer-label { font-size: 28px; margin-bottom: 0px; }
-            .after-label { font-size: 14px; margin-bottom: 5px; }
-            .timer { font-size: 32px; }
-            
-            .info-area { gap: 10px; max-width: 350px; }
-            .info-card, .sunrise-card { padding: 12px 20px; }
-            .info-card .icon-text { font-size: 16px; }
-            .info-card .sub-text { font-size: 14px; margin-top: 4px; }
-            .location-btn { padding: 10px 15px; font-size: 14px; }
-            .custom-select-wrapper label { font-size: 18px; }
-            .custom-select-trigger { font-size: 20px; padding: 2px 10px; }
-            .sunrise-card { font-size: 18px; }
-            
-            .prayers-container { margin-bottom: 15px; max-width: 1000px; padding: 0 30px; }
-            .prayer-card { padding: 12px 8px; border-radius: 12px; }
-            .prayer-icon { font-size: 24px; margin-bottom: 8px; }
-            .prayer-name { font-size: 16px; margin-bottom: 4px; }
-            .prayer-time { font-size: 18px; }
-            
-            .quran-section { margin: 0 auto 15px auto; max-width: 1000px; border-radius: 12px; }
-            .quran-header { padding: 10px 20px; font-size: 16px; }
-            .quran-body { padding: 20px 30px; min-height: 90px; }
-            .verse-text { font-size: 24px; margin-bottom: 15px; }
-            .quran-footer { padding: 10px 20px; font-size: 14px; }
+            .global-player-bar.expanded .player-info-section {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                width: 100%;
+                max-width: 320px;
+                margin-top: 50px;
+                margin-bottom: 25px;
+            }
+
+            .global-player-bar.expanded .player-thumb {
+                width: 220px;
+                height: 220px;
+                border-radius: 20px;
+                margin-bottom: 25px;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+                border: 2px solid var(--gold);
+            }
+
+            .global-player-bar.expanded .player-titles {
+                align-items: center;
+                text-align: center;
+                width: 100%;
+            }
+
+            .global-player-bar.expanded .player-track-title {
+                font-size: 24px;
+                margin-bottom: 6px;
+            }
+
+            .global-player-bar.expanded .player-artist-title {
+                font-size: 16px;
+            }
+
+            .global-player-bar.expanded .player-center-section {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                max-width: 330px;
+            }
+
+            .global-player-bar.expanded .scrubber-row {
+                display: flex;
+                width: 100%;
+                margin-bottom: 25px;
+            }
+
+            .global-player-bar.expanded .player-buttons-row {
+                width: 100%;
+                justify-content: center;
+                gap: 35px;
+                margin-bottom: 20px;
+            }
+
+            .global-player-bar.expanded .btn-skip-prev,
+            .global-player-bar.expanded .btn-skip-next {
+                display: flex;
+                font-size: 26px;
+                color: #ffffff;
+            }
+
+            .global-player-bar.expanded .ctrl-btn-play {
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Fullscreen Background Carousel -->
+    <!-- Background Carousel -->
     <div class="fullscreen-carousel">
         <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
         <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
@@ -676,477 +500,407 @@
         <div class="carousel-overlay"></div>
     </div>
 
-    <!-- App Content -->
-    <div class="app-container">
-        
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="title">قبلة المسلم</div>
+    <!-- Navigation Progress Line -->
+    <div id="nav-loading-bar"></div>
+
+    <!-- Main Content Frame Container -->
+    <div id="app-frame-container">
+        <iframe id="app-frame" name="app-frame" src="home.html" title="قبلة المسلم" allow="geolocation"></iframe>
+    </div>
+
+    <!-- Persistent Global Audio Player Bar -->
+    <div class="global-player-bar" id="global-player-bar">
+        <!-- Close / Minimize for mobile expanded -->
+        <div class="mobile-expand-toggle" id="mobile-expand-toggle" onclick="togglePlayerExpand(event)">
+            <i class="fa-solid fa-chevron-down"></i>
         </div>
 
-        <!-- Navigation Bar -->
-        <div class="nav-bar">
-            <a href="index.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
-            <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
-            <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
-            <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
-            <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
-            <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            
-            <!-- Circular Timer -->
-            <div class="countdown-area">
-                <div class="circle-countdown">
-                    <i aria-hidden="true" class="fa-solid fa-mosque circle-top-icon"></i>
-                    <div class="next-prayer-label" id="next-prayer-name">...</div>
-                    <div class="after-label">بعد</div>
-                    <div class="timer" id="countdown-timer">00:00:00</div>
-                </div>
+        <!-- Track Info -->
+        <div class="player-info-section" onclick="expandPlayerMobile()">
+            <div class="player-thumb" id="player-thumb">
+                <i class="fa-solid fa-book-quran"></i>
             </div>
-
-            <!-- Side Info -->
-            <div class="info-area">
-                <!-- Date Card -->
-                <div class="info-card">
-                    <div class="icon-text">
-                        <i aria-hidden="true" class="fa-regular fa-calendar-days"></i>
-                        <span id="hijri-date">...</span>
-                    </div>
-                    <div class="sub-text" id="greg-date">...</div>
-                </div>
-
-                <!-- Custom Location Select (No Background) -->
-                <div class="custom-select-wrapper">
-                    <label>المحافظة:</label>
-                    <div class="custom-select" id="custom-city-select">
-                        <div class="custom-select-trigger">
-                            <span id="selected-city-text">القاهرة</span>
-                            <i aria-hidden="true" class="fa-solid fa-chevron-down"></i>
-                        </div>
-                        <div class="custom-options" id="custom-city-options">
-                            <!-- Options injected by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Auto Detect Location Button -->
-                <div class="location-btn" onclick="detectLocation()">
-                    <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> حدد مواقيت صلاتك بناءً على موقعك
-                </div>
-
-                <!-- Sunrise -->
-                <div class="sunrise-card">
-                    <div>
-                        <i aria-hidden="true" class="fa-solid fa-sun" style="color: #FFD54F; margin-left: 10px;"></i>
-                        الشروق
-                    </div>
-                    <div class="time" id="shrouq-time" style="direction: ltr;">--:--</div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="loader"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-3x"></i></div>
-
-        <!-- Prayer Times Grid -->
-        <div class="prayers-container">
-            <div class="prayers-row">
-                <div class="prayer-card" id="card-fajr">
-                    <i aria-hidden="true" class="fa-solid fa-cloud-moon prayer-icon"></i>
-                    <div class="prayer-name">الفجر</div>
-                    <div class="prayer-time" id="fajr-time">--:--</div>
-                </div>
-                
-                <div class="prayer-card" id="card-dhuhr">
-                    <i aria-hidden="true" class="fa-regular fa-sun prayer-icon"></i>
-                    <div class="prayer-name">الظهر</div>
-                    <div class="prayer-time" id="dhuhr-time">--:--</div>
-                </div>
-                
-                <div class="prayer-card" id="card-asr">
-                    <i aria-hidden="true" class="fa-solid fa-cloud-sun prayer-icon"></i>
-                    <div class="prayer-name">العصر</div>
-                    <div class="prayer-time" id="aser-time">--:--</div>
-                </div>
-                
-                <div class="prayer-card" id="card-maghrib">
-                    <i aria-hidden="true" class="fa-solid fa-moon prayer-icon"></i>
-                    <div class="prayer-name">المغرب</div>
-                    <div class="prayer-time" id="maghreb-time">--:--</div>
-                </div>
-                
-                <div class="prayer-card" id="card-isha">
-                    <i aria-hidden="true" class="fa-solid fa-star-and-crescent prayer-icon"></i>
-                    <div class="prayer-name">العشاء</div>
-                    <div class="prayer-time" id="isha-time">--:--</div>
-                </div>
+            <div class="player-titles">
+                <div class="player-track-title" id="player-surah-title">سورة الفاتحة</div>
+                <div class="player-artist-title" id="player-reciter-title">مشاري العفاسي</div>
             </div>
         </div>
 
-        <!-- Quran Section -->
-        <div class="quran-section">
-            <div class="quran-header">
-                <div class="title-inner">
-                    <i aria-hidden="true" class="fa-solid fa-book-quran"></i>
-                    آية اليوم
+        <!-- Controls & Scrubber -->
+        <div class="player-center-section">
+            <div class="player-buttons-row">
+                <button class="ctrl-btn btn-skip-prev" id="btn-skip-prev" title="السورة السابقة" onclick="playPrevSurah(event)">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button class="ctrl-btn ctrl-btn-play" id="btn-play-pause" title="تشغيل / إيقاف" onclick="togglePlayPause(event)">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button class="ctrl-btn btn-skip-next" id="btn-skip-next" title="السورة التالية" onclick="playNextSurah(event)">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+            </div>
+
+            <div class="scrubber-row">
+                <span id="time-current">0:00</span>
+                <div class="scrubber-bar" id="scrubber-bar">
+                    <div class="scrubber-fill" id="scrubber-fill"></div>
+                    <div class="scrubber-thumb" id="scrubber-thumb"></div>
+                </div>
+                <span id="time-total">0:00</span>
+            </div>
+        </div>
+
+        <!-- Right Section (Volume & Close) -->
+        <div class="player-actions-section">
+            <button class="ctrl-btn" id="btn-mute" title="كتم الصوت" onclick="toggleMute()">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <div class="volume-box">
+                <div class="volume-bar" id="volume-bar">
+                    <div class="volume-fill" id="volume-fill"></div>
                 </div>
             </div>
-            <div class="quran-body">
-                <div class="verse-text" id="verse-text">جاري تحميل الآيات...</div>
-                <div class="verse-ref" id="verse-ref"></div>
-            </div>
-            <a href="quran.html" class="quran-footer" style="text-decoration: none;">
-                <i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> تصفح المصحف الشريف
-            </a>
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; padding: 20px; margin-top: auto; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 10;">
-            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
-            تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+            <button class="player-close-btn" title="إغلاق المشغل" onclick="closePlayer()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
     </div>
 
-    <audio id="azan-audio" src="assets/Azan/456572.mp3" preload="auto"></audio>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="toast.js"></script>
-    <script src="pwa.js"></script>
+    <!-- The Single HTML5 Audio Element that plays continuously across all pages -->
+    <audio id="global-quran-audio" preload="auto"></audio>
+
     <script>
-        // Header Carousel Logic
+        // 114 Surah Names in Arabic
+        const SURAH_NAMES = [
+            "الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس",
+            "هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه",
+            "الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم",
+            "لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر",
+            "فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق",
+            "الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة",
+            "الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج",
+            "نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس",
+            "التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد",
+            "الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات",
+            "القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر",
+            "المسد","الإخلاص","الفلق","الناس"
+        ];
+
+        // Background Carousel
         const slides = document.querySelectorAll('.carousel-slide');
         let currentSlide = 0;
-
-        window.addEventListener('load', () => {
-            slides.forEach(slide => {
-                if (slide.dataset.bg) {
-                    slide.style.backgroundImage = `url('${slide.dataset.bg}')`;
-                }
-            });
-        });
-
-        function nextSlide() {
+        setInterval(() => {
             slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
+        }, 8000);
+
+        // App Elements
+        const appFrame = document.getElementById('app-frame');
+        const loadingBar = document.getElementById('nav-loading-bar');
+        const audio = document.getElementById('global-quran-audio');
+        const playerBar = document.getElementById('global-player-bar');
+        const playerThumb = document.getElementById('player-thumb');
+        const playerSurahTitle = document.getElementById('player-surah-title');
+        const playerReciterTitle = document.getElementById('player-reciter-title');
+        const btnPlayPause = document.getElementById('btn-play-pause');
+        const scrubberBar = document.getElementById('scrubber-bar');
+        const scrubberFill = document.getElementById('scrubber-fill');
+        const scrubberThumb = document.getElementById('scrubber-thumb');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+        const volumeBar = document.getElementById('volume-bar');
+        const volumeFill = document.getElementById('volume-fill');
+        const btnMute = document.getElementById('btn-mute');
+
+        // State
+        let currentSurahNum = 1;
+        let currentReciterName = "مشاري العفاسي";
+        let currentServerUrl = "https://server8.mp3quran.net/afs/";
+        let currentSurahList = Array.from({length: 114}, (_, i) => i + 1);
+        let currentReciterImg = "";
+        let isAudioPlaying = false;
+        let isScrubbing = false;
+
+        // Initialize target page from URL param (e.g. index.html?page=quran.html)
+        const params = new URLSearchParams(window.location.search);
+        const targetPage = params.get('page');
+        if (targetPage) {
+            appFrame.src = decodeURIComponent(targetPage);
         }
 
-        // Change image every 8 seconds
-        setInterval(nextSlide, 8000);
-
-        // Standard App Logic
-        let cities = [
-            { ArabicName: "القاهرة", name: "Cairo" },
-            { ArabicName: "الاسكندرية", name: "Alexandria" },
-            { ArabicName: "الجيزة", name: "Giza" },
-            { ArabicName: "السويس", name: "Suez" },
-            { ArabicName: "بورسعيد", name: "Port Said" },
-            { ArabicName: "المنصورة (الدقهلية)", name: "Dakahlia" },
-            { ArabicName: "طنطا (الغربية)", name: "Gharbia" },
-            { ArabicName: "الزقازيق (الشرقية)", name: "Al Sharqia" },
-            { ArabicName: "بنها (القليوبية)", name: "Qalyubia" },
-            { ArabicName: "دمنهور (البحيرة)", name: "Beheira" },
-            { ArabicName: "كفر الشيخ", name: "Kafr el-Sheikh" },
-            { ArabicName: "دمياط", name: "Damietta" },
-            { ArabicName: "شبين الكوم (المنوفية)", name: "Monufia" },
-            { ArabicName: "الفيوم", name: "Faiyum" },
-            { ArabicName: "بني سويف", name: "Beni Suef" },
-            { ArabicName: "المنيا", name: "Minya" },
-            { ArabicName: "أسيوط", name: "Asyut" },
-            { ArabicName: "سوهاج", name: "Sohag" },
-            { ArabicName: "قنا", name: "Qena" },
-            { ArabicName: "الأقصر", name: "Luxor" },
-            { ArabicName: "أسوان", name: "Aswan" },
-            { ArabicName: "مرسى مطروح", name: "Matrouh" },
-            { ArabicName: "الغردقة (البحر الأحمر)", name: "Red Sea" },
-            { ArabicName: "الخارجة (الوادي الجديد)", name: "New Valley" },
-            { ArabicName: "الإسماعيلية", name: "Ismailia" },
-            { ArabicName: "الطور (جنوب سيناء)", name: "South Sinai" },
-        ];
-
-        let currentCity = localStorage.getItem("selectedCity") || "Cairo";
-        let isUsingLocation = false;
-        let userLat = 0;
-        let userLng = 0;
-        let countdownInterval;
-        let currentCityTimezone = "Africa/Cairo";
-        let allVerses = [];
-
-        function format12Hour(timeStr) {
-            let parts = timeStr.split(":");
-            let hours = parseInt(parts[0]);
-            let minutes = parts[1];
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            let displayHours = hours < 10 ? '0' + hours : hours;
-            return `${displayHours}:${minutes}`;
-        }
-
-        const selectWrapper = document.getElementById('custom-city-select');
-        const selectedText = document.getElementById('selected-city-text');
-        const optionsContainer = document.getElementById('custom-city-options');
-
-        let customOptionsHTML = "";
-        cities.forEach((city) => {
-            let isSelected = city.name === currentCity ? 'selected' : '';
-            if (city.name === currentCity) selectedText.textContent = city.ArabicName;
-            customOptionsHTML += `<div class="custom-option ${isSelected}" data-value="${city.name}">${city.ArabicName}</div>`;
-        });
-        optionsContainer.innerHTML = customOptionsHTML;
-
-        selectWrapper.querySelector('.custom-select-trigger').addEventListener('click', function(e) {
-            selectWrapper.classList.toggle('open');
-        });
-
-        window.addEventListener('click', function(e) {
-            if (!selectWrapper.contains(e.target)) {
-                selectWrapper.classList.remove('open');
-            }
-        });
-
-        optionsContainer.querySelectorAll('.custom-option').forEach(option => {
-            option.addEventListener('click', function() {
-                optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-                
-                selectedText.textContent = this.textContent;
-                selectWrapper.classList.remove('open');
-                
-                isUsingLocation = false;
-                currentCity = this.getAttribute('data-value');
-                localStorage.setItem("selectedCity", currentCity);
-                GetPrayersTimingsOfCity(currentCity);
-            });
-        });
-
-        function fetchQuranVerses() {
-            fetch('verses.json')
-                .then(response => response.json())
-                .then(data => {
-                    allVerses = data;
-                    rotateVerse();
-                    setInterval(rotateVerse, 60000); 
-                })
-                .catch(error => console.error("Error loading verses:", error));
-        }
-
-        function rotateVerse() {
-            if(allVerses.length === 0) return;
-            const verseEl = document.getElementById("verse-text");
-            const refEl = document.getElementById("verse-ref");
-            
-            verseEl.style.opacity = 0;
-            
+        // Iframe Navigation & Title Synchronization
+        appFrame.addEventListener('load', () => {
+            loadingBar.style.width = '100%';
             setTimeout(() => {
-                const randomVerse = allVerses[Math.floor(Math.random() * allVerses.length)];
-                verseEl.innerHTML = randomVerse.text;
-                refEl.innerHTML = randomVerse.reference;
-                verseEl.style.opacity = 1;
-            }, 500);
+                loadingBar.style.opacity = '0';
+                loadingBar.style.width = '0%';
+            }, 300);
+
+            try {
+                const innerWin = appFrame.contentWindow;
+                const innerDoc = appFrame.contentDocument;
+                if (innerDoc && innerDoc.title) {
+                    document.title = innerDoc.title;
+                }
+                const fullPath = innerWin.location.pathname.split('/').pop() + innerWin.location.search;
+                if (fullPath && fullPath !== 'home.html') {
+                    history.replaceState(null, '', 'index.html?page=' + encodeURIComponent(fullPath));
+                } else {
+                    history.replaceState(null, '', 'index.html');
+                }
+            } catch(e) {
+                // Cross-origin fallback (should not happen on local/same-origin)
+            }
+        });
+
+        // Browser Back / Forward handler
+        window.addEventListener('popstate', () => {
+            const currentParams = new URLSearchParams(window.location.search);
+            const p = currentParams.get('page') || 'home.html';
+            appFrame.src = decodeURIComponent(p);
+        });
+
+        // PostMessage Listener for Cross-Frame Communication
+        window.addEventListener('message', (event) => {
+            if (!event.data) return;
+            if (event.data.type === 'PLAY_QURAN' && event.data.options) {
+                window.playGlobalQuran(event.data.options);
+            }
+            if (event.data.type === 'PAGE_NAVIGATED') {
+                if (event.data.title) document.title = event.data.title;
+                if (event.data.page && event.data.page !== 'home.html') {
+                    history.replaceState(null, '', 'index.html?page=' + encodeURIComponent(event.data.page));
+                } else if (event.data.page === 'home.html') {
+                    history.replaceState(null, '', 'index.html');
+                }
+            }
+        });
+
+        // Format Seconds to MM:SS
+        function formatSeconds(sec) {
+            if (isNaN(sec) || !isFinite(sec)) return "0:00";
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = Math.floor(sec % 60);
+            if (h > 0) {
+                return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            return `${m}:${s.toString().padStart(2, '0')}`;
         }
 
-        function FillTimerForPrayer(id, timeStr24) {
-            const cleanTime24 = timeStr24.split(" ")[0]; 
-            document.getElementById(id).innerHTML = format12Hour(cleanTime24);
-        }
-
-        function GetPrayersTimingsOfCity(cityName) {
-            document.getElementById("loader").style.display = "block";
+        // --- Master Play Surah Function ---
+        window.playGlobalQuran = function(opts) {
+            if (!opts) return;
+            const surahNum = opts.surahNum || 1;
+            const reciter = opts.reciterName || "مشاري العفاسي";
+            const surahTitle = opts.surahName || `سورة ${SURAH_NAMES[surahNum - 1]}`;
+            const audioSrc = opts.audioUrl || (opts.serverUrl ? `${opts.serverUrl}${String(surahNum).padStart(3, '0')}.mp3` : `https://server8.mp3quran.net/afs/${String(surahNum).padStart(3, '0')}.mp3`);
             
-            let params = {
-                country: "EG",
-                city: cityName,
-            };
+            currentSurahNum = surahNum;
+            currentReciterName = reciter;
+            if (opts.serverUrl) currentServerUrl = opts.serverUrl;
+            if (opts.surahList) currentSurahList = opts.surahList;
+            if (opts.reciterImg) currentReciterImg = opts.reciterImg;
 
-            axios.get("https://api.aladhan.com/v1/timingsByCity", { params: params })
-                .then((response) => {
-                    document.getElementById("loader").style.display = "none";
-                    
-                    const data = response.data.data;
-                    const timings = data.timings;
-                    currentCityTimezone = data.meta.timezone;
-                    
-                    FillTimerForPrayer("fajr-time", timings.Fajr);
-                    document.getElementById("shrouq-time").innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
-                    FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
-                    FillTimerForPrayer("aser-time", timings.Asr);
-                    FillTimerForPrayer("maghreb-time", timings.Sunset);
-                    FillTimerForPrayer("isha-time", timings.Isha);
-
-                    const hijriDate = `${data.date.hijri.day} ${data.date.hijri.month.ar} ${data.date.hijri.year} هـ`;
-                    const gregDate = `${data.date.hijri.weekday.ar}، ${data.date.gregorian.day} ${data.date.gregorian.month.en} ${data.date.gregorian.year}`;
-                    
-                    document.getElementById("hijri-date").innerHTML = hijriDate;
-                    document.getElementById("greg-date").innerHTML = gregDate;
-
-                    setupNextPrayerCountdown(timings, currentCityTimezone);
-                })
-                .catch(error => {
-                    console.error("Error fetching prayer times:", error);
-                    document.getElementById("loader").style.display = "none";
-                });
-        }
-
-        function detectLocation() {
-            if ("geolocation" in navigator) {
-                document.getElementById("loader").style.display = "block";
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    isUsingLocation = true;
-                    userLat = position.coords.latitude;
-                    userLng = position.coords.longitude;
-                    
-                    // Reverse geocode
-                    axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLng}&localityLanguage=ar`)
-                        .then(res => {
-                            let cityName = res.data.city || res.data.principalSubdivision || "موقعك الحالي";
-                            document.getElementById("selected-city-text").innerText = cityName;
-                            
-                            // Remove selection from standard list
-                            document.getElementById('custom-city-options').querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-                            
-                            GetPrayersTimingsByCoordinates(userLat, userLng);
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            document.getElementById("selected-city-text").innerText = "موقعك الحالي";
-                            GetPrayersTimingsByCoordinates(userLat, userLng);
-                        });
-                }, function(error) {
-                    console.error(error);
-                    showToast("لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع وإعطاء الصلاحية.", "fa-solid fa-triangle-exclamation");
-                    document.getElementById("loader").style.display = "none";
-                });
+            // Update UI
+            playerSurahTitle.textContent = surahTitle;
+            playerReciterTitle.textContent = reciter;
+            if (currentReciterImg) {
+                playerThumb.style.backgroundImage = `url('${currentReciterImg}')`;
+                playerThumb.innerHTML = '';
             } else {
-                showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
+                playerThumb.style.backgroundImage = 'none';
+                playerThumb.innerHTML = '<i class="fa-solid fa-book-quran"></i>';
             }
-        }
 
-        function GetPrayersTimingsByCoordinates(lat, lng) {
-            document.getElementById("loader").style.display = "block";
-            
-            let params = {
-                latitude: lat,
-                longitude: lng,
-                method: 5 // Egyptian General Authority of Survey
-            };
+            // Reveal player bar
+            playerBar.classList.add('visible');
+            document.body.classList.add('player-active');
 
-            axios.get("https://api.aladhan.com/v1/timings", { params: params })
-                .then((response) => {
-                    document.getElementById("loader").style.display = "none";
-                    
-                    const data = response.data.data;
-                    const timings = data.timings;
-                    currentCityTimezone = data.meta.timezone;
-                    
-                    FillTimerForPrayer("fajr-time", timings.Fajr);
-                    document.getElementById("shrouq-time").innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
-                    FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
-                    FillTimerForPrayer("aser-time", timings.Asr);
-                    FillTimerForPrayer("maghreb-time", timings.Sunset);
-                    FillTimerForPrayer("isha-time", timings.Isha);
+            // Reset progress
+            scrubberFill.style.width = '0%';
+            scrubberThumb.style.left = '0%';
+            timeCurrent.textContent = '0:00';
 
-                    const hijriDate = `${data.date.hijri.day} ${data.date.hijri.month.ar} ${data.date.hijri.year} هـ`;
-                    const gregDate = `${data.date.hijri.weekday.ar}، ${data.date.gregorian.day} ${data.date.gregorian.month.en} ${data.date.gregorian.year}`;
-                    
-                    document.getElementById("hijri-date").innerHTML = hijriDate;
-                    document.getElementById("greg-date").innerHTML = gregDate;
+            // Set audio source & play
+            audio.src = audioSrc;
+            audio.play().then(() => {
+                isAudioPlaying = true;
+                updatePlayPauseState();
+                setupMediaSession(surahTitle, reciter);
+            }).catch(err => {
+                console.warn("Autoplay blocked or network error:", err);
+                isAudioPlaying = false;
+                updatePlayPauseState();
+            });
+        };
 
-                    setupNextPrayerCountdown(timings, currentCityTimezone);
-                })
-                .catch(error => {
-                    console.error("Error fetching prayer times:", error);
-                    document.getElementById("loader").style.display = "none";
+        // --- MediaSession for Background & Lock Screen Playback ---
+        function setupMediaSession(surahTitle, reciter) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: surahTitle,
+                    artist: reciter,
+                    album: 'قبلة المسلم',
+                    artwork: [
+                        { src: currentReciterImg || 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+                        { src: currentReciterImg || 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+                        { src: 'icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+                    ]
                 });
-        }
 
-        function playAzanAlarm(prayerName) {
-            const audio = document.getElementById('azan-audio');
-            if (audio) {
-                audio.play().catch(e => console.log("Audio play prevented by browser", e));
-            }
-            if (window.showToast) {
-                window.showToast(`الآن موعد صلاة ${prayerName}`, "fa-solid fa-mosque", 15000);
-            }
-        }
-
-        function setupNextPrayerCountdown(timings, timezone) {
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            const prayerTimes = [
-                { name: "الفجر", id: "fajr-time", cardId: "card-fajr", time: timings.Fajr.split(" ")[0] },
-                { name: "الظهر", id: "dhuhr-time", cardId: "card-dhuhr", time: timings.Dhuhr.split(" ")[0] },
-                { name: "العصر", id: "aser-time", cardId: "card-asr", time: timings.Asr.split(" ")[0] },
-                { name: "المغرب", id: "maghreb-time", cardId: "card-maghrib", time: timings.Sunset.split(" ")[0] },
-                { name: "العشاء", id: "isha-time", cardId: "card-isha", time: timings.Isha.split(" ")[0] }
-            ];
-
-            function tick() {
-                const nowStr = new Date().toLocaleString("en-US", { timeZone: timezone });
-                const now = new Date(nowStr);
-
-                let nextPrayer = null;
-                let nextPrayerDate = null;
-
-                for (let i = 0; i < prayerTimes.length; i++) {
-                    let pTime = prayerTimes[i].time.split(':');
-                    let pDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(pTime[0]), parseInt(pTime[1]), 0);
-                    
-                    if (pDate > now) {
-                        nextPrayer = prayerTimes[i];
-                        nextPrayerDate = pDate;
-                        break;
+                navigator.mediaSession.setActionHandler('play', () => {
+                    audio.play();
+                    isAudioPlaying = true;
+                    updatePlayPauseState();
+                });
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    audio.pause();
+                    isAudioPlaying = false;
+                    updatePlayPauseState();
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => playPrevSurah());
+                navigator.mediaSession.setActionHandler('nexttrack', () => playNextSurah());
+                navigator.mediaSession.setActionHandler('seekto', (details) => {
+                    if (details.seekTime && audio.duration) {
+                        audio.currentTime = details.seekTime;
                     }
-                }
-
-                if (!nextPrayer) {
-                    nextPrayer = prayerTimes[0];
-                    let pTime = nextPrayer.time.split(':');
-                    nextPrayerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, parseInt(pTime[0]), parseInt(pTime[1]), 0);
-                }
-
-                document.querySelectorAll('.prayer-card').forEach(c => c.classList.remove('active'));
-                document.getElementById(nextPrayer.cardId).classList.add('active');
-                
-                document.getElementById('next-prayer-name').innerText = nextPrayer.name;
-
-                let distance = nextPrayerDate.getTime() - now.getTime();
-
-                if (distance < 0) {
-                    if (isUsingLocation) {
-                        GetPrayersTimingsByCoordinates(userLat, userLng);
-                    } else {
-                        GetPrayersTimingsOfCity(currentCity);
-                    }
-                    return;
-                }
-
-                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                if (hours === 0 && minutes === 0 && seconds === 0) {
-                    playAzanAlarm(nextPrayer.name);
-                }
-
-                document.getElementById('countdown-timer').innerText = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                });
             }
-
-            tick();
-            countdownInterval = setInterval(tick, 1000);
         }
 
-        // Run
-        fetchQuranVerses();
-        GetPrayersTimingsOfCity(currentCity);
+        // Play / Pause Toggle
+        function togglePlayPause(e) {
+            if (e) e.stopPropagation();
+            if (!audio.src) return;
+            if (audio.paused) {
+                audio.play();
+                isAudioPlaying = true;
+            } else {
+                audio.pause();
+                isAudioPlaying = false;
+            }
+            updatePlayPauseState();
+        }
 
+        function updatePlayPauseState() {
+            btnPlayPause.innerHTML = isAudioPlaying 
+                ? '<i class="fa-solid fa-pause"></i>' 
+                : '<i class="fa-solid fa-play"></i>';
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = isAudioPlaying ? 'playing' : 'paused';
+            }
+        }
+
+        // Next / Prev Surah
+        function playNextSurah(e) {
+            if (e) e.stopPropagation();
+            const currentIndex = currentSurahList.indexOf(currentSurahNum);
+            if (currentIndex !== -1 && currentIndex < currentSurahList.length - 1) {
+                const nextNum = currentSurahList[currentIndex + 1];
+                window.playGlobalQuran({
+                    surahNum: nextNum,
+                    surahName: `سورة ${SURAH_NAMES[nextNum - 1]}`,
+                    reciterName: currentReciterName,
+                    serverUrl: currentServerUrl,
+                    surahList: currentSurahList,
+                    reciterImg: currentReciterImg
+                });
+            }
+        }
+
+        function playPrevSurah(e) {
+            if (e) e.stopPropagation();
+            const currentIndex = currentSurahList.indexOf(currentSurahNum);
+            if (currentIndex > 0) {
+                const prevNum = currentSurahList[currentIndex - 1];
+                window.playGlobalQuran({
+                    surahNum: prevNum,
+                    surahName: `سورة ${SURAH_NAMES[prevNum - 1]}`,
+                    reciterName: currentReciterName,
+                    serverUrl: currentServerUrl,
+                    surahList: currentSurahList,
+                    reciterImg: currentReciterImg
+                });
+            }
+        }
+
+        // Audio Progress Updates
+        audio.addEventListener('timeupdate', () => {
+            if (isScrubbing || !audio.duration) return;
+            const percent = (audio.currentTime / audio.duration) * 100;
+            scrubberFill.style.width = `${percent}%`;
+            scrubberThumb.style.left = `${percent}%`;
+            timeCurrent.textContent = formatSeconds(audio.currentTime);
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            timeTotal.textContent = formatSeconds(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            playNextSurah();
+        });
+
+        // Scrubber Seeking
+        function seekAudio(e) {
+            const rect = scrubberBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percent = Math.max(0, Math.min(1, clickX / width));
+            if (audio.duration) {
+                audio.currentTime = percent * audio.duration;
+            }
+        }
+
+        scrubberBar.addEventListener('click', seekAudio);
+
+        // Volume Control
+        volumeBar.addEventListener('click', (e) => {
+            const rect = volumeBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = Math.max(0, Math.min(1, clickX / rect.width));
+            audio.volume = percent;
+            volumeFill.style.width = `${percent * 100}%`;
+            updateVolumeIcon();
+        });
+
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            updateVolumeIcon();
+        }
+
+        function updateVolumeIcon() {
+            if (audio.muted || audio.volume === 0) {
+                btnMute.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+            } else if (audio.volume < 0.5) {
+                btnMute.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
+            } else {
+                btnMute.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+            }
+        }
+
+        // Mobile Player Expand / Collapse
+        function expandPlayerMobile() {
+            if (window.innerWidth <= 768) {
+                playerBar.classList.add('expanded');
+            }
+        }
+
+        function togglePlayerExpand(e) {
+            if (e) e.stopPropagation();
+            playerBar.classList.remove('expanded');
+        }
+
+        function closePlayer() {
+            audio.pause();
+            isAudioPlaying = false;
+            playerBar.classList.remove('visible');
+            playerBar.classList.remove('expanded');
+            document.body.classList.remove('player-active');
+        }
     </script>
+    <script src="pwa.js"></script>
 </body>
 </html>
-
-
-

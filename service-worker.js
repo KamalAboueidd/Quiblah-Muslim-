@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v1';
+const CACHE_NAME = 'quiblah-muslim-v2';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -21,6 +21,7 @@ const STATIC_ASSETS = [
     './short_azkar.json',
     './verses.json',
     './assets/mosque.svg',
+    './assets/favicon.png',
     './assets/bg1.jpg',
     './assets/bg2.jpg',
     './assets/bg3.jpg',
@@ -28,7 +29,8 @@ const STATIC_ASSETS = [
     './icons/icon-192.png',
     './icons/icon-512.png',
     './icons/icon-maskable-192.png',
-    './icons/icon-maskable-512.png'
+    './icons/icon-maskable-512.png',
+    './icons/apple-touch-icon.png'
 ];
 
 // تثبيت السيرفس ووركر وتخزين الأصول الأساسية

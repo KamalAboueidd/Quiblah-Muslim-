@@ -108,6 +108,7 @@
 
         /* Top Bar */
         .top-bar {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -121,6 +122,119 @@
             color: var(--white);
             text-shadow: 0 4px 15px rgba(0,0,0,0.8);
             letter-spacing: 1px;
+        }
+
+        .top-bar-reminders-btn {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Reminders Quick Card */
+        .reminders-quick-card {
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(197, 168, 89, 0.25);
+            border-radius: 16px;
+            padding: 16px 22px;
+            margin: 0 auto 20px auto;
+            max-width: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        .reminders-quick-card:hover {
+            border-color: var(--gold, #C5A859);
+            background: rgba(197, 168, 89, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(197, 168, 89, 0.2);
+        }
+
+        .reminders-card-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .reminders-card-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(197, 168, 89, 0.15);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            color: var(--gold, #C5A859);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .reminders-card-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .reminders-card-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reminders-status-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-weight: 700;
+        }
+
+        .reminders-status-badge.active {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.4);
+        }
+
+        .reminders-card-sub {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+        }
+
+        .reminders-card-btn {
+            background: rgba(197, 168, 89, 0.15);
+            border: 1px solid var(--gold, #C5A859);
+            color: var(--gold, #C5A859);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reminders-quick-card:hover .reminders-card-btn {
+            background: var(--gold, #C5A859);
+            color: #111111;
         }
 
         /* Navigation Bar */
@@ -572,6 +686,25 @@
             .top-bar { padding: 10px 20px 5px 20px; }
             .top-bar .title { font-size: clamp(20px, 5vw, 28px); }
             
+            .top-bar-reminders-btn {
+                right: 12px;
+                padding: 4px 10px;
+                font-size: 11.5px;
+            }
+
+            .reminders-quick-card {
+                padding: 12px 14px;
+                margin-bottom: 15px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .reminders-card-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
             .nav-bar { gap: 10px; padding: 5px 10px; margin-bottom: 5px; }
             .nav-item { padding: 8px 15px; font-size: 14px; }
             
@@ -773,6 +906,10 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="title">قبلة المسلم</div>
+            <button type="button" class="reminders-trigger-btn top-bar-reminders-btn" onclick="window.IslamicReminders.openSettings()" aria-label="إعدادات التذكيرات الإسلامية">
+                <i class="fa-regular fa-bell"></i>
+                <span>التذكيرات 🔔</span>
+            </button>
         </div>
 
         <!-- Navigation Bar -->
@@ -880,6 +1017,26 @@
             </div>
         </div>
 
+        <!-- Islamic Reminders Quick Card -->
+        <div class="reminders-quick-card" onclick="window.IslamicReminders.openSettings()">
+            <div class="reminders-card-content">
+                <div class="reminders-card-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <div class="reminders-card-text">
+                    <div class="reminders-card-title">
+                        <span>التذكيرات الإسلامية (كل 5 دقائق)</span>
+                        <span class="reminders-status-badge" id="reminders-quick-status">غير مفعّل</span>
+                    </div>
+                    <div class="reminders-card-sub">إشعارات حقيقية بالصلاة على النبي ﷺ والأذكار والاستغفار حتى عند قفل الشاشة</div>
+                </div>
+            </div>
+            <button type="button" class="reminders-card-btn" aria-label="ضبط التذكيرات">
+                <span>ضبط التذكير</span>
+                <i class="fa-solid fa-sliders"></i>
+            </button>
+        </div>
+
         <!-- Quran Section -->
         <div class="quran-section">
             <div class="quran-header">
@@ -925,6 +1082,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="toast.js"></script>
     <script src="pwa.js"></script>
+    <script src="reminders.js"></script>
     <script src="visitor-counter.js"></script>
     <script>
         // Header Carousel Logic

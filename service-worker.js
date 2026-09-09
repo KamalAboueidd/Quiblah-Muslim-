@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v7';
+const CACHE_NAME = 'quiblah-muslim-v8';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -20,6 +20,7 @@ const STATIC_ASSETS = [
     './player-bridge.js',
     './toast.js',
     './pwa.js',
+    './reminders.js',
     './manifest.json',
     './azkar.json',
     './names.json',
@@ -168,3 +169,88 @@ self.addEventListener('fetch', (event) => {
         })
     );
 });
+
+// ============================================================================
+// نظام التذكيرات الإسلامية والإشعارات الحقيقية (Web Push API)
+// ============================================================================
+
+// الاستماع لحدث وصول إشعار دفع حقيقي من السيرفر (Push Event)
+self.addEventListener('push', (event) => {
+    let payload = {};
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            payload = { body: event.data.text() };
+        }
+    }
+
+    const title = payload.title || 'قبلة المسلم';
+    const body = payload.body || 'صلِّ على النبي ﷺ 🤍';
+    const targetUrl = (payload.data && payload.data.url) ? payload.data.url : './home.html';
+
+    const notificationOptions = {
+        body: body,
+        icon: './icons/icon-192.png',
+        badge: './icons/icon-192.png',
+        image: payload.image || undefined,
+        dir: 'rtl',
+        lang: 'ar',
+        tag: payload.tag || 'islamic-reminder',
+        renotify: true,
+        vibrate: [200, 100, 200],
+        requireInteraction: false,
+        data: {
+            url: targetUrl,
+            timestamp: Date.now()
+        }
+    };
+
+    // إشعار النوافذ المفتوحة للتطبيق في حال كانت الشاشة نشطة لتشغيل الصوت الخفيف
+    const notifyClientsPromise = self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then((clients) => {
+            clients.forEach((client) => {
+                client.postMessage({
+                    type: 'PUSH_REMINDER_RECEIVED',
+                    payload: { title, body }
+                });
+            });
+        }).catch(() => {});
+
+    // إظهار إشعار النظام الحقيقي
+    const showNotificationPromise = self.registration.showNotification(title, notificationOptions);
+
+    event.waitUntil(Promise.all([showNotificationPromise, notifyClientsPromise]));
+});
+
+// التعامل مع النقر على الإشعار (Notification Click)
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const targetUrl = (event.notification.data && event.notification.data.url) 
+        ? event.notification.data.url 
+        : './home.html';
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // البحث عن نافذة مفتوحة للتطبيق والتركيز عليها
+            for (const client of clientList) {
+                if ('focus' in client) {
+                    if (client.url.includes('index.html') || client.url.includes('home.html')) {
+                        return client.focus();
+                    }
+                }
+            }
+            // في حال لم يكن التطبيق مفتوحاً، فتح نافذة جديدة
+            if (self.clients.openWindow) {
+                return self.clients.openWindow(targetUrl);
+            }
+        })
+    );
+});
+
+// التعامل مع إغلاق الإشعار يدوياً
+self.addEventListener('notificationclose', (event) => {
+    // يمكن استخدامه للإحصائيات إن لزم الأمر مستقبلاً
+});
+

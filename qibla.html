@@ -217,9 +217,14 @@
         .compass-arrow {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            transition: transform 0.25s ease-out;
             transform: rotate(0deg);
             z-index: 10;
+            will-change: transform;
+        }
+
+        .compass-bg {
+            position: absolute; width: 100%; height: 100%;
+            will-change: transform;
         }
 
         /* SVG arrow drawn in JS, sits inside compass-arrow div */
@@ -444,7 +449,7 @@
                 <div class="top-pointer">▼</div>
 
                 <!-- The rotating background (ring + ticks + directions) -->
-                <div class="compass-bg" id="compass-bg" style="position:absolute; width:100%; height:100%; transition: transform 0.25s ease-out;">
+                <div class="compass-bg" id="compass-bg">
                     <!-- Static outer ring -->
                     <div class="compass-ring" id="compass-ring"></div>
 
@@ -469,7 +474,7 @@
                 </div>
 
                 <!-- Rotating arrow layer (hidden until GPS ready) -->
-                <div class="compass-arrow" id="compass-arrow" style="opacity:0; transition: opacity 0.6s, transform 0.25s ease-out;">
+                <div class="compass-arrow" id="compass-arrow" style="opacity:0; transition: opacity 0.6s;">
                     <!-- SVG arrow: tail at center, tip at top -->
                     <svg class="arrow-svg" viewBox="0 0 320 320">
                         <!-- Arrow shaft -->
@@ -545,223 +550,138 @@
             slides[currentSlide].classList.add('active');
         }, 8000);
 
-        // ── Constants ─────────────────────────────────────
+        // ── Math Helpers ──────────────────────────────────
         const rad = d => d * Math.PI / 180;
         const deg = r => r * 180 / Math.PI;
         const norm360 = a => ((a % 360) + 360) % 360;
 
-        // Magnetic declination lookup table
-        const DECL = [
-            [50,10,4],[50,0,1],[50,30,8],[40,-5,0],[42,12,4],[52,-1,0],[48,2,1.5],
-            [52,13,4.5],[41,29,6.5],[56,38,12],[60,18,7],[30,31,4.8],[24,47,3.5],
-            [34,-6,-1.5],[36,3,1.5],[33,44,4.8],[25,55,2.2],[15,44,2.5],[15,32,2.2],
-            [21,40,3.2],[44,18,4.5],[55,13,5],[2,45,1.5],[43,5,1.8]
-        ];
-        function declination(lat, lng) {
-            let best = 0, bd = 1e9;
-            for (const [a, o, d] of DECL) {
-                const dist = (a - lat) ** 2 + (o - lng) ** 2;
-                if (dist < bd) { bd = dist; best = d; }
-            }
-            return best;
-        }
-
-        // ══════════════════════════════════════════════════
-        // ADVANCED SENSOR FUSION ENGINE
-        // ══════════════════════════════════════════════════
-        const SMOOTH_FACTOR   = 0.08;
-        const NOISE_THRESHOLD = 6;    // ignore micro-jitter (°)
-        const NOISE_SPIKE_CAP = 60;   // ignore wild spikes (°)
-        const STABILITY_WINDOW = 20;
-        const DRIFT_GUARD_COEFF = 0.003;
-
-        let sState = { sinS: 0, cosS: 1, hasSmooth: false, hasAbsolute: false };
-        let rafId = null;
-        let fusedHeading = null;
-        let lastGyroTs = 0;
-        let lastMagReading = null;
-        let stabilityBuffer = [];
-        let magVariance = 0;
-        let magBuf = [];
-
-        // GPS state
+        // ── State Variables ───────────────────────────────
+        let userLat = null;
+        let userLng = null;
         let qiblaAngle = null;
-        let userLat = null, userLng = null;
 
-        // Compass alignment state
+        let targetHeading = null;    // Real-time heading from sensors (0-360)
+        let currentHeading = null;   // Interpolated heading for silky-smooth 60fps rendering
+        let hasAbsoluteSensor = false;
         let isAligned = false;
         let lastAlignedAt = 0;
+        let rafId = null;
 
-        function feedHeading(h) {
-            const s = Math.sin(rad(h)), c = Math.cos(rad(h));
-            if (!sState.hasSmooth) {
-                sState.sinS = s; sState.cosS = c; sState.hasSmooth = true;
-            } else {
-                sState.sinS = SMOOTH_FACTOR * s + (1 - SMOOTH_FACTOR) * sState.sinS;
-                sState.cosS = SMOOTH_FACTOR * c + (1 - SMOOTH_FACTOR) * sState.cosS;
-            }
-        }
-        function smoothedHeading() { return norm360(deg(Math.atan2(sState.sinS, sState.cosS))); }
+        // ── Great-Circle Qibla Calculation ────────────────
+        function computeQiblaAngle(lat, lng) {
+            const kaabaLat = rad(21.422487);
+            const kaabaLng = rad(39.826206);
+            const uLat = rad(lat);
+            const uLng = rad(lng);
 
-        function updateMagVariance(h) {
-            magBuf.push(h);
-            if (magBuf.length > 15) magBuf.shift();
-            if (magBuf.length < 3) return;
-            const avg = magBuf.reduce((a, b) => a + b, 0) / magBuf.length;
-            magVariance = magBuf.reduce((s, v) => {
-                let d = Math.abs(v - avg);
-                if (d > 180) d = 360 - d;
-                return s + d * d;
-            }, 0) / magBuf.length;
+            const deltaLng = kaabaLng - uLng;
+            const y = Math.sin(deltaLng);
+            const x = Math.cos(uLat) * Math.tan(kaabaLat) - Math.sin(uLat) * Math.cos(deltaLng);
+            let qAngle = deg(Math.atan2(y, x));
+            return norm360(Math.round(qAngle));
         }
 
-        // ── Device heading extractor ──────────────────────
-        //
-        // RULE: arrowRotation = norm360(qiblaBearing - deviceHeading)
-        //       deviceHeading = direction the phone's physical TOP EDGE points, clockwise from True North
-        //
-        // iOS Safari  → webkitCompassHeading
-        //   Already equals the physical top-edge bearing from True North.
-        //   Safari compensates for screen orientation internally.
-        //   → Use directly. Do NOT add screen.orientation.angle (would double-correct).
-        //
-        // Android Chrome → alpha (deviceorientationabsolute)
-        //   alpha = rotation of device coordinate frame around Z-axis.
-        //   In portrait: deviceHeading = (360 - alpha) % 360
-        //   In landscape (screen rotated): must add screen.orientation.angle
-        //   → formula: norm360(360 - alpha + screenAngle)
-        //   Chrome does NOT auto-correct for screen orientation in alpha.
-        //
-        function getCompassHeading(e) {
-            // ── iOS Safari ──────────────────────────────────
-            if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
-                // webkitCompassHeading: physical top edge → True North bearing
-                // Safari already handles screen rotation internally — NO screenAngle needed
-                return norm360(e.webkitCompassHeading);
-            }
-
-            // ── Android (absolute orientation) ─────────────
-            if (e.alpha != null && (e.absolute === true || e.type === 'deviceorientationabsolute')) {
-                // alpha does NOT account for screen orientation on Android Chrome
-                // We must add screenAngle to map to physical top-edge heading
-                const screenAngle = (screen.orientation && screen.orientation.angle) || 0;
-                return norm360(360 - e.alpha + screenAngle);
-            }
-
-            // ── Android fallback (relative orientation) ─────
-            if (!sState.hasAbsolute && e.alpha != null) {
-                const screenAngle = (screen.orientation && screen.orientation.angle) || 0;
-                return norm360(360 - e.alpha + screenAngle);
-            }
-
-            return null;
-        }
-
-        function onOrientation(e) {
-            if (e.type === 'deviceorientationabsolute' || e.absolute === true) {
-                sState.hasAbsolute = true;
-            } else if (sState.hasAbsolute) {
-                return; // ignore relative events once we have absolute
-            }
-
-            const h = getCompassHeading(e);
-            if (h === null) return;
-
-            // Noise gate
-            if (lastMagReading !== null) {
-                let jump = Math.abs(h - lastMagReading);
-                if (jump > 180) jump = 360 - jump;
-                if (jump < NOISE_THRESHOLD || jump > NOISE_SPIKE_CAP) return;
-            }
-            lastMagReading = h;
-            updateMagVariance(h);
-            feedHeading(h);
-
-            // Complementary filter
-            if (fusedHeading === null) {
-                fusedHeading = smoothedHeading();
-                lastGyroTs = Date.now();
-            } else {
-                const magTrust = Math.max(0.02, Math.min(0.15, 1 / (1 + magVariance * 0.05)));
-                let diff = smoothedHeading() - fusedHeading;
-                diff = ((diff + 540) % 360) - 180;
-                fusedHeading = norm360(fusedHeading + magTrust * diff);
-            }
-        }
-
-        function onMotion(e) {
-            if (fusedHeading === null || !e.rotationRate || e.rotationRate.gamma === null) return;
-            const now = Date.now();
-            const dt = Math.min((now - lastGyroTs) / 1000.0, 0.1);
-            lastGyroTs = now;
-
-            const rr = e.rotationRate;
-            const totalRot = Math.sqrt((rr.alpha||0)**2 + (rr.beta||0)**2 + (rr.gamma||0)**2);
-            stabilityBuffer.push(totalRot);
-            if (stabilityBuffer.length > STABILITY_WINDOW) stabilityBuffer.shift();
-            const avgRot = stabilityBuffer.reduce((a, b) => a + b, 0) / stabilityBuffer.length;
-            const isStable = avgRot < 3.0;
-
-            if (!isStable) {
-                let gyroDelta = (rr.gamma || 0) * dt;
-                if (lastMagReading !== null) {
-                    let driftCorr = lastMagReading - fusedHeading;
-                    driftCorr = ((driftCorr + 540) % 360) - 180;
-                    gyroDelta += DRIFT_GUARD_COEFF * driftCorr;
-                }
-                fusedHeading = norm360(fusedHeading + gyroDelta);
-            }
-        }
-
-        // ── Render Loop ───────────────────────────────────
-        function renderLoop() {
-            rafId = requestAnimationFrame(renderLoop);
-            if (qiblaAngle == null) return;
-            if (!sState.hasSmooth && fusedHeading === null) {
-                // No sensor data yet — show static angle, no rotation
-                updateAngleDisplay(qiblaAngle);
+        // ── Orientation Processor ─────────────────────────
+        function updateHeadingFromEvent(e) {
+            // 1. iOS Safari: webkitCompassHeading directly provides True North bearing of the top edge
+            if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading) && e.webkitCompassHeading >= 0) {
+                hasAbsoluteSensor = true;
+                setHeading(e.webkitCompassHeading);
                 return;
             }
 
-            // Pure compass heading — no GPS heading override
-            const h = fusedHeading !== null ? fusedHeading : smoothedHeading();
+            // 2. Android Chrome: deviceorientationabsolute or e.absolute === true
+            const isAbsolute = e.type === 'deviceorientationabsolute' || e.absolute === true;
+            if (e.alpha !== null && !isNaN(e.alpha)) {
+                if (isAbsolute) {
+                    hasAbsoluteSensor = true;
+                } else if (hasAbsoluteSensor) {
+                    // Ignore relative events once absolute has arrived
+                    return;
+                }
 
-            // Compass background rotation (points to True North)
-            document.getElementById('compass-bg').style.transform = `rotate(${-h}deg)`;
+                const screenAngle = (window.screen && window.screen.orientation && window.screen.orientation.angle) || 0;
+                // In Android, alpha is counter-clockwise around Z. When flat, heading from North is (360 - alpha + screenAngle)
+                const heading = norm360(360 - e.alpha + screenAngle);
+                setHeading(heading);
+            }
+        }
 
-            // Arrow rotation: positive = clockwise from top
-            // When phone faces Qibla (h == qiblaAngle), arrowRotation == 0 → arrow points UP ✅
+        function setHeading(h) {
+            targetHeading = norm360(h);
+            if (currentHeading === null) {
+                currentHeading = targetHeading;
+            }
+        }
+
+        // ── Silky Smooth 60FPS Render Loop ────────────────
+        function renderLoop() {
+            rafId = requestAnimationFrame(renderLoop);
+
+            if (targetHeading !== null && currentHeading !== null) {
+                // Shortest angular distance [-180, +180]
+                let diff = ((targetHeading - currentHeading + 540) % 360) - 180;
+
+                // Adaptive interpolation: follows quick turns immediately, stabilizes cleanly when resting
+                if (Math.abs(diff) > 0.1) {
+                    const factor = Math.abs(diff) > 30 ? 0.35 : (Math.abs(diff) > 10 ? 0.22 : 0.12);
+                    currentHeading = norm360(currentHeading + diff * factor);
+                }
+            }
+
+            if (qiblaAngle == null) return;
+
+            const h = currentHeading !== null ? currentHeading : 0;
+
+            // 1. Rotate the compass background so North points to True North
+            const compassBg = document.getElementById('compass-bg');
+            if (compassBg) {
+                compassBg.style.transform = `rotate(${-h}deg)`;
+            }
+
+            // 2. Rotate the arrow so it points directly at Qibla relative to the top of the phone
+            // When the top of the phone faces Qibla (h == qiblaAngle), arrowRotation == 0 (straight UP towards ▼)
             const arrowRotation = norm360(qiblaAngle - h);
-            document.getElementById('compass-arrow').style.transform = `rotate(${arrowRotation}deg)`;
+            const compassArrow = document.getElementById('compass-arrow');
+            if (compassArrow) {
+                compassArrow.style.transform = `rotate(${arrowRotation}deg)`;
+            }
 
-            // Keep Kaaba upright
-            document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-arrowRotation}deg)`;
+            // 3. Keep the Kaaba icon upright
+            const kaabaTip = document.getElementById('kaaba-tip');
+            if (kaabaTip) {
+                kaabaTip.style.transform = `translateX(-50%) rotate(${-arrowRotation}deg)`;
+            }
 
-            // Center display always shows fixed Qibla angle (not device heading)
+            // 4. Center display shows Qibla angle from True North
             updateAngleDisplay(qiblaAngle);
 
-            // Alignment check (±5°)
-            let diff = Math.abs(norm360(h - qiblaAngle));
-            if (diff > 180) diff = 360 - diff;
-            const nowAligned = diff <= 5;
+            // 5. Alignment check (within ±4° of Qibla)
+            let angleToQibla = Math.abs(((h - qiblaAngle + 540) % 360) - 180);
+            const nowAligned = currentHeading !== null && angleToQibla <= 4;
+
             if (nowAligned !== isAligned) {
                 isAligned = nowAligned;
-                document.getElementById('compass-ring').classList.toggle('aligned', nowAligned);
-                document.getElementById('aligned-msg').classList.toggle('show', nowAligned);
-                if (nowAligned && navigator.vibrate && Date.now() - lastAlignedAt > 4000) {
-                    navigator.vibrate([60, 40, 60]);
+                const ring = document.getElementById('compass-ring');
+                if (ring) ring.classList.toggle('aligned', nowAligned);
+
+                const msg = document.getElementById('aligned-msg');
+                if (msg) msg.classList.toggle('show', nowAligned);
+
+                if (nowAligned && navigator.vibrate && Date.now() - lastAlignedAt > 3000) {
+                    try { navigator.vibrate([70, 40, 70]); } catch(e) {}
                     lastAlignedAt = Date.now();
                 }
             }
         }
 
         function updateAngleDisplay(angle) {
-            document.getElementById('angle-display').textContent = Math.round(angle) + '°';
+            const el = document.getElementById('angle-display');
+            if (el) el.textContent = Math.round(angle) + '°';
         }
 
         // ── Show compass UI ───────────────────────────────
         function showCompass() {
-            // Arrow becomes visible
             document.getElementById('compass-arrow').style.opacity = '1';
             document.getElementById('kaaba-tip').classList.add('show');
             document.getElementById('gps-loading-text').style.display = 'none';
@@ -769,7 +689,6 @@
             document.getElementById('calibrate-hint').style.display = 'block';
         }
 
-        // Always show the compass shell immediately
         function showCompassShell() {
             document.getElementById('compass-scene').style.opacity = '1';
             document.getElementById('loader').style.display = 'none';
@@ -778,45 +697,32 @@
         // ── Start sensors ─────────────────────────────────
         function startSensors() {
             if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientationabsolute', onOrientation, true);
-                window.addEventListener('deviceorientation', onOrientation, true);
-            }
-            if (window.DeviceMotionEvent) {
-                window.addEventListener('devicemotion', onMotion, true);
+                // Listen for absolute first (Android Chrome)
+                window.addEventListener('deviceorientationabsolute', updateHeadingFromEvent, true);
+                // Listen for standard (iOS Safari webkitCompassHeading)
+                window.addEventListener('deviceorientation', updateHeadingFromEvent, true);
             }
             if (!rafId) renderLoop();
         }
-        // iOS 13+ requires explicit permission request on user gesture
+
+        // iOS 13+ permission request
         function requestSensorPermission() {
             document.getElementById('perm-btn').style.display = 'none';
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            if (typeof DeviceOrientationEvent !== 'undefined' &&
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission().then(state => {
                     if (state === 'granted') {
-                        if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                            DeviceMotionEvent.requestPermission().then(ms => {
-                                if (ms === 'granted') window.addEventListener('devicemotion', onMotion, true);
-                            });
-                        }
-                        window.addEventListener('deviceorientation', onOrientation, true);
-                        if (!rafId) renderLoop();
+                        startSensors();
                     } else {
-                        showToast('يرجى السماح بالوصول لمستشعرات الحركة', 'fa-solid fa-triangle-exclamation');
+                        showToast('يرجى السماح بالوصول لمستشعرات الحركة لتحديد اتجاه القبلة', 'fa-solid fa-triangle-exclamation');
                     }
-                }).catch(err => console.error(err));
+                }).catch(err => {
+                    console.error("Sensor permission error:", err);
+                    startSensors();
+                });
+            } else {
+                startSensors();
             }
-        }
-
-        function computeQiblaAngle(lat, lng) {
-            const kaabaLat = 21.422487 * (Math.PI / 180);
-            const kaabaLng = 39.826206 * (Math.PI / 180);
-            const uLat = lat * (Math.PI / 180);
-            const uLng = lng * (Math.PI / 180);
-
-            const deltaLng = kaabaLng - uLng;
-            const y = Math.sin(deltaLng);
-            const x = Math.cos(uLat) * Math.tan(kaabaLat) - Math.sin(uLat) * Math.cos(deltaLng);
-            let qAngle = Math.atan2(y, x) * (180 / Math.PI);
-            return Math.round((qAngle + 360) % 360);
         }
 
         function applyQiblaData(lat, lng, cityName = '') {
@@ -830,59 +736,66 @@
                 document.getElementById('city-name').textContent = cityName;
             }
 
-            // Set arrow to correct Qibla angle
-            document.getElementById('compass-arrow').style.transform = `rotate(${qiblaAngle}deg)`;
-            document.getElementById('kaaba-tip').style.transform = `translateX(-50%) rotate(${-qiblaAngle}deg)`;
             updateAngleDisplay(qiblaAngle);
             showCompass();
 
             if (!rafId) renderLoop();
         }
 
-        // ── Geolocation ───────────────────────────────────
+        // ── Geolocation (High Accuracy with LocalStorage Cache) ─────
         function startGeolocationFlow() {
+            // Instant load from cache if available
+            const cachedLat = localStorage.getItem('quiblah_user_lat');
+            const cachedLng = localStorage.getItem('quiblah_user_lng');
+            const cachedCity = localStorage.getItem('quiblah_user_city');
+            if (cachedLat && cachedLng) {
+                applyQiblaData(parseFloat(cachedLat), parseFloat(cachedLng), cachedCity || '');
+            }
+
             if (!('geolocation' in navigator)) {
-                showToast('متصفحك لا يدعم تحديد الموقع.', 'fa-solid fa-triangle-exclamation');
-                document.getElementById('loader').style.display = 'none';
-                applyQiblaData(30.0444, 31.2357, 'القاهرة (افتراضي)');
+                if (!qiblaAngle) applyQiblaData(30.0444, 31.2357, 'القاهرة (افتراضي)');
                 return;
             }
 
             navigator.geolocation.getCurrentPosition(position => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
+                localStorage.setItem('quiblah_user_lat', lat);
+                localStorage.setItem('quiblah_user_lng', lng);
                 applyQiblaData(lat, lng);
 
                 // Reverse geocode city name in background
                 axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
                     .then(r => {
                         const city = r.data.city || r.data.principalSubdivision || '';
-                        if (city) document.getElementById('city-name').textContent = city;
+                        if (city) {
+                            localStorage.setItem('quiblah_user_city', city);
+                            document.getElementById('city-name').textContent = city;
+                        }
                     }).catch(() => {});
 
-            }, () => {
-                // If GPS is unavailable or slow, fallback quickly to Cairo so the user is not stuck
-                applyQiblaData(30.0444, 31.2357, 'القاهرة (افتراضي)');
-                showToast('تم تعيين القبلة على القاهرة. فعّل خدمة الموقع لتحديد دقيق.', 'fa-solid fa-location-dot', 5000);
-            }, { enableHighAccuracy: false, timeout: 6000, maximumAge: 60000 });
+            }, (err) => {
+                console.warn("GPS timeout/error:", err);
+                if (!qiblaAngle) {
+                    applyQiblaData(30.0444, 31.2357, 'القاهرة (افتراضي)');
+                    showToast('تم تعيين القبلة على القاهرة. يرجى تفعيل الـ GPS لدقة أعلى.', 'fa-solid fa-location-dot', 4000);
+                }
+            }, { enableHighAccuracy: true, timeout: 9000, maximumAge: 30000 });
         }
 
         // ── Auto-start on page load ───────────────────────
         window.addEventListener('DOMContentLoaded', () => {
-            // Always show compass shell immediately
             showCompassShell();
 
-            // iOS 13+: need user gesture for sensor permission
+            // iOS 13+ requires user interaction for motion sensors
             if (typeof DeviceOrientationEvent !== 'undefined' &&
                 typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // Show the permission button; GPS doesn't need permission
                 document.getElementById('perm-btn').classList.add('visible');
                 document.getElementById('perm-btn').onclick = () => {
                     requestSensorPermission();
                     startGeolocationFlow();
                 };
             } else {
-                // Android / desktop: auto-start everything
                 startSensors();
                 startGeolocationFlow();
             }

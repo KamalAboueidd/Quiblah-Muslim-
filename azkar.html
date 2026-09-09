@@ -568,8 +568,7 @@
             margin-top: auto;
             padding: 22px 25px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(8px);
+            background: transparent;
             position: relative;
             z-index: 10;
             box-sizing: border-box;
@@ -606,52 +605,26 @@
         .visitor-counter-badge {
             display: inline-flex;
             align-items: center;
-            gap: 9px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(197, 168, 89, 0.35);
-            border-radius: 30px;
-            padding: 7px 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 8px;
+            background: transparent;
+            border: none;
+            padding: 4px 0;
             user-select: none;
-        }
-
-        .visitor-counter-badge:hover {
-            border-color: var(--gold);
-            background: rgba(197, 168, 89, 0.12);
-            box-shadow: 0 6px 20px rgba(197, 168, 89, 0.25);
-            transform: translateY(-2px);
-        }
-
-        .visitor-pulse-dot {
-            width: 7px;
-            height: 7px;
-            background-color: #2ecc71;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #2ecc71;
-            animation: visitorPulse 2s infinite ease-in-out;
-        }
-
-        @keyframes visitorPulse {
-            0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 10px #2ecc71; }
-            100% { transform: scale(0.9); opacity: 0.7; }
         }
 
         .visitor-icon {
             color: var(--gold);
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .visitor-label {
-            font-size: 13px;
+            font-size: 14px;
             color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
         }
 
         .visitor-count {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--gold);
             font-family: 'Tajawal', sans-serif;
@@ -756,7 +729,6 @@
                     </div>
                     <div class="footer-visitor-box">
                         <div class="visitor-counter-badge" title="إجمالي زوار الموقع">
-                            <span class="visitor-pulse-dot"></span>
                             <i class="fa-solid fa-users visitor-icon" aria-hidden="true"></i>
                             <span class="visitor-label">زوار الموقع:</span>
                             <span class="visitor-count" id="visitor-count">...</span>

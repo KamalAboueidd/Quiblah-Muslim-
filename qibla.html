@@ -280,14 +280,26 @@
 
         /* Permission button (shown on iOS when autostart fails) */
         .perm-btn {
-            background: var(--gold); color: var(--dark);
-            padding: 12px 28px; border-radius: 12px;
-            font-size: 17px; font-weight: 800; border: none; cursor: pointer;
-            display: none; align-items: center; gap: 10px;
-            box-shadow: 0 5px 20px rgba(197,168,89,0.4);
-            transition: all 0.3s;
+            background: transparent;
+            color: var(--gold);
+            border: 1.5px solid var(--gold);
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: none;
+            transition: all 0.3s ease;
         }
-        .perm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(197,168,89,0.6); }
+        .perm-btn:hover {
+            background: rgba(197, 168, 89, 0.15);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(197, 168, 89, 0.2);
+        }
         .perm-btn.visible { display: flex; }
 
         #loader { color: var(--gold); margin: 10px 0; }

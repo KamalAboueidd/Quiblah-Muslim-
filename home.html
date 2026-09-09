@@ -906,15 +906,12 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="title">قبلة المسلم</div>
-            <button type="button" class="reminders-trigger-btn top-bar-reminders-btn" onclick="window.IslamicReminders.openSettings()" aria-label="إعدادات التذكيرات الإسلامية">
-                <i class="fa-regular fa-bell"></i>
-                <span>التذكيرات 🔔</span>
-            </button>
         </div>
 
         <!-- Navigation Bar -->
         <div class="nav-bar">
             <a href="home.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="reminders.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-bell"></i> التذكيرات</a>
             <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
             <a href="tafseer.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> التفسير</a>
             <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
@@ -922,8 +919,8 @@
             <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
             <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
             <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+            <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+            <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
         </div>
 
         <!-- Main Content -->
@@ -1015,26 +1012,6 @@
                     <div class="prayer-time" id="isha-time">--:--</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Islamic Reminders Quick Card -->
-        <div class="reminders-quick-card" onclick="window.IslamicReminders.openSettings()">
-            <div class="reminders-card-content">
-                <div class="reminders-card-icon">
-                    <i class="fa-solid fa-bell"></i>
-                </div>
-                <div class="reminders-card-text">
-                    <div class="reminders-card-title">
-                        <span>التذكيرات الإسلامية (كل 5 دقائق)</span>
-                        <span class="reminders-status-badge" id="reminders-quick-status">غير مفعّل</span>
-                    </div>
-                    <div class="reminders-card-sub">إشعارات حقيقية بالصلاة على النبي ﷺ والأذكار والاستغفار حتى عند قفل الشاشة</div>
-                </div>
-            </div>
-            <button type="button" class="reminders-card-btn" aria-label="ضبط التذكيرات">
-                <span>ضبط التذكير</span>
-                <i class="fa-solid fa-sliders"></i>
-            </button>
         </div>
 
         <!-- Quran Section -->

@@ -70,7 +70,19 @@
         return outputArray;
     }
 
-    // 5. صوت التذكير الهادئ (Web Audio API Synthesizer - بدون أي أصول خارجية)
+    // 5. صوت التذكير: تشغيل مقطع الصلاة على النبي ﷺ مع الرجوع للنغمة الهادئة
+    function playSalawatAudio() {
+        try {
+            const audio = new Audio('assets/salawat.mp3');
+            audio.volume = 0.85;
+            audio.play().catch(() => {
+                playGentleReminderChime();
+            });
+        } catch (e) {
+            playGentleReminderChime();
+        }
+    }
+
     function playGentleReminderChime() {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -81,7 +93,6 @@
             }
 
             const now = ctx.currentTime;
-            // نغمة مزدوجة روحانية لطيفة (528Hz & 660Hz)
             const freqs = [528, 660];
             freqs.forEach((freq, idx) => {
                 const osc = ctx.createOscillator();
@@ -111,7 +122,7 @@
             if (event.data && event.data.type === 'PUSH_REMINDER_RECEIVED') {
                 const settings = getSettings();
                 if (settings.enabled && settings.sound) {
-                    playGentleReminderChime();
+                    playSalawatAudio();
                 }
             }
         });
@@ -544,9 +555,9 @@
 
             .btn-test-notification {
                 flex: 1;
-                background: rgba(197, 168, 89, 0.15);
-                border: 1px solid var(--gold, #C5A859);
-                color: var(--gold, #C5A859);
+                background: transparent !important;
+                border: 1px solid var(--gold, #C5A859) !important;
+                color: var(--gold, #C5A859) !important;
                 padding: 10px 14px;
                 border-radius: 12px;
                 font-family: inherit;
@@ -558,17 +569,19 @@
                 align-items: center;
                 justify-content: center;
                 gap: 7px;
+                outline: none;
             }
 
             .btn-test-notification:hover {
-                background: var(--gold, #C5A859);
-                color: #111111;
+                background: rgba(197, 168, 89, 0.15) !important;
+                color: #ffffff !important;
+                box-shadow: 0 0 15px rgba(197, 168, 89, 0.3);
             }
 
             .btn-sound-preview {
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                color: #ffffff;
+                background: transparent !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                color: #ffffff !important;
                 padding: 10px 14px;
                 border-radius: 12px;
                 font-family: inherit;
@@ -580,10 +593,13 @@
                 align-items: center;
                 justify-content: center;
                 gap: 6px;
+                outline: none;
             }
 
             .btn-sound-preview:hover {
-                background: rgba(255, 255, 255, 0.16);
+                border-color: var(--gold, #C5A859) !important;
+                color: var(--gold, #C5A859) !important;
+                background: rgba(197, 168, 89, 0.08) !important;
             }
 
             .reminders-unsupported-note {

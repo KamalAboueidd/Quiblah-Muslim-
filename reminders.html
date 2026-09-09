@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>التذكيرات الإسلامية - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: نظام التذكيرات الإسلامية الحقيقية بالصلاة على النبي ﷺ والأذكار والاستغفار في الخلفية وعبر شاشة القفل.">
+    <meta name="keywords" content="تذكيرات, صلاة على النبي, أذكار, استغفار, إشعارات, قبلة المسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="التذكيرات الإسلامية - قبلة المسلم">
+    <meta property="og:description" content="تذكيرات إسلامية حقيقية بالصلاة على النبي ﷺ والأذكار كل 5 دقائق.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+    <script src="player-bridge.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C5A859">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <style>
+        :root {
+            --primary-teal: #2F7A78;
+            --dark-teal: #1F5F5D;
+            --gold: #C5A859;
+            --gold-hover: #dfc274;
+            --white: #FFFFFF;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Tajawal", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* --- Fullscreen Background Carousel --- */
+        .fullscreen-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        .carousel-slide.active { opacity: 1; }
+
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- App Container --- */
+        .app-container {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 30px 10px 30px;
+        }
+        
+        .top-bar .title {
+            font-weight: 900;
+            font-size: 32px;
+            color: var(--white);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(197, 168, 89, 0.2);
+            border-color: var(--gold);
+            color: var(--gold);
+            box-shadow: 0 4px 20px rgba(197, 168, 89, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-item i { font-size: 16px; color: var(--gold); }
+
+        /* Main Content Container */
+        .main-wrapper {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 10px auto 40px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Page Hero / Banner */
+        .page-hero {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .page-hero-title {
+            font-size: 34px;
+            font-weight: 900;
+            color: var(--gold);
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .page-hero-sub {
+            font-size: 15.5px;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            line-height: 1.6;
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        /* --- Transparent Glassmorphic Settings Card --- */
+        .reminders-glass-card {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            border-radius: 24px;
+            padding: 28px 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(197, 168, 89, 0.1);
+            margin-bottom: 25px;
+            box-sizing: border-box;
+        }
+
+        /* Master Toggle Section */
+        .master-toggle-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 22px;
+            gap: 20px;
+        }
+
+        .master-toggle-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .master-toggle-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: transparent;
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(197, 168, 89, 0.15);
+        }
+
+        .master-toggle-text h2 {
+            font-size: 20px;
+            font-weight: 800;
+            margin: 0 0 4px 0;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .master-toggle-text p {
+            margin: 0;
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+        }
+
+        .status-badge.active {
+            border-color: #4ade80;
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.08);
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
+        }
+
+        /* Transparent Switch */
+        .luxury-switch {
+            position: relative;
+            display: inline-block;
+            width: 56px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .luxury-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .luxury-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 34px;
+        }
+
+        .luxury-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: rgba(255, 255, 255, 0.85);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .luxury-switch input:checked + .luxury-slider {
+            border-color: var(--gold);
+            background-color: rgba(197, 168, 89, 0.2);
+        }
+
+        .luxury-switch input:checked + .luxury-slider:before {
+            transform: translateX(26px);
+            background-color: var(--gold);
+            box-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
+        }
+
+        /* Grid for Settings Rows */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .setting-card {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.25s ease;
+        }
+
+        .setting-card:hover {
+            border-color: rgba(197, 168, 89, 0.35);
+            background: rgba(197, 168, 89, 0.04);
+        }
+
+        .setting-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting-card-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-card-title i { color: var(--gold); font-size: 16px; }
+
+        .setting-card-desc {
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Custom Luxury Dropdown */
+        .custom-luxury-dropdown {
+            position: relative;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .dropdown-luxury-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: transparent;
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: var(--gold);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .dropdown-luxury-btn:hover {
+            border-color: var(--gold);
+            background: rgba(197, 168, 89, 0.1);
+        }
+
+        .dropdown-luxury-btn i.arrow {
+            transition: transform 0.25s ease;
+            font-size: 12px;
+        }
+
+        .custom-luxury-dropdown.open .dropdown-luxury-btn i.arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-luxury-list {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: rgba(15, 16, 20, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(197, 168, 89, 0.15);
+            padding: 6px;
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .custom-luxury-dropdown.open .dropdown-luxury-list {
+            display: flex;
+            animation: fadeInDrop 0.2s ease;
+        }
+
+        @keyframes fadeInDrop {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-luxury-item {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.15s ease;
+        }
+
+        .dropdown-luxury-item:hover {
+            background: rgba(197, 168, 89, 0.15);
+            color: var(--gold);
+        }
+
+        .dropdown-luxury-item.active {
+            background: rgba(197, 168, 89, 0.25);
+            color: var(--gold);
+        }
+
+        .dropdown-luxury-item i.check {
+            font-size: 12px;
+            opacity: 0;
+        }
+
+        .dropdown-luxury-item.active i.check { opacity: 1; }
+
+        /* Notification Types Checklist */
+        .types-section {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 22px;
+        }
+
+        .types-section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0 0 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .types-grid-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .type-option-card {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .type-option-card:hover {
+            border-color: rgba(197, 168, 89, 0.3);
+            background: rgba(197, 168, 89, 0.05);
+        }
+
+        .type-option-card input[type="checkbox"] {
+            accent-color: var(--gold);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .type-option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .type-option-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .type-option-sample {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* --- Transparent Action Buttons --- */
+        .actions-bar {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-transparent-gold {
+            flex: 1;
+            min-width: 200px;
+            background: transparent !important;
+            border: 1px solid var(--gold) !important;
+            color: var(--gold) !important;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 14.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-transparent-gold:hover {
+            background: rgba(197, 168, 89, 0.15) !important;
+            border-color: #dfc274 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 18px rgba(197, 168, 89, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn-transparent-silver {
+            flex: 1;
+            min-width: 200px;
+            background: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            outline: none;
+        }
+
+        .btn-transparent-silver:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: var(--gold) !important;
+            color: var(--gold) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Salawat Showcase Box */
+        .salawat-showcase {
+            background: transparent;
+            border: 1px solid rgba(197, 168, 89, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .salawat-showcase-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .salawat-verse-text {
+            font-family: 'Amiri', serif;
+            font-size: 24px;
+            line-height: 1.8;
+            color: #ffffff;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+        }
+
+        .salawat-verse-ref {
+            font-size: 13px;
+            color: rgba(197, 168, 89, 0.85);
+            font-weight: 700;
+        }
+
+        /* Footer */
+        .app-footer {
+            width: 100%;
+            margin-top: auto;
+            padding: 22px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            box-sizing: border-box;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .footer-visitor-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .visitor-counter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+        }
+
+        .visitor-counter-badge i { color: var(--gold); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-bar { padding: 12px 15px 5px; }
+            .top-bar .title { font-size: 24px; }
+            .nav-bar { gap: 8px; padding: 5px 10px; margin-bottom: 10px; }
+            .nav-item { padding: 7px 14px; font-size: 13px; }
+            .page-hero-title { font-size: 26px; }
+            .page-hero-sub { font-size: 13.5px; }
+            .reminders-glass-card { padding: 18px 16px; }
+            .settings-grid { grid-template-columns: 1fr; gap: 12px; }
+            .types-grid-boxes { grid-template-columns: 1fr; }
+            .master-toggle-box { flex-direction: column; align-items: flex-start; gap: 14px; }
+            .actions-bar { flex-direction: column; }
+            .btn-transparent-gold, .btn-transparent-silver { width: 100%; min-width: 0; }
+            .footer-container { grid-template-columns: 1fr; text-align: center; }
+            .footer-visitor-box { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <!-- App Content -->
+    <div class="app-container">
+        
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="title">قبلة المسلم</div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="home.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="reminders.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-bell"></i> التذكيرات</a>
+            <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="tafseer.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> التفسير</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+            <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+            <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+            <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+            <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+        </div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            
+            <!-- Hero Header -->
+            <div class="page-hero">
+                <h1 class="page-hero-title">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>التذكيرات الإسلامية</span>
+                </h1>
+                <p class="page-hero-sub">
+                    إشعارات نظام دورية بالصلاة على النبي ﷺ والتسبيح والاستغفار، تصلك في الخلفية وعلى شاشة القفل حتى عند إغلاق التطبيق.
+                </p>
+            </div>
+
+            <!-- Transparent Glassmorphic Settings Card -->
+            <div class="reminders-glass-card">
+                
+                <!-- Master Switch -->
+                <div class="master-toggle-box">
+                    <div class="master-toggle-info">
+                        <div class="master-toggle-icon">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+                        <div class="master-toggle-text">
+                            <h2>
+                                <span>تفعيل الإشعارات والتذكيرات</span>
+                                <span class="status-badge" id="page-status-badge">غير مفعّل</span>
+                            </h2>
+                            <p>استقبال تذكيرات تلقائية عبر إشعارات الهاتف الرسمية (Web Push)</p>
+                        </div>
+                    </div>
+                    <label class="luxury-switch">
+                        <input type="checkbox" id="page-enable-toggle" />
+                        <span class="luxury-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Settings Grid -->
+                <div class="settings-grid">
+                    
+                    <!-- Setting Card: Interval -->
+                    <div class="setting-card">
+                        <div class="setting-card-header">
+                            <div class="setting-card-title">
+                                <i class="fa-solid fa-clock"></i>
+                                <span>الفاصل الزمني</span>
+                            </div>
+                        </div>
+                        <p class="setting-card-desc">تكرار إرسال التذكيرات بذكر الله والصلاة على النبي ﷺ</p>
+                        
+                        <!-- Custom Luxury Dropdown -->
+                        <div class="custom-luxury-dropdown" id="page-interval-dropdown">
+                            <button type="button" class="dropdown-luxury-btn" id="interval-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="interval-dropdown-label">كل 5 دقائق (الموصى به)</span>
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+                            </button>
+                            <div class="dropdown-luxury-list" role="listbox">
+                                <div class="dropdown-luxury-item active" data-value="5" role="option">
+                                    <span>كل 5 دقائق (الموصى به)</span>
+                                    <i class="fa-solid fa-check check"></i>
+                                </div>
+                                <div class="dropdown-luxury-item" data-value="15" role="option">
+                                    <span>كل 15 دقيقة</span>
+                                    <i class="fa-solid fa-check check"></i>
+                                </div>
+                                <div class="dropdown-luxury-item" data-value="30" role="option">
+                                    <span>كل 30 دقيقة</span>
+                                    <i class="fa-solid fa-check check"></i>
+                                </div>
+                                <div class="dropdown-luxury-item" data-value="60" role="option">
+                                    <span>كل ساعة (60 دقيقة)</span>
+                                    <i class="fa-solid fa-check check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Setting Card: Sound -->
+                    <div class="setting-card">
+                        <div class="setting-card-header">
+                            <div class="setting-card-title">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <span>صوت التذكير</span>
+                            </div>
+                            <label class="luxury-switch">
+                                <input type="checkbox" id="page-sound-toggle" />
+                                <span class="luxury-slider"></span>
+                            </label>
+                        </div>
+                        <p class="setting-card-desc">تشغيل صوت الصلاة على النبي ﷺ بصوت الشيخ مشاري العفاسي عند التنبيه والتطبيق مفتوح</p>
+                    </div>
+
+                </div>
+
+                <!-- Notification Types Section -->
+                <div class="types-section">
+                    <div class="types-section-title">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>محتوى التذكيرات المرسلة:</span>
+                    </div>
+                    <div class="types-grid-boxes">
+                        <label class="type-option-card">
+                            <input type="checkbox" id="page-type-salawat" />
+                            <div class="type-option-info">
+                                <span class="type-option-title">الصلاة على النبي ﷺ</span>
+                                <span class="type-option-sample">"صلِّ على النبي ﷺ 🤍"</span>
+                            </div>
+                        </label>
+                        <label class="type-option-card">
+                            <input type="checkbox" id="page-type-adhkar" />
+                            <div class="type-option-info">
+                                <span class="type-option-title">الأذكار والتسبيح</span>
+                                <span class="type-option-sample">"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ"</span>
+                            </div>
+                        </label>
+                        <label class="type-option-card">
+                            <input type="checkbox" id="page-type-quran" />
+                            <div class="type-option-info">
+                                <span class="type-option-title">آيات قرآنية مختارة</span>
+                                <span class="type-option-sample">"أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ"</span>
+                            </div>
+                        </label>
+                        <label class="type-option-card">
+                            <input type="checkbox" id="page-type-istighfar" />
+                            <div class="type-option-info">
+                                <span class="type-option-title">الاستغفار والتوبة</span>
+                                <span class="type-option-sample">"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ"</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons (Transparent Luxury) -->
+                <div class="actions-bar">
+                    <button type="button" class="btn-transparent-gold" id="page-btn-send-test">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>إرسال إشعار تجريبي الآن</span>
+                    </button>
+                    <button type="button" class="btn-transparent-silver" id="page-btn-preview-sound">
+                        <i class="fa-solid fa-play"></i>
+                        <span>استماع لصوت "صلِّ على النبي"</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Salawat Showcase Card -->
+            <div class="salawat-showcase">
+                <div class="salawat-showcase-title">
+                    <i class="fa-solid fa-book-quran"></i>
+                    <span>فضل الصلاة على النبي ﷺ</span>
+                </div>
+                <div class="salawat-verse-text">
+                    ﴿ إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا ﴾
+                </div>
+                <div class="salawat-verse-ref">سورة الأحزاب • الآية 56</div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-container">
+                <div class="footer-side-spacer" aria-hidden="true"></div>
+                <div class="footer-copyright">
+                    جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
+                    تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                </div>
+                <div class="footer-visitor-box">
+                    <div class="visitor-counter-badge" title="إجمالي زوار الموقع">
+                        <i class="fa-solid fa-users" aria-hidden="true"></i>
+                        <span>زوار الموقع:</span>
+                        <span id="visitor-count">...</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Hidden Audio for Salawat -->
+    <audio id="salawat-audio-player" src="assets/salawat.mp3" preload="auto"></audio>
+
+    <script src="toast.js"></script>
+    <script src="pwa.js"></script>
+    <script src="reminders.js"></script>
+    <script src="visitor-counter.js"></script>
+    <script>
+        // Header Carousel Logic
+        const slides = document.querySelectorAll('.carousel-slide');
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 8000);
+
+        // Page Reminders Controller
+        (function() {
+            const enableToggle = document.getElementById('page-enable-toggle');
+            const statusBadge = document.getElementById('page-status-badge');
+            const soundToggle = document.getElementById('page-sound-toggle');
+            const intervalDropdown = document.getElementById('page-interval-dropdown');
+            const intervalTrigger = document.getElementById('interval-dropdown-trigger');
+            const intervalLabel = document.getElementById('interval-dropdown-label');
+            const intervalItems = document.querySelectorAll('.dropdown-luxury-item');
+            const btnSendTest = document.getElementById('page-btn-send-test');
+            const btnPreviewSound = document.getElementById('page-btn-preview-sound');
+            const salawatAudio = document.getElementById('salawat-audio-player');
+
+            const typeSalawat = document.getElementById('page-type-salawat');
+            const typeAdhkar = document.getElementById('page-type-adhkar');
+            const typeQuran = document.getElementById('page-type-quran');
+            const typeIstighfar = document.getElementById('page-type-istighfar');
+
+            const intervalLabelsMap = {
+                '5': 'كل 5 دقائق (الموصى به)',
+                '15': 'كل 15 دقيقة',
+                '30': 'كل 30 دقيقة',
+                '60': 'كل ساعة (60 دقيقة)'
+            };
+
+            function syncPageUI() {
+                if (!window.IslamicReminders) return;
+                const settings = window.IslamicReminders.getSettings();
+
+                enableToggle.checked = !!settings.enabled;
+                soundToggle.checked = !!settings.sound;
+
+                if (settings.enabled) {
+                    statusBadge.textContent = `مفعّل (كل ${settings.interval || 5} دقائق)`;
+                    statusBadge.classList.add('active');
+                } else {
+                    statusBadge.textContent = 'غير مفعّل';
+                    statusBadge.classList.remove('active');
+                }
+
+                // Dropdown label
+                const currentVal = String(settings.interval || 5);
+                intervalLabel.textContent = intervalLabelsMap[currentVal] || intervalLabelsMap['5'];
+                intervalItems.forEach(item => {
+                    if (item.getAttribute('data-value') === currentVal) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+
+                // Types
+                typeSalawat.checked = !!settings.types.salawat;
+                typeAdhkar.checked = !!settings.types.adhkar;
+                typeQuran.checked = !!settings.types.quran;
+                typeIstighfar.checked = !!settings.types.istighfar;
+            }
+
+            // Dropdown Toggle
+            intervalTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                intervalDropdown.classList.toggle('open');
+            });
+
+            document.addEventListener('click', () => {
+                intervalDropdown.classList.remove('open');
+            });
+
+            // Select Interval
+            intervalItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const val = parseInt(this.getAttribute('data-value'), 10);
+                    intervalDropdown.classList.remove('open');
+                    if (window.IslamicReminders) {
+                        const settings = window.IslamicReminders.getSettings();
+                        settings.interval = val;
+                        localStorage.setItem('quiblah_islamic_reminders', JSON.stringify(settings));
+                        syncPageUI();
+                        if (settings.enabled) {
+                            // Update server subscription settings
+                            fetch('./api/push/subscribe').catch(() => {});
+                        }
+                    }
+                });
+            });
+
+            // Master Enable Toggle
+            enableToggle.addEventListener('change', async function() {
+                const wantEnabled = this.checked;
+                const modalToggle = document.getElementById('reminder-enable-toggle');
+                if (modalToggle) {
+                    modalToggle.checked = wantEnabled;
+                    modalToggle.dispatchEvent(new Event('change'));
+                } else {
+                    // Fallback
+                    const settings = window.IslamicReminders.getSettings();
+                    settings.enabled = wantEnabled;
+                    localStorage.setItem('quiblah_islamic_reminders', JSON.stringify(settings));
+                    syncPageUI();
+                }
+            });
+
+            // Sound Toggle
+            soundToggle.addEventListener('change', function() {
+                const settings = window.IslamicReminders.getSettings();
+                settings.sound = this.checked;
+                localStorage.setItem('quiblah_islamic_reminders', JSON.stringify(settings));
+                syncPageUI();
+            });
+
+            // Types Checkboxes
+            [
+                { el: typeSalawat, key: 'salawat' },
+                { el: typeAdhkar, key: 'adhkar' },
+                { el: typeQuran, key: 'quran' },
+                { el: typeIstighfar, key: 'istighfar' }
+            ].forEach(({ el, key }) => {
+                el.addEventListener('change', function() {
+                    const settings = window.IslamicReminders.getSettings();
+                    settings.types[key] = this.checked;
+                    localStorage.setItem('quiblah_islamic_reminders', JSON.stringify(settings));
+                    syncPageUI();
+                });
+            });
+
+            // Send Test Notification
+            btnSendTest.addEventListener('click', () => {
+                const testBtnInModal = document.getElementById('btn-send-test-push');
+                if (testBtnInModal) {
+                    testBtnInModal.click();
+                } else {
+                    alert('يرجى تفعيل التذكيرات أولاً للاشتراك في الإشعارات.');
+                }
+            });
+
+            // Preview Salawat Audio
+            let isPlayingSalawat = false;
+            btnPreviewSound.addEventListener('click', () => {
+                if (isPlayingSalawat) {
+                    salawatAudio.pause();
+                    salawatAudio.currentTime = 0;
+                    isPlayingSalawat = false;
+                    btnPreviewSound.innerHTML = `<i class="fa-solid fa-play"></i> <span>استماع لصوت "صلِّ على النبي"</span>`;
+                } else {
+                    salawatAudio.play().then(() => {
+                        isPlayingSalawat = true;
+                        btnPreviewSound.innerHTML = `<i class="fa-solid fa-pause"></i> <span>إيقاف الصوت</span>`;
+                    }).catch(() => {
+                        if (window.IslamicReminders) {
+                            window.IslamicReminders.playChime();
+                        }
+                    });
+                }
+            });
+
+            salawatAudio.addEventListener('ended', () => {
+                isPlayingSalawat = false;
+                btnPreviewSound.innerHTML = `<i class="fa-solid fa-play"></i> <span>استماع لصوت "صلِّ على النبي"</span>`;
+            });
+
+            // Listen to settings changes from modal
+            window.addEventListener('load', () => {
+                setTimeout(syncPageUI, 200);
+            });
+            window.addEventListener('storage', syncPageUI);
+            document.addEventListener('click', () => {
+                setTimeout(syncPageUI, 400);
+            });
+        })();
+    </script>
+</body>
+</html>

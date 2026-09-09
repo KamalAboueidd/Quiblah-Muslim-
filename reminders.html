@@ -189,15 +189,15 @@
             margin: 0 auto;
         }
 
-        /* --- Transparent Glassmorphic Settings Card --- */
+        /* --- Transparent Settings Card --- */
         .reminders-glass-card {
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(197, 168, 89, 0.3);
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 28px 30px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(197, 168, 89, 0.1);
+            box-shadow: none !important;
             margin-bottom: 25px;
             box-sizing: border-box;
         }
@@ -220,18 +220,18 @@
         }
 
         .master-toggle-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
-            background: transparent;
-            border: 1px solid rgba(197, 168, 89, 0.4);
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            background: transparent !important;
+            border: none !important;
             color: var(--gold);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 30px;
             flex-shrink: 0;
-            box-shadow: 0 0 15px rgba(197, 168, 89, 0.15);
+            box-shadow: none !important;
         }
 
         .master-toggle-text h2 {
@@ -325,7 +325,7 @@
         }
 
         .setting-card {
-            background: transparent;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
             padding: 16px 18px;
@@ -333,12 +333,14 @@
             flex-direction: column;
             justify-content: space-between;
             gap: 12px;
-            transition: all 0.25s ease;
+            transition: none !important;
         }
 
         .setting-card:hover {
-            border-color: rgba(197, 168, 89, 0.35);
-            background: rgba(197, 168, 89, 0.04);
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            background: transparent !important;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
         .setting-card-header {
@@ -356,7 +358,13 @@
             gap: 8px;
         }
 
-        .setting-card-title i { color: var(--gold); font-size: 16px; }
+        .setting-card-title i {
+            color: var(--gold);
+            font-size: 16px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
 
         .setting-card-desc {
             font-size: 12.5px;
@@ -377,7 +385,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: transparent;
+            background: transparent !important;
             border: 1px solid rgba(197, 168, 89, 0.35);
             color: var(--gold);
             padding: 10px 14px;
@@ -386,18 +394,27 @@
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.25s ease;
-            outline: none;
+            transition: none !important;
+            outline: none !important;
+            box-shadow: none !important;
         }
 
-        .dropdown-luxury-btn:hover {
-            border-color: var(--gold);
-            background: rgba(197, 168, 89, 0.1);
+        .dropdown-luxury-btn:hover,
+        .dropdown-luxury-btn:active,
+        .dropdown-luxury-btn:focus {
+            border-color: rgba(197, 168, 89, 0.35) !important;
+            background: transparent !important;
+            color: var(--gold) !important;
+            transform: none !important;
+            box-shadow: none !important;
+            outline: none !important;
         }
 
         .dropdown-luxury-btn i.arrow {
             transition: transform 0.25s ease;
             font-size: 12px;
+            background: transparent !important;
+            border: none !important;
         }
 
         .custom-luxury-dropdown.open .dropdown-luxury-btn i.arrow {
@@ -458,17 +475,20 @@
         .dropdown-luxury-item i.check {
             font-size: 12px;
             opacity: 0;
+            background: transparent !important;
+            border: none !important;
         }
 
         .dropdown-luxury-item.active i.check { opacity: 1; }
 
         /* Notification Types Checklist */
         .types-section {
-            background: transparent;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 18px;
             padding: 18px 20px;
             margin-bottom: 22px;
+            box-shadow: none !important;
         }
 
         .types-section-title {
@@ -481,6 +501,12 @@
             gap: 8px;
         }
 
+        .types-section-title i {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
         .types-grid-boxes {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -488,7 +514,7 @@
         }
 
         .type-option-card {
-            background: transparent;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 14px;
             padding: 12px 14px;
@@ -496,13 +522,16 @@
             align-items: center;
             gap: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             user-select: none;
+            box-shadow: none !important;
         }
 
         .type-option-card:hover {
-            border-color: rgba(197, 168, 89, 0.3);
-            background: rgba(197, 168, 89, 0.05);
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            background: transparent !important;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
         .type-option-card input[type="checkbox"] {
@@ -529,7 +558,7 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* --- Transparent Action Buttons --- */
+        /* --- Transparent Action Buttons (No borders, No background, No hover changes) --- */
         .actions-bar {
             display: flex;
             gap: 14px;
@@ -540,7 +569,7 @@
             flex: 1;
             min-width: 200px;
             background: transparent !important;
-            border: 1px solid var(--gold) !important;
+            border: none !important;
             color: var(--gold) !important;
             padding: 12px 20px;
             border-radius: 14px;
@@ -548,28 +577,32 @@
             font-size: 14.5px;
             font-weight: 800;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: none !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 9px;
-            outline: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            outline: none !important;
+            box-shadow: none !important;
+            transform: none !important;
         }
 
-        .btn-transparent-gold:hover {
-            background: rgba(197, 168, 89, 0.15) !important;
-            border-color: #dfc274 !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 18px rgba(197, 168, 89, 0.35);
-            transform: translateY(-2px);
+        .btn-transparent-gold:hover,
+        .btn-transparent-gold:active,
+        .btn-transparent-gold:focus {
+            background: transparent !important;
+            border: none !important;
+            color: var(--gold) !important;
+            box-shadow: none !important;
+            transform: none !important;
+            outline: none !important;
         }
 
         .btn-transparent-silver {
             flex: 1;
             min-width: 200px;
             background: transparent !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            border: none !important;
             color: #ffffff !important;
             padding: 12px 20px;
             border-radius: 14px;
@@ -577,19 +610,32 @@
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: none !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 9px;
-            outline: none;
+            outline: none !important;
+            box-shadow: none !important;
+            transform: none !important;
         }
 
-        .btn-transparent-silver:hover {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border-color: var(--gold) !important;
-            color: var(--gold) !important;
-            transform: translateY(-2px);
+        .btn-transparent-silver:hover,
+        .btn-transparent-silver:active,
+        .btn-transparent-silver:focus {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+            transform: none !important;
+            outline: none !important;
+        }
+
+        .btn-transparent-gold i,
+        .btn-transparent-silver i {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
 
         /* Salawat Showcase Box */

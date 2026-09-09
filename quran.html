@@ -45,6 +45,10 @@
             --white: #FFFFFF;
         }
 
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: "Tajawal", sans-serif;
             margin: 0;
@@ -471,15 +475,19 @@
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.75);
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.78);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            z-index: 1000;
+            z-index: 2000;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 16px;
+            box-sizing: border-box;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -490,21 +498,25 @@
         }
 
         .tafseer-modal-card {
-            background: transparent;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            border: 1px solid var(--gold);
+            background: #0e1015;
+            background: rgba(14, 16, 21, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
             border-radius: 20px;
             max-width: 650px;
             width: 100%;
-            padding: 26px;
-            box-shadow: 0 0 25px rgba(197, 168, 89, 0.2);
+            margin: auto;
+            padding: 24px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 25px rgba(197, 168, 89, 0.15);
             direction: rtl;
             transform: translateY(20px);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
             max-height: 85vh;
+            max-height: 85dvh;
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
         }
 
         .tafseer-modal-backdrop.show .tafseer-modal-card {
@@ -518,6 +530,7 @@
             padding-bottom: 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 15px;
+            flex-shrink: 0;
         }
 
         .modal-title {
@@ -545,8 +558,8 @@
         }
 
         .modal-close-btn:hover {
-            background: transparent;
-            color: #ef4444;
+            background: transparent !important;
+            color: var(--gold);
             transform: scale(1.15);
         }
 
@@ -554,6 +567,7 @@
             overflow-y: auto;
             flex: 1;
             padding-left: 5px;
+            overscroll-behavior: contain;
         }
 
         .modal-ayah-text {
@@ -564,9 +578,9 @@
             text-align: center;
             margin-bottom: 18px;
             padding: 12px;
-            background: transparent;
+            background: rgba(197, 168, 89, 0.05);
             border-radius: 12px;
-            border: 1px solid rgba(197, 168, 89, 0.3);
+            border: 1px solid rgba(197, 168, 89, 0.25);
         }
 
         .modal-tafseer-text {
@@ -581,12 +595,15 @@
             padding-top: 14px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
+            align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         #modal-full-link {
-            border: 1px solid var(--gold);
+            border: none !important;
+            outline: none !important;
             background: transparent !important;
             color: var(--gold);
             text-decoration: none;
@@ -594,15 +611,19 @@
             border-radius: 20px;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             font-size: 13.5px;
             font-weight: 700;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: none !important;
         }
 
         #modal-full-link:hover {
-            background: rgba(197, 168, 89, 0.15) !important;
-            color: #fff;
+            background: transparent !important;
+            color: var(--gold);
+            transform: none;
+            box-shadow: none !important;
         }
 
         /* Scrollbars */
@@ -700,6 +721,52 @@
             .sadaqallah-text { font-size: 24px; }
             .sadaqallah-line { max-width: 60px; }
             .sadaqallah-box { margin: 30px auto 15px auto; }
+
+            /* Tafseer Modal Mobile Responsiveness */
+            .tafseer-modal-backdrop {
+                padding: 12px;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            .tafseer-modal-backdrop.show {
+                display: flex;
+            }
+            .tafseer-modal-card {
+                width: 100% !important;
+                max-width: calc(100vw - 24px) !important;
+                margin: auto !important;
+                padding: 18px 14px;
+                border-radius: 16px;
+                max-height: 88vh;
+                max-height: 88dvh;
+            }
+            .modal-header {
+                padding-bottom: 10px;
+                margin-bottom: 12px;
+            }
+            .modal-title {
+                font-size: 15.5px;
+            }
+            .modal-ayah-text {
+                font-size: 19px;
+                line-height: 1.8;
+                padding: 10px;
+                margin-bottom: 12px;
+            }
+            .modal-tafseer-text {
+                font-size: 14.5px;
+                line-height: 1.85;
+            }
+            .modal-footer {
+                justify-content: center;
+                margin-top: 14px;
+                padding-top: 12px;
+            }
+            #modal-full-link {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
         }
 
         /* Desktop Tweaks */
@@ -805,7 +872,7 @@
                 <div class="modal-tafseer-text" id="modal-tafseer-text"></div>
             </div>
             <div class="modal-footer">
-                <a id="modal-full-link" href="tafseer.html" style="border: 1px solid var(--gold); background: transparent; color: var(--gold); text-decoration: none; padding: 8px 18px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700;">
+                <a id="modal-full-link" href="tafseer.html">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> عرض في صفحة التفسير الشاملة
                 </a>
             </div>

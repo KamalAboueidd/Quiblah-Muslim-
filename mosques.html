@@ -66,6 +66,17 @@
 
         .header-title { font-size: 20px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; }
 
+        .btn-my-location {
+            background: rgba(197,168,89,0.2); border: 1px solid var(--gold);
+            color: var(--gold); padding: 5px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.25s ease;
+            font-family: 'Tajawal', sans-serif; display: inline-flex; align-items: center; gap: 6px;
+            white-space: nowrap; text-decoration: none;
+        }
+        .btn-my-location:hover {
+            background: var(--gold); color: #000; box-shadow: 0 0 10px rgba(197,168,89,0.4);
+        }
+
         .search-btn {
             background: rgba(197,168,89,0.2); border: 1px solid var(--gold);
             color: var(--gold); padding: 8px 15px; border-radius: 8px;
@@ -73,18 +84,6 @@
             font-family: 'Tajawal', sans-serif; display: flex; align-items: center; gap: 8px;
         }
         .search-btn:hover { background: var(--gold); color: #000; }
-
-        .location-text-link {
-            display: inline-flex; align-items: center; gap: 8px;
-            color: var(--gold); font-size: 16px; font-weight: 800;
-            cursor: pointer; text-decoration: none; position: relative;
-        }
-        .location-text-link::after {
-            content: ''; position: absolute; bottom: -4px; right: 0; width: 0; height: 2px;
-            background-color: var(--gold); transition: width 0.3s ease;
-        }
-        .location-text-link:hover::after { width: 100%; }
-        .location-text-link i { font-size: 18px; }
 
         .content-grid {
             display: grid;
@@ -284,6 +283,47 @@
             .footer-visitor-box {
                 justify-content: center;
             }
+
+            /* Mobile Header Card Customization */
+            .header-card {
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                padding: 12px 14px !important;
+                gap: 9px !important;
+            }
+            .header-title {
+                width: 100% !important;
+                justify-content: center !important;
+                font-size: 18px !important;
+                margin: 0 !important;
+            }
+            #user-location-display {
+                width: 100% !important;
+                text-align: center !important;
+                font-size: 13px !important;
+                margin: -2px 0 2px 0 !important;
+            }
+            .header-actions-row {
+                width: 100% !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 6px !important;
+            }
+            .desktop-search-box,
+            .desktop-only-btn,
+            .radius-label {
+                display: none !important;
+            }
+            .btn-my-location {
+                padding: 5px 12px !important;
+                font-size: 12.5px !important;
+            }
+            .radius-pill {
+                padding: 5px 10px !important;
+                font-size: 12px !important;
+            }
         }
     </style>
 </head>
@@ -320,28 +360,31 @@
                 <i aria-hidden="true" class="fa-solid fa-location-dot"></i> <span id="user-location-text"></span>
             </div>
             
-            <div style="display:flex; align-items:center; gap: 8px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+            <div class="header-actions-row" style="display:flex; align-items:center; gap: 8px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+                <!-- Location button -->
+                <button type="button" class="btn-my-location" id="start-btn" onclick="startLocationSearch()">
+                    <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> موقعي
+                </button>
+                <span id="loader-text" style="display: none; color: var(--gold); font-weight: 700; font-size: 13px; align-items: center; gap: 6px;">
+                    <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري...
+                </span>
+
                 <!-- Distance selector pills (1km default as requested) -->
                 <div class="radius-selector" style="display: flex; gap: 5px; align-items: center;">
-                    <span style="font-size: 12px; color: rgba(255,255,255,0.7); margin-left: 2px;">النطاق:</span>
+                    <span class="radius-label" style="font-size: 12px; color: rgba(255,255,255,0.7); margin-left: 2px;">النطاق:</span>
                     <button type="button" class="radius-pill active" id="pill-1000" onclick="setSearchRadius(1000)"><i class="fa-solid fa-person-walking"></i> 1 كم</button>
                     <button type="button" class="radius-pill" id="pill-2000" onclick="setSearchRadius(2000)">2 كم</button>
                     <button type="button" class="radius-pill" id="pill-3000" onclick="setSearchRadius(3000)">3 كم</button>
                     <button type="button" class="radius-pill" id="pill-5000" onclick="setSearchRadius(5000)">5 كم</button>
                 </div>
 
-                <div style="display:flex; align-items:center; background: rgba(0,0,0,0.4); border: 1px solid rgba(197,168,89,0.3); border-radius: 8px; overflow: hidden; padding: 2px;">
+                <!-- Desktop Search by City/Area Name -->
+                <div class="desktop-search-box" style="display:flex; align-items:center; background: rgba(0,0,0,0.4); border: 1px solid rgba(197,168,89,0.3); border-radius: 8px; overflow: hidden; padding: 2px;">
                     <input type="text" id="search-input" placeholder="ابحث عن منطقة..." style="background: transparent; border: none; color: white; padding: 5px 8px; outline: none; font-family: 'Tajawal'; width: 120px; font-size: 13px;" onkeypress="if(event.key === 'Enter') searchByCityName()">
-                    <button onclick="searchByCityName()" style="background: transparent; border: none; color: var(--gold); padding: 5px 8px; cursor: pointer;" title="بحث بالمنطقة"><i aria-hidden="true" class="fa-solid fa-magnifying-glass"></i></button>
+                    <button type="button" onclick="searchByCityName()" style="background: transparent; border: none; color: var(--gold); padding: 5px 8px; cursor: pointer;" title="بحث بالمنطقة"><i aria-hidden="true" class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
 
-                <span class="location-text-link" id="start-btn" onclick="startLocationSearch()" style="font-size: 13.5px;">
-                    <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> موقعي
-                </span>
-                <span id="loader-text" style="display: none; color: var(--gold); font-weight: 700; font-size: 13px; align-items: center; gap: 6px;">
-                    <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري...
-                </span>
-                <button class="search-btn" onclick="fetchMosquesInView()" style="font-size: 12.5px; padding: 5px 10px;" title="البحث في نطاق الخريطة المعروض"><i aria-hidden="true" class="fa-solid fa-magnifying-glass-location"></i> هنا</button>
+                <button type="button" class="search-btn desktop-only-btn" onclick="fetchMosquesInView()" style="font-size: 12.5px; padding: 5px 10px;" title="البحث في نطاق الخريطة المعروض"><i aria-hidden="true" class="fa-solid fa-magnifying-glass-location"></i> هنا</button>
             </div>
         </div>
 
@@ -526,16 +569,16 @@
                 جاري البحث عن المساجد في نطاق ${radiusLabel}...
             </div>`;
 
-        // Efficient Overpass Query for mosques
+        // Enhanced Overpass Query covering nodes, ways, and relations (nwr)
+        // Catches all mosques, places of worship without religion tag, named masjids, angles/zawiyas, etc.
         const overpassQuery = `
-            [out:json][timeout:15];
+            [out:json][timeout:25];
             (
-              node["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
-              way["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
-              node["amenity"="mosque"](around:${radius},${lat},${lng});
-              way["amenity"="mosque"](around:${radius},${lat},${lng});
-              node["building"="mosque"](around:${radius},${lat},${lng});
-              way["building"="mosque"](around:${radius},${lat},${lng});
+              nwr["amenity"="mosque"](around:${radius},${lat},${lng});
+              nwr["building"="mosque"](around:${radius},${lat},${lng});
+              nwr["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
+              nwr["amenity"="place_of_worship"](around:${radius},${lat},${lng});
+              nwr["name"~"مسجد|جامع|مصلى|زاوية",i](around:${radius},${lat},${lng});
             );
             out center;
         `;
@@ -553,7 +596,7 @@
         for (const api of apis) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 7000);
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 
                 const response = await fetch(api, {
                     method: 'GET',
@@ -578,22 +621,23 @@
         // Secondary Fallback: Nominatim OpenStreetMap Search API if Overpass is busy
         if (!elements || elements.length === 0) {
             try {
-                const deltaDeg = (radius / 111320) * 1.1;
+                const deltaDeg = (radius / 111320) * 1.15;
                 const minLat = lat - deltaDeg, maxLat = lat + deltaDeg;
                 const minLng = lng - (deltaDeg / Math.cos(lat * Math.PI / 180));
                 const maxLng = lng + (deltaDeg / Math.cos(lat * Math.PI / 180));
-                const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=مسجد&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1&limit=40&accept-language=ar`;
                 
-                const nomRes = await fetch(nomUrl);
-                if (nomRes.ok) {
-                    const nomData = await nomRes.json();
-                    if (Array.isArray(nomData) && nomData.length > 0) {
-                        elements = nomData.map(n => ({
-                            lat: parseFloat(n.lat),
-                            lon: parseFloat(n.lon),
-                            tags: { name: (n.display_name || '').split(',')[0] }
-                        }));
-                    }
+                const [nomMosques, nomGamaa] = await Promise.all([
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=مسجد&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1&limit=50&accept-language=ar`).then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=جامع&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1&limit=50&accept-language=ar`).then(r => r.ok ? r.json() : []).catch(() => [])
+                ]);
+
+                const combined = [...(Array.isArray(nomMosques) ? nomMosques : []), ...(Array.isArray(nomGamaa) ? nomGamaa : [])];
+                if (combined.length > 0) {
+                    elements = combined.map(n => ({
+                        lat: parseFloat(n.lat),
+                        lon: parseFloat(n.lon),
+                        tags: { name: (n.display_name || '').split(',')[0], amenity: 'mosque' }
+                    }));
                 }
             } catch(e) {
                 console.warn("Nominatim fallback error:", e);
@@ -613,26 +657,42 @@
             return;
         }
 
-        elements.forEach((el, index) => {
+        // Process elements and filter non-Islamic or non-mosque entities
+        const rawMosques = [];
+        elements.forEach((el) => {
             const mLat = el.lat || (el.center && el.center.lat);
             const mLng = el.lon || (el.center && el.center.lon);
             if (!mLat || !mLng) return;
             
-            // Filter non-Islamic
-            if (el.tags && el.tags.religion && el.tags.religion !== 'muslim') return;
-            const nameCheck = el.tags && el.tags.name ? el.tags.name : '';
-            if (nameCheck.includes('كنيسة') || nameCheck.includes('دير') || nameCheck.includes('church') || nameCheck.includes('synagogue')) return;
+            const tags = el.tags || {};
 
-            let name = nameCheck || 'مسجد';
+            // Exclude commercial shops, pharmacies, schools that might have "مسجد" in their address
+            if (tags.shop || tags.office || (tags.amenity && !['place_of_worship', 'mosque', 'community_centre'].includes(tags.amenity))) {
+                return;
+            }
+
+            // Exclude if religion explicitly non-Muslim
+            if (tags.religion && tags.religion.toLowerCase() !== 'muslim') return;
+
+            const rawName = tags.name || tags['name:ar'] || tags['name:en'] || '';
+            const lowerName = rawName.toLowerCase();
+
+            // Exclude churches, monasteries, cathedrals, cemeteries
+            if (lowerName.includes('كنيسة') || lowerName.includes('دير') || lowerName.includes('مطرانية') || 
+                lowerName.includes('كاتدرائية') || lowerName.includes('church') || lowerName.includes('synagogue') || 
+                lowerName.includes('cathedral') || lowerName.includes('monastery') || lowerName.includes('مدافن') || 
+                lowerName.includes('مقبرة') || lowerName.includes('cemetery') || lowerName.includes('saint') || lowerName.includes('coptic')) {
+                return;
+            }
+
+            let name = rawName.trim() || 'مسجد';
             if (name.startsWith("شارع ")) name = name.replace("شارع ", "");
             
             let areaName = '';
-            if (el.tags) {
-                if (el.tags['addr:suburb']) areaName = el.tags['addr:suburb'];
-                else if (el.tags['addr:city']) areaName = el.tags['addr:city'];
-                else if (el.tags['addr:village']) areaName = el.tags['addr:village'];
-                else if (el.tags['addr:street']) areaName = el.tags['addr:street'];
-            }
+            if (tags['addr:suburb']) areaName = tags['addr:suburb'];
+            else if (tags['addr:city']) areaName = tags['addr:city'];
+            else if (tags['addr:village']) areaName = tags['addr:village'];
+            else if (tags['addr:street']) areaName = tags['addr:street'];
             if (areaName.startsWith("شارع ")) areaName = areaName.replace("شارع ", "");
 
             let distNum = 0;
@@ -640,28 +700,53 @@
                 distNum = getDistance(currentPos.lat, currentPos.lng, mLat, mLng);
             }
 
-            // Exclude anything strictly beyond requested radius
+            // Exclude anything strictly beyond requested radius (allow 100m margin for center calculation)
             if (radius && distNum > radius + 100) return;
 
-            const formattedDist = distNum < 1000 ? `${distNum} متر` : `${(distNum / 1000).toFixed(1)} كم`;
+            rawMosques.push({ lat: mLat, lng: mLng, name, areaName, dist: distNum });
+        });
 
-            const marker = L.marker([mLat, mLng], { icon: L.divIcon({
+        // Deduplicate: merge nodes & ways/relations referring to the same mosque (< 35m distance)
+        const dedupedMosques = [];
+        for (const item of rawMosques) {
+            const existing = dedupedMosques.find(d => getDistance(d.lat, d.lng, item.lat, item.lng) < 35);
+            if (existing) {
+                // If existing has generic 'مسجد' and current item has a specific name, upgrade
+                if (existing.name === 'مسجد' && item.name !== 'مسجد') {
+                    existing.name = item.name;
+                }
+                if (!existing.areaName && item.areaName) {
+                    existing.areaName = item.areaName;
+                }
+            } else {
+                dedupedMosques.push(item);
+            }
+        }
+
+        // Sort by closest first
+        dedupedMosques.sort((a, b) => a.dist - b.dist);
+
+        // Build markers and mosqueData
+        dedupedMosques.forEach((m, index) => {
+            const formattedDist = m.dist < 1000 ? `${m.dist} متر` : `${(m.dist / 1000).toFixed(1)} كم`;
+
+            const marker = L.marker([m.lat, m.lng], { icon: L.divIcon({
                 className:'', iconSize:[32,32], iconAnchor:[16,32],
                 html:`<div style="background:var(--gold); width:32px; height:32px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.6);">
                     <i aria-hidden="true" class="fa-solid fa-mosque" style="color:#000; font-size:15px; transform:rotate(45deg);"></i>
                 </div>`
             })}).bindPopup(`
                 <div style="text-align:right; direction:rtl; font-family:'Tajawal', sans-serif;">
-                    <div style="font-size:15px; font-weight:800; color:#fff; margin-bottom:5px;">${name}</div>
+                    <div style="font-size:15px; font-weight:800; color:#fff; margin-bottom:5px;">${m.name}</div>
                     <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:8px;">
-                        <span style="color:#aaa; font-size:12px;"><i class="fa-solid fa-map-pin"></i> ${areaName || 'مسجد'}</span>
+                        <span style="color:#aaa; font-size:12px;"><i class="fa-solid fa-map-pin"></i> ${m.areaName || 'مسجد'}</span>
                         <span style="color:var(--gold); font-size:12px; font-weight:bold;"><i class="fa-solid fa-person-walking"></i> ${formattedDist}</span>
                     </div>
                     <div style="display:flex; gap:6px; margin-top:8px;">
-                        <button type="button" onclick="window.toggleLineToMosque(${mLat}, ${mLng})" style="flex:1; background:rgba(197,168,89,0.15); border:1px solid rgba(197,168,89,0.4); padding:5px 8px; border-radius:5px; text-align:center; color:var(--gold); font-size:12px; cursor:pointer; font-family:inherit; font-weight:700;">
+                        <button type="button" onclick="window.toggleLineToMosque(${m.lat}, ${m.lng})" style="flex:1; background:rgba(197,168,89,0.15); border:1px solid rgba(197,168,89,0.4); padding:5px 8px; border-radius:5px; text-align:center; color:var(--gold); font-size:12px; cursor:pointer; font-family:inherit; font-weight:700;">
                             <i class="fa-solid fa-route"></i> المسافة
                         </button>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${mLat},${mLng}" target="_blank" style="flex:1; background:rgba(28,158,91,0.25); border:1px solid var(--green); padding:5px 8px; border-radius:5px; text-align:center; color:#2ecc71; font-size:12px; text-decoration:none; font-family:inherit; font-weight:700;">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" style="flex:1; background:rgba(28,158,91,0.25); border:1px solid var(--green); padding:5px 8px; border-radius:5px; text-align:center; color:#2ecc71; font-size:12px; text-decoration:none; font-family:inherit; font-weight:700;">
                             <i class="fa-solid fa-location-arrow"></i> اتجاهات السير
                         </a>
                     </div>
@@ -672,11 +757,9 @@
             marker.addTo(map);
             mosqueMarkers.push(marker);
             
-            mosqueData.push({ id: index, name, lat: mLat, lng: mLng, dist: distNum, marker, areaName });
+            mosqueData.push({ id: index, name: m.name, lat: m.lat, lng: m.lng, dist: m.dist, marker, areaName: m.areaName });
         });
-        
-        // Sort by closest first
-        mosqueData.sort((a, b) => a.dist - b.dist);
+
         renderMosqueList();
 
         if (typeof showToast === 'function') {

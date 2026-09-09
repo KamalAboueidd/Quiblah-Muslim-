@@ -561,6 +561,123 @@
             .counter-text { font-size: 14px; min-width: 100px; }
             .copy-btn { padding: 8px 12px; font-size: 14px; }
         }
+
+        /* --- Footer & Visitor Counter --- */
+        .app-footer {
+            width: 100%;
+            margin-top: auto;
+            padding: 22px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-side-spacer {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: nowrap;
+        }
+
+        .footer-visitor-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .visitor-counter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 30px;
+            padding: 7px 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .visitor-counter-badge:hover {
+            border-color: var(--gold);
+            background: rgba(197, 168, 89, 0.12);
+            box-shadow: 0 6px 20px rgba(197, 168, 89, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .visitor-pulse-dot {
+            width: 7px;
+            height: 7px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #2ecc71;
+            animation: visitorPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes visitorPulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 10px #2ecc71; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        .visitor-icon {
+            color: var(--gold);
+            font-size: 14px;
+        }
+
+        .visitor-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+        }
+
+        .visitor-count {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--gold);
+            font-family: 'Tajawal', sans-serif;
+            letter-spacing: 0.5px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                gap: 12px;
+            }
+            .footer-side-spacer {
+                display: none;
+            }
+            .footer-copyright {
+                white-space: normal;
+            }
+            .footer-visitor-box {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -630,10 +747,23 @@
             </div>
 
             <!-- Footer -->
-            <div style="text-align: center; padding: 20px; margin-top: auto; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 10;">
-                جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
-                تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
-            </div>
+            <footer class="app-footer">
+                <div class="footer-container">
+                    <div class="footer-side-spacer" aria-hidden="true"></div>
+                    <div class="footer-copyright">
+                        جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
+                        تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                    </div>
+                    <div class="footer-visitor-box">
+                        <div class="visitor-counter-badge" title="إجمالي زوار الموقع">
+                            <span class="visitor-pulse-dot"></span>
+                            <i class="fa-solid fa-users visitor-icon" aria-hidden="true"></i>
+                            <span class="visitor-label">زوار الموقع:</span>
+                            <span class="visitor-count" id="visitor-count">...</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </main>
     </div>
 
@@ -882,6 +1012,7 @@
     </script>
     <script src="toast.js"></script>
     <script src="pwa.js"></script>
+    <script src="visitor-counter.js"></script>
 </body>
 </html>
 

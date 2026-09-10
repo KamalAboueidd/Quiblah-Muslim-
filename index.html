@@ -58,6 +58,11 @@
 
     <!-- Persistent Global Audio Player Bar -->
     <div class="global-player-bar" id="global-player-bar">
+        <!-- Top Edge Scrubber / Progress Loader -->
+        <div class="player-top-progress" id="player-top-progress" title="شريط تقدم السورة (اضغط للتقديم أو التأخير)">
+            <div class="player-top-fill" id="player-top-fill"></div>
+        </div>
+
         <!-- Close / Minimize for mobile expanded -->
         <div class="mobile-expand-toggle" id="mobile-expand-toggle" onclick="togglePlayerExpand(event)">
             <i class="fa-solid fa-chevron-down"></i>
@@ -69,7 +74,10 @@
                 <i class="fa-solid fa-book-quran"></i>
             </div>
             <div class="player-titles">
-                <div class="player-track-title" id="player-surah-title">سورة الفاتحة</div>
+                <div class="player-track-row">
+                    <span class="player-track-title" id="player-surah-title">سورة الفاتحة</span>
+                    <span class="player-mini-remaining" id="player-mini-remaining" title="الوقت المتبقي من السورة">-0:00</span>
+                </div>
                 <div class="player-artist-title" id="player-reciter-title">مشاري العفاسي</div>
             </div>
         </div>

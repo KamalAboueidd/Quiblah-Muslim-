@@ -95,11 +95,19 @@
 
 <!-- Player Bar -->
 <div class="player-bar" id="player-bar">
+    <!-- Top Edge Scrubber / Progress Loader -->
+    <div class="player-top-progress" id="player-top-progress" title="شريط تقدم السورة (اضغط للتقديم أو التأخير)">
+        <div class="player-top-fill" id="player-top-fill"></div>
+    </div>
+
     <button class="mobile-expand-btn" onclick="togglePlayerExpand(event)"><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button>
     <div class="player-info">
         <div class="player-thumb"><i aria-hidden="true" class="fa-solid fa-book-quran"></i></div>
         <div class="player-titles">
-            <div class="player-track" id="player-surah-name">---</div>
+            <div class="player-track-row">
+                <span class="player-track" id="player-surah-name">---</span>
+                <span class="player-mini-remaining" id="player-mini-remaining" title="الوقت المتبقي من السورة">-0:00</span>
+            </div>
             <div class="player-artist" id="player-reciter-name">---</div>
         </div>
     </div>
@@ -112,11 +120,11 @@
         </div>
         <div class="progress-container">
             <span id="time-current">0:00</span>
-            <div class="progress-bar" id="progress-bar" onclick="seek(event)">
+            <div class="progress-bar" id="progress-bar" onclick="seek(event)" title="اسحب أو اضغط للتقديم والتأخير">
                 <div class="progress-fill" id="progress-fill"></div>
                 <div class="progress-thumb" id="progress-thumb"></div>
             </div>
-            <span id="time-total">0:00</span>
+            <span id="time-total" title="اضغط للتبديل بين الوقت المتبقي والكلي">-0:00</span>
         </div>
     </div>
     

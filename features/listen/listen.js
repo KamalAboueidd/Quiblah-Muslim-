@@ -42,6 +42,8 @@
     let currentSurahList = []; // array of int surah numbers
     let currentPlayingSurahNum = null;
     let isPlaying = false;
+    let isScrubbing = false;
+    let showRemainingTime = true;
 
     const audio = document.getElementById('audio-player');
     const playPauseBtn = document.getElementById('btn-play-pause');
@@ -250,10 +252,26 @@
         document.getElementById('player-reciter-name').textContent = reciterName;
         document.getElementById('player-bar').classList.add('visible');
         
-        // Reset progress
-        document.getElementById('progress-fill').style.width = '0%';
-        document.getElementById('progress-thumb').style.left = '0%';
-        document.getElementById('time-current').textContent = '0:00';
+        // Reset progress & loader
+        const progressFill = document.getElementById('progress-fill');
+        const progressThumb = document.getElementById('progress-thumb');
+        const playerTopFill = document.getElementById('player-top-fill');
+        const playerMiniRemaining = document.getElementById('player-mini-remaining');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+
+        if (progressFill) {
+            progressFill.style.width = '0%';
+            progressFill.classList.add('buffering');
+        }
+        if (progressThumb) progressThumb.style.left = '0%';
+        if (playerTopFill) {
+            playerTopFill.style.width = '0%';
+            playerTopFill.classList.add('buffering');
+        }
+        if (timeCurrent) timeCurrent.textContent = '0:00';
+        if (timeTotal) timeTotal.textContent = '-0:00';
+        if (playerMiniRemaining) playerMiniRemaining.textContent = '-0:00';
         
         // Auto expand the player immediately on mobile just like Spotify
         if (window.innerWidth <= 768) {
@@ -328,32 +346,144 @@
         }
     }
 
+    // Buffering Shimmer Handlers
+    audio.addEventListener('waiting', () => {
+        const pFill = document.getElementById('progress-fill');
+        const tFill = document.getElementById('player-top-fill');
+        if (pFill) pFill.classList.add('buffering');
+        if (tFill) tFill.classList.add('buffering');
+    });
+    audio.addEventListener('playing', () => {
+        const pFill = document.getElementById('progress-fill');
+        const tFill = document.getElementById('player-top-fill');
+        if (pFill) pFill.classList.remove('buffering');
+        if (tFill) tFill.classList.remove('buffering');
+    });
+    audio.addEventListener('canplay', () => {
+        const pFill = document.getElementById('progress-fill');
+        const tFill = document.getElementById('player-top-fill');
+        if (pFill) pFill.classList.remove('buffering');
+        if (tFill) tFill.classList.remove('buffering');
+    });
+
     audio.addEventListener('timeupdate', () => {
+        if (isScrubbing || !audio.duration) return;
         const c = audio.currentTime;
         const d = audio.duration;
-        if (d) {
-            const pct = (c / d) * 100;
-            // Since LTR, width expands from left to right
-            document.getElementById('progress-fill').style.width = `${pct}%`;
-            document.getElementById('progress-thumb').style.left = `${pct}%`;
-            document.getElementById('time-current').textContent = formatTime(c);
-            document.getElementById('time-total').textContent = formatTime(d);
+        const pct = (c / d) * 100;
+        
+        const progressFill = document.getElementById('progress-fill');
+        const progressThumb = document.getElementById('progress-thumb');
+        const playerTopFill = document.getElementById('player-top-fill');
+        const playerMiniRemaining = document.getElementById('player-mini-remaining');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (progressThumb) progressThumb.style.left = `${pct}%`;
+        if (playerTopFill) playerTopFill.style.width = `${pct}%`;
+        
+        if (timeCurrent) timeCurrent.textContent = formatTime(c);
+
+        const remaining = Math.max(0, d - c);
+        const remStr = '-' + formatTime(remaining);
+        if (playerMiniRemaining) playerMiniRemaining.textContent = remStr;
+        if (timeTotal) {
+            timeTotal.textContent = showRemainingTime ? remStr : formatTime(d);
         }
     });
 
+    audio.addEventListener('loadedmetadata', () => {
+        const timeTotal = document.getElementById('time-total');
+        if (timeTotal && audio.duration) {
+            const remaining = Math.max(0, audio.duration - audio.currentTime);
+            timeTotal.textContent = showRemainingTime ? ('-' + formatTime(remaining)) : formatTime(audio.duration);
+        }
+    });
+
+    const timeTotalEl = document.getElementById('time-total');
+    if (timeTotalEl) {
+        timeTotalEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showRemainingTime = !showRemainingTime;
+            if (audio.duration) {
+                const remaining = Math.max(0, audio.duration - audio.currentTime);
+                timeTotalEl.textContent = showRemainingTime ? ('-' + formatTime(remaining)) : formatTime(audio.duration);
+            }
+        });
+    }
+
     audio.addEventListener('ended', () => playNext());
 
-    function seek(e) {
-        e.stopPropagation();
+    // Seeking Helper Function for both center bar and top edge bar
+    function seekFromElement(e, barElement) {
         if (!audio.duration) return;
-        const bar = document.getElementById('progress-bar');
-        const rect = bar.getBoundingClientRect();
-        // LTR logic: x is from left, progress grows to right
-        const clickX = e.clientX - rect.left;
+        const rect = barElement.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clickX = clientX - rect.left;
         let pct = clickX / rect.width;
         if (pct < 0) pct = 0;
         if (pct > 1) pct = 1;
         audio.currentTime = pct * audio.duration;
+        
+        const p = pct * 100;
+        const progressFill = document.getElementById('progress-fill');
+        const progressThumb = document.getElementById('progress-thumb');
+        const playerTopFill = document.getElementById('player-top-fill');
+        const playerMiniRemaining = document.getElementById('player-mini-remaining');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+
+        if (progressFill) progressFill.style.width = `${p}%`;
+        if (progressThumb) progressThumb.style.left = `${p}%`;
+        if (playerTopFill) playerTopFill.style.width = `${p}%`;
+        if (timeCurrent) timeCurrent.textContent = formatTime(audio.currentTime);
+
+        const remaining = Math.max(0, audio.duration - audio.currentTime);
+        const remStr = '-' + formatTime(remaining);
+        if (playerMiniRemaining) playerMiniRemaining.textContent = remStr;
+        if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatTime(audio.duration);
+    }
+
+    function seek(e) {
+        seekFromElement(e, document.getElementById('progress-bar'));
+    }
+
+    // Top progress bar click seeking
+    const playerTopProgress = document.getElementById('player-top-progress');
+    if (playerTopProgress) {
+        playerTopProgress.addEventListener('click', (e) => {
+            e.stopPropagation();
+            seekFromElement(e, playerTopProgress);
+        });
+    }
+
+    // Touch and drag support for progress-bar
+    const progressBar = document.getElementById('progress-bar');
+    if (progressBar) {
+        const startScrub = (e) => {
+            isScrubbing = true;
+            progressBar.classList.add('active');
+            seekFromElement(e, progressBar);
+        };
+        const moveScrub = (e) => {
+            if (!isScrubbing) return;
+            seekFromElement(e, progressBar);
+        };
+        const endScrub = () => {
+            if (isScrubbing) {
+                isScrubbing = false;
+                progressBar.classList.remove('active');
+            }
+        };
+
+        progressBar.addEventListener('mousedown', startScrub);
+        window.addEventListener('mousemove', moveScrub);
+        window.addEventListener('mouseup', endScrub);
+
+        progressBar.addEventListener('touchstart', startScrub, { passive: true });
+        window.addEventListener('touchmove', moveScrub, { passive: true });
+        window.addEventListener('touchend', endScrub);
     }
 
     // --- Volume Control Logic ---

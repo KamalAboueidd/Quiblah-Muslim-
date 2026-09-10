@@ -36,6 +36,9 @@
         const scrubberBar = document.getElementById('scrubber-bar');
         const scrubberFill = document.getElementById('scrubber-fill');
         const scrubberThumb = document.getElementById('scrubber-thumb');
+        const playerTopProgress = document.getElementById('player-top-progress');
+        const playerTopFill = document.getElementById('player-top-fill');
+        const playerMiniRemaining = document.getElementById('player-mini-remaining');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
         const volumeBar = document.getElementById('volume-bar');
@@ -50,6 +53,7 @@
         let currentReciterImg = "";
         let isAudioPlaying = false;
         let isScrubbing = false;
+        let showRemainingTime = true;
 
         // Initialize target page from URL param (e.g. index.html?page=quran.html)
         const params = new URLSearchParams(window.location.search);
@@ -147,10 +151,16 @@
             playerBar.classList.add('visible');
             document.body.classList.add('player-active');
 
-            // Reset progress
-            scrubberFill.style.width = '0%';
-            scrubberThumb.style.left = '0%';
-            timeCurrent.textContent = '0:00';
+            // Reset progress & loader
+            if (scrubberFill) scrubberFill.style.width = '0%';
+            if (scrubberThumb) scrubberThumb.style.left = '0%';
+            if (playerTopFill) {
+                playerTopFill.style.width = '0%';
+                playerTopFill.classList.add('buffering');
+            }
+            if (timeCurrent) timeCurrent.textContent = '0:00';
+            if (timeTotal) timeTotal.textContent = '-0:00';
+            if (playerMiniRemaining) playerMiniRemaining.textContent = '-0:00';
 
             // Set audio source & play
             audio.src = audioSrc;
@@ -255,35 +265,118 @@
             }
         }
 
+        // Buffering & Network state handling
+        audio.addEventListener('waiting', () => {
+            if (playerTopFill) playerTopFill.classList.add('buffering');
+            if (scrubberFill) scrubberFill.classList.add('buffering');
+        });
+        audio.addEventListener('playing', () => {
+            if (playerTopFill) playerTopFill.classList.remove('buffering');
+            if (scrubberFill) scrubberFill.classList.remove('buffering');
+        });
+        audio.addEventListener('canplay', () => {
+            if (playerTopFill) playerTopFill.classList.remove('buffering');
+            if (scrubberFill) scrubberFill.classList.remove('buffering');
+        });
+
         // Audio Progress Updates
         audio.addEventListener('timeupdate', () => {
             if (isScrubbing || !audio.duration) return;
-            const percent = (audio.currentTime / audio.duration) * 100;
-            scrubberFill.style.width = `${percent}%`;
-            scrubberThumb.style.left = `${percent}%`;
-            timeCurrent.textContent = formatSeconds(audio.currentTime);
+            const c = audio.currentTime;
+            const d = audio.duration;
+            const percent = (c / d) * 100;
+            
+            if (scrubberFill) scrubberFill.style.width = `${percent}%`;
+            if (scrubberThumb) scrubberThumb.style.left = `${percent}%`;
+            if (playerTopFill) playerTopFill.style.width = `${percent}%`;
+            
+            if (timeCurrent) timeCurrent.textContent = formatSeconds(c);
+            
+            const remaining = Math.max(0, d - c);
+            const remainingFormatted = '-' + formatSeconds(remaining);
+            
+            if (playerMiniRemaining) playerMiniRemaining.textContent = remainingFormatted;
+            if (timeTotal) {
+                timeTotal.textContent = showRemainingTime ? remainingFormatted : formatSeconds(d);
+            }
         });
 
         audio.addEventListener('loadedmetadata', () => {
-            timeTotal.textContent = formatSeconds(audio.duration);
+            if (timeTotal && audio.duration) {
+                const remaining = Math.max(0, audio.duration - audio.currentTime);
+                timeTotal.textContent = showRemainingTime ? ('-' + formatSeconds(remaining)) : formatSeconds(audio.duration);
+            }
         });
+
+        // Click to toggle between remaining time (-mm:ss) and total duration (mm:ss)
+        if (timeTotal) {
+            timeTotal.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showRemainingTime = !showRemainingTime;
+                if (audio.duration) {
+                    const remaining = Math.max(0, audio.duration - audio.currentTime);
+                    timeTotal.textContent = showRemainingTime ? ('-' + formatSeconds(remaining)) : formatSeconds(audio.duration);
+                }
+            });
+        }
 
         audio.addEventListener('ended', () => {
             playNextSurah();
         });
 
-        // Scrubber Seeking
-        function seekAudio(e) {
-            const rect = scrubberBar.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-            const percent = Math.max(0, Math.min(1, clickX / width));
-            if (audio.duration) {
-                audio.currentTime = percent * audio.duration;
-            }
+        // Unified Seeking helper
+        function seekElement(e, element) {
+            if (!audio.duration) return;
+            const rect = element.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clickX = clientX - rect.left;
+            const percent = Math.max(0, Math.min(1, clickX / rect.width));
+            audio.currentTime = percent * audio.duration;
+            const p = percent * 100;
+            if (scrubberFill) scrubberFill.style.width = `${p}%`;
+            if (scrubberThumb) scrubberThumb.style.left = `${p}%`;
+            if (playerTopFill) playerTopFill.style.width = `${p}%`;
+            if (timeCurrent) timeCurrent.textContent = formatSeconds(audio.currentTime);
+            const remaining = Math.max(0, audio.duration - audio.currentTime);
+            const remStr = '-' + formatSeconds(remaining);
+            if (playerMiniRemaining) playerMiniRemaining.textContent = remStr;
+            if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatSeconds(audio.duration);
         }
 
-        scrubberBar.addEventListener('click', seekAudio);
+        // Seeking on top edge progress loader
+        if (playerTopProgress) {
+            playerTopProgress.addEventListener('click', (e) => {
+                e.stopPropagation();
+                seekElement(e, playerTopProgress);
+            });
+        }
+
+        // Seeking on center scrubber with click & drag (mouse + touch)
+        if (scrubberBar) {
+            const startScrub = (e) => {
+                isScrubbing = true;
+                scrubberBar.classList.add('active');
+                seekElement(e, scrubberBar);
+            };
+            const moveScrub = (e) => {
+                if (!isScrubbing) return;
+                seekElement(e, scrubberBar);
+            };
+            const endScrub = () => {
+                if (isScrubbing) {
+                    isScrubbing = false;
+                    scrubberBar.classList.remove('active');
+                }
+            };
+
+            scrubberBar.addEventListener('mousedown', startScrub);
+            window.addEventListener('mousemove', moveScrub);
+            window.addEventListener('mouseup', endScrub);
+
+            scrubberBar.addEventListener('touchstart', startScrub, { passive: true });
+            window.addEventListener('touchmove', moveScrub, { passive: true });
+            window.addEventListener('touchend', endScrub);
+        }
 
         // Volume Control
         volumeBar.addEventListener('click', (e) => {

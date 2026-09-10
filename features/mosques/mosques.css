@@ -1,0 +1,292 @@
+/* features/mosques/mosques.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙØ­Ø© mosques.html */
+:root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+        .fullscreen-carousel { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+        .carousel-slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s ease-in-out; }
+        .carousel-slide.active { opacity:1; }
+        .carousel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.60); backdrop-filter:blur(2px); }
+
+        .app-container { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
+        .top-bar { display:flex; justify-content:center; align-items:center; padding:18px 30px 8px; }
+        .top-bar .title { font-weight:900; font-size:28px; color:var(--white); text-shadow:0 4px 15px rgba(0,0,0,0.8); }
+
+        .nav-bar { display:flex; justify-content:center; gap:10px; padding:8px 20px; margin-bottom:10px; flex-wrap:wrap; }
+        .nav-item { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:30px; background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1); color:white; text-decoration:none; font-weight:700; font-size:14px; transition:all 0.3s; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); border-color:var(--gold); color:var(--gold); }
+
+        .main-content { flex-grow:1; display:flex; flex-direction:column; align-items:center; padding:10px 20px 30px; gap:15px; width: 100%; }
+
+        .loader-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:30px; color:var(--gold); }
+        .loader-text { font-size:16px; opacity:0.9; font-weight: 700; }
+
+        .header-card {
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            padding:15px 25px; text-align:center;
+            width:100%; max-width:1100px; box-shadow:0 5px 20px rgba(0,0,0,0.3);
+            display:none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        }
+
+        .header-title { font-size: 20px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+
+        .btn-my-location {
+            background: rgba(197,168,89,0.2); border: 1px solid var(--gold);
+            color: var(--gold); padding: 5px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.25s ease;
+            font-family: 'Tajawal', sans-serif; display: inline-flex; align-items: center; gap: 6px;
+            white-space: nowrap; text-decoration: none;
+        }
+        .btn-my-location:hover {
+            background: var(--gold); color: #000; box-shadow: 0 0 10px rgba(197,168,89,0.4);
+        }
+
+        .search-btn {
+            background: rgba(197,168,89,0.2); border: 1px solid var(--gold);
+            color: var(--gold); padding: 8px 15px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif; display: flex; align-items: center; gap: 8px;
+        }
+        .search-btn:hover { background: var(--gold); color: #000; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 1100px;
+        }
+        @media(min-width: 850px) {
+            .content-grid { grid-template-columns: 2fr 1fr; }
+        }
+
+        .map-wrapper { 
+            width:100%; height: 60vh; min-height: 400px; 
+            border-radius:12px; overflow:hidden; border:1px solid rgba(197,168,89,0.2); 
+            box-shadow:0 5px 20px rgba(0,0,0,0.3); position: relative;
+            direction: ltr; /* Fix Leaflet positioning in RTL pages */
+        }
+        #map { width:100%; height:100%; z-index: 1; direction: ltr; }
+
+        .mosques-panel {
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            padding:15px; height: 60vh; min-height: 400px;
+            display: flex; flex-direction: column; box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        }
+        .mosques-list {
+            flex: 1; overflow-y:auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;
+        }
+        
+        .mosques-list::-webkit-scrollbar { width: 6px; }
+        .mosques-list::-webkit-scrollbar-track { background: transparent; }
+        .mosques-list::-webkit-scrollbar-thumb { background: rgba(197,168,89,0.5); border-radius: 10px; }
+
+        .mosque-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;
+            display: flex; flex-direction: column; gap: 5px; text-align: right;
+        }
+        .mosque-item:hover {
+            background: rgba(255,255,255,0.1); border-color: rgba(197,168,89,0.4);
+            transform: translateY(-1px);
+        }
+        .mosque-item-title { font-weight: 800; color: var(--gold); font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .mosque-item-dist { font-size: 13px; color: #ccc; }
+
+        .radius-pill {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(197,168,89,0.3);
+            color: #fff;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .radius-pill.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(197,168,89,0.4);
+        }
+        .radius-pill:hover:not(.active) {
+            background: rgba(197,168,89,0.2);
+            color: var(--gold);
+        }
+
+        .mosque-nav-link {
+            background: rgba(197,168,89,0.15);
+            border: 1px solid rgba(197,168,89,0.4);
+            color: var(--gold);
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .mosque-nav-link:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        /* Custom Tooltip Styling */
+        .custom-map-tooltip { 
+            background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(5px); 
+            border: 1px solid var(--gold); border-radius: 8px; 
+            padding: 8px 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            font-family: 'Tajawal', sans-serif;
+        }
+        .leaflet-tooltip-left.custom-map-tooltip::before { border-left-color: var(--gold); }
+        .leaflet-tooltip-right.custom-map-tooltip::before { border-right-color: var(--gold); }
+        .leaflet-tooltip-top.custom-map-tooltip::before { border-top-color: var(--gold); }
+        .leaflet-tooltip-bottom.custom-map-tooltip::before { border-bottom-color: var(--gold); }
+
+.custom-map-popup .leaflet-popup-content-wrapper { background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(5px); border: 1px solid var(--gold); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: 'Tajawal', sans-serif; color: #fff; }
+.custom-map-popup .leaflet-popup-content { margin: 10px; }
+.custom-map-popup .leaflet-popup-tip { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--gold); border-top: none; border-left: none; }
+
+/* Make standard OSM tiles dark to fit the theme */
+.leaflet-tile {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+        /* --- Footer & Visitor Counter --- */
+        .app-footer {
+            width: 100%;
+            margin-top: auto;
+            padding: 22px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            position: relative;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-side-spacer {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: nowrap;
+        }
+
+        .footer-visitor-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .visitor-counter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            padding: 4px 0;
+            user-select: none;
+        }
+
+        .visitor-icon {
+            color: var(--gold);
+            font-size: 15px;
+        }
+
+        .visitor-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+        }
+
+        .visitor-count {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--gold);
+            font-family: 'Tajawal', sans-serif;
+            letter-spacing: 0.5px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                gap: 12px;
+            }
+            .footer-side-spacer {
+                display: none;
+            }
+            .footer-copyright {
+                white-space: normal;
+            }
+            .footer-visitor-box {
+                justify-content: center;
+            }
+
+            /* Mobile Header Card Customization */
+            .header-card {
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                padding: 12px 14px !important;
+                gap: 9px !important;
+            }
+            .header-title {
+                width: 100% !important;
+                justify-content: center !important;
+                font-size: 18px !important;
+                margin: 0 !important;
+            }
+            #user-location-display {
+                width: 100% !important;
+                text-align: center !important;
+                font-size: 13px !important;
+                margin: -2px 0 2px 0 !important;
+            }
+            .header-actions-row {
+                width: 100% !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 6px !important;
+            }
+            .desktop-search-box,
+            .desktop-only-btn,
+            .radius-label {
+                display: none !important;
+            }
+            .btn-my-location {
+                padding: 5px 12px !important;
+                font-size: 12.5px !important;
+            }
+            .radius-pill {
+                padding: 5px 10px !important;
+                font-size: 12px !important;
+            }
+        }

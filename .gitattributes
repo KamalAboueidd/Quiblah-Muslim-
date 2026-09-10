@@ -1,0 +1,11 @@
+# GitHub Linguist Language Configuration
+# Ensures JavaScript is recognized as the dominant language and data files are excluded from code stats
+
+*.js linguist-detectable=true
+*.json linguist-detectable=false
+*.json linguist-documentation=false
+
+# Mark assets and vendor files
+assets/* linguist-vendored
+icons/* linguist-vendored
+node_modules/* linguist-vendored

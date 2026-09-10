@@ -1,0 +1,169 @@
+/* features/names/names.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙØ­Ø© names.html */
+:root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+        .fullscreen-carousel { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+        .carousel-slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s ease-in-out; }
+        .carousel-slide.active { opacity:1; }
+        .carousel-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.60); backdrop-filter:blur(2px); }
+
+        .app-container { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
+        .top-bar { display:flex; justify-content:center; align-items:center; padding:18px 30px 8px; }
+        .top-bar .title { font-weight:900; font-size:28px; color:var(--white); text-shadow:0 4px 15px rgba(0,0,0,0.8); }
+
+        .nav-bar { display:flex; justify-content:center; gap:10px; padding:8px 20px; margin-bottom:10px; flex-wrap:wrap; }
+        .nav-item { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:30px; background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1); color:white; text-decoration:none; font-weight:700; font-size:14px; transition:all 0.3s; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); border-color:var(--gold); color:var(--gold); }
+
+        .main-content { flex-grow:1; display:flex; flex-direction:column; align-items:center; padding:10px 20px 30px; gap:20px; width: 100%; max-width: 1200px; margin: 0 auto; }
+
+        .header-card {
+            background:rgba(0,0,0,0.4); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            padding:20px 30px; text-align:center;
+            width:100%; box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        }
+        .header-title { font-size: 26px; font-weight: 900; color: var(--gold); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header-subtitle { font-size: 15px; color: #ccc; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+
+        .names-table-container {
+            width: 100%;
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(10px);
+            border:1px solid rgba(197,168,89,0.2); border-radius:12px;
+            overflow: hidden;
+            box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .names-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        .names-table th {
+            background: rgba(197, 168, 89, 0.15);
+            color: var(--gold);
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 800;
+            border-bottom: 2px solid rgba(197, 168, 89, 0.3);
+        }
+
+        .names-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        .names-table tbody tr:hover td {
+            background: rgba(197, 168, 89, 0.05);
+        }
+
+        .names-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .td-number { width: 50px; text-align: center; color: var(--gold); font-weight: 800; font-size: 18px !important; }
+        .td-name { font-weight: 800; font-size: 20px !important; color: #fff; width: 180px; }
+        .td-meaning { color: #eee; line-height: 1.5; padding-right: 20px; }
+
+        .loader-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:50px; color:var(--gold); }
+        .loader-text { font-size:18px; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .names-table th, .names-table td { padding: 10px; font-size: 13px; }
+            .td-number { width: 30px; font-size: 14px !important; }
+            .td-name { font-size: 16px !important; width: 120px; }
+        }
+        
+        /* --- Footer & Visitor Counter --- */
+        .app-footer {
+            width: 100%;
+            margin-top: auto;
+            padding: 22px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            position: relative;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-side-spacer {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: nowrap;
+        }
+
+        .footer-visitor-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .visitor-counter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            padding: 4px 0;
+            user-select: none;
+        }
+
+        .visitor-icon {
+            color: var(--gold);
+            font-size: 15px;
+        }
+
+        .visitor-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+        }
+
+        .visitor-count {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--gold);
+            font-family: 'Tajawal', sans-serif;
+            letter-spacing: 0.5px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                gap: 12px;
+            }
+            .footer-side-spacer {
+                display: none;
+            }
+            .footer-copyright {
+                white-space: normal;
+            }
+            .footer-visitor-box {
+                justify-content: center;
+            }
+        }

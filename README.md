@@ -1,76 +1,112 @@
-# Quiblah Muslim Web Application
+# قبلة المسلم (Quiblah Muslim) - Open Source Web App & PWA
 
-## Overview
+> تطبيق إسلامي شامل وعصري كـ Progressive Web App (PWA)، يضم مواقيت الصلاة الدقيقة، اتجاه القبلة، قراءة وتفسير القرآن الكريم، الاستماع للتلاوات بأصوات أشهر القراء، الأذكار اليومية، وأقرب المساجد.
 
-The Quiblah Muslim web application is a comprehensive, client-side progressive web application designed to provide essential Islamic tools. It is built purely with HTML, CSS, and Vanilla JavaScript, ensuring lightweight performance and broad compatibility across modern browsers and mobile devices.
+---
 
-The application integrates with various public APIs to provide accurate, real-time data for prayer times, Qibla direction, Quran recitation audio, and local supplications (Azkar).
+## 🌟 الميزات الرئيسية (Features)
 
-## Features
+1. **مواقيت الصلاة الدقيقة (Prayer Times)**: حساب دقيق للأوقات مع العداد التنازلي للصلاة القادمة والتقويم الهجري بناءً على الموقع الجغرافي.
+2. **المصحف الشريف (Holy Quran)**: عرض السور والآيات بخط قرآني واضح، مع فهرس السور، والبحث السريع، والتفسير الميسر الفوري.
+3. **التفسير ومعاني الكلمات (Tafseer)**: تفسير شامل للآيات (التفسير الميسر، تفسير الجلالين) مع إمكانية الاستماع ومشاركة الآيات.
+4. **الاستماع للقرآن الكريم (Quran Audio Player)**: مشغل صوتي عائم مستمر يعمل عبر جميع الصفحات ومستوحى من تصميم المنصات العالمية، يضم مكتبة من أشهر القراء والتلاوات (MP3Quran API).
+5. **أذكار الصباح والمساء والأدعية (Azkar)**: عداد إلكتروني تفاعلي مع ردود فعل لمسية (Haptic) وتنبيهات عند إتمام الأذكار.
+6. **أسماء الله الحسنى (99 Names of Allah)**: استعراض تفاعلي لأسماء الله مع شرح معانيها وفضلها.
+7. **بوصلة القبلة (Qibla Compass)**: تحديد اتجاه الكعبة المشرفة باستخدام مستشعرات البوصلة في الهواتف وحسابات دقيقة للزاوية الجغرافية.
+8. **أقرب مسجد (Nearby Mosques)**: خريطة تفاعلية عبر Leaflet و OpenStreetMap تكتشف المساجد المحيطة بالمستخدم ضمن نطاق قابل للتخصيص (1 إلى 5 كم).
+9. **حاسبة المسافة للكعبة (Distance to Kaaba)**: حساب المسافة الجيوديسية ورسم المسار المباشر نحو مكة المكرمة.
+10. **تذكيرات الصلاة على النبي والسنن (Web Push Reminders)**: نظام إشعارات ويب مشفر يعمل حتى عندما يكون التطبيق مغلقاً.
+11. **دعم كامل للعمل بدون إنترنت (Offline PWA)**: تخزين ذكي للأصول والبيانات في Service Worker Cache للعمل بدون اتصال.
 
-### 1. Prayer Times (Mawaqit)
-- Fetches accurate prayer times based on the user's geographic coordinates using the Aladhan API.
-- Calculates and displays the time remaining for the upcoming prayer.
-- Displays Hijri date conversions.
+---
 
-### 2. The Holy Quran (Al-Moshaf)
-- Integrates with the Alquran.cloud API to fetch and render chapters (Surahs) and verses (Ayahs).
-- Supports continuous scrolling for reading and features a clean, legible typography optimized for Arabic script.
+## 📁 بنية المشروع وتنظيم الكود (Project Architecture)
 
-### 3. Audio Player (Listen)
-- A fully featured audio player resembling modern streaming platforms.
-- Integrates with MP3Quran API v3.
-- Curated list of prominent reciters with dynamic fallback avatars.
-- Supports background playback, volume control, and progress seeking.
-- Responsive mobile fullscreen layout for an optimized listening experience.
+يتبع المشروع معمارية قائمة على الميزات المستقلة (**Feature-Based Modular Architecture**) لتسهيل الصيانة والمساهمة البرمجية:
 
-### 4. Qibla Compass
-- Utilizes DeviceOrientation API (on Android) and WebkitCompassHeading (on iOS) to calculate accurate device orientation.
-- Calculates the bearing to the Kaaba using standard geospatial formulas.
-- Renders a responsive CSS-based compass that dynamically rotates to point toward the Qibla.
+```text
+PrayerTimer/
+├── core/                        # النواة والمكتبات البرمجية المشتركة
+│   ├── player-bridge.js         # جسر التواصل مع مشغل الصوت العام المستمر
+│   ├── pwa.js                   # إدارة التثبيت وتحديثات Service Worker
+│   ├── reminders.js             # عميل إشعارات الويب (Web Push Client)
+│   ├── toast.js                 # نظام الإشعارات والتنبيهات المنبثقة
+│   ├── visitor-counter.js       # عداد الزوار الإحصائي
+│   ├── surahs_meta.js           # فهرس وبيانات سور القرآن الكريم
+│   └── quran_data.js            # نصوص وبيانات المصحف الشريف
+│
+├── features/                    # وحدات الميزات المنفصلة (JS + CSS لكل ميزة)
+│   ├── landing/                 # صفحة الهبوط الترحيبية (index.html)
+│   ├── home/                    # لوحة المواقيت الرئيسية (home.html)
+│   ├── quran/                   # قراءة القرآن الكريم (quran.html)
+│   ├── tafseer/                 # تفسير الآيات (tafseer.html)
+│   ├── listen/                  # مشغل الصوت والتلاوات (listen.html)
+│   ├── azkar/                   # الأذكار العامة والأدعية (azkar.html)
+│   ├── sabah-masaa/             # أذكار الصباح والمساء (sabah_masaa.html)
+│   ├── names/                   # أسماء الله الحسنى (names.html)
+│   ├── qibla/                   # بوصلة القبلة (qibla.html)
+│   ├── mosques/                 # خريطة المساجد القريبة (mosques.html)
+│   ├── distance/                # المسافة للكعبة المشرفة (distance.html)
+│   └── reminders/               # إعدادات واشتراكات التذكيرات (reminders.html)
+│
+├── data/                        # قواعد البيانات والملفات الثابتة
+│   ├── azkar.json
+│   ├── names.json
+│   ├── short_azkar.json
+│   └── verses.json
+│
+├── assets/                      # الوسائط، الصور، والخلفيات
+├── icons/                       # أيقونات تطبيق الـ PWA
+├── api/                         # دوال الـ Serverless (Vercel Push API)
+│
+├── *.html                       # نقاط الدخول المهيكلة (Clean Semantic HTML)
+├── service-worker.js            # نظام التخزين المؤقت المتقدم (PWA Cache v9)
+├── server.js                    # خادم Node.js المحلي والمجدول الخلفي
+└── .gitattributes               # إعدادات إحصائيات لغات GitHub Linguist
+```
 
-### 5. Azkar and Supplications
-- Includes comprehensive JSON datasets for Morning and Evening Azkar (`azkar.json`, `short_azkar.json`).
-- Features interactive counters for repeated supplications.
-- Built-in haptic feedback and toast notifications upon completion of each Zikr.
+---
 
-### 6. Distance to Kaaba
-- Calculates the geodesic distance between the user's current location and the Kaaba in Mecca.
-- Uses Leaflet.js to render an interactive map visually connecting the two coordinates.
+## 🛠️ التقنيات المستخدمة (Tech Stack)
 
-## Architecture and Stack
+- **Frontend Core**: Vanilla JavaScript (ES6+), Modern Semantic HTML5, Modular CSS3.
+- **PWA & Offline**: Service Worker (Cache Storage API), Web App Manifest.
+- **Push Notifications**: Web Push API, VAPID Encryption.
+- **Geospatial & Mapping**: Leaflet.js, OpenStreetMap, Overpass API.
+- **HTTP Client**: Axios.
+- **Icons & Typography**: FontAwesome 6, Google Fonts (Tajawal, Amiri Quran).
+- **Backend / Local Server**: Node.js HTTP server.
 
-- Frontend: HTML5, CSS3, Vanilla JavaScript (ES6+).
-- State Management: LocalStorage for user preferences and saved locations.
-- Map Integration: Leaflet.js (Mapbox/OSM).
-- HTTP Client: Axios for API requests.
-- Iconography: FontAwesome.
+---
 
-## External APIs
+## 🚀 التشغيل والتطوير المحلي (Local Development)
 
-1. Aladhan API (`https://api.aladhan.com`): Used for prayer times, Qibla bearing, and Hijri dates.
-2. MP3Quran API (`https://www.mp3quran.net/api/v3`): Used for fetching reciters, servers, and audio files.
-3. Alquran Cloud API (`https://api.alquran.cloud`): Used for fetching Quranic text.
-4. UI Avatars (`https://ui-avatars.com`): Used for dynamic fallback image generation for reciters.
+المشروع مصمم ليعمل بدون الحاجة لأي أدوات تجميع أو Build Bundlers معقدة:
 
-## File Structure
+```bash
+# 1. استنساخ المستودع
+git clone https://github.com/kamalaboueidd/Quiblah-Muslim-.git
+cd Quiblah-Muslim-
 
-- `index.html`: Main dashboard and Prayer Times entry point.
-- `quran.html`: Reading interface for the Holy Quran.
-- `listen.html`: Audio player and reciter selection interface.
-- `qibla.html`: Qibla compass implementation and sensor logic.
-- `distance.html`: Interactive map and distance calculation tool.
-- `azkar.html` / `sabah_masaa.html`: Supplication interfaces with tracking functionality.
-- `toast.js`: Global notification system.
-- `assets/`: Directory containing static media, backgrounds, and specific images.
-- `*.json`: Static datasets for offline access to specific text content.
+# 2. تشغيل الخادم المحلي
+node server.js
+```
 
-## Setup and Deployment
+ثم افتح المتصفح على: `http://localhost:8000`
 
-This project requires no build steps or bundlers. It can be served using any static file server.
+> **ملاحظة:** وظائف المستشعرات (البوصلة وتحديد الموقع الجغرافي) تتطلب بروتوكول HTTPS في بيئات الإنتاج (مفعل تلقائياً على GitHub Pages و Vercel).
 
-1. Clone the repository.
-2. Serve the directory using a local HTTP server (e.g., `python -m http.server`, or Node's `http-server`).
-3. Open `index.html` in a web browser.
+---
 
-Note: Sensor functionalities (Qibla Compass, Geolocation) require the application to be served over HTTPS in production environments due to modern browser security policies.
+## 🤝 المساهمة في المشروع (Contributing)
+
+نرحب بكافة المساهمات لتطوير التطبيق وتحسينه:
+1. قم بعمل **Fork** للمستودع.
+2. أنشئ فرعاً لميزتك: `git checkout -b feature/amazing-feature`.
+3. التزم بتنظيم الملفات داخل مجلد الميزة المناسب في `features/<feature-name>/`.
+4. قم بعمل **Commit** للتعديلات و **Push** للفرع، ثم افتح **Pull Request**.
+
+---
+
+## 📄 الترخيص (License)
+هذا المشروع مفتوح المصدر ومتاح لجميع المسلمين والمطورين لوجه الله تعالى.

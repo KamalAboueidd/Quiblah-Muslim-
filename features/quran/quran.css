@@ -1,0 +1,745 @@
+/* features/quran/quran.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙØ­Ø© quran.html */
+:root {
+            --primary-teal: #2F7A78;
+            --gold: #C5A859;
+            --white: #FFFFFF;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Tajawal", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: var(--white);
+            overflow: hidden; 
+            height: 100dvh;
+        }
+
+        /* --- Fullscreen Background Carousel (Same as index.html) --- */
+        .fullscreen-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- App Layout --- */
+        .app-layout {
+            display: flex;
+            height: 100dvh;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Reader Top Navigation Bar - Borderless & Backgroundless */
+        .reader-top-bar {
+            max-width: 950px;
+            width: 100%;
+            margin: 0 auto 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 4px 6px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-right-cluster {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            white-space: nowrap !important;
+            flex-shrink: 0;
+        }
+
+        .menu-btn {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 4px 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-family: inherit;
+            white-space: nowrap !important;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .menu-btn:hover {
+            color: #ffffff;
+            opacity: 0.9;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .menu-btn i {
+            font-size: 15px;
+        }
+
+        .header-page-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap !important;
+        }
+
+        .header-page-title i {
+            color: var(--gold);
+            font-size: 15px;
+        }
+
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 6px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+            font-family: inherit;
+            white-space: nowrap !important;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .back-home-btn:hover {
+            color: #ffffff;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .back-home-btn i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .back-home-btn:hover i {
+            transform: translateX(3px);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .sidebar-title span { display: flex; align-items: center; gap: 8px; }
+
+        .sidebar-close-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            color: var(--gold);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-close-btn:hover {
+            background: rgba(197, 168, 89, 0.2);
+            color: #ffffff;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-box input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 14px 15px 14px 45px;
+            border-radius: 12px;
+            outline: none;
+            font-family: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-box input::placeholder { color: rgba(255,255,255,0.4); }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.4);
+        }
+
+        .surah-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 10px;
+        }
+
+        .surah-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            margin-bottom: 5px;
+            gap: 12px;
+        }
+        
+        .surah-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .surah-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .surah-number {
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--gold);
+            font-size: 14px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .surah-item.active .surah-number {
+            background: var(--gold);
+            color: #111;
+        }
+
+        .surah-details {
+            flex: 1;
+        }
+
+        .surah-name { font-weight: 900; font-size: 15px; color: white; margin-bottom: 2px;}
+        .surah-info { font-size: 11px; color: #aaa; font-weight: 500;}
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-header {
+            display: none;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+        }
+        
+
+
+        .reader-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px 60px;
+            scroll-behavior: smooth;
+        }
+
+        .surah-header-card {
+            padding: 20px 20px 10px 20px;
+            text-align: center;
+            margin: 0 auto 35px auto;
+            max-width: 650px;
+            background: transparent;
+        }
+
+        .surah-title {
+            font-family: 'Amiri Quran', serif;
+            font-size: 54px;
+            color: var(--gold);
+            margin: 0 0 28px 0; /* Significant breathing room beneath the title */
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
+            line-height: 1.35;
+        }
+
+        .surah-meta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+            color: #ddd;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 26px; /* Breathing room beneath meta details */
+        }
+
+        .bismillah {
+            text-align: center;
+            font-family: 'Amiri Quran', serif;
+            font-size: 34px;
+            margin: 20px auto 40px auto;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .verses-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: justify;
+            direction: rtl;
+            line-height: 2.8;
+            padding-bottom: 100px;
+            min-height: 100vh;
+        }
+
+        .verse {
+            font-family: 'Amiri Quran', serif;
+            font-size: 34px;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .verse-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            margin: 0 5px;
+            border-radius: 50%;
+            border: 1.5px solid var(--gold);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            color: var(--gold);
+            font-family: "Tajawal", sans-serif;
+            font-size: 11px;
+            font-weight: 800;
+            vertical-align: middle;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .verse-number:hover {
+            background: var(--gold);
+            color: #111;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
+        }
+
+        /* Sadaqallah Al-Azeem */
+        .sadaqallah-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 45px auto 25px auto;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .sadaqallah-text {
+            font-family: 'Amiri Quran', serif;
+            font-size: 32px;
+            color: var(--gold);
+            text-shadow: 0 2px 12px rgba(197, 168, 89, 0.4);
+            white-space: nowrap;
+            letter-spacing: 1px;
+        }
+
+        .sadaqallah-line {
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            flex: 1;
+            max-width: 120px;
+        }
+
+        /* Quick Tafseer Modal */
+        .tafseer-modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tafseer-modal-backdrop.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .tafseer-modal-card {
+            background: #0e1015;
+            background: rgba(14, 16, 21, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 20px;
+            max-width: 650px;
+            width: 100%;
+            margin: auto;
+            padding: 24px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 25px rgba(197, 168, 89, 0.15);
+            direction: rtl;
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            max-height: 85vh;
+            max-height: 85dvh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .tafseer-modal-backdrop.show .tafseer-modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: transparent !important;
+            color: var(--gold);
+            transform: scale(1.15);
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+            padding-left: 5px;
+            overscroll-behavior: contain;
+        }
+
+        .modal-ayah-text {
+            font-family: 'Amiri Quran', serif;
+            font-size: 24px;
+            line-height: 2;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 18px;
+            padding: 12px;
+            background: rgba(197, 168, 89, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(197, 168, 89, 0.25);
+        }
+
+        .modal-tafseer-text {
+            font-size: 16px;
+            line-height: 1.9;
+            color: #f1f5f9;
+            text-align: justify;
+        }
+
+        .modal-footer {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        #modal-full-link {
+            border: none !important;
+            outline: none !important;
+            background: transparent !important;
+            color: var(--gold);
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: none !important;
+        }
+
+        #modal-full-link:hover {
+            background: transparent !important;
+            color: var(--gold);
+            transform: none;
+            box-shadow: none !important;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+        /* Loaders & Errors */
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--gold);
+            gap: 15px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            text-align: center;
+            padding: 40px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .sidebar-close-btn {
+                display: inline-flex;
+            }
+
+            .nav-bar { gap: 10px; padding: 10px; }
+            .nav-item { padding: 8px 12px; font-size: 13px; }
+            
+            .sidebar {
+                position: fixed;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                height: 100vh;
+                height: 100dvh;
+                z-index: 1000;
+                transform: translateX(100%);
+                width: 310px;
+                max-width: 85vw;
+                background: #0d0e12;
+                background: rgba(14, 15, 19, 0.98);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.95);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+
+            .reader-top-bar { margin-bottom: 8px; padding: 2px 2px; }
+            .menu-btn { font-size: 13px; gap: 5px; }
+            .header-page-title { font-size: 13px; gap: 5px; }
+            .back-home-btn { font-size: 13px; gap: 5px; }
+            .nav-right-cluster { gap: 10px; }
+
+            .reader-area { padding: 16px 14px 40px; }
+            .surah-header-card { padding: 15px 10px; margin-bottom: 25px; }
+            .surah-title { font-size: 38px; margin-bottom: 20px; }
+            .surah-meta { font-size: 14px; gap: 18px; margin-bottom: 20px; }
+            .bismillah { font-size: 26px; margin: 15px auto 25px auto; }
+            
+            .verses-container { line-height: 2.3; }
+            .verse { font-size: 24px; }
+            .verse-number { width: 22px; height: 22px; font-size: 10px; margin: 0 3px; border-width: 1px; }
+            .sadaqallah-text { font-size: 24px; }
+            .sadaqallah-line { max-width: 60px; }
+            .sadaqallah-box { margin: 30px auto 15px auto; }
+
+            /* Tafseer Modal Mobile Responsiveness */
+            .tafseer-modal-backdrop {
+                padding: 12px;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            .tafseer-modal-backdrop.show {
+                display: flex;
+            }
+            .tafseer-modal-card {
+                width: 100% !important;
+                max-width: calc(100vw - 24px) !important;
+                margin: auto !important;
+                padding: 18px 14px;
+                border-radius: 16px;
+                max-height: 88vh;
+                max-height: 88dvh;
+            }
+            .modal-header {
+                padding-bottom: 10px;
+                margin-bottom: 12px;
+            }
+            .modal-title {
+                font-size: 15.5px;
+            }
+            .modal-ayah-text {
+                font-size: 19px;
+                line-height: 1.8;
+                padding: 10px;
+                margin-bottom: 12px;
+            }
+            .modal-tafseer-text {
+                font-size: 14.5px;
+                line-height: 1.85;
+            }
+            .modal-footer {
+                justify-content: center;
+                margin-top: 14px;
+                padding-top: 12px;
+            }
+            #modal-full-link {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
+
+        /* Desktop Tweaks */
+        @media (min-width: 900px) {
+            .sidebar { width: 300px; }
+            .reader-area { padding: 25px 40px 60px; }
+            
+            .surah-header-card { padding: 20px 20px 10px 20px; margin: 0 auto 35px auto; max-width: 650px; }
+            .surah-title { font-size: 54px; margin: 0 0 28px 0; }
+            .surah-meta { font-size: 16px; gap: 28px; margin-bottom: 26px; }
+            .bismillah { font-size: 34px; margin: 20px auto 40px auto; }
+            
+            .verses-container { max-width: 950px; padding: 0 20px; line-height: 2.5; }
+            .verse { font-size: 30px; }
+            .verse-number { width: 26px; height: 26px; font-size: 11px; margin: 0 5px; }
+        }

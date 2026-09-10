@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v8';
+const CACHE_NAME = 'quiblah-muslim-v9';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -16,12 +16,40 @@ const STATIC_ASSETS = [
     './listen.html',
     './mosques.html',
     './reminders.html',
-    './surahs_meta.js',
-    './quran_data.js',
-    './player-bridge.js',
-    './toast.js',
-    './pwa.js',
-    './reminders.js',
+    // النواة والمكتبات المشتركة (Core)
+    './core/player-bridge.js',
+    './core/pwa.js',
+    './core/toast.js',
+    './core/visitor-counter.js',
+    './core/reminders.js',
+    './core/surahs_meta.js',
+    './core/quran_data.js',
+    // وحدات وميزات التطبيق (Features JS & CSS)
+    './features/landing/landing.js',
+    './features/landing/landing.css',
+    './features/home/home.js',
+    './features/home/home.css',
+    './features/quran/quran.js',
+    './features/quran/quran.css',
+    './features/tafseer/tafseer.js',
+    './features/tafseer/tafseer.css',
+    './features/listen/listen.js',
+    './features/listen/listen.css',
+    './features/azkar/azkar.js',
+    './features/azkar/azkar.css',
+    './features/sabah-masaa/sabah-masaa.js',
+    './features/sabah-masaa/sabah-masaa.css',
+    './features/names/names.js',
+    './features/names/names.css',
+    './features/qibla/qibla.js',
+    './features/qibla/qibla.css',
+    './features/mosques/mosques.js',
+    './features/mosques/mosques.css',
+    './features/distance/distance.js',
+    './features/distance/distance.css',
+    './features/reminders/reminders-page.js',
+    './features/reminders/reminders-page.css',
+    // البيانات والأصول
     './manifest.json',
     './azkar.json',
     './names.json',

@@ -171,7 +171,10 @@ const API_BASE_RAW = 'https://raw.githubusercontent.com/fawazahmed0/hadith-api/1
 const booksPillsWrapper = document.getElementById('books-pills-wrapper');
 const searchInput = document.getElementById('hadith-search-input');
 const clearSearchBtn = document.getElementById('clear-search-btn');
-const chapterSelect = document.getElementById('chapter-select');
+const chapterDropdownContainer = document.getElementById('chapter-dropdown-container');
+const chapterDropdownTrigger = document.getElementById('chapter-dropdown-trigger');
+const chapterDropdownMenu = document.getElementById('chapter-dropdown-menu');
+const selectedChapterLabel = document.getElementById('selected-chapter-label');
 const hadithsList = document.getElementById('hadiths-list');
 const paginationControls = document.getElementById('pagination-controls');
 const jumpInput = document.getElementById('jump-input');
@@ -319,22 +322,307 @@ async function fetchHadithData(collectionId) {
     throw lastError || new Error('Network error loading collection');
 }
 
-// Setup Chapter / Book Section Dropdown
-function setupChapterDropdown(sections) {
-    chapterSelect.innerHTML = '<option value="all">📖 جميع الأبواب والأقسام</option>';
-    const sectionEntries = Object.entries(sections).filter(([k, v]) => v && v.trim() !== '');
+// English to Arabic Hadith Chapter / Section Translations Map
+const SECTION_TRANSLATIONS = {
+    'the book of the sunnah': 'كتاب اتباع السنة',
+    'the book of purification and its sunnah': 'كتاب الطهارة وسننها',
+    'purification': 'كتاب الطهارة',
+    'the book of the prayer': 'كتاب الصلاة',
+    'the book of the adhan': 'كتاب الأذان',
+    'the book of the mosques': 'كتاب المساجد والجماعات',
+    'the book of establishing the prayer': 'كتاب إقامة الصلاة',
+    'the book of funerals': 'كتاب الجنائز',
+    'the book of zakat': 'كتاب الزكاة',
+    'the book of fasting': 'كتاب الصيام',
+    'the book of pilgrimage': 'كتاب المناسك والحج',
+    'the book of marriage': 'كتاب النكاح',
+    'the book of divorce': 'كتاب الطلاق',
+    'the book of expiation': 'كتاب الكفارات',
+    'the book of business transactions': 'كتاب التجارات والبيوع',
+    'the book of rulings': 'كتاب الأحكام والقضاء',
+    'the book of gifts': 'كتاب الهبات والعطايا',
+    'the book of charity': 'كتاب الصدقات',
+    'the book of pawning': 'كتاب الرهون',
+    'the book of blood money': 'كتاب الديات',
+    'the book of legal punishments': 'كتاب الحدود',
+    'the book of wills': 'كتاب الوصايا',
+    'the book of inheritance': 'كتاب الفرائض والمواريث',
+    'the book of jihad': 'كتاب الجهاد',
+    'the book of food': 'كتاب الأطعمة',
+    'the book of drinks': 'كتاب الأشربة',
+    'the book of medicine': 'كتاب الطب والتداوي',
+    'the book of dress': 'كتاب اللباس والزينة',
+    'the book of etiquette': 'كتاب الأدب وحسن الخلق',
+    'the book of supplication': 'كتاب الدعاء والذكر',
+    'the book of interpretation of dreams': 'كتاب تعبير الرؤى',
+    'the book of tribulations': 'كتاب الفتن والملاحم',
+    'the book of zuhd': 'كتاب الزهد والورع',
+    'revelation': 'كتاب بدء الوحي',
+    'faith': 'كتاب الإيمان',
+    'knowledge': 'كتاب العلم وفضله',
+    'ablution': 'كتاب الوضوء',
+    'rubbing hands and feet with dust': 'كتاب التيمم',
+    'menses': 'كتاب الحيض والاستحاضة',
+    'times of the prayers': 'كتاب مواقيت الصلاة',
+    'call to prayers': 'كتاب الأذان',
+    'friday prayer': 'كتاب صلاة الجمعة',
+    'fear prayer': 'كتاب صلاة الخوف',
+    'the two festivals (eids)': 'كتاب صلاة العيدين',
+    'witr prayer': 'كتاب صلاة الوتر',
+    'invoking allah for rain (istisqaa)': 'كتاب صلاة الاستسقاء',
+    'eclipses': 'كتاب صلاة الكسوف',
+    'prostration during recitation of quran': 'كتاب سجود التلاوة',
+    'shortening the prayers': 'كتاب تقصير الصلاة في السفر',
+    'prayer at night (tahajjud)': 'كتاب قيام الليل والتهجد',
+    'virtues of prayer at masjid makkah and madinah': 'كتاب فضل الصلاة في الحرمين',
+    'actions while praying': 'كتاب العمل في الصلاة',
+    'forgetfulness in prayer': 'كتاب سجود السهو',
+    'funerals (al-jana\'iz)': 'كتاب الجنائز',
+    'obligatory charity tax (zakat)': 'كتاب الزكاة',
+    'hajj (pilgrimage)': 'كتاب الحج والمناسك',
+    'umrah (minor pilgrimage)': 'كتاب العمرة',
+    'virtues of madinah': 'كتاب فضائل المدينة المنورة',
+    'fasting': 'كتاب الصوم',
+    'tarawih': 'كتاب صلاة التراويح',
+    'retiring to a mosque for remembrance of allah (i\'tikaf)': 'كتاب الاعتكاف',
+    'sales and trade': 'كتاب البيوع والتجارات',
+    'sales in which a price is paid for goods to be delivered later (as-salam)': 'كتاب السلم',
+    'hiring': 'كتاب الإجارة',
+    'loans, payment of loans, freezing of property, bankruptcy': 'كتاب الاستقراض والديون',
+    'lost things picked up by someone (luqatah)': 'كتاب اللقطة',
+    'oppressions': 'كتاب المظالم والغصب',
+    'partnership': 'كتاب الشركة',
+    'manumission of slaves': 'كتاب العتق',
+    'gifts': 'كتاب الهبة وفضلها',
+    'witnesses': 'كتاب الشهادات',
+    'peacemaking': 'كتاب الصلح بين الناس',
+    'conditions': 'كتاب الشروط',
+    'fighting for the cause of allah (jihaad)': 'كتاب الجهاد والسير',
+    'beginning of creation': 'كتاب بدء الخلق',
+    'prophets': 'كتاب أحاديث الأنبياء',
+    'virtues and merits of the prophet (pbuh) and his companions': 'كتاب فضائل ومناقب النبي وأصحابه',
+    'virtues of the quran': 'كتاب فضائل القرآن الكريم',
+    'wedlock, marriage (nikaah)': 'كتاب النكاح',
+    'divorce': 'كتاب الطلاق',
+    'supporting the family': 'كتاب النفقات',
+    'food, meals': 'كتاب الأطعمة',
+    'drinks': 'كتاب الأشربة',
+    'patients': 'كتاب المرضى وعيادتهم',
+    'medicine': 'كتاب الطب والتداوي',
+    'dress': 'كتاب اللباس والزينة',
+    'good manners and form (al-adab)': 'كتاب الأدب والبر',
+    'asking permission': 'كتاب الاستئذان',
+    'invocations': 'كتاب الدعوات والأذكار',
+    'to make the heart tender (ar-riqaq)': 'كتاب الرقاق',
+    'divine will (al-qadar)': 'كتاب الإيمان بالقدر',
+    'oaths and vows': 'كتاب الأيمان والنذور',
+    'laws of inheritance (al-fara\'id)': 'كتاب الفرائض',
+    'limits and punishments set by allah (hudood)': 'كتاب الحدود',
+    'blood money (ad-diyat)': 'كتاب الديات',
+    'interpretation of dreams': 'كتاب تعبير الرؤيا',
+    'afflictions and the end of the world': 'كتاب الفتن وأشراط الساعة',
+    'judgments (ahkaam)': 'كتاب الأحكام والقضاء',
+    'holding fast to the quran and sunnah': 'كتاب الاعتصام بالكتاب والسنة',
+    'oneness, uniqueness of allah (tawheed)': 'كتاب التوحيد والرد على الجهمية'
+};
 
-    if (sectionEntries.length > 0) {
-        chapterSelect.parentElement.style.display = 'block';
+// Translate Section Name to Arabic
+function translateSectionToArabic(secName) {
+    if (!secName) return '';
+    const clean = secName.trim();
+    // If it contains Arabic characters, return clean text
+    if (/[\u0600-\u06FF]/.test(clean)) {
+        return clean;
+    }
+    const key = clean.toLowerCase().replace(/['’]/g, '');
+    if (SECTION_TRANSLATIONS[key]) {
+        return SECTION_TRANSLATIONS[key];
+    }
+    for (const [eng, arb] of Object.entries(SECTION_TRANSLATIONS)) {
+        if (key.includes(eng) || eng.includes(key)) {
+            return arb;
+        }
+    }
+    return clean;
+}
+
+// Translate Hadith Grade to Authentic Arabic
+function translateGradeToArabic(grade) {
+    if (!grade) return 'صحيح';
+    const g = String(grade).toLowerCase().trim();
+    if (g.includes('sahih') || g.includes('صحيح')) {
+        if (g.includes('daif') || g.includes('weak')) return 'ضعيف';
+        if (g.includes('isnad') || g.includes('isnaad')) return 'صحيح الإسناد';
+        if (g.includes('muttafaq') || g.includes('agreed')) return 'صحيح متفق عليه';
+        if (g.includes('darussalam')) return 'صحيح (دار السلام)';
+        return 'صحيح';
+    }
+    if (g.includes('hasan') || g.includes('حسن')) {
+        if (g.includes('sahih')) return 'حسن صحيح';
+        return 'حسن';
+    }
+    if (g.includes('daif') || g.includes('da\'if') || g.includes('weak') || g.includes('ضعيف')) {
+        return 'ضعيف';
+    }
+    if (g.includes('mawdu') || g.includes('fabricated') || g.includes('موضوع')) {
+        return 'موضوع';
+    }
+    if (g.includes('munkar') || g.includes('منكر')) {
+        return 'منكر';
+    }
+    if (g.includes('maqtu') || g.includes('مقطوع')) {
+        return 'مقطوع';
+    }
+    if (g.includes('marfu') || g.includes('مرفوع')) {
+        return 'مرفوع';
+    }
+    return grade;
+}
+
+// Extract concise subject or opening phrase of Hadith
+function getHadithSubject(text) {
+    if (!text) return '';
+    // Look for text within quotes: «...» or "..." or “...”
+    const quoteMatch = text.match(/[«"“]([^»"”]{5,70})[»"”]/);
+    if (quoteMatch && quoteMatch[1]) {
+        let snippet = quoteMatch[1].trim();
+        // Cut at comma or punctuation if too long
+        const cutMatch = snippet.match(/^([^،,\.؛؟\?]+)/);
+        if (cutMatch && cutMatch[1] && cutMatch[1].trim().length >= 6) {
+            snippet = cutMatch[1].trim();
+        }
+        return `«${snippet}»`;
+    }
+
+    // Fallback: look for قَالَ: or يَقُولُ:
+    const sayMatch = text.match(/(?:قَالَ|يَقُولُ|فَقَالَ)\s*[:：\-]\s*([^،,\.؛]{6,60})/);
+    if (sayMatch && sayMatch[1]) {
+        let snippet = sayMatch[1].trim();
+        const cutMatch = snippet.match(/^([^،,\.؛؟\?]+)/);
+        if (cutMatch && cutMatch[1] && cutMatch[1].trim().length >= 6) {
+            snippet = cutMatch[1].trim();
+        }
+        return `«${snippet}»`;
+    }
+
+    return '';
+}
+
+// Setup Chapter / Book Section Custom Dropdown
+function setupChapterDropdown(sections) {
+    if (!chapterDropdownMenu) return;
+    chapterDropdownMenu.innerHTML = '';
+    currentSectionId = 'all';
+    selectedChapterLabel.innerHTML = `<i class="fa-solid fa-book-open"></i> <span>جميع الأبواب والأقسام</span>`;
+
+    let items = [];
+
+    if (currentCollectionId === 'ara-nawawi') {
+        // An-Nawawi 42 Hadith Topics in authentic Arabic
+        items = [
+            { id: 'all', name: 'جميع أحاديث الأربعين النووية' },
+            { id: '1', name: '1. باب الإخلاص وإحضار النية' },
+            { id: '2', name: '2. باب مراتب الدين (الإسلام والإيمان والإحسان)' },
+            { id: '3', name: '3. باب أركان الإسلام ودعائمه' },
+            { id: '4', name: '4. باب أطوار الخلق وخواتيم الأعمال' },
+            { id: '5', name: '5. باب النهي عن الابتداع في الدين' },
+            { id: '6', name: '6. باب الحلال بيّن والحرام بيّن' },
+            { id: '7', name: '7. باب الدين النصيحة' },
+            { id: '8', name: '8. باب حرمة دم المسلم وماله' },
+            { id: '9', name: '9. باب التكليف بما يستطاع واجتناب المنهيات' },
+            { id: '10', name: '10. باب طيب الكسب وقبول الصدقة والدعاء' },
+            { id: '11', name: '11. باب الورع وترك الشبهات' },
+            { id: '12', name: '12. باب ترك ما لا يعني المسلم' },
+            { id: '13', name: '13. باب محبة الخير للمؤمنين' },
+            { id: '14', name: '14. باب حرمة دم المسلم' },
+            { id: '15', name: '15. باب آداب الكلام والضيافة وحسن الجوار' },
+            { id: '16', name: '16. باب النهي عن الغضب' },
+            { id: '17', name: '17. باب وجوب الإحسان في كل شيء' },
+            { id: '18', name: '18. باب تقوى الله وحسن الخلق' },
+            { id: '19', name: '19. باب حفظ الله والتوكل عليه' },
+            { id: '20', name: '20. باب الحياء من الإيمان' },
+            { id: '21', name: '21. باب الاستقامة في الإسلام' },
+            { id: '22', name: '22. باب الطريق إلى الجنة' },
+            { id: '23', name: '23. باب فضل الطهور والقرآن' },
+            { id: '24', name: '24. باب تحريم الظلم (حديث قدسي)' },
+            { id: '25', name: '25. باب سعة فضل الله وأبواب الصدقة' },
+            { id: '26', name: '26. باب فضل الإصلاح والعدل' },
+            { id: '27', name: '27. باب حقيقة البر والإثم' },
+            { id: '28', name: '28. باب لزوم السنة والتحذير من البدع' },
+            { id: '29', name: '29. باب أبواب الخير' },
+            { id: '30', name: '30. باب حدود الله وفرائضه' },
+            { id: '31', name: '31. باب حقيقة الزهد في الدنيا' },
+            { id: '32', name: '32. باب لا ضرر ولا ضرار' },
+            { id: '33', name: '33. باب البينة على المدعي واليمين' },
+            { id: '34', name: '34. باب النهي عن المنكر ومراتبه' },
+            { id: '35', name: '35. باب أخوة الإسلام وحرمة المسلم' },
+            { id: '36', name: '36. باب فضل قضاء حوائج المسلمين وطلب العلم' },
+            { id: '37', name: '37. باب سعة رحمة الله ومضاعفة الحسنات' },
+            { id: '38', name: '38. باب ولاية الله والتقرب إليه بالنوافل' },
+            { id: '39', name: '39. باب رفع الحرج والعفو عن الخطأ والنسيان' },
+            { id: '40', name: '40. باب كن في الدنيا كأنك غريب' },
+            { id: '41', name: '41. باب اتباع هوى النفس لما جاء به الشرع' },
+            { id: '42', name: '42. باب سعة مغفرة الله للتائبين' }
+        ];
+    } else {
+        const sectionEntries = Object.entries(sections).filter(([k, v]) => v && v.trim() !== '');
+        items.push({ id: 'all', name: 'جميع الأبواب والأقسام' });
         sectionEntries.forEach(([secId, secName]) => {
-            const opt = document.createElement('option');
-            opt.value = secId;
-            opt.textContent = `${secId}. ${secName}`;
-            chapterSelect.appendChild(opt);
+            const arabicSecName = translateSectionToArabic(secName);
+            items.push({ id: secId, name: `${secId}. ${arabicSecName}` });
+        });
+    }
+
+    if (items.length > 1) {
+        chapterDropdownContainer.style.display = 'block';
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = `dropdown-item ${item.id === currentSectionId ? 'active' : ''}`;
+            div.dataset.value = item.id;
+            div.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> <span>${escapeHTML(item.name)}</span>`;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                selectChapter(item.id, item.name);
+            };
+            chapterDropdownMenu.appendChild(div);
         });
     } else {
-        chapterSelect.parentElement.style.display = 'none';
+        chapterDropdownContainer.style.display = 'none';
     }
+}
+
+function selectChapter(secId, secName) {
+    currentSectionId = secId;
+    selectedChapterLabel.innerHTML = `<i class="fa-solid fa-book-open"></i> <span>${escapeHTML(secName)}</span>`;
+
+    // Update active item in dropdown
+    document.querySelectorAll('#chapter-dropdown-menu .dropdown-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.value === String(secId));
+    });
+
+    closeChapterDropdown();
+    currentPage = 1;
+    applyFiltersAndRender();
+}
+
+function toggleChapterDropdown() {
+    if (chapterDropdownMenu.classList.contains('show')) {
+        closeChapterDropdown();
+    } else {
+        openChapterDropdown();
+    }
+}
+
+function openChapterDropdown() {
+    chapterDropdownMenu.classList.add('show');
+    chapterDropdownTrigger.classList.add('open');
+    chapterDropdownTrigger.setAttribute('aria-expanded', 'true');
+}
+
+function closeChapterDropdown() {
+    chapterDropdownMenu.classList.remove('show');
+    chapterDropdownTrigger.classList.remove('open');
+    chapterDropdownTrigger.setAttribute('aria-expanded', 'false');
 }
 
 // Arabic Text Normalization for accurate searching
@@ -356,21 +644,26 @@ function normalizeArabic(text) {
 // Filter and Render
 function applyFiltersAndRender() {
     const query = normalizeArabic(searchInput.value);
-    const selectedSec = chapterSelect.value;
 
     filteredHadiths = allHadiths.filter(hadith => {
         // Section filter
-        if (selectedSec !== 'all') {
-            const hBook = hadith.reference ? hadith.reference.book : hadith.chapterId;
-            if (String(hBook) !== String(selectedSec)) {
-                return false;
+        if (currentSectionId !== 'all') {
+            if (currentCollectionId === 'ara-nawawi') {
+                const hNum = String(hadith.hadithnumber || hadith.arabicnumber || '');
+                if (hNum !== String(currentSectionId)) return false;
+            } else {
+                const hBook = hadith.reference ? hadith.reference.book : hadith.chapterId;
+                if (String(hBook) !== String(currentSectionId)) {
+                    return false;
+                }
             }
         }
 
         // Search query filter
         if (query) {
             const normText = normalizeArabic(hadith.text);
-            const normChapter = normalizeArabic(hadith.chapter || (sectionsMetadata && sectionsMetadata[hadith.reference?.book] ? sectionsMetadata[hadith.reference.book] : ''));
+            const rawSec = hadith.chapter || (sectionsMetadata && sectionsMetadata[hadith.reference?.book] ? sectionsMetadata[hadith.reference.book] : '');
+            const normChapter = normalizeArabic(translateSectionToArabic(rawSec));
             const hadithNum = String(hadith.hadithnumber || hadith.arabicnumber || '');
             return normText.includes(query) || normChapter.includes(query) || hadithNum === query;
         }
@@ -410,14 +703,35 @@ function renderHadithsPage() {
 
     pageItems.forEach((hadith, index) => {
         const hadithNum = hadith.hadithnumber || hadith.arabicnumber || (startIndex + index + 1);
-        let chapterName = hadith.chapter || (sectionsMetadata && hadith.reference?.book ? sectionsMetadata[hadith.reference.book] : '') || currentBook.name;
-        if (/^[A-Za-z0-9\s\-_.']+$/.test(chapterName.trim())) {
-            chapterName = currentBook.name;
-        }
-        const gradeText = hadith.grade || (hadith.grades && hadith.grades.length > 0 ? hadith.grades[0].grade : 'صحيح');
-        
-        // Clean Hadith text
         const rawText = hadith.text || '';
+        
+        // Translate grade to Arabic
+        const rawGrade = hadith.grade || (hadith.grades && hadith.grades.length > 0 ? hadith.grades[0].grade : 'صحيح');
+        const gradeText = translateGradeToArabic(rawGrade);
+
+        // Compute Chapter and Hadith Name in Arabic
+        const rawSection = hadith.chapter || (sectionsMetadata && hadith.reference?.book ? sectionsMetadata[hadith.reference.book] : '');
+        const sectionArabic = translateSectionToArabic(rawSection);
+        const hadithSubject = getHadithSubject(rawText);
+
+        let titleDisplay = '';
+        if (sectionArabic && hadithSubject) {
+            titleDisplay = `${sectionArabic} • ${hadithSubject}`;
+        } else if (hadithSubject) {
+            titleDisplay = hadithSubject;
+        } else if (sectionArabic) {
+            titleDisplay = sectionArabic;
+        } else {
+            titleDisplay = currentBook.name;
+        }
+
+        // Strictly Arabic only: eliminate any English words, letters, or numbers
+        titleDisplay = titleDisplay.replace(/[A-Za-z0-9_#]+/g, '').replace(/\s+/g, ' ').trim();
+        titleDisplay = titleDisplay.replace(/^[•\-\.\s]+|[•\-\.\s]+$/g, '').trim();
+
+        if (!titleDisplay) {
+            titleDisplay = currentBook.name;
+        }
         
         const card = document.createElement('div');
         card.className = 'hadith-card';
@@ -426,7 +740,7 @@ function renderHadithsPage() {
                 <div class="hadith-badge">
                     <i class="fa-solid fa-book-bookmark"></i>
                     <span>حديث رقم #${hadithNum}</span>
-                    ${chapterName ? `<span class="hadith-chapter-badge">• ${escapeHTML(chapterName)}</span>` : ''}
+                    ${titleDisplay ? `<span class="hadith-chapter-badge">• ${escapeHTML(titleDisplay)}</span>` : ''}
                 </div>
                 <div class="hadith-actions">
                     <button class="card-action-btn" onclick="copyHadith(this, ${hadithNum})" title="نسخ نص الحديث">
@@ -438,7 +752,7 @@ function renderHadithsPage() {
                 </div>
             </div>
 
-            <div class="hadith-body" style="font-size: ${currentFontSize}px;">
+            <div class="hadith-body">
                 ${formatHadithText(rawText)}
             </div>
 
@@ -466,15 +780,68 @@ function renderHadithsPage() {
     }
 }
 
-// Format Hadith text with quotes and clean paragraphs
+// Format Hadith text: separates Sanad (Narrator Chain) from Matn (Prophet's Words) with golden highlight
 function formatHadithText(text) {
     if (!text) return '';
-    let formatted = escapeHTML(text);
+    const cleanText = text.trim();
 
-    // Highlight Prophet's words inside quotes if present
-    formatted = formatted.replace(/«([^»]+)»/g, '<span style="color: var(--gold); font-weight: bold;">«$1»</span>');
+    // 1. Look for opening quote: « or " or “
+    const quoteMatch = cleanText.match(/^([\s\S]*?)(?:[:：\s]*)([«"“][\s\S]+[»"”])[\s\S]*$/);
+    if (quoteMatch && quoteMatch[1].trim().length > 6 && quoteMatch[2].trim().length > 6) {
+        const sanad = quoteMatch[1].trim();
+        let matn = quoteMatch[2].trim();
+        matn = matn.replace(/^[«"“]\s*/, '').replace(/\s*[»"”]$/, '').trim();
+        return renderSanadAndMatn(sanad, matn);
+    }
 
-    return formatted;
+    // 2. Look for Prophet's saying trigger
+    const triggers = [
+        /(?:قَالَ\s+رَسُولُ\s+اللَّهِ|قَالَ\s+النَّبِيُّ|يَقُولُ\s+رَسُولُ\s+اللَّهِ|عَنِ\s+النَّبِيِّ\s+[^\:]+قَالَ)\s*(?:[-–—]\s*(?:صلى\s+الله\s+عليه\s+وسلم|صَلَّى\s+اللَّهُ\s+عَلَيْهِ\s+وَسَلَّمَ)\s*[-–—]\s*)?[:：]\s*/i,
+        /[-–—]\s*(?:صلى\s+الله\s+عليه\s+وسلم|صَلَّى\s+اللَّهُ\s+عَلَيْهِ\s+وَسَلَّمَ)\s*[-–—]\s*[:：]\s*/i,
+        /(?:صلى\s+الله\s+عليه\s+وسلم|صَلَّى\s+اللَّهُ\s+عَلَيْهِ\s+وَسَلَّمَ)\s*[:：]\s*/i
+    ];
+
+    for (const trigger of triggers) {
+        const match = cleanText.match(trigger);
+        if (match && match.index > 5) {
+            const splitIdx = match.index + match[0].length;
+            const sanad = cleanText.substring(0, splitIdx).trim();
+            let matn = cleanText.substring(splitIdx).trim();
+            matn = matn.replace(/^[«"“]\s*/, '').replace(/\s*[»"”]$/, '').trim();
+            if (matn.length > 5) {
+                return renderSanadAndMatn(sanad, matn);
+            }
+        }
+    }
+
+    // Fallback if no clear isnad split
+    let formatted = escapeHTML(cleanText);
+    formatted = formatted.replace(/[«"“]([^»"”]+)[»"”]/g, '<span class="matn-highlight">«$1»</span>');
+    return `
+        <div class="hadith-matn-box">
+            <div class="matn-header">
+                <i class="fa-solid fa-quote-right matn-icon"></i>
+                <span>نص الحديث الشريف:</span>
+            </div>
+            <div class="matn-text" style="font-size: ${currentFontSize}px;">${formatted}</div>
+        </div>
+    `;
+}
+
+function renderSanadAndMatn(sanad, matn) {
+    return `
+        <div class="hadith-sanad">
+            <span class="sanad-prefix"><i class="fa-solid fa-scroll"></i> الإسناد والرواية:</span>
+            <span class="sanad-text">${escapeHTML(sanad)}</span>
+        </div>
+        <div class="hadith-matn-box">
+            <div class="matn-header">
+                <i class="fa-solid fa-quote-right matn-icon"></i>
+                <span>نص الحديث الشريف (قول النبي ﷺ):</span>
+            </div>
+            <div class="matn-text" style="font-size: ${currentFontSize}px;">«${escapeHTML(matn)}»</div>
+        </div>
+    `;
 }
 
 // Render Navigation & Pagination Controls
@@ -590,7 +957,7 @@ function initFontSize() {
 
 function saveAndApplyFontSize() {
     localStorage.setItem('hadith_font_size', currentFontSize);
-    document.querySelectorAll('.hadith-body').forEach(el => {
+    document.querySelectorAll('.matn-text').forEach(el => {
         el.style.fontSize = `${currentFontSize}px`;
     });
     updateFontSizeDisplay();
@@ -711,11 +1078,25 @@ function initEvents() {
         applyFiltersAndRender();
     });
 
-    // Chapter select
-    chapterSelect.addEventListener('change', () => {
-        currentPage = 1;
-        applyFiltersAndRender();
-    });
+    // Custom Chapter Dropdown events
+    if (chapterDropdownTrigger && chapterDropdownMenu) {
+        chapterDropdownTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleChapterDropdown();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (chapterDropdownContainer && !chapterDropdownContainer.contains(e.target)) {
+                closeChapterDropdown();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeChapterDropdown();
+            }
+        });
+    }
 
     // Jump to page
     jumpBtn.addEventListener('click', handleJump);

@@ -145,23 +145,22 @@ body {
 }
 
 .hero-icon-badge {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: rgba(197, 168, 89, 0.12);
-    border: 1px solid var(--gold);
+    width: auto;
+    height: auto;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     color: var(--gold);
-    font-size: 24px;
-    box-shadow: 0 0 20px rgba(197, 168, 89, 0.25);
+    font-size: 38px;
     transition: transform 0.3s ease;
 }
 
 .hero-icon-badge:hover {
-    transform: scale(1.08) rotate(-5deg);
+    transform: scale(1.1);
 }
 
 .hadith-hero h1 {
@@ -191,41 +190,66 @@ body {
     margin-bottom: 25px;
 }
 
-/* Book Selector Pills with Scroll Arrows */
-.pills-scroll-wrapper {
-    position: relative;
+/* Book Selector Section with Top Arrows */
+.books-section-box {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.books-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 4px;
+}
+
+.books-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.books-label i {
+    color: var(--gold);
+}
+
+.pills-arrows-cluster {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .pill-scroll-arrow {
-    background: rgba(20, 20, 20, 0.85);
-    border: 1px solid rgba(197, 168, 89, 0.45);
-    color: var(--gold);
-    min-width: 34px;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.25s ease;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    z-index: 3;
-    font-size: 13px;
+    font-size: 16px;
     padding: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0.75;
 }
 
 .pill-scroll-arrow:hover {
-    background: var(--gold);
-    color: #111;
-    border-color: var(--gold);
-    box-shadow: 0 0 12px rgba(197, 168, 89, 0.5);
-    transform: scale(1.08);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
+    opacity: 1;
+    transform: scale(1.25);
 }
 
 .books-pills-wrapper {
@@ -233,10 +257,9 @@ body {
     gap: 10px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 6px 2px;
+    padding: 2px 0 6px 0;
     -ms-overflow-style: none;
     scrollbar-width: none;
-    flex: 1;
     width: 100%;
 }
 
@@ -367,40 +390,150 @@ body {
     margin: 0 !important;
 }
 
-.chapter-select-box {
+/* Custom Luxury Glassmorphism Dropdown */
+.chapter-select-box.custom-dropdown {
     flex: 1.2;
     min-width: 220px;
     position: relative;
+    user-select: none;
 }
 
-.chapter-select {
+.dropdown-trigger {
     width: 100%;
-    background: #181818;
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 14px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    color: var(--gold);
+    padding: 12px 18px;
     border-radius: 14px;
     font-family: inherit;
     font-size: 14px;
-    font-weight: 600;
-    outline: none;
+    font-weight: 700;
     cursor: pointer;
-    transition: border-color 0.3s;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C5A859' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: left 15px center;
-    background-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
-.chapter-select:focus {
+.dropdown-trigger:hover,
+.dropdown-trigger.open {
     border-color: var(--gold);
+    box-shadow: 0 0 15px rgba(197, 168, 89, 0.3);
+    background: rgba(197, 168, 89, 0.08);
 }
 
-.chapter-select option {
-    background: #1b1b1b;
-    color: white;
-    padding: 8px;
+.dropdown-trigger-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--gold);
+    font-weight: 700;
+}
+
+.dropdown-trigger-text i {
+    color: var(--gold);
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.dropdown-arrow {
+    font-size: 12px;
+    color: var(--gold);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.dropdown-trigger.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu Popup */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 100%;
+    min-width: 260px;
+    max-height: 380px;
+    overflow-y: auto;
+    background: rgba(18, 16, 14, 0.96);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(197, 168, 89, 0.4);
+    border-radius: 14px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(197, 168, 89, 0.15);
+    padding: 6px;
+    z-index: 100;
+    display: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 4px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-menu.show {
+    display: block;
+    animation: fadeInDrop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+    color: var(--gold);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.dropdown-item:hover {
+    background: rgba(197, 168, 89, 0.15);
+    color: var(--gold);
+    transform: translateX(-3px);
+}
+
+.dropdown-item.active {
+    background: rgba(197, 168, 89, 0.25);
+    color: var(--gold);
+    font-weight: 800;
 }
 
 /* Font Size Controls & Stats Bar */
@@ -488,7 +621,7 @@ body {
 .hadith-card:hover {
     border-color: rgba(197, 168, 89, 0.4);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(197, 168, 89, 0.12);
-    transform: translateY(-3px);
+    transform: none !important;
 }
 
 /* Card Header */
@@ -517,9 +650,9 @@ body {
 }
 
 .hadith-chapter-badge {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.75);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .hadith-actions {
@@ -556,24 +689,81 @@ body {
     background: rgba(39, 174, 96, 0.1);
 }
 
-/* Hadith Body Text */
+/* Hadith Body Text Structure */
 .hadith-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+/* Hadith Sanad (Narrator Chain) */
+.hadith-sanad {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sanad-prefix {
+    color: var(--gold);
+    font-weight: 800;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sanad-text {
+    color: rgba(255, 255, 255, 0.85);
+    word-spacing: 1px;
+}
+
+/* Hadith Matn Box (Actual Words of the Prophet) - Highlighted with Golden Right Border */
+.hadith-matn-box {
+    background: rgba(197, 168, 89, 0.05);
+    border-right: 3.5px solid var(--gold);
+    border-radius: 14px;
+    padding: 16px 20px;
+    position: relative;
+    backdrop-filter: blur(8px);
+    transition: background 0.3s ease;
+}
+
+.matn-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--gold);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.matn-icon {
+    font-size: 14px;
+}
+
+.matn-text {
     font-family: 'Amiri Quran', 'Amiri', serif;
     font-size: 22px;
-    line-height: 2.1;
+    line-height: 2.2;
     color: #FFFFFF;
     text-align: justify;
-    margin-bottom: 20px;
     word-spacing: 2px;
 }
 
-.hadith-body .narrator-tag {
+.matn-highlight {
     color: var(--gold);
-    font-family: 'Tajawal', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    display: block;
-    margin-bottom: 12px;
+    font-weight: bold;
 }
 
 /* Card Footer */
@@ -801,19 +991,23 @@ body {
         font-size: 23px;
     }
     .hero-icon-badge {
-        width: 48px;
-        height: 48px;
-        font-size: 20px;
-        margin-bottom: 8px;
+        width: auto;
+        height: auto;
+        background: transparent !important;
+        border: none !important;
+        font-size: 30px;
+        margin-bottom: 6px;
     }
     .hadith-hero p {
         font-size: 13px;
     }
     .pill-scroll-arrow {
-        min-width: 30px;
-        width: 30px;
-        height: 30px;
-        font-size: 11px;
+        min-width: 28px;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        background: transparent !important;
+        border: none !important;
     }
     .book-pill-btn {
         padding: 8px 13px;

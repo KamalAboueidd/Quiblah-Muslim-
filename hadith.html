@@ -86,17 +86,22 @@
 
             <!-- Controls: Collections Pills with Side Scroll Arrows, Search, Chapter Filter -->
             <div class="controls-container">
-                <!-- Book Selector Pills with scroll arrows -->
-                <div class="pills-scroll-wrapper">
-                    <button class="pill-scroll-arrow arrow-right" id="pills-scroll-right" title="السابق" aria-label="السابق">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
+                <!-- Book Selector Pills with top scroll arrows -->
+                <div class="books-section-box">
+                    <div class="books-header-row">
+                        <span class="books-label"><i class="fa-solid fa-book-open"></i> اختر كتاب الحديث:</span>
+                        <div class="pills-arrows-cluster">
+                            <button class="pill-scroll-arrow" id="pills-scroll-right" title="السابق" aria-label="السابق">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="pill-scroll-arrow" id="pills-scroll-left" title="التالي" aria-label="التالي">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div class="books-pills-wrapper" id="books-pills-wrapper">
                         <!-- Injected dynamically by hadith.js -->
                     </div>
-                    <button class="pill-scroll-arrow arrow-left" id="pills-scroll-left" title="التالي" aria-label="التالي">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
                 </div>
 
                 <!-- Search and Chapters Filter -->
@@ -109,10 +114,17 @@
                         </button>
                     </div>
 
-                    <div class="chapter-select-box" id="chapter-select-container">
-                        <select id="chapter-select" class="chapter-select" aria-label="اختر الباب أو القسم">
-                            <option value="all">📖 جميع الأبواب والأقسام</option>
-                        </select>
+                    <!-- Custom Luxury Glassmorphism Dropdown -->
+                    <div class="chapter-select-box custom-dropdown" id="chapter-dropdown-container">
+                        <button type="button" class="dropdown-trigger" id="chapter-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="dropdown-trigger-text" id="selected-chapter-label">
+                                <i class="fa-solid fa-book-open"></i> جميع الأبواب والأقسام
+                            </span>
+                            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        <div class="dropdown-menu" id="chapter-dropdown-menu" role="listbox">
+                            <!-- Injected dynamically in Arabic with golden typography -->
+                        </div>
                     </div>
                 </div>
             </div>

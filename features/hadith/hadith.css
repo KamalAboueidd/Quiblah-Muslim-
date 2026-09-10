@@ -684,9 +684,14 @@ body {
 }
 
 .card-action-btn.copied {
-    border-color: #27ae60;
-    color: #27ae60;
-    background: rgba(39, 174, 96, 0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(197, 168, 89, 0.18);
+    box-shadow: 0 0 14px rgba(197, 168, 89, 0.35);
+}
+
+.card-action-btn.copied i {
+    color: var(--gold);
 }
 
 /* Hadith Body Text Structure */
@@ -859,44 +864,84 @@ body {
 .page-jump-row {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
+    font-weight: 700;
 }
 
 .jump-input {
-    width: 60px;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
+    width: 68px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    color: var(--gold);
     text-align: center;
-    padding: 6px;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
+    padding: 0 8px;
+    border-radius: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
     outline: none;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Hide default Chrome, Safari, Edge, Opera number stepper buttons */
+.jump-input::-webkit-outer-spin-button,
+.jump-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.jump-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.jump-input:hover {
+    border-color: var(--gold);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .jump-input:focus {
     border-color: var(--gold);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 14px rgba(197, 168, 89, 0.35), inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    color: #fff;
 }
 
 .jump-btn {
-    background: transparent;
+    background: rgba(197, 168, 89, 0.12);
     border: 1px solid var(--gold);
     color: var(--gold);
-    padding: 6px 14px;
-    border-radius: 8px;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 10px;
     cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    transition: all 0.2s;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .jump-btn:hover {
     background: var(--gold);
     color: #111;
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.45);
+    transform: translateY(-1px);
+}
+
+.jump-btn:active {
+    transform: translateY(0);
 }
 
 /* Loading & Empty States */
@@ -945,21 +990,25 @@ body {
 /* Toast Notifications */
 .toast-msg {
     position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(50px);
+    top: 25px;
+    right: 25px;
+    left: auto;
+    bottom: auto;
+    transform: translateY(-30px);
     background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--gold);
     color: white;
-    padding: 12px 24px;
+    padding: 12px 22px;
     border-radius: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(197, 168, 89, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(197, 168, 89, 0.35);
     font-size: 14px;
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 10px;
-    z-index: 1000;
+    z-index: 10000;
     opacity: 0;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -967,7 +1016,7 @@ body {
 
 .toast-msg.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 
 .toast-msg i {
@@ -1032,5 +1081,13 @@ body {
     .search-input {
         padding: 12px 42px 12px 40px;
         font-size: 14px;
+    }
+    .toast-msg {
+        top: 20px;
+        right: 15px;
+        left: auto;
+        padding: 9px 16px;
+        font-size: 12.5px;
+        border-radius: 25px;
     }
 }

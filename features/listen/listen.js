@@ -256,7 +256,6 @@
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
         const playerTopFill = document.getElementById('player-top-fill');
-        const playerMiniRemaining = document.getElementById('player-mini-remaining');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
 
@@ -271,7 +270,6 @@
         }
         if (timeCurrent) timeCurrent.textContent = '0:00';
         if (timeTotal) timeTotal.textContent = '-0:00';
-        if (playerMiniRemaining) playerMiniRemaining.textContent = '-0:00';
         
         // Auto expand the player immediately on mobile just like Spotify
         if (window.innerWidth <= 768) {
@@ -375,7 +373,6 @@
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
         const playerTopFill = document.getElementById('player-top-fill');
-        const playerMiniRemaining = document.getElementById('player-mini-remaining');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
 
@@ -387,7 +384,6 @@
 
         const remaining = Math.max(0, d - c);
         const remStr = '-' + formatTime(remaining);
-        if (playerMiniRemaining) playerMiniRemaining.textContent = remStr;
         if (timeTotal) {
             timeTotal.textContent = showRemainingTime ? remStr : formatTime(d);
         }
@@ -430,7 +426,6 @@
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
         const playerTopFill = document.getElementById('player-top-fill');
-        const playerMiniRemaining = document.getElementById('player-mini-remaining');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
 
@@ -441,7 +436,6 @@
 
         const remaining = Math.max(0, audio.duration - audio.currentTime);
         const remStr = '-' + formatTime(remaining);
-        if (playerMiniRemaining) playerMiniRemaining.textContent = remStr;
         if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatTime(audio.duration);
     }
 

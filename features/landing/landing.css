@@ -194,35 +194,12 @@
             white-space: nowrap;
         }
 
-        .player-track-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow: hidden;
-        }
-
         .player-track-title {
             font-size: 15px;
             font-weight: 800;
             color: #ffffff;
             text-overflow: ellipsis;
             overflow: hidden;
-        }
-
-        .player-mini-remaining {
-            display: inline-block;
-            padding: 2px 7px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #111;
-            background: var(--gold);
-            border-radius: 10px;
-            letter-spacing: 0.5px;
-            direction: ltr;
-            white-space: nowrap;
-            flex-shrink: 0;
-            box-shadow: 0 0 8px rgba(197, 168, 89, 0.4);
-            transition: all 0.2s;
         }
 
         .player-artist-title {

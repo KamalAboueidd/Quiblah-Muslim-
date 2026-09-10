@@ -38,7 +38,6 @@
         const scrubberThumb = document.getElementById('scrubber-thumb');
         const playerTopProgress = document.getElementById('player-top-progress');
         const playerTopFill = document.getElementById('player-top-fill');
-        const playerMiniRemaining = document.getElementById('player-mini-remaining');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
         const volumeBar = document.getElementById('volume-bar');
@@ -160,7 +159,6 @@
             }
             if (timeCurrent) timeCurrent.textContent = '0:00';
             if (timeTotal) timeTotal.textContent = '-0:00';
-            if (playerMiniRemaining) playerMiniRemaining.textContent = '-0:00';
 
             // Set audio source & play
             audio.src = audioSrc;
@@ -295,7 +293,6 @@
             const remaining = Math.max(0, d - c);
             const remainingFormatted = '-' + formatSeconds(remaining);
             
-            if (playerMiniRemaining) playerMiniRemaining.textContent = remainingFormatted;
             if (timeTotal) {
                 timeTotal.textContent = showRemainingTime ? remainingFormatted : formatSeconds(d);
             }
@@ -339,7 +336,6 @@
             if (timeCurrent) timeCurrent.textContent = formatSeconds(audio.currentTime);
             const remaining = Math.max(0, audio.duration - audio.currentTime);
             const remStr = '-' + formatSeconds(remaining);
-            if (playerMiniRemaining) playerMiniRemaining.textContent = remStr;
             if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatSeconds(audio.duration);
         }
 

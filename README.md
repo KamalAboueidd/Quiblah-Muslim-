@@ -232,7 +232,7 @@ PrayerTimer/
 ├── icons/                               # PWA application icons
 ├── api/                                 # Vercel serverless push notification handlers
 ├── *.html                               # Semantic HTML entrypoints
-├── service-worker.js                    # PWA Service Worker with offline caching (v11)
+├── service-worker.js                    # PWA Service Worker with offline caching (v12)
 ├── server.js                            # Local Node.js HTTP and Push server
 ├── .gitattributes                       # GitHub Linguist language detection overrides
 └── README.md                            # Comprehensive project documentation
@@ -248,11 +248,11 @@ Quiblah Muslim is designed as a standalone Progressive Web Application (PWA). It
 
 | Platform | Supported Environments | Installation Method | Standalone Window | Offline Storage |
 |---|---|---|:---:|:---:|
-| **Windows 10 / 11** | Google Chrome, Microsoft Edge, Brave | Browser Install Prompt / URL Bar Icon | Yes | Yes (Service Worker v11) |
-| **macOS** | Google Chrome, Microsoft Edge, Safari | Browser Install Prompt / Add to Dock | Yes | Yes (Service Worker v11) |
-| **Linux & ChromeOS** | Google Chrome, Chromium, Brave | Browser Install Prompt / URL Bar Icon | Yes | Yes (Service Worker v11) |
-| **Android** | Google Chrome, Samsung Internet, Edge | Automatic Install Banner / Menu Option | Yes | Yes (Service Worker v11) |
-| **iOS (iPhone & iPad)** | Apple Safari, Chrome | Safari Share Sheet -> Add to Home Screen | Yes | Yes (Service Worker v11) |
+| **Windows 10 / 11** | Google Chrome, Microsoft Edge, Brave | Browser Install Prompt / URL Bar Icon | Yes | Yes (Service Worker v12) |
+| **macOS** | Google Chrome, Microsoft Edge, Safari | Browser Install Prompt / Add to Dock | Yes | Yes (Service Worker v12) |
+| **Linux & ChromeOS** | Google Chrome, Chromium, Brave | Browser Install Prompt / URL Bar Icon | Yes | Yes (Service Worker v12) |
+| **Android** | Google Chrome, Samsung Internet, Edge | Automatic Install Banner / Menu Option | Yes | Yes (Service Worker v12) |
+| **iOS (iPhone & iPad)** | Apple Safari, Chrome | Safari Share Sheet -> Add to Home Screen | Yes | Yes (Service Worker v12) |
 
 ### Step-by-Step Installation Instructions
 
@@ -334,7 +334,7 @@ Note: Hardware sensor access (Compass and precise GPS Geolocation) requires HTTP
 Quiblah Muslim functions as an installable Progressive Web Application:
 
 - **Desktop & Mobile Installation**: Installable directly from browser prompts to home screens and desktop application menus on iOS, Android, macOS, and Windows.
-- **Offline Cache**: Managed by `service-worker.js` (Cache v11), pre-caching all essential application shell assets, modules, stylesheets, and datasets.
+- **Offline Cache**: Managed by `service-worker.js` (Cache v12), pre-caching all essential application shell assets, modules, stylesheets, and datasets.
 - **Resilient Fallback**: Critical features (Quran reading, daily adhkar, 99 Names, and cached prayer schedules) operate without any internet connectivity.
 
 ---

@@ -1,4 +1,4 @@
-# Quiblah Muslim (Quiblah-Muslim-)
+# Quiblah Muslim || قبلة المسلم (Quiblah-Muslim-)
 
 A modern, comprehensive Islamic Progressive Web Application (PWA) engineered to provide precise prayer timings, Holy Quran reading and tafseer, continuous audio recitation streaming, an accurate Qibla compass, interactive nearby mosque mapping, daily adhkar counters, and background Web Push notifications.
 

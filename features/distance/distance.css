@@ -106,6 +106,10 @@
             color: var(--gold);
         }
 
+        .nav-break {
+            display: none;
+        }
+
         /* Main Content Container */
         .main-content {
             flex-grow: 1;
@@ -598,6 +602,46 @@
         }
 
         @media (max-width: 768px) {
+            .nav-break {
+                display: block;
+                width: 100%;
+                height: 0;
+                margin: 0;
+                padding: 0;
+                border: none;
+            }
+            .nav-bar {
+                gap: 8px;
+                padding: 5px 8px;
+                margin-bottom: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .nav-item {
+                padding: 8px 12px;
+                font-size: 13px;
+                gap: 6px;
+                white-space: nowrap;
+            }
+
+            /* Reorder on mobile: Map on top, distances below */
+            .controls-card {
+                order: 1;
+            }
+            .distance-hero-card {
+                order: 2;
+            }
+            .map-section-card {
+                order: 3;
+            }
+            .stats-grid {
+                order: 4;
+            }
+            .spiritual-card {
+                order: 5;
+            }
+
             .footer-container {
                 display: flex;
                 flex-direction: column;
@@ -626,4 +670,16 @@
             .stat-box { padding: 10px 4px; }
             .stat-box-value { font-size: 17px; }
             .spiritual-ayah { font-size: 22px; }
+        }
+
+        @media (max-width: 380px) {
+            .nav-bar {
+                gap: 6px;
+                padding: 5px 4px;
+            }
+            .nav-item {
+                padding: 6px 9px;
+                font-size: 11.5px;
+                gap: 5px;
+            }
         }

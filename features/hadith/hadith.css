@@ -735,7 +735,7 @@ body {
 .hadith-matn-box {
     background: rgba(197, 168, 89, 0.05);
     border-right: 3.5px solid var(--gold);
-    border-radius: 14px;
+    border-radius: 0;
     padding: 16px 20px;
     position: relative;
     backdrop-filter: blur(8px);
@@ -788,12 +788,11 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 0;
+    font-size: 13px;
     font-weight: 700;
     background: transparent;
-    border: 1px solid rgba(197, 168, 89, 0.35);
+    border: none;
     color: var(--gold);
 }
 

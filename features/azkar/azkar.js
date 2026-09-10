@@ -168,10 +168,23 @@ function updateCategoriesLoadMore() {
     }
 }
 
+// Arabic text normalization for smart, tolerant search
+function normalizeArabic(text) {
+    if (!text) return '';
+    return text
+        .replace(/[\u064B-\u065F\u0670]/g, '') // Remove tashkeel/harakat
+        .replace(/[إأآا]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .toLowerCase()
+        .trim();
+}
+
 // Search Filter
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.trim().toLowerCase();
+        const rawQuery = e.target.value.trim();
+        const normQ = normalizeArabic(rawQuery);
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('m');
         let baseCats = Object.keys(groupedAzkar);
@@ -180,7 +193,18 @@ if (searchInput) {
         } else {
             baseCats = baseCats.filter(cat => cat !== 'أذكار الصباح' && cat !== 'أذكار المساء');
         }
-        const filtered = baseCats.filter(cat => cat.toLowerCase().includes(query));
+
+        if (!normQ) {
+            renderCategories(baseCats, true);
+            return;
+        }
+
+        const filtered = baseCats.filter(cat => {
+            if (normalizeArabic(cat).includes(normQ)) return true;
+            const azkarList = groupedAzkar[cat] || [];
+            return azkarList.some(z => normalizeArabic(z.zekr).includes(normQ) || normalizeArabic(z.description).includes(normQ));
+        });
+
         renderCategories(filtered, true);
     });
 }

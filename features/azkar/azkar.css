@@ -1,772 +1,748 @@
-/* features/azkar/azkar.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙØ­Ø© azkar.html */
+/* features/azkar/azkar.css - أنماط وتنسيقات صفحة azkar.html */
 :root {
-            --primary-teal: #2F7A78;
-            --gold: #C5A859;
-            --white: #FFFFFF;
-        }
-
-        body {
-            font-family: "Tajawal", sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #111;
-            color: var(--white);
-            overflow-x: hidden; 
-        }
-
-        /* --- Fullscreen Background Carousel --- */
-        .fullscreen-carousel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-        .carousel-slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-        }
-        .carousel-slide.active { opacity: 1; }
-        .carousel-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7); 
-            backdrop-filter: blur(5px);
-        }
-
-        /* --- App Layout --- */
-        .app-layout {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            width: 100%;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Top Bar & Navbar */
-        .top-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 30px 10px 30px;
-            font-size: 26px;
-        }
-        
-        .top-bar .title {
-            font-weight: 900;
-            font-size: 32px;
-            color: var(--white);
-            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
-            letter-spacing: 1px;
-        }
-
-        .nav-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            padding: 10px 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
-        }
-
-        /* --- Main Content --- */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 30px 50px 30px;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
-            flex: 1;
-            box-sizing: border-box;
-        }
-
-        /* View Switching */
-        .view-section { display: none; width: 100%; animation: fadeIn 0.4s; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Search Container */
-        .search-container {
-            width: 100%;
-            max-width: 700px;
-            margin: 0 auto 40px auto;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 22px 25px 22px 65px;
-            border-radius: 20px;
-            font-size: 20px;
-            font-weight: 700;
-            font-family: inherit;
-            box-sizing: border-box;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s;
-        }
-
-        .search-input:focus {
-            border-color: var(--gold);
-            outline: none;
-            box-shadow: 0 10px 30px rgba(197, 168, 89, 0.2);
-            background: rgba(0, 0, 0, 0.7);
-        }
-
-        .search-container i {
-            position: absolute;
-            left: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 24px;
-            color: var(--gold);
-        }
-
-        /* Categories Stacked Rectangles */
-        .categories-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .category-card {
-            background: transparent;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 20px 25px;
-            text-align: right;
-            cursor: pointer;
-            box-shadow: none;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .category-card > div {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .category-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--gold);
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        .category-card i {
-            font-size: 32px;
-            color: var(--gold);
-            width: 40px;
-            text-align: center;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-        }
-
-        .category-card .cat-title {
-            font-size: 22px;
-            font-weight: 800;
-            color: white;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-        }
-
-        .category-card .cat-count {
-            font-size: 14px;
-            color: #ccc;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            align-self: flex-start;
-        }
-
-        .category-card.prominent {
-            background: transparent;
-            border-color: rgba(197, 168, 89, 0.6);
-        }
-        
-        .category-card.prominent:hover {
-            background: rgba(197, 168, 89, 0.1);
-            border-color: var(--gold);
-        }
-
-        /* --- Categories Load More --- */
-        .categories-load-more-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            margin: 20px 0 35px 0;
-            padding: 10px 0;
-        }
-
-        .categories-load-more-btn {
-            background: transparent !important;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            color: var(--gold);
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 800;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 24px;
-            transition: all 0.25s ease;
-            opacity: 0.9;
-        }
-
-        .categories-load-more-btn:hover {
-            opacity: 1;
-            color: #fff;
-            transform: translateY(2px);
-            text-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
-        }
-
-        .categories-load-more-btn i {
-            font-size: 13px;
-            transition: transform 0.25s ease;
-        }
-
-        .categories-load-more-btn:hover i {
-            transform: translateY(3px);
-        }
-
-        .categories-load-more-btn .remaining-badge {
-            font-size: 13.5px;
-            opacity: 0.8;
-            font-weight: 600;
-        }
-
-        .categories-end-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            width: 100%;
-            margin: 25px 0 40px 0;
-            text-align: center;
-        }
-
-        .categories-end-line {
-            height: 1.5px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            flex: 1;
-            max-width: 100px;
-            opacity: 0.6;
-        }
-
-        .categories-end-text {
-            font-size: 14.5px;
-            font-weight: 700;
-            color: var(--gold);
-            opacity: 0.9;
-            letter-spacing: 0.5px;
-        }
-
-        /* Reader Header */
-        .reader-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 30px;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px);
-            padding: 15px 25px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-sizing: border-box;
-        }
-
-        .reader-title {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .back-btn {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--gold);
-            border-color: var(--gold);
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: var(--gold);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .azkar-reader-list {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            width: 100%;
-            padding-bottom: 10px;
-        }
-
-        /* --- Load More & Infinite Scroll --- */
-        .azkar-load-more-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            margin: 20px 0 35px 0;
-            padding: 10px 0;
-        }
-
-        .azkar-load-more-btn {
-            background: transparent !important;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            color: var(--gold);
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-            padding: 10px 24px;
-            transition: all 0.25s ease;
-            opacity: 0.88;
-        }
-
-        .azkar-load-more-btn:hover {
-            opacity: 1;
-            color: #fff;
-            transform: translateY(2px);
-            text-shadow: 0 0 12px rgba(197, 168, 89, 0.6);
-        }
-
-        .azkar-load-more-btn i {
-            font-size: 13px;
-            transition: transform 0.25s ease;
-        }
-
-        .azkar-load-more-btn:hover i {
-            transform: translateY(3px);
-        }
-
-        .azkar-load-more-btn .remaining-badge {
-            font-size: 13px;
-            opacity: 0.8;
-            font-weight: 600;
-        }
-
-        .azkar-end-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            width: 100%;
-            margin: 25px 0 40px 0;
-            text-align: center;
-        }
-
-        .azkar-end-line {
-            height: 1.5px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            flex: 1;
-            max-width: 100px;
-            opacity: 0.6;
-        }
-
-        .azkar-end-text {
-            font-size: 14.5px;
-            font-weight: 700;
-            color: var(--gold);
-            opacity: 0.9;
-            letter-spacing: 0.5px;
-        }
-
-        .zikr-card {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 24px;
-            padding: 35px;
-            position: relative;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-            transition: all 0.5s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Completed State */
-        .zikr-card.completed {
-            opacity: 0.6;
-            border-color: rgba(197, 168, 89, 0.5); /* Faded gold border */
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .zikr-card.completed .zikr-text {
-            color: #ccc;
-        }
-
-        .zikr-number {
-            position: absolute;
-            top: -20px;
-            right: -20px;
-            width: 50px;
-            height: 50px;
-            background: #111;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 22px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.2);
-            transition: all 0.3s;
-        }
-        
-        .zikr-card.completed .zikr-number {
-            background: var(--gold);
-            border-color: var(--gold);
-            color: #111; /* Dark text for contrast */
-        }
-
-        .zikr-text {
-            font-family: 'Amiri Quran', serif;
-            font-size: 32px;
-            line-height: 2.2;
-            color: white;
-            margin-bottom: 20px;
-            text-align: justify;
-            transition: color 0.5s;
-        }
-
-        .zikr-desc {
-            font-size: 16px;
-            color: #aaa;
-            margin-bottom: 25px;
-            padding: 10px 15px;
-            background: rgba(255,255,255,0.05);
-            border-right: 3px solid var(--gold);
-            border-radius: 5px;
-        }
-
-        .zikr-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 20px;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .copy-btn {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover { background: rgba(255,255,255,0.1); color: var(--gold); }
-
-        /* New Counter System */
-        .new-counter {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 15px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .counter-btn-small {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: transparent;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .counter-btn-small:active {
-            transform: scale(0.9);
-        }
-        
-        .counter-btn-small.plus {
-            background: var(--gold);
-            color: #111;
-            border-color: var(--gold);
-            font-weight: 900;
-        }
-
-        .counter-text {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--white);
-            min-width: 130px;
-            text-align: center;
-        }
-
-        .empty-state { text-align: center; color: #aaa; font-size: 20px; padding: 50px; }
-        .loader-container { text-align: center; padding: 50px; color: var(--gold); font-size: 20px; font-weight: 800; }
-
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
-
-        /* --- Responsive --- */
-        /* Removed prominent grid styles as requested to keep cards normal sized */
-
-        @media (max-width: 600px) {
-            .top-bar { padding: 10px 20px 5px 20px; }
-            .top-bar .title { font-size: 24px; }
-            .nav-bar { gap: 8px; padding: 5px 10px; margin-bottom: 15px; }
-            .nav-item { padding: 8px 12px; font-size: 13px; }
-            .main-content { padding: 0 15px 30px 15px; }
-            
-            .search-input { font-size: 18px; padding: 18px 20px 18px 50px; }
-            .search-container i { font-size: 20px; left: 20px; }
-            .search-container { margin-bottom: 25px; }
-            
-            .category-card { padding: 15px 20px; gap: 15px; border-radius: 12px; }
-            .category-card i { font-size: 26px; width: 30px; }
-            .category-card .cat-title { font-size: 18px; }
-            
-            .reader-header { flex-direction: column; gap: 15px; text-align: center; }
-            .reader-title { font-size: 20px; }
-            
-            /* Simplified Azkar Card Mobile */
-            .zikr-card { padding: 20px 15px; border-radius: 16px; }
-            .zikr-text { font-size: 22px; line-height: 1.8; margin-bottom: 15px;}
-            .zikr-number { width: 30px; height: 30px; font-size: 14px; top: -10px; right: -10px; border-width: 1px; }
-            
-            .zikr-footer { flex-direction: column-reverse; gap: 15px; align-items: stretch; padding-top: 15px; }
-            
-            /* New Counter Mobile */
-            .new-counter { justify-content: space-between; padding: 8px 12px; gap: 10px;}
-            .counter-text { font-size: 14px; min-width: 100px; }
-            .counter-btn-small { width: 35px; height: 35px; font-size: 14px; }
-        }
-
-        /* Desktop Compact Tweaks */
-        @media (min-width: 900px) {
-            .top-bar { padding: 10px 30px 5px 30px; }
-            .top-bar .title { font-size: 28px; }
-            .nav-bar { padding: 5px 20px; margin-bottom: 15px; gap: 10px; }
-            .nav-item { padding: 8px 15px; font-size: 14px; }
-            
-            .main-content { padding: 0 30px 30px 30px; max-width: 900px; }
-            .search-container { margin-bottom: 20px; max-width: 600px; }
-            .search-input { padding: 15px 20px 15px 50px; font-size: 18px; border-radius: 15px; }
-            .search-container i { font-size: 20px; left: 20px; }
-            
-            .categories-grid { gap: 10px; max-width: 700px; }
-            .category-card { padding: 15px 20px; gap: 15px; border-radius: 12px; }
-            .category-card i { font-size: 26px; width: 35px; }
-            .category-card .cat-title { font-size: 18px; }
-            .category-card .cat-count { font-size: 12px; padding: 3px 10px; }
-            
-            .reader-header { margin-bottom: 20px; padding: 12px 20px; border-radius: 15px; }
-            .reader-title { font-size: 20px; }
-            .back-btn { padding: 6px 15px; font-size: 14px; }
-            .progress-container { margin-bottom: 20px; height: 6px; }
-            
-            .azkar-reader-list { gap: 20px; padding-bottom: 30px; }
-            .zikr-card { padding: 25px; border-radius: 16px; }
-            .zikr-number { top: -15px; right: -15px; width: 40px; height: 40px; font-size: 18px; }
-            .zikr-text { font-size: 26px; line-height: 2; margin-bottom: 15px; }
-            .zikr-desc { font-size: 14px; margin-bottom: 15px; padding: 8px 12px; }
-            .zikr-footer { padding-top: 15px; }
-            .new-counter { padding: 6px 12px; gap: 10px; }
-            .counter-btn-small { width: 35px; height: 35px; font-size: 14px; }
-            .counter-text { font-size: 14px; min-width: 100px; }
-            .copy-btn { padding: 8px 12px; font-size: 14px; }
-        }
-
-        /* --- Footer & Visitor Counter --- */
-        .app-footer {
-            width: 100%;
-            margin-top: auto;
-            padding: 22px 25px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: transparent;
-            position: relative;
-            z-index: 10;
-            box-sizing: border-box;
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .footer-side-spacer {
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .footer-copyright {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.75);
-            font-size: 14px;
-            line-height: 1.7;
-            white-space: nowrap;
-        }
-
-        .footer-visitor-box {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        .visitor-counter-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: transparent;
-            border: none;
-            padding: 4px 0;
-            user-select: none;
-        }
-
-        .visitor-icon {
-            color: var(--gold);
-            font-size: 15px;
-        }
-
-        .visitor-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 500;
-        }
-
-        .visitor-count {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--gold);
-            font-family: 'Tajawal', sans-serif;
-            letter-spacing: 0.5px;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .footer-container {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                text-align: center;
-                gap: 12px;
-            }
-            .footer-side-spacer {
-                display: none;
-            }
-            .footer-copyright {
-                white-space: normal;
-            }
-            .footer-visitor-box {
-                justify-content: center;
-            }
-        }
+    --primary-teal: #2F7A78;
+    --gold: #C5A859;
+    --white: #FFFFFF;
+}
+
+body {
+    font-family: "Tajawal", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #111;
+    color: var(--white);
+    overflow-x: hidden; 
+}
+
+/* --- Fullscreen Background Carousel --- */
+.fullscreen-carousel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+.carousel-slide.active { opacity: 1; }
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); 
+    backdrop-filter: blur(5px);
+}
+
+/* --- App Layout --- */
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+}
+
+/* Top Bar & Navbar */
+.top-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 30px 10px 30px;
+    font-size: 26px;
+}
+
+.top-bar .title {
+    font-weight: 900;
+    font-size: 32px;
+    color: var(--white);
+    text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    letter-spacing: 1px;
+}
+
+.nav-bar {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.nav-item:hover, .nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
+}
+
+/* --- Main Content --- */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 30px 50px 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+/* View Switching */
+.view-section { display: none; width: 100%; animation: fadeIn 0.4s; }
+.view-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Search Container */
+.search-container {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 22px 25px 22px 65px;
+    border-radius: 20px;
+    font-size: 20px;
+    font-weight: 700;
+    font-family: inherit;
+    box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    border-color: var(--gold);
+    outline: none;
+    box-shadow: 0 10px 30px rgba(197, 168, 89, 0.25);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.search-container i {
+    position: absolute;
+    left: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: var(--gold);
+}
+
+/* --- Categories Stacked Cards (Transparent Card, Golden Icon & Title) --- */
+.categories-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.category-card {
+    background: transparent !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    padding: 20px 25px;
+    text-align: right;
+    cursor: pointer;
+    box-shadow: none;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.category-card > div {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.category-card i {
+    font-size: 32px;
+    color: var(--gold);
+    width: 40px;
+    text-align: center;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.category-card .cat-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.3px;
+}
+
+.category-card .cat-count {
+    font-size: 14px;
+    color: #ccc;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    align-self: flex-start;
+    margin-top: 5px;
+}
+
+/* --- Categories Load More Button (Transparent & Golden) --- */
+.categories-load-more-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 22px 0 35px 0;
+    padding: 10px 0;
+}
+
+.categories-load-more-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: var(--gold);
+    font-family: inherit;
+    font-size: 17.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 28px;
+    transition: all 0.25s ease;
+    opacity: 0.95;
+    user-select: none;
+}
+
+.categories-load-more-btn:hover {
+    opacity: 1;
+    color: #ffe699;
+    transform: translateY(2px);
+    text-shadow: 0 0 16px rgba(197, 168, 89, 0.8);
+}
+
+.categories-load-more-btn i {
+    font-size: 14px;
+    transition: transform 0.25s ease;
+}
+
+.categories-load-more-btn:hover i {
+    transform: translateY(3px);
+}
+
+.categories-load-more-btn .remaining-badge {
+    font-size: 14px;
+    opacity: 0.85;
+    font-weight: 600;
+}
+
+.categories-end-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin: 25px 0 40px 0;
+    text-align: center;
+}
+
+.categories-end-line {
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    flex: 1;
+    max-width: 120px;
+    opacity: 0.6;
+}
+
+.categories-end-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+    opacity: 0.95;
+    letter-spacing: 0.5px;
+}
+
+/* Empty State (Golden) */
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--gold);
+    font-size: 19px;
+    font-weight: 800;
+    width: 100%;
+    line-height: 1.7;
+}
+
+.empty-state i {
+    color: var(--gold);
+    filter: drop-shadow(0 0 15px rgba(197, 168, 89, 0.6));
+    margin-bottom: 15px;
+}
+
+.loader-container {
+    text-align: center;
+    padding: 50px;
+    color: var(--gold);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* Reader Header */
+.reader-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 30px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    padding: 15px 25px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-sizing: border-box;
+}
+
+.reader-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--gold);
+    border-color: var(--gold);
+}
+
+/* Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--gold);
+    width: 0%;
+    transition: width 0.4s ease;
+}
+
+/* Interactive Azkar Reader */
+.azkar-reader-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+    padding-bottom: 10px;
+}
+
+/* Reader Load More & End Indicator */
+.azkar-load-more-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 20px 0 35px 0;
+    padding: 10px 0;
+}
+
+.azkar-load-more-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: var(--gold);
+    font-family: inherit;
+    font-size: 16.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 10px 24px;
+    transition: all 0.25s ease;
+    opacity: 0.88;
+}
+
+.azkar-load-more-btn:hover {
+    opacity: 1;
+    color: #ffe699;
+    transform: translateY(2px);
+    text-shadow: 0 0 12px rgba(197, 168, 89, 0.6);
+}
+
+.azkar-load-more-btn i {
+    font-size: 13px;
+    transition: transform 0.25s ease;
+}
+
+.azkar-load-more-btn:hover i {
+    transform: translateY(3px);
+}
+
+.azkar-load-more-btn .remaining-badge {
+    font-size: 13px;
+    opacity: 0.8;
+    font-weight: 600;
+}
+
+.azkar-end-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin: 25px 0 40px 0;
+    text-align: center;
+}
+
+.azkar-end-line {
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    flex: 1;
+    max-width: 100px;
+    opacity: 0.6;
+}
+
+.azkar-end-text {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--gold);
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+}
+
+.zikr-card {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(197, 168, 89, 0.25);
+    border-radius: 24px;
+    padding: 35px;
+    position: relative;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+    transition: all 0.5s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Completed State */
+.zikr-card.completed {
+    opacity: 0.6;
+    border-color: rgba(197, 168, 89, 0.5);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.zikr-card.completed .zikr-text {
+    color: #ccc;
+}
+
+.zikr-number {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 50px;
+    height: 50px;
+    background: #111;
+    color: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    border: 2px solid var(--gold);
+    transition: all 0.3s;
+}
+
+.zikr-card.completed .zikr-number {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #111;
+}
+
+.zikr-text {
+    font-family: 'Amiri Quran', serif;
+    font-size: 32px;
+    line-height: 2.2;
+    color: white;
+    margin-bottom: 20px;
+    text-align: justify;
+    transition: color 0.5s;
+}
+
+.zikr-desc {
+    font-size: 16px;
+    color: #aaa;
+    margin-bottom: 25px;
+    padding: 10px 15px;
+    background: rgba(255,255,255,0.05);
+    border-right: 3px solid var(--gold);
+    border-radius: 5px;
+}
+
+.zikr-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+}
+
+.action-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.copy-btn {
+    background: transparent;
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    color: var(--gold);
+    padding: 10px 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.copy-btn:hover { background: rgba(197, 168, 89, 0.15); color: #fff; }
+
+/* Counter System */
+.new-counter {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 15px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.counter-btn-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.counter-btn-small:active {
+    transform: scale(0.9);
+}
+
+.counter-btn-small.plus {
+    background: var(--gold);
+    color: #111;
+    border-color: var(--gold);
+    font-weight: 900;
+}
+
+.counter-text {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--white);
+    min-width: 130px;
+    text-align: center;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+/* Mobile */
+@media (max-width: 600px) {
+    .top-bar { padding: 10px 20px 5px 20px; }
+    .top-bar .title { font-size: 24px; }
+    .nav-bar { gap: 8px; padding: 5px 10px; margin-bottom: 15px; }
+    .nav-item { padding: 8px 12px; font-size: 13px; }
+    .main-content { padding: 0 15px 30px 15px; }
+    
+    .search-input { font-size: 18px; padding: 18px 20px 18px 50px; }
+    .search-container i { font-size: 20px; left: 20px; }
+    .search-container { margin-bottom: 25px; }
+
+    .category-card { padding: 16px 18px; gap: 15px; }
+    .category-card .cat-title { font-size: 18px; }
+    .category-card i { font-size: 26px; width: 32px; }
+    
+    .reader-header { flex-direction: column; gap: 15px; text-align: center; }
+    .reader-title { font-size: 20px; }
+    
+    .zikr-card { padding: 20px 15px; border-radius: 16px; }
+    .zikr-text { font-size: 22px; line-height: 1.8; margin-bottom: 15px;}
+    .zikr-number { width: 30px; height: 30px; font-size: 14px; top: -10px; right: -10px; border-width: 1px; }
+    
+    .zikr-footer { flex-direction: column-reverse; gap: 15px; align-items: stretch; padding-top: 15px; }
+    
+    .new-counter { justify-content: space-between; padding: 8px 12px; gap: 10px;}
+    .counter-text { font-size: 14px; min-width: 100px; }
+    .counter-btn-small { width: 35px; height: 35px; font-size: 14px; }
+}
+
+/* --- Footer & Visitor Counter --- */
+.app-footer {
+    width: 100%;
+    margin-top: auto;
+    padding: 22px 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    position: relative;
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 15px;
+}
+
+.footer-side-spacer {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.footer-copyright {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: nowrap;
+}
+
+.footer-visitor-box {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.visitor-counter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+    user-select: none;
+}
+
+.visitor-icon {
+    color: var(--gold);
+    font-size: 15px;
+}
+
+.visitor-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+}
+
+.visitor-count {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--gold);
+    font-family: 'Tajawal', sans-serif;
+    letter-spacing: 0.5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        gap: 12px;
+    }
+    .footer-side-spacer {
+        display: none;
+    }
+    .footer-copyright {
+        white-space: normal;
+    }
+    .footer-visitor-box {
+        justify-content: center;
+    }
+}

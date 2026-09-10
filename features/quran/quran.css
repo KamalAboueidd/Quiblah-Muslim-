@@ -191,22 +191,24 @@
 
         .sidebar-close-btn {
             display: none;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(197, 168, 89, 0.3);
+            background: transparent;
+            border: none;
             color: var(--gold);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 20px;
+            padding: 0;
             transition: all 0.2s ease;
+            outline: none;
         }
 
         .sidebar-close-btn:hover {
-            background: rgba(197, 168, 89, 0.2);
+            background: transparent;
             color: #ffffff;
+            transform: scale(1.18);
         }
 
         .search-box {
@@ -649,11 +651,11 @@
                 transform: translateX(100%);
                 width: 310px;
                 max-width: 85vw;
-                background: #0d0e12;
-                background: rgba(14, 15, 19, 0.98);
+                background: rgba(13, 14, 18, 0.65);
                 backdrop-filter: blur(25px);
                 -webkit-backdrop-filter: blur(25px);
-                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.95);
+                border-left: 1px solid rgba(197, 168, 89, 0.25);
+                box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6);
             }
             .sidebar.open {
                 transform: translateX(0);

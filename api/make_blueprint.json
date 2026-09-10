@@ -1,0 +1,110 @@
+{
+  "name": "Quranic Speech-to-Text Recitation Corrector AI Pipeline",
+  "description": "Production pipeline for receiving audio from PWA, transcribing via Hugging Face whisper-base-ar-quran, handling cold start 503 errors, and returning Arabic Quranic text.",
+  "version": 1,
+  "scenario": {
+    "modules": [
+      {
+        "id": 1,
+        "module": "gateway:CustomWebHook",
+        "version": 1,
+        "parameters": {
+          "hook": "quran_recitation_listener",
+          "maxResults": 1,
+          "jsonPassThrough": false
+        },
+        "mapper": {},
+        "metadata": {
+          "designer": {
+            "x": 0,
+            "y": 0,
+            "name": "Custom Webhook (Receive Audio from PWA)"
+          },
+          "restore": {},
+          "parameters": [
+            {
+              "name": "hook",
+              "type": "hook:gateway-webhook",
+              "label": "Webhook",
+              "required": true
+            }
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "module": "http:ActionMakeRequest",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewParser": true
+        },
+        "mapper": {
+          "url": "https://api-inference.huggingface.co/models/tarteel-ai/whisper-base-ar-quran",
+          "method": "post",
+          "headers": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{YOUR_HF_API_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "audio/webm"
+            },
+            {
+              "name": "x-wait-for-model",
+              "value": "true"
+            }
+          ],
+          "bodyType": "raw",
+          "contentType": "binary",
+          "data": "{{1.file.data}}",
+          "timeout": 300,
+          "parseResponse": true
+        },
+        "metadata": {
+          "designer": {
+            "x": 300,
+            "y": 0,
+            "name": "HTTP - Hugging Face Whisper AI"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "module": "gateway:WebhookRespond",
+        "version": 1,
+        "parameters": {},
+        "mapper": {
+          "status": 200,
+          "headers": [
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "POST, GET, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type, Authorization"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"transcription\": \"{{ifempty(2.data.text; 2.data[1].text)}}\"\n}"
+        },
+        "metadata": {
+          "designer": {
+            "x": 600,
+            "y": 0,
+            "name": "Webhook Response (Return Quranic Arabic Text)"
+          }
+        }
+      }
+    ]
+  }
+}

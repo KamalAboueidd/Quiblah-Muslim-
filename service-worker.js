@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v12';
+const CACHE_NAME = 'quiblah-muslim-v18';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -17,6 +17,7 @@ const STATIC_ASSETS = [
     './listen.html',
     './mosques.html',
     './reminders.html',
+    './recite.html',
     // النواة والمكتبات المشتركة (Core)
     './core/player-bridge.js',
     './core/pwa.js',
@@ -52,6 +53,8 @@ const STATIC_ASSETS = [
     './features/distance/distance.css',
     './features/reminders/reminders-page.js',
     './features/reminders/reminders-page.css',
+    './features/recite/recite.js',
+    './features/recite/recite.css',
     // البيانات والأصول
     './manifest.json',
     './azkar.json',

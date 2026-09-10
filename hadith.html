@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الأحاديث النبوية الشريفة - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: تصفح وقراءة الأحاديث النبوية الشريفة من صحيح البخاري ومسلم والأربعون النووية والسنن بتصميم عصري راقٍ وشفاف.">
+    <meta name="keywords" content="حديث, أحاديث نبوية, صحيح البخاري, صحيح مسلم, الأربعون النووية, سنة, رسول الله, قبلة المسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="الأحاديث النبوية الشريفة - قبلة المسلم">
+    <meta property="og:description" content="تصفح وقراءة الأحاديث النبوية الشريفة من صحيح البخاري ومسلم والأربعون النووية بتصميم زجاجي شفاف فاخر.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="الأحاديث النبوية - قبلة المسلم">
+    <meta name="twitter:description" content="تطبيق إسلامي شامل: الأحاديث النبوية الشريفة، أوقات الصلاة، القبلة، والقرآن الكريم.">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+    <script src="core/player-bridge.js"></script>
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C5A859">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <link rel="stylesheet" href="features/hadith/hadith.css">
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <div class="app-layout">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="title">قبلة المسلم</div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="home.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
+            <a href="reminders.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-bell"></i> التذكيرات</a>
+            <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
+            <a href="tafseer.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> التفسير</a>
+            <a href="hadith.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-book-bookmark"></i> الأحاديث</a>
+            <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
+            <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
+            <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
+            <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
+            <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
+            <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
+            <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Hero Header -->
+            <div class="hadith-hero">
+                <h1>
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    الأحاديث النبوية الشريفة
+                </h1>
+                <p>تصفح صحيح السنة النبوية المطهرة وكتب الحديث المعتمدة بأعلى دقة ووضوح</p>
+            </div>
+
+            <!-- Controls: Collections Pills, Search, Chapter Filter -->
+            <div class="controls-container">
+                <!-- Book Selector Pills -->
+                <div class="books-pills-wrapper" id="books-pills-wrapper">
+                    <!-- Injected dynamically by hadith.js -->
+                </div>
+
+                <!-- Search and Chapters Filter -->
+                <div class="filters-row">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="hadith-search-input" class="search-input" placeholder="ابحث في نص الحديث أو الراوي أو الموضوع (مثال: النية، الإيمان، بر الوالدين)..." />
+                        <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="chapter-select-box" id="chapter-select-container">
+                        <select id="chapter-select" class="chapter-select" aria-label="اختر الباب أو القسم">
+                            <option value="all">📖 جميع الأبواب والأقسام</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meta Stats & Reading Settings Bar -->
+            <div class="meta-bar">
+                <div class="meta-stats">
+                    <span>عدد الأحاديث: <strong id="total-hadiths-count">0</strong></span>
+                    <span>•</span>
+                    <span id="current-range-text">الأحاديث المعروضة</span>
+                </div>
+
+                <div class="font-size-ctrls">
+                    <span>حجم الخط:</span>
+                    <button class="font-btn" id="btn-font-decrease" title="تصغير الخط">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                    <span id="current-font-display" style="font-weight: 700; min-width: 38px; text-align: center;">22px</span>
+                    <button class="font-btn" id="btn-font-increase" title="تكبير الخط">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hadith Cards List Container -->
+            <div class="hadiths-list" id="hadiths-list">
+                <!-- Hadith cards injected dynamically -->
+            </div>
+
+            <!-- Pagination / Navigation Section -->
+            <div class="pagination-container">
+                <div class="pagination-controls" id="pagination-controls">
+                    <!-- Page buttons injected dynamically -->
+                </div>
+
+                <div class="page-jump-row">
+                    <span>الانتقال للصفحة:</span>
+                    <input type="number" id="jump-input" class="jump-input" min="1" placeholder="1" />
+                    <button id="jump-btn" class="jump-btn">انتقال</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-msg" class="toast-msg"></div>
+
+    <script src="features/hadith/hadith.js"></script>
+</body>
+</html>

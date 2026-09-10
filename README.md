@@ -21,9 +21,9 @@ Built purely with Vanilla JavaScript, modular CSS, and semantic HTML5, designed 
   - 9. Nearby Mosques Finder
   - 10. Geodesic Distance to Kaaba
 - Modular Architecture
-- Code Organization and Language Statistics
+- Cross-Platform Installation Guide (Desktop, Android, iOS)
 - Technical Stack
-- Local Installation and Setup
+- Local Development Setup
 - Progressive Web App (PWA) Offline Operation
 - Contributing
 - License and Author
@@ -232,7 +232,7 @@ PrayerTimer/
 ├── icons/                               # PWA application icons
 ├── api/                                 # Vercel serverless push notification handlers
 ├── *.html                               # Semantic HTML entrypoints
-├── service-worker.js                    # PWA Service Worker with offline caching (v9)
+├── service-worker.js                    # PWA Service Worker with offline caching (v11)
 ├── server.js                            # Local Node.js HTTP and Push server
 ├── .gitattributes                       # GitHub Linguist language detection overrides
 └── README.md                            # Comprehensive project documentation
@@ -240,17 +240,41 @@ PrayerTimer/
 
 ---
 
-## Code Organization and Language Statistics
+## Cross-Platform Installation Guide (Desktop, Android, iOS)
 
-All internal scripts and inline CSS have been extracted into independent, modular files. As a result, **JavaScript represents over 91% of the entire codebase**:
+Quiblah Muslim is designed as a standalone Progressive Web Application (PWA). It can be installed directly onto any operating system and device without visiting an app store. Once installed, it launches in its own dedicated, borderless window with an independent app icon, custom splash screen, and full offline functionality.
 
-| Language | Number of Files | Lines of Code | Size (Bytes) | Percentage of Code |
-|---|:---:|:---:|:---:|:---:|
-| JavaScript (`.js`) | 33 files | 9,956 lines | 3,533,999 B | 91.4% |
-| CSS (`.css`) | 12 files | 6,760 lines | 215,077 B | 5.6% |
-| HTML (`.html`) | 12 files | 1,988 lines | 116,476 B | 3.0% |
+### Compatibility Matrix
 
-Configured via `.gitattributes` to ensure GitHub Linguist accurately reflects the author's code without distortion from datasets or vendored assets.
+| Platform | Supported Environments | Installation Method | Standalone Window | Offline Storage |
+|---|---|---|:---:|:---:|
+| **Windows 10 / 11** | Google Chrome, Microsoft Edge, Brave | Browser Install Prompt / URL Bar Icon | Yes | Yes (Service Worker v11) |
+| **macOS** | Google Chrome, Microsoft Edge, Safari | Browser Install Prompt / Add to Dock | Yes | Yes (Service Worker v11) |
+| **Linux & ChromeOS** | Google Chrome, Chromium, Brave | Browser Install Prompt / URL Bar Icon | Yes | Yes (Service Worker v11) |
+| **Android** | Google Chrome, Samsung Internet, Edge | Automatic Install Banner / Menu Option | Yes | Yes (Service Worker v11) |
+| **iOS (iPhone & iPad)** | Apple Safari, Chrome | Safari Share Sheet -> Add to Home Screen | Yes | Yes (Service Worker v11) |
+
+### Step-by-Step Installation Instructions
+
+#### 1. Android Devices (Samsung, Google Pixel, Xiaomi, etc.)
+- Open the application URL in **Google Chrome** or **Samsung Internet**.
+- An **Install App** popup banner will appear automatically at the bottom of your screen. Tap **Install**.
+- If the banner does not appear: tap the browser menu (three vertical dots in the upper-right corner) and select **Install app** or **Add to Home screen**.
+- The Quiblah Muslim icon will be added to your home screen and app drawer, operating completely independently with full-screen view.
+
+#### 2. Apple Devices (iPhone and iPad)
+- Open the application URL in **Apple Safari**.
+- Tap the **Share** button located at the bottom center of the screen (a square icon with an arrow pointing upwards).
+- Scroll down the share sheet and tap **Add to Home Screen**.
+- Tap **Add** in the top-right corner to confirm.
+- Quiblah Muslim will now appear on your iOS home screen as a standalone application, launching with a clean native experience without any Safari browser toolbars.
+
+#### 3. Desktop Computers (Windows, macOS, Linux, ChromeOS)
+- Open the application in **Google Chrome**, **Microsoft Edge**, or any Chromium-compatible browser.
+- Look at the right-hand side of your address bar (URL bar). You will see an **Install** icon (a computer monitor with an arrow, or an install badge).
+- Click the install icon and confirm by clicking **Install**.
+- Alternatively, open the browser settings menu (three dots in the top-right) and choose **Save and share** -> **Install Quiblah Muslim**.
+- The application will immediately detach into an independent desktop window and place a launcher shortcut on your Desktop and Start Menu / Application Launcher.
 
 ---
 
@@ -310,7 +334,7 @@ Note: Hardware sensor access (Compass and precise GPS Geolocation) requires HTTP
 Quiblah Muslim functions as an installable Progressive Web Application:
 
 - **Desktop & Mobile Installation**: Installable directly from browser prompts to home screens and desktop application menus on iOS, Android, macOS, and Windows.
-- **Offline Cache**: Managed by `service-worker.js` (Cache v9), pre-caching all essential application shell assets, modules, stylesheets, and datasets.
+- **Offline Cache**: Managed by `service-worker.js` (Cache v11), pre-caching all essential application shell assets, modules, stylesheets, and datasets.
 - **Resilient Fallback**: Critical features (Quran reading, daily adhkar, 99 Names, and cached prayer schedules) operate without any internet connectivity.
 
 ---

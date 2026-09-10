@@ -2,6 +2,8 @@
 # Ensures JavaScript is recognized as the dominant language and data files are excluded from code stats
 
 *.js linguist-detectable=true
+*.go linguist-detectable=true
+Dockerfile linguist-detectable=true
 *.json linguist-detectable=false
 *.json linguist-documentation=false
 

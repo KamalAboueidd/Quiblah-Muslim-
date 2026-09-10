@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  quiblah-muslim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: quiblah-muslim:latest
+    container_name: quiblah_muslim_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      org.opencontainers.image.title: "Quiblah Muslim"
+      org.opencontainers.image.description: "Comprehensive Islamic Progressive Web Application"
+      org.opencontainers.image.authors: "Kamal Abou Eid"

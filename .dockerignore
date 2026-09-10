@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.dockerignore
+.gemini
+*.md
+cmd/
+go.mod
+go.sum

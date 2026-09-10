@@ -231,6 +231,10 @@ PrayerTimer/
 │
 ├── icons/                               # PWA application icons
 ├── api/                                 # Vercel serverless push notification handlers
+├── cmd/quiblah/                         # Go astronomical prayer & Qibla calculation CLI / API engine
+├── go.mod                               # Go module definition
+├── Dockerfile                           # Production multi-stage Alpine container
+├── docker-compose.yml                   # Docker Compose container configuration
 ├── *.html                               # Semantic HTML entrypoints
 ├── service-worker.js                    # PWA Service Worker with offline caching (v12)
 ├── server.js                            # Local Node.js HTTP and Push server
@@ -282,6 +286,8 @@ Quiblah Muslim is designed as a standalone Progressive Web Application (PWA). It
 
 - **Client-Side Core**: Vanilla JavaScript (Modern ECMAScript ES6+).
 - **Styling**: Native CSS3 with CSS Custom Properties (Variables), Flexbox, and CSS Grid.
+- **Backend & Ephemeris Engine**: Go (Golang 1.20+) and Node.js (v18+).
+- **Containerization**: Docker, Docker Compose (Alpine runtime).
 - **PWA Architecture**: Service Worker API, Cache Storage API, Web App Manifest.
 - **Sensors and Telemetry**: DeviceOrientation API, Geolocation API, Vibration API.
 - **Geographic Mapping**: Leaflet.js (v1.9.4), OpenStreetMap, Overpass API.
@@ -293,14 +299,20 @@ Quiblah Muslim is designed as a standalone Progressive Web Application (PWA). It
 
 ## Local Installation and Setup
 
-The application requires no build steps, bundlers, or compilation pipelines:
+### Method 1: Docker (Fastest & Recommended)
 
-### Prerequisites
+Run the entire application in a container with a single command:
 
-- Node.js (version 16 or higher recommended).
-- Git installed on your machine.
+```bash
+docker compose up -d
+```
 
-### Instructions
+Open your browser at `http://localhost:8000`. To stop the container:
+```bash
+docker compose down
+```
+
+### Method 2: Native Node.js Setup
 
 1. Clone the repository:
    ```bash
@@ -308,7 +320,7 @@ The application requires no build steps, bundlers, or compilation pipelines:
    cd Quiblah-Muslim-
    ```
 
-2. Install dependencies (required for Web Push backend):
+2. Install dependencies:
    ```bash
    npm install
    ```
@@ -320,10 +332,19 @@ The application requires no build steps, bundlers, or compilation pipelines:
    node server.js
    ```
 
-4. Open your web browser and navigate to:
-   ```text
-   http://localhost:8000
-   ```
+4. Open your browser and navigate to `http://localhost:8000`.
+
+### Method 3: Go CLI & Microservice Engine
+
+Quiblah Muslim includes a high-performance Go calculation engine for terminal usage and microservice integration:
+
+```bash
+# Direct terminal calculation (coordinates default to Cairo, or specify custom coords)
+go run cmd/quiblah/main.go -lat 30.0444 -lng 31.2357
+
+# Launch lightweight Go HTTP API microservice on port 8080
+go run cmd/quiblah/main.go -serve -port 8080
+```
 
 Note: Hardware sensor access (Compass and precise GPS Geolocation) requires HTTPS in production environments according to browser security standards. When deployed to GitHub Pages or Vercel, HTTPS is provisioned automatically.
 

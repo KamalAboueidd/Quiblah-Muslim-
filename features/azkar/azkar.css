@@ -237,6 +237,83 @@
             border-color: var(--gold);
         }
 
+        /* --- Categories Load More --- */
+        .categories-load-more-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 20px 0 35px 0;
+            padding: 10px 0;
+        }
+
+        .categories-load-more-btn {
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 24px;
+            transition: all 0.25s ease;
+            opacity: 0.9;
+        }
+
+        .categories-load-more-btn:hover {
+            opacity: 1;
+            color: #fff;
+            transform: translateY(2px);
+            text-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
+        }
+
+        .categories-load-more-btn i {
+            font-size: 13px;
+            transition: transform 0.25s ease;
+        }
+
+        .categories-load-more-btn:hover i {
+            transform: translateY(3px);
+        }
+
+        .categories-load-more-btn .remaining-badge {
+            font-size: 13.5px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        .categories-end-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            margin: 25px 0 40px 0;
+            text-align: center;
+        }
+
+        .categories-end-line {
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            flex: 1;
+            max-width: 100px;
+            opacity: 0.6;
+        }
+
+        .categories-end-text {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--gold);
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+
         /* Reader Header */
         .reader-header {
             display: flex;

@@ -14,10 +14,14 @@ let groupedAzkar = {};
 let activeCategoryAzkar = [];
 let completedCount = 0;
 
-// Batch & Infinite Scroll Settings
-const BATCH_SIZE = 10;
-let currentRenderedCount = 0;
-let infiniteScrollObserver = null;
+// Categories Pagination Settings (10 at a time, click to load more)
+const CATEGORY_PAGE_SIZE = 10;
+let currentFilteredCategories = [];
+let currentCategoryRenderCount = 0;
+
+// Reader Pagination Settings (10 at a time, click to load more)
+const READER_BATCH_SIZE = 10;
+let currentReaderRenderCount = 0;
 
 // Elements
 const categoriesView = document.getElementById('categories-view');
@@ -51,7 +55,7 @@ function fetchAzkar() {
                 if (navAz) navAz.classList.add('active');
             }
             
-            renderCategories(categoriesToShow);
+            renderCategories(categoriesToShow, true);
         })
         .catch(error => {
             categoriesGrid.innerHTML = `<div class="empty-state">حدث خطأ أثناء تحميل الأذكار.</div>`;
@@ -72,26 +76,39 @@ function groupAzkar(azkarArray) {
     });
 }
 
-// Render Categories
-function renderCategories(categoryNames) {
+// Render Categories (10 items at a time, expands on button click only)
+function renderCategories(categoryNames, isNewSearch = true) {
     const gridContainer = document.getElementById('categories-grid');
+    const loadMoreContainer = document.getElementById('categories-load-more-section');
     if (!gridContainer) return;
-    if (categoryNames.length === 0) {
+
+    if (isNewSearch) {
+        currentFilteredCategories = [...categoryNames];
+        currentCategoryRenderCount = 0;
+        gridContainer.innerHTML = '';
+        if (loadMoreContainer) loadMoreContainer.innerHTML = '';
+
+        currentFilteredCategories.sort((a, b) => {
+            if (a.includes("الصباح")) return -1;
+            if (b.includes("الصباح")) return 1;
+            if (a.includes("المساء")) return -1;
+            if (b.includes("المساء")) return 1;
+            return 0;
+        });
+    }
+
+    if (currentFilteredCategories.length === 0) {
         gridContainer.innerHTML = `<div class="empty-state"><i aria-hidden="true" class="fa-solid fa-box-open fa-2x" style="margin-bottom: 15px;"></i><br/>لا توجد أقسام مطابقة للبحث</div>`;
+        if (loadMoreContainer) loadMoreContainer.innerHTML = '';
         return;
     }
 
-    // Sort so Morning & Evening are first
-    categoryNames.sort((a, b) => {
-        if (a.includes("الصباح")) return -1;
-        if (b.includes("الصباح")) return 1;
-        if (a.includes("المساء")) return -1;
-        if (b.includes("المساء")) return 1;
-        return 0;
-    });
+    const start = currentCategoryRenderCount;
+    const end = Math.min(start + CATEGORY_PAGE_SIZE, currentFilteredCategories.length);
 
     let html = '';
-    categoryNames.forEach(cat => {
+    for (let i = start; i < end; i++) {
+        const cat = currentFilteredCategories[i];
         let icon = "fa-star";
         if (cat.includes("الصباح")) icon = "fa-sun";
         else if (cat.includes("المساء")) icon = "fa-moon";
@@ -112,26 +129,64 @@ function renderCategories(categoryNames) {
                 </div>
             </div>
         `;
-    });
-    gridContainer.innerHTML = html;
+    }
+
+    gridContainer.insertAdjacentHTML('beforeend', html);
+    currentCategoryRenderCount = end;
+
+    updateCategoriesLoadMore();
+}
+
+function updateCategoriesLoadMore() {
+    const loadMoreContainer = document.getElementById('categories-load-more-section');
+    if (!loadMoreContainer) return;
+
+    const remaining = currentFilteredCategories.length - currentCategoryRenderCount;
+
+    if (remaining > 0) {
+        loadMoreContainer.innerHTML = `
+            <div class="categories-load-more-container">
+                <button id="categories-load-more-btn" class="categories-load-more-btn" onclick="renderCategories(currentFilteredCategories, false)">
+                    <span>عرض المزيد من الأدعية والأذكار</span>
+                    <span class="remaining-badge">(متبقي ${remaining})</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            </div>
+        `;
+    } else {
+        if (currentFilteredCategories.length > CATEGORY_PAGE_SIZE) {
+            loadMoreContainer.innerHTML = `
+                <div class="categories-end-indicator">
+                    <span class="categories-end-line"></span>
+                    <span class="categories-end-text">« تم عرض جميع الأبواب والأدعية بفضل الله »</span>
+                    <span class="categories-end-line"></span>
+                </div>
+            `;
+        } else {
+            loadMoreContainer.innerHTML = '';
+        }
+    }
 }
 
 // Search Filter
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim().toLowerCase();
-        const allCats = Object.keys(groupedAzkar);
-        const filtered = allCats.filter(cat => cat.toLowerCase().includes(query));
-        renderCategories(filtered);
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('m');
+        let baseCats = Object.keys(groupedAzkar);
+        if (mode === 'sm') {
+            baseCats = ['أذكار الصباح', 'أذكار المساء'];
+        } else {
+            baseCats = baseCats.filter(cat => cat !== 'أذكار الصباح' && cat !== 'أذكار المساء');
+        }
+        const filtered = baseCats.filter(cat => cat.toLowerCase().includes(query));
+        renderCategories(filtered, true);
     });
 }
 
 // Navigation
 window.showCategories = function() {
-    if (infiniteScrollObserver) {
-        infiniteScrollObserver.disconnect();
-        infiniteScrollObserver = null;
-    }
     const loadMoreSection = document.getElementById('azkar-load-more-section');
     if (loadMoreSection) loadMoreSection.innerHTML = '';
     readerView.classList.remove('active');
@@ -142,7 +197,7 @@ window.showCategories = function() {
 window.openCategory = function(categoryName) {
     activeCategoryAzkar = JSON.parse(JSON.stringify(groupedAzkar[categoryName] || [])); // Deep copy
     completedCount = 0;
-    currentRenderedCount = 0;
+    currentReaderRenderCount = 0;
     
     let icon = "fa-star";
     if (categoryName.includes("الصباح")) icon = "fa-sun";
@@ -152,19 +207,19 @@ window.openCategory = function(categoryName) {
     updateProgress();
     
     readerList.innerHTML = '';
-    renderNextBatch();
+    renderNextReaderBatch();
     
     categoriesView.classList.remove('active');
     readerView.classList.add('active');
     window.scrollTo(0, 0);
 };
 
-// Batch Rendering (10 at a time) & Infinite Scroll
-window.renderNextBatch = function() {
-    if (!activeCategoryAzkar || currentRenderedCount >= activeCategoryAzkar.length) return;
+// Reader Batch Rendering (10 at a time, loads on button click only)
+window.renderNextReaderBatch = function() {
+    if (!activeCategoryAzkar || currentReaderRenderCount >= activeCategoryAzkar.length) return;
 
-    const start = currentRenderedCount;
-    const end = Math.min(start + BATCH_SIZE, activeCategoryAzkar.length);
+    const start = currentReaderRenderCount;
+    const end = Math.min(start + READER_BATCH_SIZE, activeCategoryAzkar.length);
 
     let html = '';
     for (let index = start; index < end; index++) {
@@ -203,49 +258,29 @@ window.renderNextBatch = function() {
     }
 
     readerList.insertAdjacentHTML('beforeend', html);
-    currentRenderedCount = end;
+    currentReaderRenderCount = end;
 
-    updateLoadMoreSection();
+    updateReaderLoadMoreSection();
 };
 
-function updateLoadMoreSection() {
+function updateReaderLoadMoreSection() {
     const loadMoreSection = document.getElementById('azkar-load-more-section');
     if (!loadMoreSection || !activeCategoryAzkar) return;
 
-    if (infiniteScrollObserver) {
-        infiniteScrollObserver.disconnect();
-        infiniteScrollObserver = null;
-    }
-
-    const remaining = activeCategoryAzkar.length - currentRenderedCount;
+    const remaining = activeCategoryAzkar.length - currentReaderRenderCount;
 
     if (remaining > 0) {
         loadMoreSection.innerHTML = `
             <div class="azkar-load-more-container">
-                <button id="azkar-load-more-btn" class="azkar-load-more-btn" onclick="renderNextBatch()">
+                <button id="azkar-load-more-btn" class="azkar-load-more-btn" onclick="renderNextReaderBatch()">
                     <span>عرض المزيد من الأذكار</span>
                     <span class="remaining-badge">(متبقي ${remaining})</span>
                     <i class="fa-solid fa-chevron-down"></i>
                 </button>
             </div>
         `;
-
-        // Infinite Scroll: auto-load next batch when button comes into view
-        const targetBtn = document.getElementById('azkar-load-more-btn');
-        if (targetBtn && 'IntersectionObserver' in window) {
-            infiniteScrollObserver = new IntersectionObserver((entries) => {
-                if (entries[0] && entries[0].isIntersecting) {
-                    renderNextBatch();
-                }
-            }, {
-                root: null,
-                rootMargin: '180px',
-                threshold: 0.1
-            });
-            infiniteScrollObserver.observe(targetBtn);
-        }
     } else {
-        if (activeCategoryAzkar.length > BATCH_SIZE) {
+        if (activeCategoryAzkar.length > READER_BATCH_SIZE) {
             loadMoreSection.innerHTML = `
                 <div class="azkar-end-indicator">
                     <span class="azkar-end-line"></span>
@@ -291,8 +326,8 @@ window.adjustCount = function(index, amount) {
         
         // Auto-advance to next zikr (ensure next batch rendered if needed)
         if (index + 1 < activeCategoryAzkar.length) {
-            if (index + 1 >= currentRenderedCount) {
-                renderNextBatch();
+            if (index + 1 >= currentReaderRenderCount) {
+                renderNextReaderBatch();
             }
             setTimeout(() => {
                 const nextCard = document.getElementById(`zikr-${index + 1}`);

@@ -25,11 +25,75 @@
         const scrollTopBtn = document.getElementById('scroll-top-btn');
         const ayahAudio = document.getElementById('ayah-audio');
 
+        const TAFSEER_EDITIONS = {
+            'ar.muyassar': {
+                name: 'التفسير الميسر (مجمع الملك فهد)',
+                source: 'alquran',
+                identifier: 'ar.muyassar'
+            },
+            'ar-tafseer-al-saddi': {
+                name: 'تفسير السعدي (تيسير الكريم الرحمن)',
+                source: 'spa5k',
+                slug: 'ar-tafseer-al-saddi'
+            },
+            'ar-tafsir-al-mukhtasar': {
+                name: 'المختصر في التفسير (مركز تفسير)',
+                source: 'spa5k',
+                slug: 'ar-tafsir-al-mukhtasar'
+            },
+            'ar.waseet': {
+                name: 'التفسير الوسيط (د. محمد سيد طنطاوي)',
+                source: 'alquran',
+                identifier: 'ar.waseet'
+            },
+            'ar-tafsir-ibn-kathir': {
+                name: 'تفسير ابن كثير (تفسير القرآن العظيم)',
+                source: 'spa5k',
+                slug: 'ar-tafsir-ibn-kathir'
+            },
+            'ar.baghawi': {
+                name: 'تفسير البغوي (معالم التنزيل)',
+                source: 'alquran',
+                identifier: 'ar.baghawi'
+            },
+            'ar.qurtubi': {
+                name: 'تفسير القرطبي (الجامع لأحكام القرآن)',
+                source: 'alquran',
+                identifier: 'ar.qurtubi'
+            },
+            'ar-tafsir-al-tabari': {
+                name: 'تفسير الطبري (جامع البيان)',
+                source: 'spa5k',
+                slug: 'ar-tafsir-al-tabari'
+            },
+            'ar.jalalayn': {
+                name: 'تفسير الجلالين (المحلي والسيوطي)',
+                source: 'alquran',
+                identifier: 'ar.jalalayn'
+            },
+            'fath-al-qadir-al-shawkani': {
+                name: 'فتح القدير (للإمام الشوكاني)',
+                source: 'spa5k',
+                slug: 'fath-al-qadir-al-shawkani'
+            },
+            'ar.miqbas': {
+                name: 'تنوير المقباس من تفسير ابن عباس',
+                source: 'alquran',
+                identifier: 'ar.miqbas'
+            },
+            'i-rab-al-quran-li-al-darwish': {
+                name: 'إعراب القرآن وبيانه (درويش)',
+                source: 'spa5k',
+                slug: 'i-rab-al-quran-li-al-darwish'
+            }
+        };
+
         let allSurahs = [];
         let currentSurahNumber = 1;
         let currentTafseerEdition = 'ar.muyassar';
         let currentSurahData = null;
         let tafseerCache = {};
+        let quranTextCache = {};
         let currentPlayingAyahBtn = null;
 
         // Chunk / Pagination settings
@@ -60,7 +124,7 @@
             const params = new URLSearchParams(window.location.search);
             const surah = parseInt(params.get('surah')) || 1;
             const ayah = parseInt(params.get('ayah')) || null;
-            const edition = params.get('tafseer') || 'ar.muyassar';
+            const edition = params.get('tafseer') || null;
             return { surah, ayah, edition };
         }
 
@@ -125,10 +189,15 @@
 
         function checkInitialLoad() {
             const { surah, ayah, edition } = getQueryParams();
-            if (edition && (edition === 'ar.muyassar' || edition === 'ar.jalalayn')) {
+            const savedEdition = localStorage.getItem('quiblah_selected_tafseer');
+
+            if (edition && TAFSEER_EDITIONS[edition]) {
                 currentTafseerEdition = edition;
-                updateDropdownUI(edition);
+            } else if (savedEdition && TAFSEER_EDITIONS[savedEdition]) {
+                currentTafseerEdition = savedEdition;
             }
+            updateDropdownUI(currentTafseerEdition);
+
             if (surah >= 1 && surah <= 114) {
                 currentSurahNumber = surah;
             }
@@ -237,19 +306,29 @@
         });
 
         function updateDropdownUI(edition) {
-            dropdownItems.forEach(it => {
+            const allItems = document.querySelectorAll('.dropdown-item');
+            allItems.forEach(it => {
                 if (it.getAttribute('data-value') === edition) {
                     it.classList.add('active');
-                    selectedTafseerLabel.textContent = it.querySelector('span').textContent;
+                    const span = it.querySelector('span');
+                    if (span) {
+                        selectedTafseerLabel.textContent = span.textContent;
+                    }
                 } else {
                     it.classList.remove('active');
                 }
             });
+            if (TAFSEER_EDITIONS[edition]) {
+                selectedTafseerLabel.textContent = TAFSEER_EDITIONS[edition].name;
+            }
         }
 
         function selectTafseerEdition(edition) {
-            if (currentTafseerEdition === edition) return;
+            if (!TAFSEER_EDITIONS[edition] || currentTafseerEdition === edition) return;
             currentTafseerEdition = edition;
+            try {
+                localStorage.setItem('quiblah_selected_tafseer', edition);
+            } catch(e) {}
             updateDropdownUI(edition);
             loadSurahTafseer(currentSurahNumber);
         }
@@ -393,10 +472,12 @@
                 }
             }
 
+            const editionConfig = TAFSEER_EDITIONS[currentTafseerEdition] || TAFSEER_EDITIONS['ar.muyassar'];
+
             contentContainer.innerHTML = `
                 <div class="loader-container">
                     <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
-                    <p>جاري تحميل نص الآيات والتفسير...</p>
+                    <p>جاري تحميل نص الآيات و${editionConfig.name}...</p>
                 </div>
             `;
 
@@ -421,31 +502,79 @@
             }
 
             try {
-                const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,${currentTafseerEdition}`;
-                const response = await fetchWithTimeout(url, 7000);
-                const editionsData = response.data;
-                const quranEdition = editionsData.find(e => e.edition.identifier === 'quran-uthmani') || editionsData[0];
-                const tafseerEdition = editionsData.find(e => e.edition.identifier === currentTafseerEdition) || editionsData[1];
+                let combinedData = null;
 
-                const combinedData = {
-                    number: quranEdition.number,
-                    name: quranEdition.name,
-                    englishName: quranEdition.englishName,
-                    revelationType: quranEdition.revelationType,
-                    numberOfAyahs: quranEdition.numberOfAyahs,
-                    tafseerName: tafseerEdition.edition ? tafseerEdition.edition.name : (currentTafseerEdition === 'ar.muyassar' ? 'التفسير الميسر' : 'تفسير الجلالين'),
-                    ayahs: quranEdition.ayahs.map((ayah, index) => {
-                        const tafseerAyah = (tafseerEdition && tafseerEdition.ayahs) ? (tafseerEdition.ayahs[index] || {}) : {};
-                        return {
-                            number: ayah.number,
-                            numberInSurah: ayah.numberInSurah,
-                            text: ayah.text,
-                            juz: ayah.juz,
-                            page: ayah.page,
-                            tafseer: tafseerAyah.text || 'لا يتوفر تفسير لهذه الآية'
-                        };
-                    })
-                };
+                if (editionConfig.source === 'spa5k') {
+                    // 1. Get Quran Uthmani text (from cache or API)
+                    let quranEdition = quranTextCache[surahNumber];
+                    if (!quranEdition) {
+                        const qRes = await fetchWithTimeout(`https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani`, 8000);
+                        quranEdition = (Array.isArray(qRes.data) ? qRes.data[0] : qRes.data);
+                        quranTextCache[surahNumber] = quranEdition;
+                    }
+
+                    // 2. Fetch Tafsir from jsDelivr CDN
+                    const spa5kUrl = `https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/${editionConfig.slug}/${surahNumber}.json`;
+                    const spa5kRes = await fetchWithTimeout(spa5kUrl, 8000);
+                    const rawAyahs = Array.isArray(spa5kRes) ? spa5kRes : (spa5kRes.ayahs || spa5kRes.data || []);
+                    
+                    const tafsirMap = {};
+                    rawAyahs.forEach(item => {
+                        if (item && item.ayah != null) {
+                            tafsirMap[item.ayah] = item.text;
+                        }
+                    });
+
+                    combinedData = {
+                        number: quranEdition.number,
+                        name: quranEdition.name,
+                        englishName: quranEdition.englishName,
+                        revelationType: quranEdition.revelationType,
+                        numberOfAyahs: quranEdition.numberOfAyahs,
+                        tafseerName: editionConfig.name,
+                        ayahs: quranEdition.ayahs.map((ayah, index) => {
+                            const tText = tafsirMap[ayah.numberInSurah] || (rawAyahs[index] ? rawAyahs[index].text : '') || 'لا يتوفر تفسير لهذه الآية';
+                            return {
+                                number: ayah.number,
+                                numberInSurah: ayah.numberInSurah,
+                                text: ayah.text,
+                                juz: ayah.juz,
+                                page: ayah.page,
+                                tafseer: tText
+                            };
+                        })
+                    };
+                } else {
+                    // source: alquran.cloud
+                    const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,${editionConfig.identifier}`;
+                    const response = await fetchWithTimeout(url, 8000);
+                    const editionsData = response.data;
+                    const quranEdition = editionsData.find(e => e.edition.identifier === 'quran-uthmani') || editionsData[0];
+                    const tafseerEdition = editionsData.find(e => e.edition.identifier === editionConfig.identifier) || editionsData[1];
+
+                    // Cache quranEdition for instant switching
+                    quranTextCache[surahNumber] = quranEdition;
+
+                    combinedData = {
+                        number: quranEdition.number,
+                        name: quranEdition.name,
+                        englishName: quranEdition.englishName,
+                        revelationType: quranEdition.revelationType,
+                        numberOfAyahs: quranEdition.numberOfAyahs,
+                        tafseerName: editionConfig.name,
+                        ayahs: quranEdition.ayahs.map((ayah, index) => {
+                            const tafseerAyah = (tafseerEdition && tafseerEdition.ayahs) ? (tafseerEdition.ayahs[index] || {}) : {};
+                            return {
+                                number: ayah.number,
+                                numberInSurah: ayah.numberInSurah,
+                                text: ayah.text,
+                                juz: ayah.juz,
+                                page: ayah.page,
+                                tafseer: tafseerAyah.text || 'لا يتوفر تفسير لهذه الآية'
+                            };
+                        })
+                    };
+                }
 
                 tafseerCache[cacheKey] = combinedData;
                 try {
@@ -460,7 +589,7 @@
                 contentContainer.innerHTML = `
                     <div class="error-message" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius: 16px; padding: 25px; text-align: center; max-width: 500px; margin: 40px auto;">
                         <i class="fa-solid fa-triangle-exclamation fa-2x" style="color: var(--gold); margin-bottom: 12px;"></i>
-                        <p style="color: #fff; font-size: 15px; margin-bottom: 15px;">تعذر جلب تفسير السورة حالياً. يرجى التأكد من اتصال الإنترنت والمحاولة مرة أخرى.</p>
+                        <p style="color: #fff; font-size: 15px; margin-bottom: 15px;">تعذر جلب ${editionConfig.name} حالياً. يرجى التأكد من اتصال الإنترنت والمحاولة مرة أخرى.</p>
                         <button onclick="loadSurahTafseer(${surahNumber})" class="jump-btn" style="padding: 10px 24px; border-radius: 20px; font-weight: 700; cursor: pointer;">
                             <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة الآن
                         </button>

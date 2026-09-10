@@ -544,11 +544,68 @@
             border: 1px solid rgba(197, 168, 89, 0.25);
         }
 
+        .modal-tafseer-selector-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(197, 168, 89, 0.2);
+        }
+
+        .modal-tafseer-label {
+            font-weight: 800;
+            color: var(--gold);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .quick-tafseer-select {
+            background: rgba(10, 12, 16, 0.9);
+            color: var(--gold);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13.5px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.25s ease;
+            max-width: 250px;
+        }
+
+        .quick-tafseer-select:hover,
+        .quick-tafseer-select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(197, 168, 89, 0.3);
+        }
+
+        .quick-tafseer-select optgroup {
+            background: #0d1017;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .quick-tafseer-select option {
+            background: #161b24;
+            color: #fff;
+            padding: 6px;
+        }
+
         .modal-tafseer-text {
             font-size: 16px;
             line-height: 1.9;
             color: #f1f5f9;
             text-align: justify;
+            white-space: pre-line;
         }
 
         .modal-footer {

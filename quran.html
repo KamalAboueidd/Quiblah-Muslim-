@@ -121,8 +121,30 @@
             </div>
             <div class="modal-body">
                 <div class="modal-ayah-text" id="modal-ayah-text"></div>
-                <div style="font-weight: 800; color: var(--gold); margin-bottom: 8px; font-size: 14px;">
-                    <i class="fa-solid fa-book-open"></i> التفسير الميسر:
+                <div class="modal-tafseer-selector-bar">
+                    <label for="quick-tafseer-select" class="modal-tafseer-label">
+                        <i class="fa-solid fa-book-open"></i> كتاب التفسير:
+                    </label>
+                    <select id="quick-tafseer-select" class="quick-tafseer-select">
+                        <optgroup label="التفاسير الميسرة والمعاصرة">
+                            <option value="ar.muyassar" selected>التفسير الميسر</option>
+                            <option value="ar-tafseer-al-saddi">تفسير السعدي</option>
+                            <option value="ar-tafsir-al-mukhtasar">المختصر في التفسير</option>
+                            <option value="ar.waseet">التفسير الوسيط (طنطاوي)</option>
+                        </optgroup>
+                        <optgroup label="أمهات كتب التفسير بالمأثور">
+                            <option value="ar-tafsir-ibn-kathir">تفسير ابن كثير</option>
+                            <option value="ar.baghawi">تفسير البغوي</option>
+                            <option value="ar.qurtubi">تفسير القرطبي</option>
+                            <option value="ar-tafsir-al-tabari">تفسير الطبري</option>
+                        </optgroup>
+                        <optgroup label="التفاسير التراثية والإعراب">
+                            <option value="ar.jalalayn">تفسير الجلالين</option>
+                            <option value="fath-al-qadir-al-shawkani">فتح القدير (الشوكاني)</option>
+                            <option value="ar.miqbas">تنوير المقباس (ابن عباس)</option>
+                            <option value="i-rab-al-quran-li-al-darwish">إعراب القرآن وبيانه (درويش)</option>
+                        </optgroup>
+                    </select>
                 </div>
                 <div class="modal-tafseer-text" id="modal-tafseer-text"></div>
             </div>

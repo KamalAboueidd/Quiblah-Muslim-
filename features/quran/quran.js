@@ -351,47 +351,121 @@
             contentContainer.innerHTML = html;
         }
 
-        // --- Quick Tafseer Modal Logic ---
+        // --- Quick Tafseer Modal Logic & Multi-Source Support ---
+        const TAFSEER_CONFIG = {
+            'ar.muyassar': { name: 'التفسير الميسر', source: 'alquran', identifier: 'ar.muyassar' },
+            'ar-tafseer-al-saddi': { name: 'تفسير السعدي', source: 'spa5k', slug: 'ar-tafseer-al-saddi' },
+            'ar-tafsir-al-mukhtasar': { name: 'المختصر في التفسير', source: 'spa5k', slug: 'ar-tafsir-al-mukhtasar' },
+            'ar.waseet': { name: 'التفسير الوسيط (طنطاوي)', source: 'alquran', identifier: 'ar.waseet' },
+            'ar-tafsir-ibn-kathir': { name: 'تفسير ابن كثير', source: 'spa5k', slug: 'ar-tafsir-ibn-kathir' },
+            'ar.baghawi': { name: 'تفسير البغوي', source: 'alquran', identifier: 'ar.baghawi' },
+            'ar.qurtubi': { name: 'تفسير القرطبي', source: 'alquran', identifier: 'ar.qurtubi' },
+            'ar-tafsir-al-tabari': { name: 'تفسير الطبري', source: 'spa5k', slug: 'ar-tafsir-al-tabari' },
+            'ar.jalalayn': { name: 'تفسير الجلالين', source: 'alquran', identifier: 'ar.jalalayn' },
+            'fath-al-qadir-al-shawkani': { name: 'فتح القدير (الشوكاني)', source: 'spa5k', slug: 'fath-al-qadir-al-shawkani' },
+            'ar.miqbas': { name: 'تنوير المقباس (ابن عباس)', source: 'alquran', identifier: 'ar.miqbas' },
+            'i-rab-al-quran-li-al-darwish': { name: 'إعراب القرآن وبيانه (درويش)', source: 'spa5k', slug: 'i-rab-al-quran-li-al-darwish' }
+        };
+
+        let currentQuickSurah = 1;
+        let currentQuickAyah = 1;
+        let currentQuickEdition = localStorage.getItem('quiblah_selected_tafseer') || 'ar.muyassar';
+        const quickTafseerCache = {};
+
         function showQuickTafseer(surahNum, ayahNum) {
+            currentQuickSurah = surahNum;
+            currentQuickAyah = ayahNum;
+
             const modalBackdrop = document.getElementById('tafseer-modal-backdrop');
+            const selectEl = document.getElementById('quick-tafseer-select');
+
+            if (!TAFSEER_CONFIG[currentQuickEdition]) {
+                currentQuickEdition = 'ar.muyassar';
+            }
+
+            if (selectEl) {
+                selectEl.value = currentQuickEdition;
+            }
+
+            modalBackdrop.classList.add('show');
+            loadQuickTafseerContent(surahNum, ayahNum, currentQuickEdition);
+        }
+
+        async function loadQuickTafseerContent(surahNum, ayahNum, edition) {
             const modalAyahText = document.getElementById('modal-ayah-text');
             const modalTafseerText = document.getElementById('modal-tafseer-text');
             const modalTitle = document.getElementById('modal-title');
             const modalFullLink = document.getElementById('modal-full-link');
 
-            modalBackdrop.classList.add('show');
-            modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> تفسير الآية (${ayahNum})`;
-            modalAyahText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-            modalTafseerText.innerHTML = `جاري جلب التفسير الميسر...`;
-            modalFullLink.href = `tafseer.html?surah=${surahNum}&ayah=${ayahNum}`;
+            const editionConfig = TAFSEER_CONFIG[edition] || TAFSEER_CONFIG['ar.muyassar'];
 
-            fetchWithTimeout(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani,ar.muyassar`, 6000)
-                .then(res => {
+            modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> آية (${ayahNum})`;
+            modalTafseerText.innerHTML = `<div style="text-align:center; padding:15px; color:var(--gold);"><i class="fa-solid fa-spinner fa-spin"></i> جاري جلب ${editionConfig.name}...</div>`;
+            modalFullLink.href = `tafseer.html?surah=${surahNum}&ayah=${ayahNum}&tafseer=${edition}`;
+
+            try {
+                if (editionConfig.source === 'spa5k') {
+                    // 1. Get Ayah text if not already loaded
+                    let ayahText = modalAyahText.getAttribute('data-loaded-text');
+                    if (!ayahText || modalAyahText.getAttribute('data-ayah-id') !== `${surahNum}:${ayahNum}`) {
+                        modalAyahText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+                        const qRes = await fetchWithTimeout(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani`, 6000);
+                        const qData = (qRes.data && qRes.data[0]) ? qRes.data[0] : qRes.data;
+                        ayahText = qData.text;
+                        modalAyahText.innerText = ayahText;
+                        modalAyahText.setAttribute('data-loaded-text', ayahText);
+                        modalAyahText.setAttribute('data-ayah-id', `${surahNum}:${ayahNum}`);
+                        modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${qData.surah ? qData.surah.name : ''} - آية (${ayahNum})`;
+                    }
+
+                    // 2. Fetch Tafsir array (cached per surah)
+                    const cKey = `${editionConfig.slug}_${surahNum}`;
+                    let rawAyahs = quickTafseerCache[cKey];
+                    if (!rawAyahs) {
+                        const spa5kUrl = `https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/${editionConfig.slug}/${surahNum}.json`;
+                        const spaRes = await fetchWithTimeout(spa5kUrl, 8000);
+                        rawAyahs = Array.isArray(spaRes) ? spaRes : (spaRes.ayahs || spaRes.data || []);
+                        quickTafseerCache[cKey] = rawAyahs;
+                    }
+
+                    const matched = rawAyahs.find(item => item && item.ayah === ayahNum) || rawAyahs[ayahNum - 1];
+                    modalTafseerText.innerText = (matched && matched.text) ? matched.text : 'لا يتوفر تفسير لهذه الآية في هذه الطبعة';
+                } else {
+                    // alquran.cloud source
+                    const url = `https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani,${editionConfig.identifier}`;
+                    const res = await fetchWithTimeout(url, 7000);
                     const editions = res.data;
                     const quranAyah = editions.find(e => e.edition.identifier === 'quran-uthmani') || editions[0];
-                    const tafseerAyah = editions.find(e => e.edition.identifier === 'ar.muyassar') || editions[1];
+                    const tafseerAyah = editions.find(e => e.edition.identifier === editionConfig.identifier) || editions[1];
 
                     modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${quranAyah.surah.name} - آية (${ayahNum})`;
                     modalAyahText.innerText = quranAyah.text;
-                    modalTafseerText.innerText = tafseerAyah.text;
-                })
-                .catch(err => {
-                    console.warn("Alquran quick tafseer failed, trying fallback...", err);
-                    fetchWithTimeout(`https://api.quran.com/api/v4/verses/by_key/${surahNum}:${ayahNum}?words=false&tafsirs=16`, 6000)
-                        .then(r2 => {
-                            if (r2 && r2.verse) {
-                                modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> آية (${ayahNum})`;
-                                modalAyahText.innerText = r2.verse.text_uthmani || `آية ${ayahNum}`;
-                                modalTafseerText.innerText = (r2.verse.tafsirs && r2.verse.tafsirs[0] ? r2.verse.tafsirs[0].text : "التفسير متاح في صفحة التفسير الشاملة");
-                                return;
-                            }
-                            throw new Error();
-                        })
-                        .catch(() => {
-                            modalAyahText.innerText = `تعذر جلب نص الآية`;
-                            modalTafseerText.innerText = `حدث خطأ أثناء جلب التفسير المباشر. يرجى الضغط على زر 'عرض في صفحة التفسير الشاملة' بالأسفل.`;
-                        });
-                });
+                    modalAyahText.setAttribute('data-loaded-text', quranAyah.text);
+                    modalAyahText.setAttribute('data-ayah-id', `${surahNum}:${ayahNum}`);
+                    modalTafseerText.innerText = tafseerAyah ? tafseerAyah.text : 'لا يتوفر تفسير لهذه الآية';
+                }
+            } catch(err) {
+                console.warn("Quick tafseer error:", err);
+                modalTafseerText.innerHTML = `
+                    <div style="text-align: center; padding: 15px; color: #f87171;">
+                        <p style="margin-bottom: 8px;">تعذر تحميل التفسير حالياً</p>
+                        <a href="${modalFullLink.href}" style="color: var(--gold); text-decoration: underline; font-size: 13px;">
+                            فتح في صفحة التفسير الشاملة
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        const quickSelectEl = document.getElementById('quick-tafseer-select');
+        if (quickSelectEl) {
+            quickSelectEl.addEventListener('change', (e) => {
+                currentQuickEdition = e.target.value;
+                try {
+                    localStorage.setItem('quiblah_selected_tafseer', currentQuickEdition);
+                } catch(err) {}
+                loadQuickTafseerContent(currentQuickSurah, currentQuickAyah, currentQuickEdition);
+            });
         }
 
         function closeQuickTafseer() {

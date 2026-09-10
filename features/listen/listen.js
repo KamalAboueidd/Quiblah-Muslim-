@@ -396,3 +396,14 @@
 
     // Initialize volume UI
     updateVolumeUI();
+
+    // Background Carousel Rotation
+    const slides = document.querySelectorAll('.carousel-slide');
+    let currentSlide = 0;
+    if (slides && slides.length > 0) {
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 8000);
+    }

@@ -163,7 +163,7 @@
         /* --- Sidebar --- */
         .sidebar {
             width: 320px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(10, 12, 16, 0.45);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.1);
@@ -191,8 +191,9 @@
 
         .sidebar-close-btn {
             display: none;
-            background: transparent;
-            border: none;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             color: var(--gold);
             width: 32px;
             height: 32px;
@@ -459,9 +460,7 @@
             opacity: 1;
         }
 
-        .tafseer-modal-card {
-            background: #0e1015;
-            background: rgba(14, 16, 21, 0.97);
+        .tafseer-modal-card { background: rgba(10, 12, 16, 0.65); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(197, 168, 89, 0.35);
@@ -634,8 +633,21 @@
         /* --- Responsive --- */
         @media (max-width: 900px) {
             .sidebar-close-btn {
-                display: inline-flex;
-            }
+            display: none;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+            transition: all 0.2s ease;
+            outline: none;
+        }
 
             .nav-bar { gap: 10px; padding: 10px; }
             .nav-item { padding: 8px 12px; font-size: 13px; }
@@ -651,7 +663,7 @@
                 transform: translateX(100%);
                 width: 310px;
                 max-width: 85vw;
-                background: rgba(13, 14, 18, 0.65);
+                background: rgba(10, 12, 16, 0.5) !important;
                 backdrop-filter: blur(25px);
                 -webkit-backdrop-filter: blur(25px);
                 border-left: 1px solid rgba(197, 168, 89, 0.25);

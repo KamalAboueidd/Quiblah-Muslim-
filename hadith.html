@@ -77,26 +77,34 @@
             
             <!-- Hero Header -->
             <div class="hadith-hero">
-                <h1>
+                <div class="hero-icon-badge">
                     <i class="fa-solid fa-book-bookmark"></i>
-                    الأحاديث النبوية الشريفة
-                </h1>
+                </div>
+                <h1>الأحاديث النبوية الشريفة</h1>
                 <p>تصفح صحيح السنة النبوية المطهرة وكتب الحديث المعتمدة بأعلى دقة ووضوح</p>
             </div>
 
-            <!-- Controls: Collections Pills, Search, Chapter Filter -->
+            <!-- Controls: Collections Pills with Side Scroll Arrows, Search, Chapter Filter -->
             <div class="controls-container">
-                <!-- Book Selector Pills -->
-                <div class="books-pills-wrapper" id="books-pills-wrapper">
-                    <!-- Injected dynamically by hadith.js -->
+                <!-- Book Selector Pills with scroll arrows -->
+                <div class="pills-scroll-wrapper">
+                    <button class="pill-scroll-arrow arrow-right" id="pills-scroll-right" title="السابق" aria-label="السابق">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <div class="books-pills-wrapper" id="books-pills-wrapper">
+                        <!-- Injected dynamically by hadith.js -->
+                    </div>
+                    <button class="pill-scroll-arrow arrow-left" id="pills-scroll-left" title="التالي" aria-label="التالي">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
                 </div>
 
                 <!-- Search and Chapters Filter -->
                 <div class="filters-row">
                     <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
                         <input type="text" id="hadith-search-input" class="search-input" placeholder="ابحث في نص الحديث أو الراوي أو الموضوع (مثال: النية، الإيمان، بر الوالدين)..." />
-                        <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث">
+                        <button id="clear-search-btn" class="clear-search-btn" title="مسح البحث" aria-label="مسح البحث">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>

@@ -216,9 +216,13 @@ function switchCollection(collectionId) {
     if (currentCollectionId === collectionId) return;
     currentCollectionId = collectionId;
 
-    // Update active pill
+    // Update active pill & auto scroll into view
     document.querySelectorAll('.book-pill-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.id === collectionId);
+        const isActive = btn.dataset.id === collectionId;
+        btn.classList.toggle('active', isActive);
+        if (isActive) {
+            btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
     });
 
     // Reset controls
@@ -674,11 +678,25 @@ function renderErrorState(msg) {
 
 // Events
 function initEvents() {
+    // Pills scroll arrows
+    const pillsScrollLeft = document.getElementById('pills-scroll-left');
+    const pillsScrollRight = document.getElementById('pills-scroll-right');
+    if (pillsScrollLeft && pillsScrollRight && booksPillsWrapper) {
+        pillsScrollLeft.addEventListener('click', () => {
+            // In RTL browsers, scrolling to see next books on the left:
+            booksPillsWrapper.scrollBy({ left: -180, behavior: 'smooth' });
+        });
+        pillsScrollRight.addEventListener('click', () => {
+            // Scrolling back towards the right:
+            booksPillsWrapper.scrollBy({ left: 180, behavior: 'smooth' });
+        });
+    }
+
     // Search input with debounce
     let debounceTimer;
     searchInput.addEventListener('input', () => {
         clearTimeout(debounceTimer);
-        clearSearchBtn.style.display = searchInput.value.trim() ? 'block' : 'none';
+        clearSearchBtn.style.display = searchInput.value.trim() ? 'flex' : 'none';
         debounceTimer = setTimeout(() => {
             currentPage = 1;
             applyFiltersAndRender();
@@ -688,6 +706,7 @@ function initEvents() {
     clearSearchBtn.addEventListener('click', () => {
         searchInput.value = '';
         clearSearchBtn.style.display = 'none';
+        searchInput.focus();
         currentPage = 1;
         applyFiltersAndRender();
     });

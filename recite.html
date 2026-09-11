@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=26">
+    <link rel="stylesheet" href="features/recite/recite.css?v=27">
     <script src="core/player-bridge.js"></script>
 </head>
 <body class="mushaf-studio-body">
@@ -43,7 +43,7 @@
     </div>
 
     <div class="app-layout">
-        <!-- Top Bar Matching Screenshot (Left: Back & Title, Right: Settings) -->
+        <!-- Top Header (Seamless on page: No background, No border, Clean Icons) -->
         <header class="top-bar-mockup">
             <div class="header-brand-group">
                 <a href="home.html" class="header-back-btn" id="btn-back-home" title="الرجوع للرئيسية">
@@ -57,18 +57,13 @@
                     <p class="header-sub-title">تلاوة أدق .. وقرب أكبر من الله</p>
                 </div>
             </div>
-            <div class="header-actions-group">
-                <button type="button" class="header-action-btn" id="btn-open-settings" title="إعدادات الذكاء الاصطناعي">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-            </div>
         </header>
 
         <!-- Main 3-Column Studio Grid Layout (Left: Controls | Center: Mushaf | Right: Guidance) -->
         <main class="studio-main-wrapper">
             <div class="quran-studio-layout-3col">
 
-                <!-- Column 1 (Left in Screenshot): Control Panel Sidebar -->
+                <!-- Column 1 (Left in Screenshot): Control Panel Sidebar (Seamless / No heavy card background) -->
                 <aside class="studio-col-controls">
 
                     <!-- Section: Choose Surah & Ayah -->
@@ -157,8 +152,8 @@
                         </div>
                     </div>
 
-                    <!-- Tool Card 1: Listen to Exemplary Audio -->
-                    <div class="tool-action-card" id="card-listen-exemplary" role="button" tabindex="0">
+                    <!-- Tool Action 1: Listen to Exemplary Audio (Printed on page, No background/border) -->
+                    <div class="tool-action-card seamless-card" id="card-listen-exemplary" role="button" tabindex="0">
                         <div class="tool-card-right">
                             <strong class="tool-card-title">استمع للتلاوة النموذجية</strong>
                             <p class="tool-card-sub">اسمع الآية بصوت قارئ محترف</p>
@@ -168,8 +163,8 @@
                         </button>
                     </div>
 
-                    <!-- Tool Card 2: Recite with Voice -->
-                    <div class="tool-action-card mic-card" id="card-recite-voice" role="button" tabindex="0">
+                    <!-- Tool Action 2: Recite with Voice (Printed on page, No background/border) -->
+                    <div class="tool-action-card seamless-card mic-card" id="card-recite-voice" role="button" tabindex="0">
                         <div class="tool-card-right">
                             <strong class="tool-card-title">اقرأ بصوتك</strong>
                             <p class="tool-card-sub">سجل تلاوتك لتحليلها بالذكاء الاصطناعي</p>
@@ -179,16 +174,28 @@
                         </button>
                     </div>
 
-                    <!-- Card 3: Quranic Verse Quote Banner -->
-                    <div class="quran-quote-card">
+                    <!-- Card 3: Quranic Verse Quote (Seamless printed on page) -->
+                    <div class="quran-quote-card seamless-card">
                         <div class="quote-text">❖ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ❖</div>
                         <div class="quote-source">(المزمل: 4)</div>
                     </div>
 
                 </aside>
 
-                <!-- Column 2 (Center): The Grand Open 3D Mushaf & Audio Player -->
+                <!-- Column 2 (Center): The Grand Open 3D Mushaf & Dedicated Recording Bar -->
                 <section class="studio-col-center-mushaf">
+
+                    <!-- Mode Segmented Switcher: وضع التلاوة vs وضع التسميع -->
+                    <div class="studio-mode-segmented-bar">
+                        <button type="button" class="studio-mode-pill-btn active" id="btn-mode-recite">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span>وضع التلاوة (عرض المصحف)</span>
+                        </button>
+                        <button type="button" class="studio-mode-pill-btn" id="btn-mode-memorize">
+                            <i class="fa-solid fa-microphone-lines"></i>
+                            <span>وضع التسميع (إخفاء النص)</span>
+                        </button>
+                    </div>
 
                     <!-- Surah Header Banner Above Mushaf -->
                     <div class="mushaf-center-header">
@@ -229,24 +236,39 @@
                                         بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                                     </div>
 
-                                    <!-- Sacred Quran Verses Flow with Active Highlight Ribbon Banner -->
+                                    <!-- 1. Recitation Mode: Sacred Quran Verses Flow with Active Highlight Ribbon Banner -->
                                     <div class="mushaf-sacred-verses-flow" id="mushaf-verses-flow" role="region" aria-label="المصحف الشريف">
                                         <!-- Injected dynamically: Quran verses rows and illuminated ribbon -->
+                                    </div>
+
+                                    <!-- 2. Memorization Mode: Canvas that hides text and inscribes spoken words live -->
+                                    <div class="mushaf-memorize-canvas" id="mushaf-memorize-canvas" style="display: none;">
+                                        <div class="memorize-canvas-hint" id="memorize-canvas-hint">
+                                            <div class="feather-quill-icon"><i class="fa-solid fa-feather-pointed"></i></div>
+                                            <h3 class="hint-main-text">ابدأ التسميع الآن بصوتك</h3>
+                                            <p class="hint-sub-text">النص مخفي لتسميع غيبي متقن، وسيتم تدوين ما تقرؤه فقط وتدقيقه كلمة بكلمة</p>
+                                            <button type="button" class="btn-reveal-verse-hint" id="btn-reveal-verse" title="كشف نص الآية للتأكد">
+                                                <i class="fa-solid fa-eye"></i> <span>كشف النص للمساعدة</span>
+                                            </button>
+                                        </div>
+                                        <div class="memorize-live-inscribed-words" id="memorize-live-words">
+                                            <!-- Dynamically written words as the user speaks -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Bottom Audio & Recitation Waveform Player Bar -->
+                    <!-- Bottom Dedicated Recording Bar (Dedicated for recording voice, NOT reciter audio) -->
                     <div class="mushaf-bottom-player-wrap">
                         <div class="bottom-audio-bar">
-                            <!-- Circular Gold Play Button -->
-                            <button type="button" class="bar-play-circle" id="bar-btn-play" title="تشغيل / إيقاف التلاوة">
-                                <i class="fa-solid fa-play" id="bar-play-icon"></i>
+                            <!-- Circular Gold Record Button specifically for recording! -->
+                            <button type="button" class="bar-record-circle" id="bar-btn-record" title="بدء التسجيل والتسميع بصوتك">
+                                <i class="fa-solid fa-microphone" id="bar-record-icon"></i>
                             </button>
 
-                            <!-- Waveform Visualizer Bars (Animated with sound) -->
+                            <!-- Waveform Visualizer Bars (Animated with user voice recording) -->
                             <div class="bar-waveform-visualizer" id="bar-waveform-visualizer">
                                 <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
                                 <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
@@ -258,19 +280,20 @@
                                 <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
                             </div>
 
-                            <!-- Timer Display -->
-                            <div class="bar-time-display" id="bar-time-display">00:00 / 00:15</div>
+                            <!-- Timer Display (Elapsed recording time) -->
+                            <div class="bar-time-display" id="bar-time-display">00:00</div>
 
-                            <!-- Volume / Speaker Button -->
-                            <button type="button" class="bar-volume-btn" id="bar-volume-btn" title="كتم / تفعيل الصوت">
-                                <i class="fa-solid fa-volume-high" id="bar-volume-icon"></i>
-                            </button>
+                            <!-- Status Recording Indicator Badge -->
+                            <div class="bar-recording-indicator" id="bar-recording-indicator">
+                                <span class="rec-dot"></span>
+                                <span class="rec-label" id="bar-rec-label">جاهز للتسميع</span>
+                            </div>
                         </div>
 
                         <!-- Instructions Meta Below Player -->
                         <div class="player-instruction-meta">
-                            <strong class="instruction-main" id="player-status-main">استمع للتلاوة النموذجية أولاً</strong>
-                            <p class="instruction-sub" id="player-status-sub">بعد الاستماع، اقرأ الآية بصوتك لتحليلها</p>
+                            <strong class="instruction-main" id="player-status-main">اضغط على زر الميكروفون بالأسفل لبدء التسجيل</strong>
+                            <p class="instruction-sub" id="player-status-sub">اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد</p>
                         </div>
                     </div>
 
@@ -280,11 +303,11 @@
 
                 </section>
 
-                <!-- Column 3 (Right in Screenshot): Guidance & Wisdom Sidebar -->
+                <!-- Column 3 (Right in Screenshot): Guidance & Wisdom Sidebar (Seamless / Printed on page) -->
                 <aside class="studio-col-guidance">
 
-                    <!-- Card 1: Important Reminder -->
-                    <div class="guidance-card alert-card">
+                    <!-- Card 1: Important Reminder (Borderless & Background-less) -->
+                    <div class="guidance-card seamless-card alert-card">
                         <div class="guidance-card-header">
                             <div class="guidance-icon-badge gold-bulb">
                                 <i class="fa-solid fa-lightbulb"></i>
@@ -296,8 +319,8 @@
                         </p>
                     </div>
 
-                    <!-- Card 2: Recitation Tips -->
-                    <div class="guidance-card tips-card">
+                    <!-- Card 2: Recitation Tips (Borderless & Background-less) -->
+                    <div class="guidance-card seamless-card tips-card">
                         <div class="guidance-card-header">
                             <div class="guidance-icon-badge gold-star">
                                 <i class="fa-solid fa-star"></i>
@@ -324,8 +347,8 @@
                         </ul>
                     </div>
 
-                    <!-- Card 3: Quranic Light & Mosque Night Banner -->
-                    <div class="spiritual-mosque-card">
+                    <!-- Card 3: Quranic Light & Mosque Night Banner (Seamless on page) -->
+                    <div class="spiritual-mosque-card seamless-card">
                         <div class="spiritual-card-bg" style="background-image: url('assets/quran_light_card.jpg');"></div>
                         <div class="spiritual-overlay"></div>
                         <div class="spiritual-quote-content">
@@ -406,58 +429,6 @@
             </div>
         </div>
 
-        <!-- AI Engine Settings Modal -->
-        <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-label="إعدادات محرك الذكاء الاصطناعي">
-            <div class="modal-card">
-                <div class="modal-header">
-                    <div class="modal-title">
-                        <i class="fa-solid fa-sliders"></i> إعدادات محرك التسميع والذكاء الاصطناعي
-                    </div>
-                    <button type="button" class="modal-close-btn" id="btn-close-settings" title="إغلاق">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-
-                <div class="hf-guide-box">
-                    <div class="hf-guide-title"><i class="fa-solid fa-graduation-cap"></i> إعدادات الذكاء الاصطناعي والمعالجة:</div>
-                    <p style="font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6;">
-                        يتم تحليل الصوت محلياً عبر تقنية التعرف الصوتي الذكية المدمجة، أو من خلال ربط Webhook مخصص.
-                    </p>
-                </div>
-
-                <div class="settings-group">
-                    <label for="setting-engine-mode">طريقة معالجة الذكاء الاصطناعي:</label>
-                    <select id="setting-engine-mode" class="settings-input">
-                        <option value="smart_demo" selected>الوضع الذكي السريع المدمج (بدون مفاتيح)</option>
-                        <option value="make">سيناريو Make.com (Hugging Face Webhook)</option>
-                        <option value="direct_hf">Hugging Face Direct Inference API (مباشر)</option>
-                        <option value="python">سيرفر بايثون المحلي (FastAPI)</option>
-                    </select>
-                </div>
-
-                <div class="settings-group">
-                    <label for="setting-make-webhook">رابط Make.com Webhook URL:</label>
-                    <input type="text" id="setting-make-webhook" class="settings-input" placeholder="https://hook.eu1.make.com/..." />
-                </div>
-
-                <div class="settings-group">
-                    <label for="setting-python-url">رابط سيرفر بايثون (FastAPI Base URL):</label>
-                    <input type="text" id="setting-python-url" class="settings-input" placeholder="http://localhost:8080" />
-                </div>
-
-                <div class="settings-group">
-                    <label for="setting-hf-token">توكن Hugging Face (HF API Token):</label>
-                    <input type="password" id="setting-hf-token" class="settings-input" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" />
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="sec-btn primary-action" id="btn-save-settings">
-                        <i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-container">
@@ -484,6 +455,6 @@
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
     <script src="core/quran_data.js"></script>
-    <script src="features/recite/recite.js?v=26"></script>
+    <script src="features/recite/recite.js?v=27"></script>
 </body>
 </html>

@@ -144,6 +144,10 @@ let isFullSurahMode = false;
 let currentSurahVerses = []; // Array of { numberInSurah, text, rawWords, normWords }
 let currentTargetVerseText = "";
 
+// Studio Mode State: 'recite' (عرض المصحف) vs 'memorize' (إخفاء النص وتسميع غيبي)
+let studioDisplayMode = "recite";
+let isVerseRevealed = false;
+
 // Audio & Recording State
 let audioExemplary = null;
 let isExemplaryPlaying = false;
@@ -175,10 +179,13 @@ let cardSelectSurah, selectedSurahDisplay, surahDropdownFlyout, surahSearchInput
 let cardSelectAyah, selectedAyahDisplay, ayahDropdownFlyout, tabFullSurah, tabSingleAyah;
 let inputAyahNum, btnAyahPrev, btnAyahNext, ayahMaxLabel, ayahGridScrollable;
 let btnShowMushaf, mushafOpenBook;
+let btnModeRecite, btnModeMemorize;
+let mushafMemorizeCanvas, memorizeCanvasHint, btnRevealVerse, memorizeLiveWords;
 let cardListenExemplary, btnPlayExemplary, exemplaryPlayIcon;
 let cardReciteVoice, btnMainRecord, recordMicIcon;
 let centerSurahTitle, centerAyahsRange, mushafPageBasmala, mushafVersesFlow;
-let barBtnPlay, barPlayIcon, barWaveformVisualizer, barTimeDisplay, barVolumeBtn, barVolumeIcon;
+let barBtnRecord, barRecordIcon, barWaveformVisualizer, barTimeDisplay, barRecordingIndicator, barRecLabel;
+let barVolumeBtn, barVolumeIcon;
 let playerStatusMain, playerStatusSub;
 
 // Modals
@@ -236,6 +243,13 @@ function cacheDomElements() {
     btnShowMushaf = document.getElementById('btn-show-mushaf');
     mushafOpenBook = document.getElementById('mushaf-open-book');
 
+    btnModeRecite = document.getElementById('btn-mode-recite');
+    btnModeMemorize = document.getElementById('btn-mode-memorize');
+    mushafMemorizeCanvas = document.getElementById('mushaf-memorize-canvas');
+    memorizeCanvasHint = document.getElementById('memorize-canvas-hint');
+    btnRevealVerse = document.getElementById('btn-reveal-verse');
+    memorizeLiveWords = document.getElementById('memorize-live-words');
+
     cardListenExemplary = document.getElementById('card-listen-exemplary');
     btnPlayExemplary = document.getElementById('btn-play-exemplary');
     exemplaryPlayIcon = document.getElementById('exemplary-play-icon');
@@ -249,12 +263,12 @@ function cacheDomElements() {
     mushafPageBasmala = document.getElementById('mushaf-page-basmala');
     mushafVersesFlow = document.getElementById('mushaf-verses-flow');
 
-    barBtnPlay = document.getElementById('bar-btn-play');
-    barPlayIcon = document.getElementById('bar-play-icon');
+    barBtnRecord = document.getElementById('bar-btn-record');
+    barRecordIcon = document.getElementById('bar-record-icon');
     barWaveformVisualizer = document.getElementById('bar-waveform-visualizer');
     barTimeDisplay = document.getElementById('bar-time-display');
-    barVolumeBtn = document.getElementById('bar-volume-btn');
-    barVolumeIcon = document.getElementById('bar-volume-icon');
+    barRecordingIndicator = document.getElementById('bar-recording-indicator');
+    barRecLabel = document.getElementById('bar-rec-label');
 
     playerStatusMain = document.getElementById('player-status-main');
     playerStatusSub = document.getElementById('player-status-sub');
@@ -722,18 +736,6 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
     const audioUrl = `https://everyayah.com/data/Alafasy_128kbps/${sPadded}${aPadded}.mp3`;
 
     audioExemplary.src = audioUrl;
-    if (barTimeDisplay) barTimeDisplay.textContent = '00:00 / 00:00';
-
-    audioExemplary.onloadedmetadata = () => {
-        const total = formatTime(audioExemplary.duration);
-        if (barTimeDisplay) barTimeDisplay.textContent = `00:00 / ${total}`;
-    };
-
-    audioExemplary.ontimeupdate = () => {
-        const cur = formatTime(audioExemplary.currentTime);
-        const total = formatTime(audioExemplary.duration || 0);
-        if (barTimeDisplay) barTimeDisplay.textContent = `${cur} / ${total}`;
-    };
 
     audioExemplary.onended = () => {
         if (isFullSurahMode) {
@@ -747,7 +749,7 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
         }
         pauseExemplaryAudio();
         if (playerStatusMain) playerStatusMain.textContent = 'أحسنت الاستماع! الآن اقرأ الآية بصوتك';
-        if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر الميكروفون لبدء التسجيل وتدقيق التلاوة';
+        if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر التسجيل بالأسفل لبدء التسميع وتدقيق التلاوة';
         showToast('أحسنت الاستماع! اضغط الآن على زر الميكروفون وابدأ التسميع بصوتك.');
     };
 
@@ -776,7 +778,6 @@ function playExemplaryAudio() {
     audioExemplary.play().then(() => {
         isExemplaryPlaying = true;
         if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-pause';
-        if (barPlayIcon) barPlayIcon.className = 'fa-solid fa-pause';
         if (cardListenExemplary) cardListenExemplary.classList.add('playing');
         if (barWaveformVisualizer) barWaveformVisualizer.classList.add('playing');
         if (playerStatusMain) playerStatusMain.textContent = 'جاري تشغيل التلاوة النموذجية (الشيخ مشاري العفاسي)';
@@ -791,11 +792,10 @@ function pauseExemplaryAudio() {
     audioExemplary.pause();
     isExemplaryPlaying = false;
     if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-play';
-    if (barPlayIcon) barPlayIcon.className = 'fa-solid fa-play';
     if (cardListenExemplary) cardListenExemplary.classList.remove('playing');
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('playing');
-    if (playerStatusMain) playerStatusMain.textContent = 'استمع للتلاوة النموذجية أولاً';
-    if (playerStatusSub) playerStatusSub.textContent = 'بعد الاستماع، اقرأ الآية بصوتك لتحليلها';
+    if (playerStatusMain) playerStatusMain.textContent = 'استمع للتلاوة النموذجية أو ابدأ التسميع';
+    if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر التسجيل بالأسفل لقراءة وتدقيق الآية';
 }
 
 function formatTime(sec) {
@@ -806,7 +806,56 @@ function formatTime(sec) {
 }
 
 // -----------------------------------------------------------------------------
-// 10. Recording Studio & Real-Time Inscription ("اقرأ بصوتك")
+// 10. Studio Display Modes (وضع التلاوة vs وضع التسميع)
+// -----------------------------------------------------------------------------
+function setStudioMode(mode) {
+    studioDisplayMode = mode;
+    resetStudioRecording();
+
+    if (mode === 'memorize') {
+        if (btnModeMemorize) btnModeMemorize.classList.add('active');
+        if (btnModeRecite) btnModeRecite.classList.remove('active');
+        if (mushafVersesFlow) mushafVersesFlow.style.display = 'none';
+        if (mushafMemorizeCanvas) mushafMemorizeCanvas.style.display = 'flex';
+        if (playerStatusMain) playerStatusMain.textContent = 'وضع التسميع نشط (النص مخفي)';
+        if (playerStatusSub) playerStatusSub.textContent = 'سمّع الآية غيباً، وسيتم كتابة ما تقرؤه فقط وتدقيقه فوراً';
+        showToast('تم تفعيل وضع التسميع (النص مخفي للتسميع الغيبي)');
+    } else {
+        if (btnModeRecite) btnModeRecite.classList.add('active');
+        if (btnModeMemorize) btnModeMemorize.classList.remove('active');
+        if (mushafVersesFlow) mushafVersesFlow.style.display = 'block';
+        if (mushafMemorizeCanvas) mushafMemorizeCanvas.style.display = 'none';
+        if (playerStatusMain) playerStatusMain.textContent = 'وضع التلاوة نشط (عرض المصحف)';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ من المصحف الشريف مباشرة أو استمع للتلاوة النموذجية';
+        showToast('تم تفعيل وضع التلاوة (عرض المصحف)');
+    }
+}
+
+function toggleRevealVerse() {
+    if (!memorizeLiveWords) return;
+    const targetAyahs = getActiveTargetAyahs();
+    if (!targetAyahs.length) return;
+
+    isVerseRevealed = !isVerseRevealed;
+    if (isVerseRevealed) {
+        let html = '<div style="margin-bottom:8px; font-size:14px; color:#836724; font-family:Tajawal, sans-serif; font-weight:700;">❖ نص الآية الكريمة للمساعدة:</div>';
+        targetAyahs.forEach(ayah => {
+            ayah.rawWords.forEach(w => {
+                html += `<span class="inscribed-word revealed-peek">${escapeHTML(w)}</span> `;
+            });
+        });
+        memorizeLiveWords.innerHTML = html;
+        if (btnRevealVerse) btnRevealVerse.innerHTML = '<i class="fa-solid fa-eye-slash"></i> <span>إخفاء النص</span>';
+        if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
+    } else {
+        memorizeLiveWords.innerHTML = '';
+        if (btnRevealVerse) btnRevealVerse.innerHTML = '<i class="fa-solid fa-eye"></i> <span>كشف النص للمساعدة</span>';
+        if (memorizeCanvasHint) memorizeCanvasHint.classList.remove('has-words');
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 11. Recording Studio & Real-Time Inscription ("اقرأ بصوتك")
 // -----------------------------------------------------------------------------
 async function startRecording() {
     pauseExemplaryAudio();
@@ -832,12 +881,23 @@ async function startRecording() {
         isRecording = true;
         recordStartTime = Date.now();
 
-        // UI Updates
+        // UI Updates for User Voice Recording
         if (cardReciteVoice) cardReciteVoice.classList.add('recording');
         if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-stop';
+        if (barBtnRecord) barBtnRecord.classList.add('recording');
+        if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-stop';
+        if (barRecordingIndicator) barRecordingIndicator.classList.add('recording');
+        if (barRecLabel) barRecLabel.textContent = 'جاري التسميع...';
         if (barWaveformVisualizer) barWaveformVisualizer.classList.add('recording');
-        if (playerStatusMain) playerStatusMain.textContent = 'جاري الاستماع لتلاوتك الكريمة...';
-        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+
+        if (studioDisplayMode === 'memorize') {
+            if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآية من حفظك';
+            if (playerStatusSub) playerStatusSub.textContent = 'سيتم كتابة الكلمات المنطوقة وتدقيقها بالذكاء الاصطناعي';
+            if (!isVerseRevealed && memorizeLiveWords) memorizeLiveWords.innerHTML = '';
+        } else {
+            if (playerStatusMain) playerStatusMain.textContent = 'جاري الاستماع لتلاوتك الكريمة...';
+            if (playerStatusSub) playerStatusSub.textContent = 'اقرأ بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+        }
 
         timerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
@@ -877,8 +937,13 @@ function stopRecordingAndAnalyze() {
         const mime = mediaRecorder.mimeType || 'audio/webm';
         recordedAudioBlob = new Blob(audioChunks, { type: mime });
 
+        // Update UI states
         if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
         if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-microphone';
+        if (barBtnRecord) barBtnRecord.classList.remove('recording');
+        if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-microphone';
+        if (barRecordingIndicator) barRecordingIndicator.classList.remove('recording');
+        if (barRecLabel) barRecLabel.textContent = 'تم إنهاء التسجيل';
         if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('recording');
         if (playerStatusMain) playerStatusMain.textContent = 'جاري تدقيق التلاوة عبر الذكاء الاصطناعي...';
 
@@ -899,12 +964,21 @@ function resetStudioRecording() {
     }
 
     liveTranscript = "";
+    isVerseRevealed = false;
     if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
     if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-microphone';
+    if (barBtnRecord) barBtnRecord.classList.remove('recording');
+    if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-microphone';
+    if (barRecordingIndicator) barRecordingIndicator.classList.remove('recording');
+    if (barRecLabel) barRecLabel.textContent = 'جاهز للتسميع';
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('recording');
-    if (barTimeDisplay) barTimeDisplay.textContent = '00:00 / 00:15';
-    if (playerStatusMain) playerStatusMain.textContent = 'استمع للتلاوة النموذجية أولاً';
-    if (playerStatusSub) playerStatusSub.textContent = 'بعد الاستماع، اقرأ الآية بصوتك لتحليلها';
+    if (barTimeDisplay) barTimeDisplay.textContent = '00:00';
+    if (playerStatusMain) playerStatusMain.textContent = 'اضغط على زر الميكروفون لبدء التسجيل';
+    if (playerStatusSub) playerStatusSub.textContent = 'اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+
+    if (btnRevealVerse) btnRevealVerse.innerHTML = '<i class="fa-solid fa-eye"></i> <span>كشف النص للمساعدة</span>';
+    if (memorizeLiveWords) memorizeLiveWords.innerHTML = '';
+    if (memorizeCanvasHint) memorizeCanvasHint.classList.remove('has-words');
 
     // Clear word highlights in Mushaf
     if (mushafVersesFlow) {
@@ -916,7 +990,7 @@ function resetStudioRecording() {
 }
 
 // -----------------------------------------------------------------------------
-// 11. Web Speech API (Live Inscription on Active Ayah)
+// 12. Web Speech API (Live Inscription & Live Highlights)
 // -----------------------------------------------------------------------------
 function startLiveSpeechRecognition() {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -967,28 +1041,51 @@ function updateLiveSpokenHighlights(spokenText) {
     const targetAyahs = getActiveTargetAyahs();
     if (!targetAyahs.length) return;
 
-    let spokenIdx = 0;
+    // 1. Memorization Mode: Inscribe spoken words live onto blank parchment!
+    if (studioDisplayMode === 'memorize') {
+        if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
+        if (memorizeLiveWords) {
+            let inscribedHtml = '';
+            const allExpectedWords = [];
+            targetAyahs.forEach(a => allExpectedWords.push(...a.rawWords));
 
-    targetAyahs.forEach(ayah => {
-        ayah.rawWords.forEach((expectedRaw, wIdx) => {
-            const wordEl = document.getElementById(`word-${ayah.numberInSurah}-${wIdx}`);
-            if (!wordEl) return;
-
-            wordEl.classList.remove('spoken-match', 'spoken-slip');
-
-            if (spokenIdx < spokenWords.length) {
-                const currentSpoken = spokenWords[spokenIdx];
-
-                if (areArabicWordsMatching(expectedRaw, currentSpoken)) {
-                    wordEl.classList.add('spoken-match');
+            spokenWords.forEach((spkWord, sIdx) => {
+                const expWord = allExpectedWords[sIdx];
+                if (expWord && areArabicWordsMatching(expWord, spkWord)) {
+                    inscribedHtml += `<span class="inscribed-word word-correct">${escapeHTML(expWord)}</span> `;
                 } else {
-                    wordEl.classList.add('spoken-slip');
-                    wordEl.title = `نطقت: ${currentSpoken}`;
+                    inscribedHtml += `<span class="inscribed-word word-slip" title="نطقت: ${escapeHTML(spkWord)}">${escapeHTML(spkWord)}</span> `;
                 }
-                spokenIdx++;
-            }
+            });
+
+            memorizeLiveWords.innerHTML = inscribedHtml;
+        }
+    }
+
+    // 2. Recitation Mode: Highlight words inside the sacred verses flow
+    if (studioDisplayMode === 'recite' && mushafVersesFlow) {
+        let spokenIdx = 0;
+        targetAyahs.forEach(ayah => {
+            ayah.rawWords.forEach((expectedRaw, wIdx) => {
+                const wordEl = document.getElementById(`word-${ayah.numberInSurah}-${wIdx}`);
+                if (!wordEl) return;
+
+                wordEl.classList.remove('spoken-match', 'spoken-slip');
+
+                if (spokenIdx < spokenWords.length) {
+                    const currentSpoken = spokenWords[spokenIdx];
+
+                    if (areArabicWordsMatching(expectedRaw, currentSpoken)) {
+                        wordEl.classList.add('spoken-match');
+                    } else {
+                        wordEl.classList.add('spoken-slip');
+                        wordEl.title = `نطقت: ${currentSpoken}`;
+                    }
+                    spokenIdx++;
+                }
+            });
         });
-    });
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1143,9 +1240,23 @@ function renderRecitationResults(targetAyahs, transcribedText) {
 // 13. Event Listeners & Modals
 // -----------------------------------------------------------------------------
 function initEventListeners() {
-    // "عرض المصحف" Button: smoothly scroll/focus on Mushaf
+    // Mode Switcher Buttons (وضع التلاوة vs وضع التسميع)
+    if (btnModeRecite) {
+        btnModeRecite.addEventListener('click', () => setStudioMode('recite'));
+    }
+    if (btnModeMemorize) {
+        btnModeMemorize.addEventListener('click', () => setStudioMode('memorize'));
+    }
+
+    // Reveal Verse Button in Memorize Mode
+    if (btnRevealVerse) {
+        btnRevealVerse.addEventListener('click', toggleRevealVerse);
+    }
+
+    // "عرض المصحف" Button: switch to recite mode and scroll smoothly to Mushaf
     if (btnShowMushaf && mushafOpenBook) {
         btnShowMushaf.addEventListener('click', () => {
+            setStudioMode('recite');
             mushafOpenBook.scrollIntoView({ behavior: 'smooth', block: 'center' });
             mushafOpenBook.style.transform = 'scale(1.02)';
             setTimeout(() => { mushafOpenBook.style.transform = ''; }, 300);
@@ -1153,33 +1264,30 @@ function initEventListeners() {
         });
     }
 
-    // Exemplary Audio Toggle (Card & Bottom Bar)
+    // Exemplary Reciter Audio: Dedicated exclusively to Sheikh Mishary's exemplary recitation
     if (cardListenExemplary) cardListenExemplary.addEventListener('click', toggleExemplaryAudio);
-    if (barBtnPlay) barBtnPlay.addEventListener('click', toggleExemplaryAudio);
-
-    // Voice Recite Button (Card & Inner Mic Button)
-    if (cardReciteVoice) {
-        cardReciteVoice.addEventListener('click', (e) => {
-            if (!isRecording) {
-                startRecording();
-            } else {
-                stopRecordingAndAnalyze();
-            }
+    if (btnPlayExemplary) {
+        btnPlayExemplary.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleExemplaryAudio();
         });
     }
 
-    // Volume Button
-    if (barVolumeBtn) {
-        barVolumeBtn.addEventListener('click', () => {
-            if (!audioExemplary) return;
-            audioExemplary.muted = !audioExemplary.muted;
-            if (audioExemplary.muted) {
-                if (barVolumeIcon) barVolumeIcon.className = 'fa-solid fa-volume-xmark';
-                showToast('تم كتم الصوت');
-            } else {
-                if (barVolumeIcon) barVolumeIcon.className = 'fa-solid fa-volume-high';
-                showToast('تم تشغيل الصوت');
-            }
+    // Dedicated Recording Controls: Bottom Bar and Sidebar Tool
+    const toggleRecording = () => {
+        if (!isRecording) {
+            startRecording();
+        } else {
+            stopRecordingAndAnalyze();
+        }
+    };
+
+    if (barBtnRecord) barBtnRecord.addEventListener('click', toggleRecording);
+    if (cardReciteVoice) cardReciteVoice.addEventListener('click', toggleRecording);
+    if (btnMainRecord) {
+        btnMainRecord.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRecording();
         });
     }
 

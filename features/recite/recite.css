@@ -78,13 +78,10 @@ body.mushaf-studio-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 28px;
-    background: rgba(10, 13, 18, 0.85);
-    border-bottom: 1px solid rgba(197, 168, 89, 0.15);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    position: sticky;
-    top: 0;
+    padding: 16px 24px 6px;
+    background: transparent;
+    border: none;
+    position: relative;
     z-index: 100;
     direction: ltr;
 }
@@ -97,54 +94,43 @@ body.mushaf-studio-body {
     direction: rtl;
 }
 
-.header-actions-group,
-.header-left-side {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    direction: rtl;
-}
-
 .header-back-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(197, 168, 89, 0.25);
+    width: auto;
+    height: auto;
+    background: transparent;
+    border: none;
     color: var(--gold);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 20px;
     text-decoration: none;
     transition: all 0.25s ease;
+    cursor: pointer;
 }
 
 .header-back-btn:hover {
-    background: var(--gold);
-    color: #0b0d10;
-    box-shadow: 0 0 14px var(--gold-glow);
-    transform: translateX(2px);
+    color: #fff;
+    transform: translateX(3px);
 }
 
 .header-logo-badge {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(197, 168, 89, 0.2), rgba(197, 168, 89, 0.06));
-    border: 1px solid rgba(197, 168, 89, 0.4);
+    width: auto;
+    height: auto;
+    background: transparent;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gold-light);
-    font-size: 21px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: var(--gold);
+    font-size: 22px;
+    box-shadow: none;
 }
 
 .header-titles {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .header-main-title {
@@ -157,34 +143,8 @@ body.mushaf-studio-body {
 .header-sub-title {
     font-size: 12px;
     font-weight: 500;
-    color: var(--text-muted);
-}
-
-.header-left-side {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.header-action-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(197, 168, 89, 0.22);
-    color: var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.header-action-btn:hover {
-    background: rgba(197, 168, 89, 0.18);
-    border-color: var(--gold);
-    box-shadow: 0 0 12px var(--gold-glow);
+    color: var(--gold-light);
+    opacity: 0.85;
 }
 
 /* ==========================================================================
@@ -758,6 +718,62 @@ body.mushaf-studio-body {
     color: var(--text-dim);
 }
 
+/* Seamless Cards (Printed Directly on Page - No Borders, No Heavy Backgrounds) */
+.seamless-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.tool-action-card.seamless-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 4px !important;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.tool-action-card.seamless-card:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+    transform: none;
+}
+
+.tool-action-card.seamless-card .tool-circle-btn {
+    background: rgba(22, 20, 16, 0.85);
+    border: 1.5px solid rgba(197, 168, 89, 0.45);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.tool-action-card.seamless-card.playing {
+    background: rgba(197, 168, 89, 0.06) !important;
+}
+
+.tool-action-card.seamless-card.recording {
+    background: rgba(231, 76, 60, 0.08) !important;
+}
+
+.quran-quote-card.seamless-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 4px !important;
+}
+
+.guidance-card.seamless-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 4px !important;
+}
+
+.spiritual-mosque-card.seamless-card {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 14px;
+}
+
 /* ==========================================================================
    Column 2 (Center): The Grand Open 3D Mushaf & Audio Player
    ========================================================================== */
@@ -767,6 +783,55 @@ body.mushaf-studio-body {
     align-items: center;
     gap: 16px;
     width: 100%;
+}
+
+/* Mode Segmented Switcher (وضع التلاوة vs وضع التسميع) */
+.studio-mode-segmented-bar {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(13, 17, 24, 0.8);
+    border: 1px solid rgba(197, 168, 89, 0.28);
+    border-radius: 30px;
+    padding: 4px;
+    gap: 4px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    margin-bottom: 2px;
+}
+
+.studio-mode-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 22px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.studio-mode-pill-btn:hover {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.studio-mode-pill-btn.active {
+    background: linear-gradient(135deg, #f5df9a 0%, #c5a859 100%);
+    color: #0b0e13;
+    font-weight: 900;
+    box-shadow: 0 4px 14px rgba(197, 168, 89, 0.35);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.studio-mode-pill-btn i {
+    font-size: 14px;
 }
 
 /* Center Header (Surah Title Above Book) */
@@ -1051,6 +1116,143 @@ body.mushaf-studio-body {
     border-radius: 4px;
 }
 
+/* Memorization Mode Canvas */
+.mushaf-memorize-canvas {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 420px;
+    padding: 16px 12px;
+    position: relative;
+    z-index: 5;
+    width: 100%;
+}
+
+.memorize-canvas-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 16px;
+    margin: auto 0;
+    max-width: 480px;
+    transition: all 0.3s ease;
+}
+
+.memorize-canvas-hint.has-words {
+    margin: 0 0 12px 0;
+    padding: 6px 12px;
+    border-bottom: 1px dashed rgba(189, 160, 80, 0.35);
+}
+
+.memorize-canvas-hint.has-words .feather-quill-icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+.memorize-canvas-hint.has-words .hint-sub-text {
+    display: none;
+}
+
+.feather-quill-icon {
+    font-size: 34px;
+    color: #bda050;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 2px 8px rgba(189, 160, 80, 0.35));
+    animation: featherFloat 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes featherFloat {
+    0% { transform: translateY(0px) rotate(0deg); }
+    100% { transform: translateY(-5px) rotate(-8deg); }
+}
+
+.hint-main-text {
+    font-size: 18px;
+    font-weight: 800;
+    color: #2b1f13;
+    margin-bottom: 6px;
+}
+
+.hint-sub-text {
+    font-size: 13.5px;
+    color: #6d583b;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.btn-reveal-verse-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(189, 160, 80, 0.15);
+    border: 1px dashed #bda050;
+    color: #836724;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-reveal-verse-hint:hover {
+    background: #bda050;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(189, 160, 80, 0.4);
+}
+
+/* Inscribed Words as user recites */
+.memorize-live-inscribed-words {
+    width: 100%;
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 26px;
+    line-height: 2.3;
+    color: #14120c;
+    text-align: center;
+    word-spacing: 4px;
+    padding: 10px 8px;
+    min-height: 120px;
+}
+
+.inscribed-word {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 2px 3px;
+    border-radius: 6px;
+    animation: wordPop 0.25s ease-out;
+}
+
+@keyframes wordPop {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.inscribed-word.word-correct {
+    color: #1b6b3e;
+    font-weight: 700;
+    text-shadow: 0 0 1px rgba(27, 107, 62, 0.35);
+}
+
+.inscribed-word.word-slip {
+    color: #c0392b;
+    text-decoration: underline;
+    text-decoration-color: #e74c3c;
+    text-decoration-thickness: 2.5px;
+    background: rgba(231, 76, 60, 0.12);
+}
+
+.inscribed-word.revealed-peek {
+    color: #836724;
+    opacity: 0.65;
+    font-style: italic;
+    background: rgba(189, 160, 80, 0.1);
+}
+
 /* ==========================================================================
    Bottom Audio & Waveform Bar
    ========================================================================== */
@@ -1077,9 +1279,11 @@ body.mushaf-studio-body {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
+/* Bottom Record Circle Button (Exclusively for Recording User Voice) */
+.bar-record-circle,
 .bar-play-circle {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: linear-gradient(135deg, #f5df9a, #c5a859);
     border: none;
@@ -1087,16 +1291,68 @@ body.mushaf-studio-body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     flex-shrink: 0;
-    box-shadow: 0 0 12px var(--gold-glow);
-    transition: all 0.25s ease;
+    box-shadow: 0 0 14px var(--gold-glow);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.bar-record-circle:hover,
 .bar-play-circle:hover {
     transform: scale(1.08);
-    box-shadow: 0 0 18px rgba(197, 168, 89, 0.5);
+    box-shadow: 0 0 20px rgba(197, 168, 89, 0.6);
+}
+
+.bar-record-circle.recording {
+    background: linear-gradient(135deg, #ff6b6b, #e74c3c);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.7);
+    animation: pulseRecordCircle 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseRecordCircle {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 14px rgba(231, 76, 60, 0.6); }
+    50% { transform: scale(1.1); box-shadow: 0 0 24px rgba(231, 76, 60, 0.95); }
+}
+
+/* Status Recording Indicator Badge */
+.bar-recording-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(197, 168, 89, 0.2);
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.bar-recording-indicator .rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6c757d;
+    transition: all 0.2s ease;
+}
+
+.bar-recording-indicator.recording {
+    border-color: rgba(231, 76, 60, 0.4);
+    background: rgba(231, 76, 60, 0.1);
+    color: #ff8578;
+}
+
+.bar-recording-indicator.recording .rec-dot {
+    background: #e74c3c;
+    box-shadow: 0 0 10px #e74c3c;
+    animation: blinkDot 0.9s infinite alternate;
+}
+
+@keyframes blinkDot {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
 }
 
 .bar-waveform-visualizer {
@@ -1178,8 +1434,9 @@ body.mushaf-studio-body {
 }
 
 /* ==========================================================================
-   Column 3 (Left): Guidance & Wisdom Sidebar
+   Column 3: Guidance & Wisdom Sidebar
    ========================================================================== */
+.studio-col-guidance,
 .studio-col-sidebar-left {
     display: flex;
     flex-direction: column;

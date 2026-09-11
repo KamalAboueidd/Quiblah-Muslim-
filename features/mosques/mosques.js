@@ -1,37 +1,100 @@
-// features/mosques/mosques.js - Ù…Ù†Ø·Ù‚ ÙˆØ¨Ø±Ù…Ø¬Ø© ØµÙØ­Ø© mosques.html
-const slides = document.querySelectorAll('.carousel-slide');
-    let cur = 0;
-    setInterval(() => { slides[cur].classList.remove('active'); cur = (cur+1)%slides.length; slides[cur].classList.add('active'); }, 8000);
+// features/mosques/mosques.js - منطق وبرمجة صفحة المساجد القريبة (mosques.html)
+// تطوير: كمال أبو عيد - قبلة المسلم
 
-    let map;
-    let userMarker;
+(function() {
+    // ── خلفية الكاروسيل الدوارة ────────────────────────────
+    const slides = document.querySelectorAll('.carousel-slide');
+    let curSlide = 0;
+    if (slides.length > 0) {
+        setInterval(() => {
+            slides[curSlide].classList.remove('active');
+            curSlide = (curSlide + 1) % slides.length;
+            slides[curSlide].classList.add('active');
+        }, 8000);
+    }
+
+    // ── الحالة العامة والتخزين ─────────────────────────────
+    let map = null;
+    let userMarker = null;
     let radiusCircle = null;
     let mosqueMarkers = [];
     let mosqueData = [];
+    let cachedMosquesPool = []; // مجمع المساجد المسترجعة للاستجابة الفورية عند تغيير النطاق
     let currentPos = null;
     let distanceLine = null;
-    let selectedRadius = 1000; // 1 km default as requested by user
+    let distanceTooltip = null;
+    let selectedRadius = 1000; // النطاق الافتراضي 1 كم
+    let activeAbortController = null;
 
-    function drawLineToMosque(lat, lng) {
-        if (userMarker) {
-            removeDistanceLine();
-            distanceLine = L.polyline([userMarker.getLatLng(), [lat, lng]], {
-                color: '#c5a859',
-                weight: 3,
-                dashArray: '5, 10',
-                opacity: 0.85
-            }).addTo(map);
+    // ── دوال قياس وحساب المسافات الدقيقة ───────────────────
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // نصف قطر الأرض بالمتر
+        const p1 = lat1 * Math.PI / 180;
+        const p2 = lat2 * Math.PI / 180;
+        const dp = (lat2 - lat1) * Math.PI / 180;
+        const dl = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dp / 2) * Math.sin(dp / 2) +
+                  Math.cos(p1) * Math.cos(p2) *
+                  Math.sin(dl / 2) * Math.sin(dl / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round(R * c);
+    }
+
+    function formatDistanceText(dist) {
+        if (dist < 1000) {
+            return `${dist} متر`;
         }
+        return `${(dist / 1000).toFixed(1)} كم`;
+    }
+
+    function estimateTimeText(dist) {
+        if (dist <= 1800) {
+            const minutes = Math.max(1, Math.round(dist / 75)); // متوسط المشي 4.5 كم/ساعة
+            return `~${minutes} دقيقة مشياً`;
+        }
+        const driveMinutes = Math.max(2, Math.round(dist / 450)); // متوسط القيادة في المدينة
+        return `~${driveMinutes} دقيقة بالسيارة`;
+    }
+
+    // ── رسم مسار وخط المسافة بين المستخدم والمسجد ─────────
+    function drawLineToMosque(lat, lng, mosqueName = '', distMeters = 0) {
+        if (!userMarker || !map) return;
+        removeDistanceLine();
+
+        const userLatLng = userMarker.getLatLng();
+        distanceLine = L.polyline([userLatLng, [lat, lng]], {
+            color: '#c5a859',
+            weight: 3.5,
+            dashArray: '6, 10',
+            opacity: 0.9
+        }).addTo(map);
+
+        const midLat = (userLatLng.lat + lat) / 2;
+        const midLng = (userLatLng.lng + lng) / 2;
+        const distStr = distMeters > 0 ? formatDistanceText(distMeters) : formatDistanceText(getDistance(userLatLng.lat, userLatLng.lng, lat, lng));
+
+        distanceTooltip = L.tooltip({
+            permanent: true,
+            direction: 'center',
+            className: 'distance-line-tooltip'
+        })
+        .setLatLng([midLat, midLng])
+        .setContent(`<i class="fa-solid fa-person-walking"></i> ${distStr}`)
+        .addTo(map);
     }
 
     function removeDistanceLine() {
-        if (distanceLine) {
+        if (distanceLine && map) {
             map.removeLayer(distanceLine);
             distanceLine = null;
         }
+        if (distanceTooltip && map) {
+            map.removeLayer(distanceTooltip);
+            distanceTooltip = null;
+        }
     }
 
-    window.toggleLineToMosque = function(lat, lng) {
+    window.toggleLineToMosque = function(lat, lng, name, dist) {
         if (!userMarker) return;
         if (distanceLine) {
             const coords = distanceLine.getLatLngs();
@@ -40,248 +103,245 @@ const slides = document.querySelectorAll('.carousel-slide');
                 return;
             }
         }
-        drawLineToMosque(lat, lng);
+        drawLineToMosque(lat, lng, name, dist);
     };
 
+    // ── تغيير نطاق البحث (1 كم، 2 كم، 3 كم، 5 كم) ───────────
     window.setSearchRadius = function(radius) {
         selectedRadius = radius;
+
+        // تحديث الأزرار (Pills)
         document.querySelectorAll('.radius-pill').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById(`pill-${radius}`);
         if (activeBtn) activeBtn.classList.add('active');
 
+        // تحديث الدائرة على الخريطة
+        if (radiusCircle) {
+            radiusCircle.setRadius(radius);
+            if (map) {
+                map.fitBounds(radiusCircle.getBounds(), { padding: [30, 30], maxZoom: 16, animate: true });
+            }
+        }
+
+        // إذا كان الموقع متوفراً، نستعرض المساجد المطابقة فوراً ونطلب المزيد إذا لزم
         if (currentPos) {
-            setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي', selectedRadius);
+            // تصفية فورية إن وُجدت مساجد في الذاكرة
+            if (cachedMosquesPool.length > 0) {
+                const inRadius = cachedMosquesPool.filter(m => m.dist <= radius + 100);
+                if (inRadius.length >= 3) {
+                    renderMosques(inRadius);
+                }
+            }
+            fetchMosques(currentPos.lat, currentPos.lng, selectedRadius);
         } else {
             startLocationSearch();
         }
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
-        // Initialize Map
-        map = L.map('map', { zoomControl: true, attributionControl: false }).setView([30.0444, 31.2357], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-        // 1. Instant load from cached location if available
-        const cachedLat = localStorage.getItem('quiblah_user_lat');
-        const cachedLng = localStorage.getItem('quiblah_user_lng');
-        const cachedCity = localStorage.getItem('quiblah_user_city');
-
-        if (cachedLat && cachedLng) {
-            currentPos = { lat: parseFloat(cachedLat), lng: parseFloat(cachedLng) };
-            if (cachedCity) {
-                document.getElementById('user-location-display').style.display = 'block';
-                document.getElementById('user-location-text').innerText = cachedCity;
-            }
-            setUserLocationAndSearch(currentPos.lat, currentPos.lng, cachedCity || 'موقعك الحالي', selectedRadius);
-        }
-
-        // 2. Automatically request fresh GPS location on load
-        startLocationSearch();
-    });
-
-    function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI / 180;
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return Math.round(R * c);
-    }
-
+    // ── ضبط موقع المستخدم على الخريطة وبدء البحث ─────────
     function setUserLocationAndSearch(lat, lng, popupText = 'موقعك الحالي', radius = selectedRadius) {
-        currentPos = { lat: lat, lng: lng };
+        currentPos = { lat, lng };
+
+        if (!map) return;
+
         if (userMarker) { map.removeLayer(userMarker); }
         if (radiusCircle) { map.removeLayer(radiusCircle); }
+        removeDistanceLine();
 
-        const zoomLevel = radius <= 1200 ? 16 : (radius <= 2500 ? 15 : 14);
-        map.setView([lat, lng], zoomLevel);
+        userMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'user-pulse-marker-container',
+                iconSize: [40, 54],
+                iconAnchor: [20, 54],
+                html: `
+                    <div class="user-pulse-circle"></div>
+                    <svg viewBox="0 0 100 150" style="width:36px;height:50px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6));">
+                        <path fill="#c5a859" stroke="#fff" stroke-width="4" d="M50,4 A46,46 0 0,0 4,50 C4,95 50,146 50,146 C50,146 96,95 96,50 A46,46 0 0,0 50,4 Z"/>
+                        <circle cx="50" cy="50" r="18" fill="#fff"/>
+                        <circle cx="50" cy="50" r="9" fill="#1c9e5b"/>
+                    </svg>
+                `
+            })
+        }).bindPopup(`<b style="font-family:'Tajawal',sans-serif;font-size:15px;color:#fff;">${popupText}</b>`).addTo(map);
 
-        userMarker = L.marker([lat, lng], { icon: L.divIcon({
-            className: '',
-            iconSize: [36, 54],
-            iconAnchor: [18, 54],
-            html: '<svg viewBox="0 0 100 150" style="width:36px;height:54px; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.5));"><path fill="#c5a859" stroke="#fff" stroke-width="4" d="M50,4 A46,46 0 0,0 4,50 C4,95 50,146 50,146 C50,146 96,95 96,50 A46,46 0 0,0 50,4 Z"/><circle cx="50" cy="50" r="20" fill="#fff"/></svg>'
-        })}).bindPopup(`<b style="font-family:Tajawal;font-size:15px;color:#000;">${popupText}</b>`).addTo(map);
-
-        // Draw visual 1km boundary circle
         radiusCircle = L.circle([lat, lng], {
             radius: radius,
             color: '#C5A859',
             fillColor: '#C5A859',
             fillOpacity: 0.08,
-            weight: 1.5,
-            dashArray: '5, 8'
+            weight: 2,
+            dashArray: '6, 8'
         }).addTo(map);
 
-        fetchMosques(lat, lng, radius); 
+        map.fitBounds(radiusCircle.getBounds(), { padding: [30, 30], maxZoom: 16 });
+
+        fetchMosques(lat, lng, radius);
     }
 
-    function fetchMosquesInView() {
-        const center = map.getCenter();
-        const bounds = map.getBounds();
-        const radius = Math.min(Math.round(map.distance(center, bounds.getNorthEast())), 5000);
-        
-        if (typeof showToast === 'function') showToast('جاري البحث في المنطقة المعروضة...', 1500, 'info');
-        fetchMosques(center.lat, center.lng, radius);
-    }
-
+    // ── جلب المساجد القريبة باستراتيجية متوازية وفائقة السرعة ──
     async function fetchMosques(lat, lng, radius) {
+        if (activeAbortController) {
+            activeAbortController.abort();
+        }
+        activeAbortController = new AbortController();
+        const signal = activeAbortController.signal;
+
         mosqueMarkers.forEach(m => map.removeLayer(m));
         mosqueMarkers = [];
         mosqueData = [];
-        
+
         const radiusLabel = radius >= 1000 ? (radius / 1000) + ' كم' : radius + ' متر';
-        document.getElementById('mosques-list').innerHTML = `
-            <div style="text-align:center; padding:25px; color:#aaa;">
-                <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--gold);"></i><br><br>
-                جاري البحث عن المساجد في نطاق ${radiusLabel}...
+        const listEl = document.getElementById('mosques-list');
+        listEl.innerHTML = `
+            <div class="mosque-loading-state">
+                <i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--gold);"></i>
+                <div style="font-weight:700; margin-top:12px; font-size:15px;">جاري البحث عن أقرب المساجد في نطاق ${radiusLabel}...</div>
+                <div style="font-size:12px; color:#aaa; margin-top:5px;">يتم الفحص والتحقق من أقرب بيوت الله إليك</div>
             </div>`;
 
-        // Enhanced Overpass Query covering nodes, ways, and relations (nwr)
-        // Catches all mosques, places of worship without religion tag, named masjids, angles/zawiyas, etc.
-        const overpassQuery = `
-            [out:json][timeout:25];
-            (
-              nwr["amenity"="mosque"](around:${radius},${lat},${lng});
-              nwr["building"="mosque"](around:${radius},${lat},${lng});
-              nwr["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
-              nwr["amenity"="place_of_worship"](around:${radius},${lat},${lng});
-              nwr["name"~"مسجد|جامع|مصلى|زاوية",i](around:${radius},${lat},${lng});
-            );
-            out center;
-        `;
+        let rawElements = null;
 
-        // Robust endpoints queried via GET (CORS simple request, zero preflight issues)
-        const encodedQuery = encodeURIComponent(overpassQuery.replace(/\s+/g, ' ').trim());
-        const apis = [
-            `https://overpass-api.de/api/interpreter?data=${encodedQuery}`,
-            `https://overpass.kumi.systems/api/interpreter?data=${encodedQuery}`,
-            `https://lz4.overpass-api.de/api/interpreter?data=${encodedQuery}`,
-            `https://z.overpass-api.de/api/interpreter?data=${encodedQuery}`
-        ];
-
-        let elements = null;
-        for (const api of apis) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
-                
-                const response = await fetch(api, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && Array.isArray(data.elements)) {
-                        elements = data.elements;
-                        break;
-                    }
+        // 1. الخيار الأول: فحص خادم الويب المحلي /api/mosques إذا كان متاحاً
+        try {
+            const localApiUrl = `/api/mosques?lat=${lat}&lng=${lng}&radius=${radius}`;
+            const localRes = await fetch(localApiUrl, { signal: AbortSignal.timeout(2800) });
+            if (localRes.ok) {
+                const data = await localRes.json();
+                if (data && data.status === 'success' && Array.isArray(data.mosques) && data.mosques.length > 0) {
+                    processAndDisplayMosques(data.mosques, lat, lng, radius);
+                    return;
                 }
-            } catch (err) {
-                console.warn(`Overpass mirror timeout/failure, trying next...`);
             }
+        } catch (e) {
+            // الخادم المحلي غير متاح أو يعمل التطبيق كصفحة ثابتة (Static/GitHub Pages)، الانتقال للخطوة التالية
         }
 
-        // Secondary Fallback: Nominatim OpenStreetMap Search API if Overpass is busy
-        if (!elements || elements.length === 0) {
+        // 2. الخيار الثاني: استعلام متوازي عالي الأداء مع خوادم OpenStreetMap & Overpass
+        const overpassQuery = `[out:json][timeout:8];(
+          node["amenity"="mosque"](around:${radius},${lat},${lng});
+          way["amenity"="mosque"](around:${radius},${lat},${lng});
+          node["building"="mosque"](around:${radius},${lat},${lng});
+          way["building"="mosque"](around:${radius},${lat},${lng});
+          node["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
+          way["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
+        );out center;`;
+
+        const overpassMirrors = [
+            `https://maps.mail.ru/osm/tools/overpass/api/interpreter?data=${encodeURIComponent(overpassQuery)}`,
+            `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`,
+            `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(overpassQuery)}`
+        ];
+
+        const queryMirror = async (url) => {
+            const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (data && Array.isArray(data.elements)) {
+                return data.elements;
+            }
+            throw new Error('No elements');
+        };
+
+        try {
+            // السباق بين المرايا: أسرع خادم يستجيب بنجاح يُعتمد فوراً
+            rawElements = await Promise.any(overpassMirrors.map(queryMirror));
+        } catch (err) {
+            console.warn("[Mosques] Overpass race finished with no direct mirrors:", err);
+        }
+
+        // 3. الخيار الثالث: Fallback عبر Nominatim إذا تعثرت خوادم Overpass
+        if (!rawElements || rawElements.length === 0) {
             try {
-                const deltaDeg = (radius / 111320) * 1.15;
+                const deltaDeg = (radius / 111320) * 1.1;
                 const minLat = lat - deltaDeg, maxLat = lat + deltaDeg;
                 const minLng = lng - (deltaDeg / Math.cos(lat * Math.PI / 180));
                 const maxLng = lng + (deltaDeg / Math.cos(lat * Math.PI / 180));
-                
-                const [nomMosques, nomGamaa] = await Promise.all([
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=مسجد&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1&limit=50&accept-language=ar`).then(r => r.ok ? r.json() : []).catch(() => []),
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=جامع&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1&limit=50&accept-language=ar`).then(r => r.ok ? r.json() : []).catch(() => [])
-                ]);
 
-                const combined = [...(Array.isArray(nomMosques) ? nomMosques : []), ...(Array.isArray(nomGamaa) ? nomGamaa : [])];
-                if (combined.length > 0) {
-                    elements = combined.map(n => ({
-                        lat: parseFloat(n.lat),
-                        lon: parseFloat(n.lon),
-                        tags: { name: (n.display_name || '').split(',')[0], amenity: 'mosque' }
-                    }));
+                const nomRes = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=%D9%85%D8%B3%D8%AC%D8%AF&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1&limit=40&accept-language=ar`,
+                    { signal: AbortSignal.timeout(4000) }
+                );
+                if (nomRes.ok) {
+                    const nomData = await nomRes.json();
+                    if (Array.isArray(nomData) && nomData.length > 0) {
+                        rawElements = nomData.map(n => ({
+                            lat: parseFloat(n.lat),
+                            lon: parseFloat(n.lon),
+                            tags: { name: (n.display_name || '').split(',')[0], amenity: 'mosque' }
+                        }));
+                    }
                 }
-            } catch(e) {
-                console.warn("Nominatim fallback error:", e);
+            } catch (nomErr) {
+                console.warn("[Mosques] Nominatim fallback failed:", nomErr);
             }
         }
 
-        if (!elements) {
-            document.getElementById('mosques-list').innerHTML = `
+        // في حال تعذر الاتصال بجميع الخوادم
+        if (!rawElements) {
+            listEl.innerHTML = `
                 <div style="text-align:center; padding:25px; color:#e74c3c; line-height: 1.8;">
                     <i class="fa-solid fa-triangle-exclamation fa-2x" style="margin-bottom:10px;"></i><br>
-                    تعذر الاتصال بخوادم الخرائط حالياً.<br>
-                    <button type="button" onclick="fetchMosques(${lat}, ${lng}, ${radius})" style="margin-top:10px; background:rgba(197,168,89,0.2); border:1px solid var(--gold); color:var(--gold); padding:6px 16px; border-radius:20px; cursor:pointer; font-family:inherit;">
-                        <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+                    تعذر الاتصال بخوادم الخرائط حالياً، يرجى التحقق من اتصال الإنترنت.<br>
+                    <button type="button" onclick="fetchMosques(${lat}, ${lng}, ${radius})" style="margin-top:14px; background:rgba(197,168,89,0.25); border:1px solid var(--gold); color:var(--gold); padding:8px 20px; border-radius:20px; cursor:pointer; font-family:inherit; font-weight:700;">
+                        <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة الآن
                     </button>
                 </div>`;
-            if (typeof showToast === 'function') showToast('حدث خطأ في جلب البيانات، يرجى المحاولة ثانية', 3000, 'error');
+            if (typeof showToast === 'function') showToast('تعذر جلب المساجد، يرجى المحاولة مرة ثانية', 3500, 'error');
             return;
         }
 
-        // Process elements and filter non-Islamic or non-mosque entities
-        const rawMosques = [];
-        elements.forEach((el) => {
+        // تحويل وتصفية عناصر OpenStreetMap
+        const parsedList = [];
+        rawElements.forEach((el) => {
             const mLat = el.lat || (el.center && el.center.lat);
             const mLng = el.lon || (el.center && el.center.lon);
             if (!mLat || !mLng) return;
-            
-            const tags = el.tags || {};
 
-            // Exclude commercial shops, pharmacies, schools that might have "مسجد" in their address
+            const tags = el.tags || {};
             if (tags.shop || tags.office || (tags.amenity && !['place_of_worship', 'mosque', 'community_centre'].includes(tags.amenity))) {
                 return;
             }
-
-            // Exclude if religion explicitly non-Muslim
             if (tags.religion && tags.religion.toLowerCase() !== 'muslim') return;
 
             const rawName = tags.name || tags['name:ar'] || tags['name:en'] || '';
-            const lowerName = rawName.toLowerCase();
+            const lower = rawName.toLowerCase();
 
-            // Exclude churches, monasteries, cathedrals, cemeteries
-            if (lowerName.includes('كنيسة') || lowerName.includes('دير') || lowerName.includes('مطرانية') || 
-                lowerName.includes('كاتدرائية') || lowerName.includes('church') || lowerName.includes('synagogue') || 
-                lowerName.includes('cathedral') || lowerName.includes('monastery') || lowerName.includes('مدافن') || 
-                lowerName.includes('مقبرة') || lowerName.includes('cemetery') || lowerName.includes('saint') || lowerName.includes('coptic')) {
+            // استبعاد الكنائس والأديرة والجامعات غير المسجدية
+            if (lower.includes('كنيسة') || lower.includes('دير') || lower.includes('مطرانية') ||
+                lower.includes('church') || lower.includes('cathedral') || lower.includes('synagogue') ||
+                lower.includes('مدافن') || lower.includes('مقبرة')) {
                 return;
             }
+            if (lower.includes('جامعة') && !lower.includes('مسجد') && !lower.includes('جامع ')) return;
 
             let name = rawName.trim() || 'مسجد';
             if (name.startsWith("شارع ")) name = name.replace("شارع ", "");
-            
-            let areaName = '';
-            if (tags['addr:suburb']) areaName = tags['addr:suburb'];
-            else if (tags['addr:city']) areaName = tags['addr:city'];
-            else if (tags['addr:village']) areaName = tags['addr:village'];
-            else if (tags['addr:street']) areaName = tags['addr:street'];
+
+            let areaName = tags['addr:street'] || tags['addr:suburb'] || tags['addr:city'] || tags['addr:district'] || '';
             if (areaName.startsWith("شارع ")) areaName = areaName.replace("شارع ", "");
 
-            let distNum = 0;
-            if (currentPos) {
-                distNum = getDistance(currentPos.lat, currentPos.lng, mLat, mLng);
-            }
+            const dist = getDistance(lat, lng, mLat, mLng);
+            if (dist > radius + 150) return;
 
-            // Exclude anything strictly beyond requested radius (allow 100m margin for center calculation)
-            if (radius && distNum > radius + 100) return;
-
-            rawMosques.push({ lat: mLat, lng: mLng, name, areaName, dist: distNum });
+            parsedList.push({ name, lat: mLat, lng: mLng, areaName, dist });
         });
 
-        // Deduplicate: merge nodes & ways/relations referring to the same mosque (< 35m distance)
-        const dedupedMosques = [];
-        for (const item of rawMosques) {
-            const existing = dedupedMosques.find(d => getDistance(d.lat, d.lng, item.lat, item.lng) < 35);
+        processAndDisplayMosques(parsedList, lat, lng, radius);
+    }
+
+    // ── معالجة، دمج التكرارات، وعرض المساجد ────────────────
+    function processAndDisplayMosques(rawList, userLat, userLng, radius) {
+        // حساب المسافات إذا لم تكن محسوبة
+        const listWithDist = rawList.map(m => ({
+            ...m,
+            dist: m.dist !== undefined ? m.dist : getDistance(userLat, userLng, m.lat, m.lng)
+        })).filter(m => m.dist <= radius + 150);
+
+        // دمج المساجد المكررة التي تقل المسافة بينها عن 35 متر
+        const deduped = [];
+        for (const item of listWithDist) {
+            const existing = deduped.find(d => getDistance(d.lat, d.lng, item.lat, item.lng) < 35);
             if (existing) {
-                // If existing has generic 'مسجد' and current item has a specific name, upgrade
                 if (existing.name === 'مسجد' && item.name !== 'مسجد') {
                     existing.name = item.name;
                 }
@@ -289,250 +349,347 @@ const slides = document.querySelectorAll('.carousel-slide');
                     existing.areaName = item.areaName;
                 }
             } else {
-                dedupedMosques.push(item);
+                deduped.push(item);
             }
         }
 
-        // Sort by closest first
-        dedupedMosques.sort((a, b) => a.dist - b.dist);
+        // الترتيب من الأقرب للأبعد
+        deduped.sort((a, b) => a.dist - b.dist);
 
-        // Build markers and mosqueData
-        dedupedMosques.forEach((m, index) => {
-            const formattedDist = m.dist < 1000 ? `${m.dist} متر` : `${(m.dist / 1000).toFixed(1)} كم`;
+        // تحديث المسبح المؤقت
+        cachedMosquesPool = deduped;
 
-            const marker = L.marker([m.lat, m.lng], { icon: L.divIcon({
-                className:'', iconSize:[32,32], iconAnchor:[16,32],
-                html:`<div style="background:var(--gold); width:32px; height:32px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.6);">
-                    <i aria-hidden="true" class="fa-solid fa-mosque" style="color:#000; font-size:15px; transform:rotate(45deg);"></i>
-                </div>`
-            })}).bindPopup(`
-                <div style="text-align:right; direction:rtl; font-family:'Tajawal', sans-serif;">
-                    <div style="font-size:15px; font-weight:800; color:#fff; margin-bottom:5px;">${m.name}</div>
-                    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:8px;">
-                        <span style="color:#aaa; font-size:12px;"><i class="fa-solid fa-map-pin"></i> ${m.areaName || 'مسجد'}</span>
-                        <span style="color:var(--gold); font-size:12px; font-weight:bold;"><i class="fa-solid fa-person-walking"></i> ${formattedDist}</span>
+        renderMosques(deduped);
+    }
+
+    // ── رسم العناصر على الخريطة والقائمة ───────────────────
+    function renderMosques(list) {
+        mosqueMarkers.forEach(m => map.removeLayer(m));
+        mosqueMarkers = [];
+        mosqueData = [];
+
+        list.forEach((m, index) => {
+            const formattedDist = formatDistanceText(m.dist);
+            const timeEst = estimateTimeText(m.dist);
+
+            // إنشاء علامة مخصصة مميزة على الخريطة
+            const marker = L.marker([m.lat, m.lng], {
+                icon: L.divIcon({
+                    className: '',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 36],
+                    html: `
+                        <div class="mosque-map-pin">
+                            <i aria-hidden="true" class="fa-solid fa-mosque"></i>
+                        </div>`
+                })
+            }).bindPopup(`
+                <div class="custom-popup-content">
+                    <div class="popup-mosque-title">
+                        <i class="fa-solid fa-mosque" style="color:var(--gold);"></i> ${m.name}
                     </div>
-                    <div style="display:flex; gap:6px; margin-top:8px;">
-                        <button type="button" onclick="window.toggleLineToMosque(${m.lat}, ${m.lng})" style="flex:1; background:rgba(197,168,89,0.15); border:1px solid rgba(197,168,89,0.4); padding:5px 8px; border-radius:5px; text-align:center; color:var(--gold); font-size:12px; cursor:pointer; font-family:inherit; font-weight:700;">
+                    <div class="popup-meta-row">
+                        <span class="popup-meta-dist"><i class="fa-solid fa-person-walking"></i> ${formattedDist} (${timeEst})</span>
+                        ${m.areaName ? `<span class="popup-meta-area"><i class="fa-solid fa-location-dot"></i> ${m.areaName}</span>` : ''}
+                    </div>
+                    <div class="popup-actions-row">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" class="popup-btn-gmaps" title="الاتجاهات في خرائط Google">
+                            <i class="fa-solid fa-diamond-turn-right"></i> فتح في Google Maps
+                        </a>
+                        <button type="button" class="popup-btn-route" onclick="window.toggleLineToMosque(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}', ${m.dist})">
                             <i class="fa-solid fa-route"></i> المسافة
                         </button>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" style="flex:1; background:rgba(28,158,91,0.25); border:1px solid var(--green); padding:5px 8px; border-radius:5px; text-align:center; color:#2ecc71; font-size:12px; text-decoration:none; font-family:inherit; font-weight:700;">
-                            <i class="fa-solid fa-location-arrow"></i> اتجاهات السير
-                        </a>
                     </div>
                 </div>
-            `, { offset: [0, -20], className: 'custom-map-popup', closeButton: false });
+            `, { offset: [0, -22], className: 'custom-map-popup', closeButton: true });
 
-            marker.on('mouseover', function() { this.openPopup(); });
             marker.addTo(map);
             mosqueMarkers.push(marker);
-            
-            mosqueData.push({ id: index, name: m.name, lat: m.lat, lng: m.lng, dist: m.dist, marker, areaName: m.areaName });
+
+            mosqueData.push({
+                id: index,
+                name: m.name,
+                lat: m.lat,
+                lng: m.lng,
+                dist: m.dist,
+                marker: marker,
+                areaName: m.areaName || 'مسجد'
+            });
         });
 
-        renderMosqueList();
+        renderMosqueListUI();
 
+        const radiusLabel = selectedRadius >= 1000 ? (selectedRadius / 1000) + ' كم' : selectedRadius + ' متر';
         if (typeof showToast === 'function') {
             if (mosqueData.length > 0) {
-                showToast(`تم العثور على ${mosqueData.length} مسجد ضمن نطاق ${radiusLabel}`, 3000, 'success');
+                showToast(`تم العثور على ${mosqueData.length} مسجد ضمن نطاق ${radiusLabel}`, 2500, 'success');
             } else {
-                showToast(`لم يتم العثور على مساجد ضمن نطاق ${radiusLabel}`, 3000, 'info');
+                showToast(`لم يتم العثور على مساجد في نطاق ${radiusLabel}`, 2500, 'info');
             }
         }
     }
-    
-    function renderMosqueList() {
+
+    function renderMosqueListUI() {
         const listEl = document.getElementById('mosques-list');
         const radiusLabel = selectedRadius >= 1000 ? (selectedRadius / 1000) + ' كم' : selectedRadius + ' متر';
-        
+
         if (mosqueData.length === 0) {
             listEl.innerHTML = `
-                <div style="text-align:center; padding:25px; color:#aaa; line-height:1.8;">
-                    <i class="fa-solid fa-mosque" style="font-size:32px; color:rgba(197,168,89,0.5); margin-bottom:12px;"></i><br>
-                    لم يتم العثور على مساجد مسجلة ضمن نطاق ${radiusLabel}.<br>
-                    <button type="button" onclick="setSearchRadius(${selectedRadius + 1000})" style="margin-top:14px; background:rgba(197,168,89,0.2); border:1px solid var(--gold); color:var(--gold); padding:7px 18px; border-radius:20px; cursor:pointer; font-family:inherit; font-weight:700; font-size:13px;">
-                        <i class="fa-solid fa-arrows-maximize"></i> توسيع البحث إلى ${((selectedRadius + 1000)/1000)} كم
+                <div style="text-align:center; padding:30px 20px; color:#aaa; line-height:1.8;">
+                    <i class="fa-solid fa-mosque" style="font-size:38px; color:rgba(197,168,89,0.5); margin-bottom:12px;"></i><br>
+                    <strong style="color:var(--white); font-size:16px;">لم يتم العثور على مساجد ضمن نطاق ${radiusLabel}</strong><br>
+                    يمكنك توسيع نطاق البحث للعثور على مساجد أخرى قريبة.<br>
+                    <button type="button" onclick="setSearchRadius(${Math.min(selectedRadius + 1000, 5000)})" style="margin-top:16px; background:rgba(197,168,89,0.25); border:1px solid var(--gold); color:var(--gold); padding:8px 22px; border-radius:20px; cursor:pointer; font-family:inherit; font-weight:700; font-size:13.5px; transition:0.3s;">
+                        <i class="fa-solid fa-arrows-maximize"></i> توسيع البحث إلى ${Math.min(selectedRadius + 1000, 5000) / 1000} كم
                     </button>
                 </div>`;
             return;
         }
-        
+
         let html = '';
         mosqueData.forEach(m => {
-            const formattedDist = m.dist < 1000 ? `${m.dist} متر` : `${(m.dist / 1000).toFixed(1)} كم`;
+            const formattedDist = formatDistanceText(m.dist);
+            const timeEst = estimateTimeText(m.dist);
+
             html += `
                 <div class="mosque-item" onclick="flyToMosque(${m.lat}, ${m.lng}, ${m.id})">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-                        <div class="mosque-item-title"><i aria-hidden="true" class="fa-solid fa-mosque"></i> ${m.name}</div>
-                        <span style="color:var(--gold); font-weight:800; font-size:12.5px; white-space:nowrap;">
+                    <div class="mosque-item-header">
+                        <div class="mosque-item-title">
+                            <i aria-hidden="true" class="fa-solid fa-mosque"></i>
+                            <span>${m.name}</span>
+                        </div>
+                        <span class="mosque-dist-badge">
                             <i class="fa-solid fa-person-walking"></i> ${formattedDist}
+                            <span class="mosque-dist-time">(${timeEst})</span>
                         </span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; gap:8px; flex-wrap:wrap;">
-                        <span id="list-area-${m.id}" style="color:#aaa; font-size:12px;"><i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${m.areaName || 'مسجد'}</span>
-                        <div style="display:flex; gap:6px;" onclick="event.stopPropagation();">
-                            <button type="button" class="mosque-nav-link" onclick="window.toggleLineToMosque(${m.lat}, ${m.lng})" title="رسم خط المسافة">
-                                <i class="fa-solid fa-route"></i> المسافة
-                            </button>
-                            <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" class="mosque-nav-link" title="الاتجاهات عبر خرائط جوجل" style="background:rgba(28,158,91,0.2); border-color:var(--green); color:#2ecc71;">
-                                <i class="fa-solid fa-diamond-turn-right"></i> اتجاهات السير
-                            </a>
-                        </div>
+
+                    <div class="mosque-item-body">
+                        <span class="mosque-area-label" id="list-area-${m.id}">
+                            <i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${m.areaName}
+                        </span>
+                    </div>
+
+                    <div class="mosque-actions-bar" onclick="event.stopPropagation();">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" class="mosque-gmaps-btn" title="الاتجاهات عبر خرائط Google">
+                            <i class="fa-solid fa-diamond-turn-right"></i> خرائط Google
+                        </a>
+                        <button type="button" class="mosque-nav-link" onclick="window.toggleLineToMosque(${m.lat}, ${m.lng}, '${m.name.replace(/'/g, "\\'")}', ${m.dist})" title="رسم خط المسافة على الخريطة">
+                            <i class="fa-solid fa-route"></i> المسافة
+                        </button>
                     </div>
                 </div>
             `;
         });
-        listEl.innerHTML = html;
 
-        // Fetch area names in background if missing
-        mosqueData.forEach((m, idx) => {
-            if (!m.areaName || m.areaName === 'مسجد') {
-                setTimeout(() => {
-                    axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${m.lat}&longitude=${m.lng}&localityLanguage=ar`)
-                        .then(res => {
-                            let area = res.data.locality || res.data.city || '';
-                            if (area.startsWith("شارع ")) area = area.replace("شارع ", "");
-                            if (area) {
-                                m.areaName = area;
-                                const areaEl = document.getElementById(`list-area-${m.id}`);
-                                if (areaEl) areaEl.innerHTML = `<i class="fa-solid fa-map-pin"></i> ${area}`;
-                            }
-                        }).catch(() => {});
-                }, idx * 400);
-            }
-        });
+        listEl.innerHTML = html;
     }
-    
+
+    // ── التركيز والانتقال إلى المسجد المحدد ───────────────
     window.flyToMosque = function(lat, lng, id) {
-        map.flyTo([lat, lng], 17, { duration: 1.2 });
+        if (!map) return;
+        map.flyTo([lat, lng], 17, { duration: 0.8 });
         const target = mosqueData.find(m => m.id === id);
         if (target && target.marker) {
-            setTimeout(() => target.marker.openPopup(), 1200);
+            setTimeout(() => target.marker.openPopup(), 850);
         }
-        
+
         if (window.innerWidth < 850) {
-            document.getElementById('map-wrapper').scrollIntoView({behavior: 'smooth'});
+            const mapWrap = document.getElementById('map-wrapper');
+            if (mapWrap) {
+                mapWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     };
 
-    function searchByCityName() {
-        const query = document.getElementById('search-input').value;
-        if (!query) return;
-        
-        if (typeof showToast === 'function') showToast('جاري البحث عن المنطقة...', 2000, 'info');
+    // ── البحث في نطاق الخريطة المعروض حالياً ──────────────
+    window.fetchMosquesInView = function() {
+        if (!map) return;
+        const center = map.getCenter();
+        const bounds = map.getBounds();
+        const radius = Math.min(Math.round(map.distance(center, bounds.getNorthEast())), 5000);
 
-        axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=ar`)
+        if (typeof showToast === 'function') showToast('جاري البحث في المنطقة المعروضة...', 1500, 'info');
+        setUserLocationAndSearch(center.lat, center.lng, 'المنطقة المحددة', radius);
+    };
+
+    // ── البحث عن مدينة أو منطقة بالاسم ───────────────────
+    window.searchByCityName = function() {
+        const input = document.getElementById('search-input');
+        if (!input || !input.value.trim()) return;
+        const query = input.value.trim();
+
+        if (typeof showToast === 'function') showToast('جاري البحث عن المنطقة...', 1500, 'info');
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=ar`)
+            .then(r => r.json())
             .then(res => {
-                if (res.data && res.data.length > 0) {
-                    const place = res.data[0];
+                if (res && res.length > 0) {
+                    const place = res[0];
                     const lat = parseFloat(place.lat);
                     const lng = parseFloat(place.lon);
-                    const cityName = place.display_name.split(',')[0];
-                    
-                    document.getElementById('user-location-display').style.display = 'block';
-                    document.getElementById('user-location-text').innerText = cityName;
-                    
+                    const cityName = (place.display_name || '').split(',')[0];
+
+                    const displayEl = document.getElementById('user-location-display');
+                    const textEl = document.getElementById('user-location-text');
+                    if (displayEl && textEl) {
+                        displayEl.style.display = 'inline-block';
+                        textEl.innerText = cityName;
+                    }
+
                     setUserLocationAndSearch(lat, lng, cityName, selectedRadius);
                 } else {
-                    if (typeof showToast === 'function') showToast('لم يتم العثور على المنطقة', 3000, 'warning');
+                    if (typeof showToast === 'function') showToast('لم يتم العثور على المنطقة المحددة', 2500, 'warning');
                 }
             })
-            .catch(err => {
-                console.error(err);
-                if (typeof showToast === 'function') showToast('حدث خطأ أثناء البحث', 3000, 'error');
+            .catch(() => {
+                if (typeof showToast === 'function') showToast('تعذر البحث عن المنطقة', 2500, 'error');
             });
-    }
+    };
 
+    // ── جلب اسم الموقع بالعربية في الخلفية ─────────────────
     function fetchUserLocationName(lat, lng) {
-        axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
-            .then(res => {
-                let city = res.data.city || res.data.principalSubdivision || '';
-                let locality = res.data.locality || '';
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+            .then(r => r.json())
+            .then(data => {
+                const city = data.city || data.principalSubdivision || '';
+                const locality = data.locality || '';
                 let text = locality ? `${city}، ${locality}` : city;
                 if (!text) text = 'موقعك الحالي';
-                
-                document.getElementById('user-location-display').style.display = 'block';
-                document.getElementById('user-location-text').innerText = text;
+
+                const displayEl = document.getElementById('user-location-display');
+                const textEl = document.getElementById('user-location-text');
+                if (displayEl && textEl) {
+                    displayEl.style.display = 'inline-block';
+                    textEl.innerText = text;
+                }
                 localStorage.setItem('quiblah_user_city', text);
             })
-            .catch(() => {
-                document.getElementById('user-location-display').style.display = 'block';
-                document.getElementById('user-location-text').innerText = 'موقعك الحالي';
-            });
+            .catch(() => {});
     }
 
-    function startLocationSearch() {
-        document.getElementById('start-btn').style.display = 'none';
-        document.getElementById('loader-text').style.display = 'inline-flex';
-        document.getElementById('loader-text').innerHTML = `<i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري تحديد موقعك...`;
+    // ── تحديد الموقع الجغرافي (زر موقعي) ──────────────────
+    window.startLocationSearch = function() {
+        const startBtn = document.getElementById('start-btn');
+        const loaderText = document.getElementById('loader-text');
+
+        if (startBtn) startBtn.style.display = 'none';
+        if (loaderText) {
+            loaderText.style.display = 'inline-flex';
+            loaderText.innerHTML = `<i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري تحديد موقعك...`;
+        }
+
+        const restoreBtn = () => {
+            if (loaderText) loaderText.style.display = 'none';
+            if (startBtn) startBtn.style.display = 'inline-flex';
+        };
 
         if (!('geolocation' in navigator)) {
-            document.getElementById('loader-text').innerHTML = `<span style="color:#e74c3c;">تحديد الموقع غير مدعوم</span>`;
-            setTimeout(() => {
-                document.getElementById('loader-text').style.display = 'none';
-                document.getElementById('start-btn').style.display = 'inline-flex';
-            }, 3000);
+            if (loaderText) loaderText.innerHTML = `<span style="color:#e74c3c;">تحديد الموقع غير مدعوم</span>`;
+            setTimeout(restoreBtn, 2000);
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(pos => {
-            currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            localStorage.setItem('quiblah_user_lat', currentPos.lat);
-            localStorage.setItem('quiblah_user_lng', currentPos.lng);
+        // استخدام إعدادات سريعة وموثوقة لعدم تعليق المتصفح
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                localStorage.setItem('quiblah_user_lat', currentPos.lat);
+                localStorage.setItem('quiblah_user_lng', currentPos.lng);
 
-            document.getElementById('loader-text').innerHTML = `
-                <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري البحث...
-            `;
-            setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي', selectedRadius); 
-            fetchUserLocationName(currentPos.lat, currentPos.lng);
+                restoreBtn();
+                setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك الحالي', selectedRadius);
+                fetchUserLocationName(currentPos.lat, currentPos.lng);
+                if (typeof showToast === 'function') showToast('تم تحديد موقعك بنجاح', 2000, 'success');
+            },
+            (err) => {
+                console.warn("[Mosques] Geolocation error/timeout:", err);
+                restoreBtn();
 
-            document.getElementById('loader-text').style.display = 'none';
-            document.getElementById('start-btn').style.display = 'inline-flex';
-        }, (err) => {
-            console.warn("GPS error:", err);
-            // Fallback to Cairo or cached location if GPS is off
-            const cachedLat = localStorage.getItem('quiblah_user_lat');
-            const cachedLng = localStorage.getItem('quiblah_user_lng');
-            if (!currentPos && cachedLat && cachedLng) {
-                currentPos = { lat: parseFloat(cachedLat), lng: parseFloat(cachedLng) };
-                setUserLocationAndSearch(currentPos.lat, currentPos.lng, 'موقعك المسجل', selectedRadius);
-            } else if (!currentPos) {
-                setUserLocationAndSearch(30.0444, 31.2357, 'القاهرة (افتراضي)', selectedRadius);
-            }
+                // إذا كان لدينا موقع محفوظ سابقاً في localStorage
+                const cachedLat = localStorage.getItem('quiblah_user_lat');
+                const cachedLng = localStorage.getItem('quiblah_user_lng');
+                const cachedCity = localStorage.getItem('quiblah_user_city');
 
-            document.getElementById('loader-text').innerHTML = `
-                <i aria-hidden="true" class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;"></i> <span style="color:#e74c3c;">يرجى تفعيل خدمة الموقع GPS لدقة أفضل</span>`;
-            setTimeout(() => {
-                document.getElementById('loader-text').style.display = 'none';
-                document.getElementById('start-btn').style.display = 'inline-flex';
-            }, 4000);
-        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
-    }
+                if (cachedLat && cachedLng) {
+                    currentPos = { lat: parseFloat(cachedLat), lng: parseFloat(cachedLng) };
+                    setUserLocationAndSearch(currentPos.lat, currentPos.lng, cachedCity || 'موقعك المحفوظ', selectedRadius);
+                    if (typeof showToast === 'function') showToast('تم استخدام موقعك المحفوظ', 2500, 'info');
+                } else {
+                    // استخدام القاهرة كافتراضي لعدم ترك الشاشة فارغة
+                    currentPos = { lat: 30.0444, lng: 31.2357 };
+                    setUserLocationAndSearch(30.0444, 31.2357, 'القاهرة (افتراضي)', selectedRadius);
+                    if (typeof showToast === 'function') showToast('يرجى السماح بخدمة الموقع GPS لدقة أفضل', 3500, 'warning');
+                }
+            },
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+        );
+    };
 
-    function toggleListSearch() {
+    // ── تصفية القائمة بالاسم ─────────────────────────────
+    window.toggleListSearch = function() {
         const input = document.getElementById('list-search-input');
         const icon = document.getElementById('toggle-list-search');
+        if (!input) return;
+
         if (input.style.display === 'none') {
             input.style.display = 'block';
             input.focus();
-            icon.style.color = 'var(--gold)';
+            if (icon) icon.style.color = 'var(--gold)';
         } else {
             input.style.display = 'none';
             input.value = '';
-            icon.style.color = '#aaa';
+            if (icon) icon.style.color = '#aaa';
             filterMosqueList();
         }
-    }
+    };
 
-    function filterMosqueList() {
-        const query = document.getElementById('list-search-input').value.toLowerCase();
+    window.filterMosqueList = function() {
+        const input = document.getElementById('list-search-input');
+        if (!input) return;
+        const query = input.value.toLowerCase().trim();
         const items = document.querySelectorAll('.mosque-item');
         items.forEach(item => {
             const text = item.innerText.toLowerCase();
-            if (text.includes(query)) {
+            if (!query || text.includes(query)) {
                 item.style.display = 'flex';
             } else {
                 item.style.display = 'none';
             }
         });
-    }
+    };
+
+    // ── تهيئة الخريطة عند تحميل الصفحة ────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) return;
+
+        map = L.map('map', { zoomControl: true, attributionControl: false }).setView([30.0444, 31.2357], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            subdomains: ['a', 'b', 'c']
+        }).addTo(map);
+
+        // 1. التحميل اللحظي الفوري من الموقع المحفوظ في الذاكرة
+        const cachedLat = localStorage.getItem('quiblah_user_lat');
+        const cachedLng = localStorage.getItem('quiblah_user_lng');
+        const cachedCity = localStorage.getItem('quiblah_user_city');
+
+        if (cachedLat && cachedLng) {
+            currentPos = { lat: parseFloat(cachedLat), lng: parseFloat(cachedLng) };
+            if (cachedCity) {
+                const displayEl = document.getElementById('user-location-display');
+                const textEl = document.getElementById('user-location-text');
+                if (displayEl && textEl) {
+                    displayEl.style.display = 'inline-block';
+                    textEl.innerText = cachedCity;
+                }
+            }
+            setUserLocationAndSearch(currentPos.lat, currentPos.lng, cachedCity || 'موقعك الحالي', selectedRadius);
+        } else {
+            // 2. طلب تحديد الموقع فوراً إذا لم يكن هناك موقع محفوظ
+            startLocationSearch();
+        }
+    });
+
+})();

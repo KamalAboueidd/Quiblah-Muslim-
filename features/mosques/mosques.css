@@ -84,16 +84,113 @@
         .mosques-list::-webkit-scrollbar-thumb { background: rgba(197,168,89,0.5); border-radius: 10px; }
 
         .mosque-item {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;
-            display: flex; flex-direction: column; gap: 5px; text-align: right;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(197,168,89,0.22);
+            border-radius: 10px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.22s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            text-align: right;
         }
         .mosque-item:hover {
-            background: rgba(255,255,255,0.1); border-color: rgba(197,168,89,0.4);
-            transform: translateY(-1px);
+            background: rgba(255,255,255,0.12);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
         }
-        .mosque-item-title { font-weight: 800; color: var(--gold); font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        .mosque-item-dist { font-size: 13px; color: #ccc; }
+        .mosque-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .mosque-item-title {
+            font-weight: 800;
+            color: #fff;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mosque-item-title i {
+            color: var(--gold);
+            font-size: 16px;
+        }
+        .mosque-dist-badge {
+            background: rgba(197,168,89,0.18);
+            border: 1px solid rgba(197,168,89,0.5);
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .mosque-dist-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 500;
+        }
+        .mosque-item-body {
+            display: flex;
+            align-items: center;
+            font-size: 12.5px;
+            color: #bbb;
+        }
+        .mosque-actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .mosque-gmaps-btn {
+            background: rgba(28, 158, 91, 0.25);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .mosque-gmaps-btn:hover {
+            background: #1c9e5b;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+        }
+
+        .mosque-nav-link {
+            background: rgba(197,168,89,0.15);
+            border: 1px solid rgba(197,168,89,0.4);
+            color: var(--gold);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .mosque-nav-link:hover {
+            background: var(--gold);
+            color: #000;
+        }
 
         .radius-pill {
             background: rgba(255,255,255,0.08);
@@ -119,46 +216,173 @@
             color: var(--gold);
         }
 
-        .mosque-nav-link {
-            background: rgba(197,168,89,0.15);
-            border: 1px solid rgba(197,168,89,0.4);
-            color: var(--gold);
-            padding: 4px 9px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            text-decoration: none;
-            display: inline-flex;
+        /* Mosque Map Marker Pin */
+        .mosque-map-pin {
+            background: var(--gold);
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
             align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-            font-weight: 700;
+            justify-content: center;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
         }
-        .mosque-nav-link:hover {
+        .mosque-map-pin:hover {
+            transform: rotate(-45deg) scale(1.15);
+            box-shadow: 0 0 16px rgba(197,168,89,0.8);
+        }
+        .mosque-map-pin i {
+            color: #000;
+            font-size: 16px;
+            transform: rotate(45deg);
+        }
+
+        /* User Pulse Marker */
+        .user-pulse-marker-container {
+            position: relative;
+        }
+        .user-pulse-circle {
+            position: absolute;
+            top: 15px;
+            left: 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(28, 158, 91, 0.45);
+            animation: userPulse 2s infinite ease-out;
+            pointer-events: none;
+        }
+        @keyframes userPulse {
+            0% { transform: scale(0.6); opacity: 0.9; }
+            100% { transform: scale(2.3); opacity: 0; }
+        }
+
+        /* Custom Map Popup */
+        .custom-map-popup .leaflet-popup-content-wrapper {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            direction: rtl;
+            text-align: right;
+            padding: 2px;
+        }
+        .custom-map-popup .leaflet-popup-content {
+            margin: 10px 12px;
+        }
+        .custom-map-popup .leaflet-popup-tip {
+            background: rgba(18, 18, 18, 0.95);
+            border: 1px solid var(--gold);
+            border-top: none;
+            border-left: none;
+        }
+        .custom-popup-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .popup-mosque-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .popup-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #bbb;
+        }
+        .popup-meta-dist {
+            color: var(--gold);
+            font-weight: 700;
+        }
+        .popup-actions-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .popup-btn-gmaps {
+            flex: 1.4;
+            background: #1c9e5b;
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+        .popup-btn-gmaps:hover {
+            background: #27ae60;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+        .popup-btn-route {
+            flex: 1;
+            background: rgba(197, 168, 89, 0.2);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .popup-btn-route:hover {
             background: var(--gold);
             color: #000;
         }
 
-        /* Custom Tooltip Styling */
-        .custom-map-tooltip { 
-            background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(5px); 
-            border: 1px solid var(--gold); border-radius: 8px; 
-            padding: 8px 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        /* Distance Line Tooltip */
+        .distance-line-tooltip {
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 12px;
+            border-radius: 6px;
+            padding: 3px 8px;
             font-family: 'Tajawal', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
         }
-        .leaflet-tooltip-left.custom-map-tooltip::before { border-left-color: var(--gold); }
-        .leaflet-tooltip-right.custom-map-tooltip::before { border-right-color: var(--gold); }
-        .leaflet-tooltip-top.custom-map-tooltip::before { border-top-color: var(--gold); }
-        .leaflet-tooltip-bottom.custom-map-tooltip::before { border-bottom-color: var(--gold); }
 
-.custom-map-popup .leaflet-popup-content-wrapper { background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(5px); border: 1px solid var(--gold); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: 'Tajawal', sans-serif; color: #fff; }
-.custom-map-popup .leaflet-popup-content { margin: 10px; }
-.custom-map-popup .leaflet-popup-tip { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--gold); border-top: none; border-left: none; }
+        /* Loading State */
+        .mosque-loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 35px 20px;
+            color: #ddd;
+            text-align: center;
+        }
 
-/* Make standard OSM tiles dark to fit the theme */
-.leaflet-tile {
-    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-}
+        /* Make standard OSM tiles dark to fit the theme */
+        .leaflet-tile {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
 
         /* --- Footer & Visitor Counter --- */
         .app-footer {

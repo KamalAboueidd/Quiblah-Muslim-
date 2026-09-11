@@ -231,7 +231,125 @@ async function runScheduledReminders() {
 // بدء تشغيل المؤقت كل 5 دقائق
 setInterval(runScheduledReminders, SCHEDULER_INTERVAL_MS);
 
-// 6. خادم الويب وواجهة الـ API
+// 6. خدمة استعلام وتجميع المساجد القريبة وسرعة الاستجابة (Nearby Mosques Aggregator)
+const mosquesMemoryCache = new Map();
+
+function haversineMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
+    const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dp/2)*Math.sin(dp/2) + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)*Math.sin(dl/2);
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+async function getNearbyMosquesServer(lat, lng, radius = 2000) {
+    const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+    const now = Date.now();
+    const cached = mosquesMemoryCache.get(cacheKey);
+    if (cached && (now - cached.timestamp < 10 * 60 * 1000)) {
+        return cached.mosques
+            .map(m => ({ ...m, dist: haversineMeters(lat, lng, m.lat, m.lng) }))
+            .filter(m => m.dist <= radius + 150)
+            .sort((a, b) => a.dist - b.dist);
+    }
+
+    // استعلام متوازي: Photon + Overpass
+    const fetchPhotonTask = async () => {
+        try {
+            const urls = [
+                `https://photon.komoot.io/api/?q=%D9%85%D8%B3%D8%AC%D8%AF&lat=${lat}&lon=${lng}&limit=50`,
+                `https://photon.komoot.io/api/?q=%D8%AC%D8%A7%D9%85%D8%B9&lat=${lat}&lon=${lng}&limit=50`
+            ];
+            const responses = await Promise.all(urls.map(u => 
+                fetch(u, { headers: { 'User-Agent': 'QuiblahMuslim/1.0' }, signal: AbortSignal.timeout(4000) })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null)
+            ));
+            const list = [];
+            for (const res of responses) {
+                if (!res || !Array.isArray(res.features)) continue;
+                for (const f of res.features) {
+                    const coords = f.geometry?.coordinates;
+                    if (!coords) continue;
+                    const mLng = coords[0], mLat = coords[1];
+                    const props = f.properties || {};
+                    let name = (props.name || '').trim();
+                    if (!name) name = 'مسجد';
+                    if (name.includes('جامعة') && !name.includes('مسجد') && !name.includes('جامع ')) continue;
+                    if (props.osm_value && ['university', 'college', 'school', 'hospital'].includes(props.osm_value)) continue;
+
+                    list.push({
+                        name: name,
+                        lat: mLat,
+                        lng: mLng,
+                        areaName: props.street || props.city || props.district || props.county || 'مسجد',
+                        source: 'photon'
+                    });
+                }
+            }
+            return list;
+        } catch (e) {
+            return [];
+        }
+    };
+
+    const fetchOverpassTask = async () => {
+        try {
+            const overpassQuery = `[out:json][timeout:8];(
+              node["amenity"="mosque"](around:${Math.max(radius, 3000)},${lat},${lng});
+              way["amenity"="mosque"](around:${Math.max(radius, 3000)},${lat},${lng});
+              node["building"="mosque"](around:${Math.max(radius, 3000)},${lat},${lng});
+              way["building"="mosque"](around:${Math.max(radius, 3000)},${lat},${lng});
+              node["amenity"="place_of_worship"]["religion"="muslim"](around:${Math.max(radius, 3000)},${lat},${lng});
+              way["amenity"="place_of_worship"]["religion"="muslim"](around:${Math.max(radius, 3000)},${lat},${lng});
+            );out center;`;
+
+            const res = await fetch(`https://maps.mail.ru/osm/tools/overpass/api/interpreter?data=${encodeURIComponent(overpassQuery)}`, {
+                signal: AbortSignal.timeout(4500)
+            });
+            if (!res.ok) return [];
+            const data = await res.json();
+            return (data.elements || []).map(el => {
+                const mLat = el.lat || (el.center && el.center.lat);
+                const mLng = el.lon || (el.center && el.center.lon);
+                if (!mLat || !mLng) return null;
+                const tags = el.tags || {};
+                let name = tags.name || tags['name:ar'] || tags['name:en'] || 'مسجد';
+                if (name.includes('جامعة') && !name.includes('مسجد') && !name.includes('جامع ')) return null;
+                const area = tags['addr:street'] || tags['addr:suburb'] || tags['addr:city'] || '';
+                return { name, lat: mLat, lng: mLng, areaName: area || 'مسجد', source: 'overpass' };
+            }).filter(Boolean);
+        } catch(e) {
+            return [];
+        }
+    };
+
+    const [photonList, overpassList] = await Promise.all([fetchPhotonTask(), fetchOverpassTask()]);
+    const rawAll = [...overpassList, ...photonList];
+
+    const deduped = [];
+    for (const item of rawAll) {
+        const dFromUser = haversineMeters(lat, lng, item.lat, item.lng);
+        const existing = deduped.find(d => haversineMeters(d.lat, d.lng, item.lat, item.lng) < 35);
+        if (existing) {
+            if (existing.name === 'مسجد' && item.name !== 'مسجد') {
+                existing.name = item.name;
+            }
+            if ((!existing.areaName || existing.areaName === 'مسجد') && item.areaName && item.areaName !== 'مسجد') {
+                existing.areaName = item.areaName;
+            }
+        } else {
+            deduped.push({ ...item, dist: dFromUser });
+        }
+    }
+
+    deduped.sort((a, b) => a.dist - b.dist);
+    mosquesMemoryCache.set(cacheKey, { timestamp: now, mosques: deduped });
+
+    return deduped.filter(m => m.dist <= radius + 150);
+}
+
+// 7. خادم الويب وواجهة الـ API
 const MIME_TYPES = {
     '.html': 'text/html; charset=utf-8',
     '.js': 'application/javascript; charset=utf-8',
@@ -260,6 +378,24 @@ const server = http.createServer(async (req, res) => {
 
     const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
     const pathname = parsedUrl.pathname;
+
+    // --- API: استعلام المساجد القريبة (Nearby Mosques API) ---
+    if (pathname === '/api/mosques' && req.method === 'GET') {
+        const lat = parseFloat(parsedUrl.searchParams.get('lat') || '30.0444');
+        const lng = parseFloat(parsedUrl.searchParams.get('lng') || '31.2357');
+        const radius = parseInt(parsedUrl.searchParams.get('radius') || '2000', 10);
+
+        try {
+            const mosques = await getNearbyMosquesServer(lat, lng, radius);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'success', count: mosques.length, mosques }));
+        } catch (err) {
+            console.error('[Mosques API] Error:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'error', message: err.message, mosques: [] }));
+        }
+        return;
+    }
 
     // --- API: جلب المفتاح العام VAPID Public Key ---
     if (pathname === '/api/push/vapid-public-key' && req.method === 'GET') {

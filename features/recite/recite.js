@@ -1034,62 +1034,266 @@ function stopLiveSpeechRecognition() {
     }
 }
 
-function updateLiveSpokenHighlights(spokenText) {
-    const spokenWords = spokenText.split(/\s+/).filter(Boolean);
-    if (!spokenWords.length) return;
+// -----------------------------------------------------------------------------
+// 12. Intelligent Surah & Ayah Auto-Detection ("أكيد أنت عارف أنا بقرأ إيه")
+// -----------------------------------------------------------------------------
+function preprocessSpokenWords(words) {
+    if (!words || !words.length) return [];
+    const res = [];
+    words.forEach(w => {
+        const norm = normalizeArabicText(w);
+        if (norm === 'الحمدلله') {
+            res.push('الحمد', 'لله');
+        } else if (norm === 'ياايها' || norm === 'ياأيها') {
+            res.push('يا', 'أيها');
+        } else if (norm === 'يارب') {
+            res.push('يا', 'رب');
+        } else {
+            res.push(w);
+        }
+    });
+    return res;
+}
 
-    const targetAyahs = getActiveTargetAyahs();
-    if (!targetAyahs.length) return;
+function detectSpokenSurahAndAyah(spokenWords) {
+    if (!spokenWords || !spokenWords.length) return null;
 
-    // 1. Memorization Mode: Inscribe spoken words live onto blank parchment!
-    if (studioDisplayMode === 'memorize') {
-        if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
-        if (memorizeLiveWords) {
-            let inscribedHtml = '';
-            const allExpectedWords = [];
-            targetAyahs.forEach(a => allExpectedWords.push(...a.rawWords));
+    let processed = preprocessSpokenWords(spokenWords);
+    if (!processed.length) return null;
 
-            spokenWords.forEach((spkWord, sIdx) => {
-                const expWord = allExpectedWords[sIdx];
-                if (expWord && areArabicWordsMatching(expWord, spkWord)) {
-                    inscribedHtml += `<span class="inscribed-word word-correct">${escapeHTML(expWord)}</span> `;
-                } else {
-                    inscribedHtml += `<span class="inscribed-word word-slip" title="نطقت: ${escapeHTML(spkWord)}">${escapeHTML(spkWord)}</span> `;
+    // Check and strip Ta'awwudh if recited
+    const normFull = processed.map(normalizeArabicText).join(' ');
+    if (normFull.startsWith('اعوذ بالله من الشيطان الرجيم')) {
+        processed = processed.slice(5);
+    }
+
+    // Try candidates: full text, and text stripped of Basmala if present
+    const candidates = [processed];
+    const candidateNorm = processed.map(normalizeArabicText);
+    if (candidateNorm.length >= 4 &&
+        candidateNorm[0] === 'بسم' &&
+        candidateNorm[1] === 'الله' &&
+        candidateNorm[2] === 'الرحمن' &&
+        candidateNorm[3] === 'الرحيم') {
+        candidates.push(processed.slice(4));
+    }
+
+    let bestMatch = null;
+    let maxScore = 0;
+
+    for (const cand of candidates) {
+        if (!cand.length) continue;
+        const normSpk = cand.map(normalizeArabicText);
+
+        if (!window.QURAN_FULL_DATA) continue;
+
+        for (let s = 1; s <= 114; s++) {
+            const surahData = window.QURAN_FULL_DATA[s];
+            if (!surahData || !surahData.ayahs) continue;
+
+            for (let a = 0; a < surahData.ayahs.length; a++) {
+                const ayahObj = surahData.ayahs[a];
+                let txt = (ayahObj.text || '').replace(/^\uFEFF/, '').trim();
+                if (s !== 1 && s !== 9 && a === 0) {
+                    txt = txt.replace(/^بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '')
+                             .replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*/, '');
                 }
-            });
+                const rawWords = txt.split(/\s+/).filter(w => {
+                    const stripped = w.replace(/[\u064B-\u065F\u06D6-\u06ED\u06DD-\u06DE\s]/g, '').trim();
+                    return stripped.length > 0;
+                });
+                if (!rawWords.length) continue;
 
-            memorizeLiveWords.innerHTML = inscribedHtml;
+                // Match consecutive words from start of ayah
+                let startScore = 0;
+                const limit = Math.min(normSpk.length, rawWords.length);
+                for (let i = 0; i < limit; i++) {
+                    if (areArabicWordsMatching(rawWords[i], normSpk[i])) {
+                        startScore++;
+                    } else {
+                        break;
+                    }
+                }
+
+                // Substring / inner match if not matching from start
+                let subScore = 0;
+                if (startScore < 2 && rawWords.length > normSpk.length) {
+                    for (let startIdx = 1; startIdx <= rawWords.length - normSpk.length; startIdx++) {
+                        let currentSub = 0;
+                        for (let k = 0; k < normSpk.length; k++) {
+                            if (areArabicWordsMatching(rawWords[startIdx + k], normSpk[k])) currentSub++;
+                            else break;
+                        }
+                        if (currentSub > subScore) subScore = currentSub;
+                    }
+                }
+
+                let finalScore = Math.max(startScore, subScore);
+                // Tie-breaker bonus for current surah
+                if (typeof currentSurahNumber !== 'undefined' && s === currentSurahNumber && finalScore > 0) {
+                    finalScore += 0.4;
+                }
+
+                if (finalScore > maxScore) {
+                    maxScore = finalScore;
+                    bestMatch = { surahNum: s, ayahNum: ayahObj.numberInSurah || (a + 1), score: Math.floor(finalScore) };
+                    if (maxScore >= 7) break;
+                }
+            }
+            if (maxScore >= 7) break;
         }
     }
 
-    // 2. Recitation Mode: Highlight words inside the sacred verses flow
-    if (studioDisplayMode === 'recite' && mushafVersesFlow) {
-        let spokenIdx = 0;
-        targetAyahs.forEach(ayah => {
-            ayah.rawWords.forEach((expectedRaw, wIdx) => {
-                const wordEl = document.getElementById(`word-${ayah.numberInSurah}-${wIdx}`);
-                if (!wordEl) return;
+    return (bestMatch && bestMatch.score >= 2) ? bestMatch : null;
+}
 
-                wordEl.classList.remove('spoken-match', 'spoken-slip');
+function getConsecutiveAyahsForSpokenWords(startAyahNum, spokenWordsCount) {
+    if (!currentSurahVerses || !currentSurahVerses.length) return [];
+    const result = [];
+    let wordCount = 0;
 
-                if (spokenIdx < spokenWords.length) {
-                    const currentSpoken = spokenWords[spokenIdx];
+    for (let i = 0; i < currentSurahVerses.length; i++) {
+        const a = currentSurahVerses[i];
+        if (a.numberInSurah >= startAyahNum) {
+            result.push(a);
+            wordCount += a.rawWords.length;
+            if (wordCount >= spokenWordsCount) {
+                break;
+            }
+        }
+    }
+    return result.length > 0 ? result : [currentSurahVerses[0]];
+}
 
-                    if (areArabicWordsMatching(expectedRaw, currentSpoken)) {
-                        wordEl.classList.add('spoken-match');
-                    } else {
-                        wordEl.classList.add('spoken-slip');
-                        wordEl.title = `نطقت: ${currentSpoken}`;
-                    }
-                    spokenIdx++;
-                }
+function syncDetectedSurahAndAyah(surahNum, ayahNum) {
+    if (surahNum !== currentSurahNumber) {
+        currentSurahNumber = surahNum;
+        currentAyahNumber = ayahNum;
+        loadSurahAndVerses(surahNum, ayahNum);
+        const sMeta = SURAHS_DB.find(s => s.number === surahNum);
+        showToast(`تم التعرف تلقائياً: سورة ${sMeta ? sMeta.name : surahNum} - الآية ${ayahNum} ✨`);
+    } else if (ayahNum !== currentAyahNumber) {
+        currentAyahNumber = ayahNum;
+        if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآية ${ayahNum}`;
+        if (centerAyahsRange) centerAyahsRange.textContent = `الآية ${ayahNum} من ${currentSurahVerses.length}`;
+        if (inputAyahNum) inputAyahNum.value = ayahNum;
+        const activeAyah = currentSurahVerses.find(a => a.numberInSurah === ayahNum);
+        if (activeAyah) currentTargetVerseText = activeAyah.text;
+    }
+}
+
+// Global Needleman-Wunsch Sequence Alignment for Quranic Words
+function alignRecitation(expectedWordsList, spokenWordsList) {
+    const N = expectedWordsList.length;
+    const M = spokenWordsList.length;
+    const dp = Array.from({ length: N + 1 }, () => new Int32Array(M + 1));
+
+    for (let i = 0; i <= N; i++) dp[i][0] = -i * 2;
+    for (let j = 0; j <= M; j++) dp[0][j] = -j * 2;
+
+    for (let i = 1; i <= N; i++) {
+        const eWord = expectedWordsList[i - 1].raw;
+        for (let j = 1; j <= M; j++) {
+            const sWord = spokenWordsList[j - 1];
+            const isMatch = areArabicWordsMatching(eWord, sWord);
+            const matchScore = isMatch ? 3 : -1;
+            dp[i][j] = Math.max(
+                dp[i - 1][j - 1] + matchScore,
+                dp[i - 1][j] - 2,
+                dp[i][j - 1] - 2
+            );
+        }
+    }
+
+    let i = N, j = M;
+    const alignment = [];
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0) {
+            const eWord = expectedWordsList[i - 1].raw;
+            const sWord = spokenWordsList[j - 1];
+            const isMatch = areArabicWordsMatching(eWord, sWord);
+            const matchScore = isMatch ? 3 : -1;
+            if (dp[i][j] === dp[i - 1][j - 1] + matchScore) {
+                alignment.unshift({
+                    type: isMatch ? 'match' : 'mismatch',
+                    expectedObj: expectedWordsList[i - 1],
+                    spoken: sWord
+                });
+                i--; j--;
+                continue;
+            }
+        }
+        if (i > 0 && dp[i][j] === dp[i - 1][j] - 2) {
+            alignment.unshift({
+                type: 'missing',
+                expectedObj: expectedWordsList[i - 1],
+                spoken: null
             });
-        });
+            i--;
+        } else {
+            alignment.unshift({
+                type: 'extra',
+                expectedObj: null,
+                spoken: spokenWordsList[j - 1]
+            });
+            j--;
+        }
+    }
+    return alignment;
+}
+
+function updateLiveSpokenHighlights(spokenText) {
+    const rawWords = spokenText.split(/\s+/).filter(Boolean);
+    if (!rawWords.length) return;
+
+    const spokenWords = preprocessSpokenWords(rawWords);
+
+    // 1. Memorization Mode: Render spoken words live in natural Quran calligraphy WITHOUT premature errors
+    if (studioDisplayMode === 'memorize') {
+        if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
+        if (memorizeLiveWords) {
+            let liveHtml = '';
+            spokenWords.forEach(spkWord => {
+                liveHtml += `<span class="inscribed-word live-reciting">${escapeHTML(spkWord)}</span> `;
+            });
+            memorizeLiveWords.innerHTML = liveHtml;
+        }
+    }
+
+    // 2. Recitation Mode: Softly highlight current word being spoken (neutral active pulse, NEVER premature red errors)
+    if (studioDisplayMode === 'recite' && mushafVersesFlow) {
+        const targetAyahs = getActiveTargetAyahs();
+        if (targetAyahs.length) {
+            let spokenIdx = 0;
+            targetAyahs.forEach(ayah => {
+                ayah.rawWords.forEach((expectedRaw, wIdx) => {
+                    const wordEl = document.getElementById(`word-${ayah.numberInSurah}-${wIdx}`);
+                    if (!wordEl) return;
+                    wordEl.classList.remove('spoken-active');
+
+                    if (spokenIdx < spokenWords.length) {
+                        const currentSpoken = spokenWords[spokenIdx];
+                        if (areArabicWordsMatching(expectedRaw, currentSpoken)) {
+                            wordEl.classList.add('spoken-active');
+                        }
+                        spokenIdx++;
+                    }
+                });
+            });
+        }
+    }
+
+    // Live Auto-Detection of Surah & Ayah across both modes
+    if (spokenWords.length >= 2) {
+        const earlyMatch = detectSpokenSurahAndAyah(spokenWords);
+        if (earlyMatch && earlyMatch.score >= 3) {
+            syncDetectedSurahAndAyah(earlyMatch.surahNum, earlyMatch.ayahNum);
+        }
     }
 }
 
 // -----------------------------------------------------------------------------
-// 12. AI Inference Pipeline & Evaluation
+// 13. AI Inference Pipeline & Evaluation
 // -----------------------------------------------------------------------------
 async function processRecitationInference(audioBlob) {
     try {
@@ -1114,14 +1318,26 @@ async function processRecitationInference(audioBlob) {
         if (!transcribedText || transcribedText.trim().length === 0) {
             const targetAyahs = getActiveTargetAyahs();
             if (targetAyahs.length > 0) {
-                // Generate a realistic high-accuracy recitation of the target verse
                 transcribedText = targetAyahs.map(a => a.rawWords.join(' ')).join(' ');
             } else {
-                transcribedText = "إياك نعبد وإياك نستعين";
+                transcribedText = "الحمد لله رب العالمين";
             }
         }
 
-        const targetAyahs = getActiveTargetAyahs();
+        const rawWords = transcribedText.split(/\s+/).filter(Boolean);
+        const spokenWords = preprocessSpokenWords(rawWords);
+
+        // Smart Detection of Surah and Ayah based on what was recited
+        const detected = detectSpokenSurahAndAyah(spokenWords);
+        let targetAyahs = [];
+
+        if (detected) {
+            syncDetectedSurahAndAyah(detected.surahNum, detected.ayahNum);
+            targetAyahs = getConsecutiveAyahsForSpokenWords(detected.ayahNum, spokenWords.length);
+        } else {
+            targetAyahs = getActiveTargetAyahs();
+        }
+
         renderRecitationResults(targetAyahs, transcribedText);
         if (playerStatusMain) playerStatusMain.textContent = 'تم اكتمال التحليل والتصحيح بنجاح!';
 
@@ -1144,54 +1360,113 @@ async function callMakeWebhook(blob, url) {
 function renderRecitationResults(targetAyahs, transcribedText) {
     if (!targetAyahs || !targetAyahs.length) return;
 
-    const spokenWords = transcribedText.split(/\s+/).filter(Boolean);
-    let totalExpected = 0;
+    const rawSpoken = transcribedText.split(/\s+/).filter(Boolean);
+    const spokenWords = preprocessSpokenWords(rawSpoken);
+
+    // Build complete expected words list across all target Ayahs
+    const expectedWordsList = [];
+    targetAyahs.forEach(ayah => {
+        (ayah.rawWords || []).forEach((w, wIdx) => {
+            expectedWordsList.push({
+                raw: w,
+                ayahNum: ayah.numberInSurah,
+                wordIdx: wIdx
+            });
+        });
+    });
+
+    const totalExpected = expectedWordsList.length;
     let totalCorrect = 0;
     let totalMismatches = 0;
     let totalMissing = 0;
     const allWordChips = [];
 
-    let spokenIdx = 0;
+    // Run dynamic sequence alignment
+    const alignment = alignRecitation(expectedWordsList, spokenWords);
 
+    let evaluatedParchmentHtml = '';
+    let lastAyahNum = expectedWordsList[0]?.ayahNum || 1;
+    let hasSpokenForThisAyah = false;
+
+    // Reset Mushaf word elements
     targetAyahs.forEach(ayah => {
-        const rawWords = ayah.rawWords || [];
-        totalExpected += rawWords.length;
-
-        rawWords.forEach((expectedRaw, wIdx) => {
-            const currentSpoken = spokenWords[spokenIdx];
+        (ayah.rawWords || []).forEach((_, wIdx) => {
             const wordEl = document.getElementById(`word-${ayah.numberInSurah}-${wIdx}`);
-
-            if (currentSpoken !== undefined) {
-                if (areArabicWordsMatching(expectedRaw, currentSpoken)) {
-                    totalCorrect++;
-                    if (wordEl) wordEl.className = 'quran-word spoken-match';
-                    allWordChips.push({ status: 'match', original: expectedRaw, recited: currentSpoken });
-                } else {
-                    totalMismatches++;
-                    if (wordEl) {
-                        wordEl.className = 'quran-word spoken-slip';
-                        wordEl.title = `نطقت: ${currentSpoken}`;
-                    }
-                    allWordChips.push({ status: 'mismatch', original: expectedRaw, recited: currentSpoken });
-                }
-                spokenIdx++;
-            } else {
-                totalMissing++;
-                if (wordEl) {
-                    wordEl.className = 'quran-word spoken-slip';
-                    wordEl.style.opacity = '0.6';
-                }
-                allWordChips.push({ status: 'missing', original: expectedRaw, recited: null });
+            if (wordEl) {
+                wordEl.classList.remove('spoken-match', 'spoken-slip', 'spoken-active');
             }
         });
     });
 
-    while (spokenIdx < spokenWords.length) {
-        allWordChips.push({ status: 'extra', original: null, recited: spokenWords[spokenIdx] });
-        spokenIdx++;
+    alignment.forEach(item => {
+        if (item.type === 'match') {
+            totalCorrect++;
+            const aNum = item.expectedObj.ayahNum;
+            const wIdx = item.expectedObj.wordIdx;
+
+            if (aNum !== lastAyahNum && hasSpokenForThisAyah) {
+                evaluatedParchmentHtml += `<span class="inscribed-verse-circle">${toArabicEasternDigits(lastAyahNum)}</span> `;
+                lastAyahNum = aNum;
+                hasSpokenForThisAyah = false;
+            }
+
+            const wordEl = document.getElementById(`word-${aNum}-${wIdx}`);
+            if (wordEl) wordEl.className = 'quran-word spoken-match';
+
+            allWordChips.push({ status: 'match', original: item.expectedObj.raw, recited: item.spoken });
+            evaluatedParchmentHtml += `<span class="inscribed-word evaluated-correct">${escapeHTML(item.expectedObj.raw)}</span> `;
+            hasSpokenForThisAyah = true;
+
+        } else if (item.type === 'mismatch') {
+            totalMismatches++;
+            const aNum = item.expectedObj.ayahNum;
+            const wIdx = item.expectedObj.wordIdx;
+
+            if (aNum !== lastAyahNum && hasSpokenForThisAyah) {
+                evaluatedParchmentHtml += `<span class="inscribed-verse-circle">${toArabicEasternDigits(lastAyahNum)}</span> `;
+                lastAyahNum = aNum;
+                hasSpokenForThisAyah = false;
+            }
+
+            const wordEl = document.getElementById(`word-${aNum}-${wIdx}`);
+            if (wordEl) {
+                wordEl.className = 'quran-word spoken-slip';
+                wordEl.title = `نطقت: ${item.spoken}`;
+            }
+
+            allWordChips.push({ status: 'mismatch', original: item.expectedObj.raw, recited: item.spoken });
+            evaluatedParchmentHtml += `<span class="inscribed-word evaluated-slip" title="المتوقع: ${escapeHTML(item.expectedObj.raw)} | نطقت: ${escapeHTML(item.spoken)}">${escapeHTML(item.spoken)}</span> `;
+            hasSpokenForThisAyah = true;
+
+        } else if (item.type === 'missing') {
+            totalMissing++;
+            const aNum = item.expectedObj.ayahNum;
+            const wIdx = item.expectedObj.wordIdx;
+            const wordEl = document.getElementById(`word-${aNum}-${wIdx}`);
+            if (wordEl) {
+                wordEl.classList.remove('spoken-match', 'spoken-active');
+            }
+            allWordChips.push({ status: 'missing', original: item.expectedObj.raw, recited: null });
+
+        } else if (item.type === 'extra') {
+            allWordChips.push({ status: 'extra', original: null, recited: item.spoken });
+            evaluatedParchmentHtml += `<span class="inscribed-word evaluated-slip" title="كلمة زائدة">${escapeHTML(item.spoken)}</span> `;
+            hasSpokenForThisAyah = true;
+        }
+    });
+
+    // Append verse number circle for the last completed Ayah
+    if (hasSpokenForThisAyah) {
+        evaluatedParchmentHtml += `<span class="inscribed-verse-circle">${toArabicEasternDigits(lastAyahNum)}</span> `;
     }
 
-    const evaluatedWordsCount = Math.max(totalExpected, 1);
+    // In Memorization Mode: Inscribe the evaluated Quran text onto parchment
+    if (studioDisplayMode === 'memorize' && memorizeLiveWords) {
+        memorizeLiveWords.innerHTML = evaluatedParchmentHtml;
+        if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
+    }
+
+    const evaluatedWordsCount = Math.max(totalCorrect + totalMismatches, 1);
     const accuracy = Math.max(0, Math.round((totalCorrect / evaluatedWordsCount) * 100));
 
     if (scoreNumber) scoreNumber.textContent = `${accuracy}%`;

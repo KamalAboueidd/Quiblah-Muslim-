@@ -1101,19 +1101,27 @@ body.mushaf-studio-body {
 }
 
 /* Spoken Feedback Highlights */
+.quran-word.spoken-active {
+    color: #836724 !important;
+    background: rgba(189, 160, 80, 0.18) !important;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
 .quran-word.spoken-match {
     color: #1b6b3e !important;
     font-weight: 700;
     text-shadow: 0 0 1px rgba(27, 107, 62, 0.4);
+    background: transparent !important;
+    border-radius: 0 !important;
 }
 
 .quran-word.spoken-slip {
     color: #c0392b !important;
-    text-decoration: underline;
-    text-decoration-color: #e74c3c;
-    text-decoration-thickness: 2.5px;
-    background: rgba(231, 76, 60, 0.12);
-    border-radius: 4px;
+    text-decoration: underline wavy #e74c3c 1.5px !important;
+    text-underline-offset: 6px;
+    background: transparent !important;
+    border-radius: 0 !important;
 }
 
 /* Memorization Mode Canvas */
@@ -1206,51 +1214,87 @@ body.mushaf-studio-body {
     box-shadow: 0 2px 10px rgba(189, 160, 80, 0.4);
 }
 
-/* Inscribed Words as user recites */
+/* Inscribed Words as user recites (Authentic Quran Parchment Script) */
 .memorize-live-inscribed-words {
     width: 100%;
     font-family: 'Amiri Quran', 'Amiri', serif;
-    font-size: 26px;
-    line-height: 2.3;
+    font-size: 27px;
+    line-height: 2.35;
     color: #14120c;
     text-align: center;
     word-spacing: 4px;
-    padding: 10px 8px;
-    min-height: 120px;
+    padding: 10px 14px;
+    min-height: 140px;
+    direction: rtl;
 }
 
+/* Continuous Quranic script - NO separate box card shapes! */
 .inscribed-word {
-    display: inline-block;
-    padding: 2px 6px;
-    margin: 2px 3px;
-    border-radius: 6px;
-    animation: wordPop 0.25s ease-out;
+    display: inline;
+    padding: 0 1px;
+    margin: 0 1px;
+    font-family: inherit;
+    font-size: inherit;
+    color: #14120c; /* Default authentic Quranic black ink */
+    transition: color 0.25s ease;
 }
 
-@keyframes wordPop {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+/* While live reciting: clean Quranic ink */
+.inscribed-word.live-reciting {
+    color: #14120c;
 }
 
+/* After recitation evaluation: Correct word (clean emerald accent) */
+.inscribed-word.evaluated-correct,
 .inscribed-word.word-correct {
-    color: #1b6b3e;
+    color: #1b6b3e !important;
     font-weight: 700;
-    text-shadow: 0 0 1px rgba(27, 107, 62, 0.35);
 }
 
+/* After recitation evaluation: Slip word (subtle red wavy underline - absolutely NO background box) */
+.inscribed-word.evaluated-slip,
 .inscribed-word.word-slip {
-    color: #c0392b;
-    text-decoration: underline;
-    text-decoration-color: #e74c3c;
-    text-decoration-thickness: 2.5px;
-    background: rgba(231, 76, 60, 0.12);
+    color: #c0392b !important;
+    text-decoration: underline wavy #e74c3c 1.5px !important;
+    text-underline-offset: 6px;
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
+/* Omitted or missed word indicator */
+.inscribed-word.word-missing {
+    color: #888888 !important;
+    opacity: 0.7;
+    text-decoration: line-through #e74c3c 1.5px !important;
+    font-size: 0.9em;
+    margin: 0 3px;
+    background: transparent !important;
+}
+
+/* Ornate Verse Number Circle in continuous text */
+.inscribed-verse-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    border: 1.5px solid #bda050;
+    background: rgba(189, 160, 80, 0.12);
+    color: #836724;
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 7px;
+    vertical-align: middle;
+    user-select: none;
 }
 
 .inscribed-word.revealed-peek {
     color: #836724;
-    opacity: 0.65;
+    opacity: 0.75;
     font-style: italic;
-    background: rgba(189, 160, 80, 0.1);
+    background: transparent !important;
 }
 
 /* ==========================================================================

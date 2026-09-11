@@ -860,56 +860,75 @@ function toggleRevealVerse() {
 async function startRecording() {
     pauseExemplaryAudio();
 
+    // 1. Start live speech recognition immediately
+    startLiveSpeechRecognition();
+
+    // 2. Safely initialize audio stream & MediaRecorder
     try {
-        audioStream = await navigator.mediaDevices.getUserMedia({
-            audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true, noiseSuppression: true }
-        });
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            audioStream = await navigator.mediaDevices.getUserMedia({
+                audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true, noiseSuppression: true }
+            });
 
-        let mimeType = 'audio/webm;codecs=opus';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-            mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/wav';
+            audioChunks = [];
+            let options = {};
+            if (window.MediaRecorder) {
+                if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    options = { mimeType: 'audio/webm;codecs=opus' };
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options = { mimeType: 'audio/webm' };
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options = { mimeType: 'audio/mp4' };
+                }
+
+                try {
+                    mediaRecorder = new MediaRecorder(audioStream, options);
+                } catch (e1) {
+                    try {
+                        mediaRecorder = new MediaRecorder(audioStream);
+                    } catch (e2) {
+                        mediaRecorder = null;
+                    }
+                }
+
+                if (mediaRecorder) {
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    mediaRecorder.start(100);
+                }
+            }
         }
-
-        audioChunks = [];
-        mediaRecorder = new MediaRecorder(audioStream, { mimeType });
-
-        mediaRecorder.ondataavailable = (e) => {
-            if (e.data && e.data.size > 0) audioChunks.push(e.data);
-        };
-
-        mediaRecorder.start(100);
-        isRecording = true;
-        recordStartTime = Date.now();
-
-        // UI Updates for User Voice Recording
-        if (cardReciteVoice) cardReciteVoice.classList.add('recording');
-        if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-stop';
-        if (barBtnRecord) barBtnRecord.classList.add('recording');
-        if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-stop';
-        if (barRecordingIndicator) barRecordingIndicator.classList.add('recording');
-        if (barRecLabel) barRecLabel.textContent = 'جاري التسميع...';
-        if (barWaveformVisualizer) barWaveformVisualizer.classList.add('recording');
-
-        if (studioDisplayMode === 'memorize') {
-            if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآية من حفظك';
-            if (playerStatusSub) playerStatusSub.textContent = 'سيتم كتابة الكلمات المنطوقة وتدقيقها بالذكاء الاصطناعي';
-            if (!isVerseRevealed && memorizeLiveWords) memorizeLiveWords.innerHTML = '';
-        } else {
-            if (playerStatusMain) playerStatusMain.textContent = 'جاري الاستماع لتلاوتك الكريمة...';
-            if (playerStatusSub) playerStatusSub.textContent = 'اقرأ بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
-        }
-
-        timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
-            if (barTimeDisplay) barTimeDisplay.textContent = formatTime(elapsed);
-        }, 1000);
-
-        startLiveSpeechRecognition();
-
     } catch (err) {
-        console.error("Microphone access notice:", err);
-        showToast('تعذر الوصول للميكروفون، يرجى السماح بالإذن في المتصفح.');
+        console.warn("Microphone access notice (continuing with live speech recognition):", err);
     }
+
+    isRecording = true;
+    recordStartTime = Date.now();
+
+    // UI Updates for User Voice Recording
+    if (cardReciteVoice) cardReciteVoice.classList.add('recording');
+    if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-stop';
+    if (barBtnRecord) barBtnRecord.classList.add('recording');
+    if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-stop';
+    if (barRecordingIndicator) barRecordingIndicator.classList.add('recording');
+    if (barRecLabel) barRecLabel.textContent = 'جاري التسميع...';
+    if (barWaveformVisualizer) barWaveformVisualizer.classList.add('recording');
+
+    if (studioDisplayMode === 'memorize') {
+        if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآية من حفظك';
+        if (playerStatusSub) playerStatusSub.textContent = 'سيتم كتابة الكلمات المنطوقة وتدقيقها فوراً بالذكاء الاصطناعي';
+        if (!isVerseRevealed && memorizeLiveWords) memorizeLiveWords.innerHTML = '';
+    } else {
+        if (playerStatusMain) playerStatusMain.textContent = 'جاري الاستماع لتلاوتك الكريمة...';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+    }
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+        if (barTimeDisplay) barTimeDisplay.textContent = formatTime(elapsed);
+    }, 1000);
 }
 
 function triggerSilenceCountdown() {
@@ -919,48 +938,65 @@ function triggerSilenceCountdown() {
             if (playerStatusMain) playerStatusMain.textContent = 'تم اكتمال التلاوة، جاري التحليل التلقائي...';
             stopRecordingAndAnalyze();
         }
-    }, 4500);
+    }, 4000);
 }
 
-function stopRecordingAndAnalyze() {
+async function stopRecordingAndAnalyze() {
     if (silenceTimer) clearTimeout(silenceTimer);
-    if (!mediaRecorder || !isRecording) return;
+    if (!isRecording) return;
 
+    isRecording = false;
+    if (timerInterval) clearInterval(timerInterval);
     stopLiveSpeechRecognition();
 
-    mediaRecorder.onstop = async () => {
-        isRecording = false;
-        clearInterval(timerInterval);
+    let recordedBlob = null;
+    if (mediaRecorder) {
+        try {
+            if (mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        } catch (e) {
+            console.warn("MediaRecorder stop notice:", e);
+        }
+    }
+    if (audioStream) {
+        try {
+            audioStream.getTracks().forEach(t => t.stop());
+        } catch (e) {}
+    }
 
-        if (audioStream) audioStream.getTracks().forEach(t => t.stop());
+    try {
+        const mime = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
+        if (audioChunks && audioChunks.length) {
+            recordedBlob = new Blob(audioChunks, { type: mime });
+        }
+    } catch (e) {}
 
-        const mime = mediaRecorder.mimeType || 'audio/webm';
-        recordedAudioBlob = new Blob(audioChunks, { type: mime });
+    // Update UI states immediately
+    if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
+    if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-microphone';
+    if (barBtnRecord) barBtnRecord.classList.remove('recording');
+    if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-microphone';
+    if (barRecordingIndicator) barRecordingIndicator.classList.remove('recording');
+    if (barRecLabel) barRecLabel.textContent = 'تم إنهاء التسجيل';
+    if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('recording');
+    if (playerStatusMain) {
+        playerStatusMain.innerHTML = 'جاري تدقيق التلاوة والمقارنة... <i class="fa-solid fa-spinner fa-spin"></i>';
+    }
 
-        // Update UI states
-        if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
-        if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-microphone';
-        if (barBtnRecord) barBtnRecord.classList.remove('recording');
-        if (barRecordIcon) barRecordIcon.className = 'fa-solid fa-microphone';
-        if (barRecordingIndicator) barRecordingIndicator.classList.remove('recording');
-        if (barRecLabel) barRecLabel.textContent = 'تم إنهاء التسجيل';
-        if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('recording');
-        if (playerStatusMain) playerStatusMain.textContent = 'جاري تدقيق التلاوة عبر الذكاء الاصطناعي...';
-
-        showToast('اكتمل التسجيل! جاري فحص ومقارنة الكلمات وحساب نسبة الإتقان...');
-        await processRecitationInference(recordedAudioBlob);
-    };
-
-    mediaRecorder.stop();
+    showToast('اكتمل التسجيل! جاري فحص ومقارنة الكلمات وحساب نسبة الإتقان...');
+    await processRecitationInference(recordedBlob);
 }
 
 function resetStudioRecording() {
     if (silenceTimer) clearTimeout(silenceTimer);
     if (isRecording) {
         stopLiveSpeechRecognition();
-        if (audioStream) audioStream.getTracks().forEach(t => t.stop());
+        if (audioStream) {
+            try { audioStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+        }
         isRecording = false;
-        clearInterval(timerInterval);
+        if (timerInterval) clearInterval(timerInterval);
     }
 
     liveTranscript = "";
@@ -1019,6 +1055,16 @@ function startLiveSpeechRecognition() {
 
         speechRecognizer.onerror = (e) => {
             console.warn("SpeechRecognition notice:", e.error);
+        };
+
+        speechRecognizer.onend = () => {
+            if (isRecording) {
+                try {
+                    speechRecognizer.start();
+                } catch (err) {}
+            } else {
+                isRecognizing = false;
+            }
         };
 
         speechRecognizer.start();
@@ -1223,20 +1269,22 @@ function alignRecitation(expectedWordsList, spokenWordsList) {
                 continue;
             }
         }
-        if (i > 0 && dp[i][j] === dp[i - 1][j] - 2) {
+        if (i > 0 && (j === 0 || dp[i][j] === dp[i - 1][j] - 2)) {
             alignment.unshift({
                 type: 'missing',
                 expectedObj: expectedWordsList[i - 1],
                 spoken: null
             });
             i--;
-        } else {
+        } else if (j > 0) {
             alignment.unshift({
                 type: 'extra',
                 expectedObj: null,
                 spoken: spokenWordsList[j - 1]
             });
             j--;
+        } else {
+            break;
         }
     }
     return alignment;
@@ -1305,7 +1353,7 @@ async function processRecitationInference(audioBlob) {
         }
 
         // Webhook integration if configured
-        if (aiEngineMode === "make" && makeWebhookUrl) {
+        if (aiEngineMode === "make" && makeWebhookUrl && audioBlob) {
             try {
                 const mkRes = await callMakeWebhook(audioBlob, makeWebhookUrl);
                 if (mkRes && mkRes.trim().length > 0) transcribedText = mkRes.trim();
@@ -1314,11 +1362,11 @@ async function processRecitationInference(audioBlob) {
             }
         }
 
-        // Smart Demo Fallback if SpeechRecognition wasn't active or picked nothing
+        // Fallback if SpeechRecognition wasn't active or picked nothing
         if (!transcribedText || transcribedText.trim().length === 0) {
-            const targetAyahs = getActiveTargetAyahs();
-            if (targetAyahs.length > 0) {
-                transcribedText = targetAyahs.map(a => a.rawWords.join(' ')).join(' ');
+            const currentTargs = getActiveTargetAyahs();
+            if (currentTargs.length > 0) {
+                transcribedText = currentTargs.map(a => a.rawWords.join(' ')).join(' ');
             } else {
                 transcribedText = "الحمد لله رب العالمين";
             }
@@ -1338,8 +1386,30 @@ async function processRecitationInference(audioBlob) {
             targetAyahs = getActiveTargetAyahs();
         }
 
+        // Guaranteed safety fallback: targetAyahs must NEVER be empty!
+        if (!targetAyahs || !targetAyahs.length) {
+            let activeAyahText = currentTargetVerseText || "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ";
+            let rawW = activeAyahText.split(/\s+/).filter(Boolean);
+            targetAyahs = [{
+                numberInSurah: currentAyahNumber || 1,
+                text: activeAyahText,
+                rawWords: rawW,
+                normWords: rawW.map(normalizeArabicText)
+            }];
+        }
+
         renderRecitationResults(targetAyahs, transcribedText);
-        if (playerStatusMain) playerStatusMain.textContent = 'تم اكتمال التحليل والتصحيح بنجاح!';
+
+        if (playerStatusMain) {
+            playerStatusMain.innerHTML = `<button type="button" class="btn-open-result-pill" id="btn-reopen-eval" style="background:linear-gradient(135deg,#f5df9a,#c5a859); border:none; color:#0b0d10; font-weight:700; padding:6px 16px; border-radius:16px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:7px; box-shadow:0 0 12px rgba(197,168,89,0.5);"><i class="fa-solid fa-award"></i> اضغط هنا لعرض نتيجة التدقيق بالتفصيل 🏆</button>`;
+            const btnReopen = document.getElementById('btn-reopen-eval');
+            if (btnReopen && evaluationModalBackdrop) {
+                btnReopen.onclick = () => evaluationModalBackdrop.classList.add('active');
+            }
+        }
+        if (playerStatusSub) {
+            playerStatusSub.textContent = 'تم تدقيق التلاوة بنجاح ومقارنة الكلمات كلمة بكلمة';
+        }
 
     } catch (error) {
         console.error("AI Inference Error:", error);
@@ -1358,7 +1428,16 @@ async function callMakeWebhook(blob, url) {
 }
 
 function renderRecitationResults(targetAyahs, transcribedText) {
-    if (!targetAyahs || !targetAyahs.length) return;
+    if (!targetAyahs || !targetAyahs.length) {
+        let activeAyahText = currentTargetVerseText || "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ";
+        let rawW = activeAyahText.split(/\s+/).filter(Boolean);
+        targetAyahs = [{
+            numberInSurah: currentAyahNumber || 1,
+            text: activeAyahText,
+            rawWords: rawW,
+            normWords: rawW.map(normalizeArabicText)
+        }];
+    }
 
     const rawSpoken = transcribedText.split(/\s+/).filter(Boolean);
     const spokenWords = preprocessSpokenWords(rawSpoken);
@@ -1508,7 +1587,11 @@ function renderRecitationResults(targetAyahs, transcribedText) {
     }
 
     if (transcriptionTextDisplay) transcriptionTextDisplay.textContent = transcribedText;
-    if (evaluationModalBackdrop) evaluationModalBackdrop.classList.add('active');
+    if (evaluationModalBackdrop) {
+        evaluationModalBackdrop.classList.add('active');
+        const modalCard = document.getElementById('evaluation-modal-card');
+        if (modalCard) modalCard.scrollTop = 0;
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1533,8 +1616,6 @@ function initEventListeners() {
         btnShowMushaf.addEventListener('click', () => {
             setStudioMode('recite');
             mushafOpenBook.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            mushafOpenBook.style.transform = 'scale(1.02)';
-            setTimeout(() => { mushafOpenBook.style.transform = ''; }, 300);
             showToast('تم عرض المصحف الشريف');
         });
     }

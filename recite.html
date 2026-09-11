@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>المصحح القرآني الذكي والتسميع - قبلة المسلم</title>
+    <title>مصحح التلاوة الذكي - قبلة المسلم</title>
 
     <!-- SEO & Open Graph Tags -->
-    <meta name="description" content="تسميع وتصحيح التلاوة القرآنية بالذكاء الاصطناعي مع تدقيق الكلمات ومطابقة الرسم العثماني ونسبة الإتقان.">
-    <meta name="keywords" content="تسميع القرآن, مصحح التلاوة, ذكاء اصطناعي قرآن, قبلة المسلم, whisper quran, تصحيح الحفظ">
+    <meta name="description" content="مصحح التلاوة الذكي وتسميع القرآن بالذكاء الاصطناعي مع تدقيق الكلمات ومطابقة الرسم العثماني ونسبة الإتقان.">
+    <meta name="keywords" content="تسميع القرآن, مصحح التلاوة, ذكاء اصطناعي قرآن, قبلة المسلم, تصحيح الحفظ">
     <meta name="author" content="كمال أبو عيد">
-    <meta property="og:title" content="المصحح القرآني الذكي - قبلة المسلم">
+    <meta property="og:title" content="مصحح التلاوة الذكي - قبلة المسلم">
     <meta property="og:description" content="استوديو تسميع وتصحيح التلاوة القرآنية بالذكاء الاصطناعي مع كشف الأخطاء كلمة بكلمة.">
-    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:image" content="assets/quran_light_card.jpg">
     <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
     <meta property="og:type" content="website">
 
@@ -32,267 +32,282 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=21">
+    <link rel="stylesheet" href="features/recite/recite.css?v=26">
     <script src="core/player-bridge.js"></script>
 </head>
-<body>
+<body class="mushaf-studio-body">
 
-    <!-- Background Carousel with Consistent Blur Layer -->
-    <div class="fullscreen-carousel">
-        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
-        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
-        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
-        <div class="carousel-overlay"></div>
+    <!-- Dark Luxury Islamic Background with Ambient Mosque Glow -->
+    <div class="mushaf-studio-backdrop">
+        <div class="backdrop-gradient-vignette"></div>
     </div>
 
     <div class="app-layout">
-        <!-- Top Bar with Back Button & Settings -->
-        <header class="top-bar">
-            <div class="top-bar-right-controls">
-                <a href="home.html" class="top-back-btn" id="btn-back-home" title="الرجوع للصفحة الرئيسية">
-                    <i class="fa-solid fa-arrow-right"></i>
-                    <span>الرجوع للصفحة الرئيسية</span>
+        <!-- Top Bar Matching Screenshot (Left: Back & Title, Right: Settings) -->
+        <header class="top-bar-mockup">
+            <div class="header-brand-group">
+                <a href="home.html" class="header-back-btn" id="btn-back-home" title="الرجوع للرئيسية">
+                    <i class="fa-solid fa-arrow-left"></i>
                 </a>
-                <button type="button" class="top-settings-btn" id="btn-open-settings" title="إعدادات المصحح والذكاء الاصطناعي">
+                <div class="header-logo-badge">
+                    <i class="fa-solid fa-mosque"></i>
+                </div>
+                <div class="header-titles">
+                    <h1 class="header-main-title">مصحح التلاوة الذكي</h1>
+                    <p class="header-sub-title">تلاوة أدق .. وقرب أكبر من الله</p>
+                </div>
+            </div>
+            <div class="header-actions-group">
+                <button type="button" class="header-action-btn" id="btn-open-settings" title="إعدادات الذكاء الاصطناعي">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
-            <h1 class="title">المصحح القرآني</h1>
         </header>
 
-        <!-- Main Studio Container -->
-        <main class="main-content recite-studio-content">
+        <!-- Main 3-Column Studio Grid Layout (Left: Controls | Center: Mushaf | Right: Guidance) -->
+        <main class="studio-main-wrapper">
+            <div class="quran-studio-layout-3col">
 
-            <!-- API Key Guidance Banner (Collapsible/Dismissible) -->
-            <div class="api-setup-banner" id="api-setup-banner">
-                <i class="fa-solid fa-key banner-icon"></i>
-                <div class="banner-text">
-                    <strong>استوديو الذكاء الاصطناعي متصل:</strong>
-                    <span>تم ضبط Webhook المعالجة، يمكنك تعديل التوكن أو تغيير السيرفر في أي وقت من الإعدادات.</span>
-                </div>
-                <button type="button" class="btn-banner-setup" id="btn-banner-setup">
-                    <i class="fa-solid fa-gear"></i> الإعدادات
-                </button>
-            </div>
+                <!-- Column 1 (Left in Screenshot): Control Panel Sidebar -->
+                <aside class="studio-col-controls">
 
-            <!-- Studio Two-Column Grid Layout -->
-            <div class="studio-grid-layout">
+                    <!-- Section: Choose Surah & Ayah -->
+                    <div class="sidebar-section-header">
+                        <div class="section-title-wrap">
+                            <i class="fa-solid fa-book-open title-gold-icon"></i>
+                            <h3 class="section-title">اختر السورة والآية</h3>
+                        </div>
+                        <p class="section-desc">حدد السورة والآية التي تريد التدريب عليها</p>
+                    </div>
 
-                <!-- Left / Center Main Studio Column -->
-                <section class="studio-main-column">
-
-                    <!-- Top Pure Transparent Selectors Bar (Surah & Ayah) -->
-                    <div class="studio-selectors-bar">
-                        <!-- Surah Selector Dropdown -->
-                        <div class="selector-card surah-selector-card" id="surah-selector-card">
-                            <div class="custom-dropdown-wrap" id="surah-dropdown-wrap">
-                                <div class="custom-dropdown-trigger" id="surah-dropdown-trigger" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
-                                    <i class="fa-solid fa-book-open surah-pure-icon"></i>
-                                    <div class="dropdown-selected-info">
-                                        <span class="dropdown-surah-title" id="selected-surah-title">سورة الفاتحة</span>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                    <!-- Surah Selector Box Card -->
+                    <div class="selector-card-wrapper">
+                        <div class="selector-box-card" id="card-select-surah" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" title="اضغط لاختيار السورة">
+                            <div class="selector-box-right">
+                                <div class="selector-icon-box">
+                                    <i class="fa-solid fa-book-quran"></i>
                                 </div>
-                                <div class="custom-dropdown-menu" id="surah-dropdown-menu">
-                                    <div class="dropdown-search-box">
-                                        <i class="fa-solid fa-magnifying-glass"></i>
-                                        <input type="text" id="surah-search-input" placeholder="ابحث باسم السورة أو رقمها..." autocomplete="off" />
-                                    </div>
-                                    <div class="dropdown-items-list" id="surah-items-list" role="listbox">
-                                        <!-- 114 Surahs injected dynamically by JS -->
-                                    </div>
+                                <div class="selector-text-meta">
+                                    <span class="selector-label">السورة</span>
+                                    <strong class="selector-val" id="selected-surah-display">سورة الفاتحة</strong>
                                 </div>
                             </div>
+                            <i class="fa-solid fa-chevron-down selector-chevron"></i>
                         </div>
 
-                        <!-- Ayah Mode / Stepper Selector -->
-                        <div class="selector-card recite-scope-card" id="recite-scope-card">
-                            <div class="mode-segmented-control" role="group" aria-label="نطاق التسميع">
-                                <button type="button" class="mode-segment-btn active" id="btn-mode-full" title="تسميع كامل السورة">
-                                    <i class="fa-solid fa-layer-group"></i>
-                                    <span>كامل السورة</span>
-                                </button>
-                                <button type="button" class="mode-segment-btn" id="btn-mode-single" title="تسميع آية محددة">
-                                    <i class="fa-solid fa-bookmark"></i>
-                                    <span>آية محددة</span>
-                                </button>
+                        <!-- Surah Dropdown Overlay Menu (Transparent Glassmorphism) -->
+                        <div class="surah-dropdown-flyout" id="surah-dropdown-flyout" style="display: none;">
+                            <div class="dropdown-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="surah-search-input" placeholder="ابحث باسم السورة أو رقمها..." autocomplete="off" />
                             </div>
-                            <div class="ayah-stepper-inner" id="ayah-stepper-inner" style="display: none;">
-                                <button type="button" class="ayah-stepper-btn" id="btn-ayah-prev" title="الآية السابقة (-)">
-                                    <i class="fa-solid fa-chevron-right"></i>
-                                </button>
-                                <div class="current-ayah-indicator" id="current-ayah-indicator">
-                                    <span class="ayah-prefix">الآية</span>
-                                    <input type="number" id="input-ayah-num" class="ayah-number-input" min="1" max="7" value="1" title="اكتب رقم الآية مباشرة" />
-                                    <span class="ayah-total-badge" id="total-ayat-badge">من 7</span>
-                                </div>
-                                <button type="button" class="ayah-stepper-btn" id="btn-ayah-next" title="الآية التالية (+)">
-                                    <i class="fa-solid fa-chevron-left"></i>
-                                </button>
+                            <div class="dropdown-items-list" id="surah-items-list" role="listbox">
+                                <!-- 114 Surahs injected dynamically -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Open 3D Mushaf Reader Canvas -->
-                    <div class="mushaf-3d-book-container" id="mushaf-3d-container">
-                        <!-- The Majestic 3D Book Layout -->
-                        <div class="mushaf-book-body">
-                            <!-- Left Page Shadow / Thickness -->
-                            <div class="book-page-thickness page-thickness-left"></div>
+                    <!-- Ayah Selector Box Card -->
+                    <div class="selector-card-wrapper">
+                        <div class="selector-box-card" id="card-select-ayah" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" title="اضغط لاختيار الآية أو كامل السورة">
+                            <div class="selector-box-right">
+                                <div class="selector-icon-box rosette">
+                                    <i class="fa-solid fa-star-and-crescent"></i>
+                                </div>
+                                <div class="selector-text-meta">
+                                    <span class="selector-label">الآية</span>
+                                    <strong class="selector-val" id="selected-ayah-display">الآية 5</strong>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down selector-chevron"></i>
+                        </div>
 
-                            <!-- Parchment Pages Inner -->
-                            <div class="mushaf-parchment-sheet">
-                                <!-- Center Spine Crease & Shadow -->
-                                <div class="mushaf-spine-shadow"></div>
+                        <!-- Ayah Dropdown / Stepper Flyout (Transparent Glassmorphism with Reduced Borders) -->
+                        <div class="ayah-dropdown-flyout" id="ayah-dropdown-flyout" style="display: none;">
+                            <div class="ayah-mode-selector-tabs">
+                                <button type="button" class="ayah-tab-btn" id="tab-full-surah">كامل السورة</button>
+                                <button type="button" class="ayah-tab-btn active" id="tab-single-ayah">آية محددة</button>
+                            </div>
+                            <div class="ayah-direct-input-wrap">
+                                <label for="input-ayah-num">رقم الآية:</label>
+                                <div class="ayah-input-row">
+                                    <button type="button" class="ayah-stepper-btn" id="btn-ayah-prev" title="السابقة (-)"><i class="fa-solid fa-minus"></i></button>
+                                    <input type="number" id="input-ayah-num" class="ayah-num-field" min="1" max="7" value="5" />
+                                    <span class="ayah-max-label" id="ayah-max-label">من 7</span>
+                                    <button type="button" class="ayah-stepper-btn" id="btn-ayah-next" title="التالية (+)"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                            </div>
+                            <div class="ayah-grid-scrollable" id="ayah-grid-scrollable">
+                                <!-- Injected dynamically: 1 to total ayat chips -->
+                            </div>
+                        </div>
+                    </div>
 
-                                <!-- Islamic Ornate Golden Border -->
-                                <div class="mushaf-ornate-border">
-                                    <div class="border-corner corner-tl"></div>
-                                    <div class="border-corner corner-tr"></div>
-                                    <div class="border-corner corner-bl"></div>
-                                    <div class="border-corner corner-br"></div>
+                    <!-- Big Gold Button: Show Mushaf -->
+                    <button type="button" class="btn-primary-gold-mushaf" id="btn-show-mushaf">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>عرض المصحف</span>
+                    </button>
 
-                                    <!-- Surah Ornamental Cartouche Header -->
-                                    <div class="mushaf-cartouche-header" id="mushaf-cartouche-header">
-                                        <div class="cartouche-bracket bracket-right"></div>
-                                        <h2 class="cartouche-surah-name" id="mushaf-surah-name">سُوْرَةُ الفَاتِحَةِ</h2>
-                                        <div class="cartouche-bracket bracket-left"></div>
-                                    </div>
+                    <!-- Section: Recitation Tools -->
+                    <div class="sidebar-section-header tools-header">
+                        <div class="section-title-wrap">
+                            <i class="fa-solid fa-wand-magic-sparkles title-gold-icon"></i>
+                            <h3 class="section-title">أدوات التلاوة</h3>
+                        </div>
+                    </div>
 
-                                    <!-- Basmala -->
-                                    <div class="mushaf-basmala-wrap" id="mushaf-basmala">
+                    <!-- Tool Card 1: Listen to Exemplary Audio -->
+                    <div class="tool-action-card" id="card-listen-exemplary" role="button" tabindex="0">
+                        <div class="tool-card-right">
+                            <strong class="tool-card-title">استمع للتلاوة النموذجية</strong>
+                            <p class="tool-card-sub">اسمع الآية بصوت قارئ محترف</p>
+                        </div>
+                        <button type="button" class="tool-circle-btn play-btn" id="btn-play-exemplary" aria-label="تشغيل التلاوة النموذجية">
+                            <i class="fa-solid fa-play" id="exemplary-play-icon"></i>
+                        </button>
+                    </div>
+
+                    <!-- Tool Card 2: Recite with Voice -->
+                    <div class="tool-action-card mic-card" id="card-recite-voice" role="button" tabindex="0">
+                        <div class="tool-card-right">
+                            <strong class="tool-card-title">اقرأ بصوتك</strong>
+                            <p class="tool-card-sub">سجل تلاوتك لتحليلها بالذكاء الاصطناعي</p>
+                        </div>
+                        <button type="button" class="tool-circle-btn mic-btn" id="btn-main-record" aria-label="بدء التسجيل والتسميع">
+                            <i class="fa-solid fa-microphone" id="record-mic-icon"></i>
+                        </button>
+                    </div>
+
+                    <!-- Card 3: Quranic Verse Quote Banner -->
+                    <div class="quran-quote-card">
+                        <div class="quote-text">❖ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ❖</div>
+                        <div class="quote-source">(المزمل: 4)</div>
+                    </div>
+
+                </aside>
+
+                <!-- Column 2 (Center): The Grand Open 3D Mushaf & Audio Player -->
+                <section class="studio-col-center-mushaf">
+
+                    <!-- Surah Header Banner Above Mushaf -->
+                    <div class="mushaf-center-header">
+                        <h2 class="mushaf-header-surah-title">
+                            <span class="ornament-diamond">❖</span>
+                            <span id="center-surah-title">سورة الفاتحة</span>
+                            <span class="ornament-diamond">❖</span>
+                        </h2>
+                        <div class="mushaf-header-range-badge" id="center-ayahs-range">الآيات 1 - 7</div>
+                    </div>
+
+                    <!-- The Open 3D Mushaf Stage -->
+                    <div class="mushaf-book-stage">
+                        <div class="mushaf-open-book-realistic" id="mushaf-open-book">
+                            <!-- Leather Covers Edges (Left & Right) -->
+                            <div class="book-cover-edge cover-edge-left"></div>
+                            <div class="book-cover-edge cover-edge-right"></div>
+
+                            <!-- Stacked Parchment Thickness Shadows (Left & Right) -->
+                            <div class="book-pages-stack stack-left"></div>
+                            <div class="book-pages-stack stack-right"></div>
+
+                            <!-- Parchment Double Page Canvas -->
+                            <div class="mushaf-parchment-canvas">
+                                <!-- Center Spine Shadow & Crease Valley -->
+                                <div class="spine-center-valley"></div>
+
+                                <!-- Authentic Medina Islamic Arabesque Border Frame -->
+                                <div class="mushaf-ornate-arabesque-frame">
+                                    <!-- Golden Corner Arabesques -->
+                                    <div class="arabesque-corner ac-tl"></div>
+                                    <div class="arabesque-corner ac-tr"></div>
+                                    <div class="arabesque-corner ac-bl"></div>
+                                    <div class="arabesque-corner ac-br"></div>
+
+                                    <!-- Basmala at top of page (hidden for Al-Fatiha and At-Tawbah) -->
+                                    <div class="mushaf-page-basmala" id="mushaf-page-basmala" style="display: none;">
                                         بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                                     </div>
 
-                                    <!-- The Live Calligraphic Inscribe Canvas -->
-                                    <div class="mushaf-verses-flow" id="mushaf-verses-flow" role="region" aria-label="استوديو التسميع والتدوين القرآني الحي">
-                                        <div class="inscribe-canvas-wrapper" id="inscribe-canvas-wrapper">
-                                            <div class="inscribe-prompt-hint" id="inscribe-prompt-hint">
-                                                <i class="fa-solid fa-feather-pointed inscribe-nib-icon"></i>
-                                                <h3 class="inscribe-scope-title" id="prompt-scope-title">تسميع كامل سورة الفاتحة</h3>
-                                                <p class="inscribe-scope-sub" id="prompt-scope-sub">المصحف جاهز لاستقبال تلاوتك لجميع آيات السورة (7 آيات)</p>
-                                                <div class="inscribe-instruction-badge">
-                                                    <i class="fa-solid fa-microphone-lines"></i>
-                                                    <span>اضغط زر الميكروفون بالأسفل وابدأ التسميع.. ما تقرؤه بصوتك سيظهر ويُصحّح هنا مباشرة</span>
-                                                </div>
-                                                <button type="button" class="btn-peek-mushaf" id="btn-peek-mushaf" title="كشف نص الآية للمساعدة">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                    <span id="peek-btn-text">كشف النص للمراجعة</span>
-                                                </button>
-                                                <div class="peek-verse-box" id="peek-verse-box" style="display: none;"></div>
-                                            </div>
-                                            <div class="live-inscribed-stream" id="live-inscribed-stream" style="display: none;"></div>
-                                        </div>
+                                    <!-- Sacred Quran Verses Flow with Active Highlight Ribbon Banner -->
+                                    <div class="mushaf-sacred-verses-flow" id="mushaf-verses-flow" role="region" aria-label="المصحف الشريف">
+                                        <!-- Injected dynamically: Quran verses rows and illuminated ribbon -->
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Right Page Shadow / Thickness -->
-                            <div class="book-page-thickness page-thickness-right"></div>
                         </div>
                     </div>
 
-                    <!-- Floating Bottom Recording Studio Card (Pure Transparent Glass) -->
-                    <div class="bottom-recorder-card" id="bottom-recorder-card">
-                        <div class="recorder-prompt-title" id="recorder-prompt-title">اضغط على الميكروفون وابدأ بالتسميع بصوتك</div>
+                    <!-- Bottom Audio & Recitation Waveform Player Bar -->
+                    <div class="mushaf-bottom-player-wrap">
+                        <div class="bottom-audio-bar">
+                            <!-- Circular Gold Play Button -->
+                            <button type="button" class="bar-play-circle" id="bar-btn-play" title="تشغيل / إيقاف التلاوة">
+                                <i class="fa-solid fa-play" id="bar-play-icon"></i>
+                            </button>
 
-                        <!-- Big Circular Glowing Recording Button -->
-                        <div class="record-btn-container">
-                            <button type="button" class="btn-main-record" id="btn-main-record" title="اضغط لبدء التسميع الصوتي" aria-label="بدء التسجيل">
-                                <span class="record-glow-ring"></span>
-                                <i class="fa-solid fa-microphone record-mic-icon"></i>
+                            <!-- Waveform Visualizer Bars (Animated with sound) -->
+                            <div class="bar-waveform-visualizer" id="bar-waveform-visualizer">
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                                <span class="wbar"></span><span class="wbar"></span><span class="wbar"></span><span class="wbar"></span>
+                            </div>
+
+                            <!-- Timer Display -->
+                            <div class="bar-time-display" id="bar-time-display">00:00 / 00:15</div>
+
+                            <!-- Volume / Speaker Button -->
+                            <button type="button" class="bar-volume-btn" id="bar-volume-btn" title="كتم / تفعيل الصوت">
+                                <i class="fa-solid fa-volume-high" id="bar-volume-icon"></i>
                             </button>
                         </div>
 
-                        <!-- Record Status & Timer -->
-                        <div class="recorder-status-caption" id="recorder-status-caption">
-                            اضغط لبدء التسجيل
-                        </div>
-                        <div class="recorder-timer" id="recorder-timer">00:00</div>
-
-                        <!-- Live Waveform Canvas (Active during recording) -->
-                        <canvas id="waveform-canvas" class="waveform-canvas" height="40"></canvas>
-
-                        <!-- Extra Controls (Stop / Reset) -->
-                        <div class="recorder-actions-row" id="recorder-actions-row" style="display: none;">
-                            <button type="button" class="recorder-action-btn btn-finish-analyze" id="btn-stop-analyze">
-                                <i class="fa-solid fa-check"></i> إنهاء وتصحيح التلاوة
-                            </button>
-                            <button type="button" class="recorder-action-btn btn-cancel-record" id="btn-reset-record">
-                                <i class="fa-solid fa-rotate-left"></i> إلغاء
-                            </button>
+                        <!-- Instructions Meta Below Player -->
+                        <div class="player-instruction-meta">
+                            <strong class="instruction-main" id="player-status-main">استمع للتلاوة النموذجية أولاً</strong>
+                            <p class="instruction-sub" id="player-status-sub">بعد الاستماع، اقرأ الآية بصوتك لتحليلها</p>
                         </div>
                     </div>
+
+                    <!-- Audio Elements -->
+                    <audio id="audio-exemplary" preload="none"></audio>
+                    <audio id="recorded-audio-player" style="display: none;"></audio>
 
                 </section>
 
-                <!-- Right Sidebar Column (Pure Transparent Glass) -->
-                <aside class="studio-sidebar-column">
+                <!-- Column 3 (Right in Screenshot): Guidance & Wisdom Sidebar -->
+                <aside class="studio-col-guidance">
 
-                    <!-- Card 1: Exemplary Recitation Audio Player -->
-                    <div class="sidebar-card exemplary-audio-card" id="exemplary-audio-card">
-                        <div class="sidebar-card-header">
-                            <i class="fa-solid fa-headphones card-pure-icon"></i>
-                            <div class="card-header-text">
-                                <h3 class="card-title">استمع للتلاوة النموذجية</h3>
-                                <p class="card-subtitle">استمع جيداً إلى طريقة نطق الآية الصحيحة</p>
+                    <!-- Card 1: Important Reminder -->
+                    <div class="guidance-card alert-card">
+                        <div class="guidance-card-header">
+                            <div class="guidance-icon-badge gold-bulb">
+                                <i class="fa-solid fa-lightbulb"></i>
                             </div>
+                            <h4 class="guidance-title">تذكير مهم</h4>
                         </div>
-
-                        <!-- Audio Player Track Widget -->
-                        <div class="exemplary-player-widget">
-                            <button type="button" class="exemplary-play-btn" id="btn-play-exemplary" title="تشغيل / إيقاف التلاوة النموذجية" aria-label="تشغيل التلاوة">
-                                <i class="fa-solid fa-play" id="exemplary-play-icon"></i>
-                            </button>
-
-                            <div class="exemplary-bars-visualizer" id="exemplary-bars-visualizer">
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                                <span class="vbar"></span>
-                            </div>
-
-                            <div class="exemplary-timer" id="exemplary-timer">00:00 / 00:00</div>
-                        </div>
-
-                        <!-- Audio Elements -->
-                        <audio id="audio-exemplary" preload="none"></audio>
-                        <audio id="recorded-audio-player" style="display: none;"></audio>
+                        <p class="guidance-body-text">
+                            ركز على نطق الحروف، خاصة الحروف التي تسبب الأخطاء مثل (ع ، ح - غ)
+                        </p>
                     </div>
 
-                    <!-- Card 2: Before Recording Note -->
-                    <div class="sidebar-card tip-card">
-                        <div class="sidebar-card-header">
-                            <i class="fa-solid fa-lightbulb card-pure-icon"></i>
-                            <div class="card-header-text">
-                                <h3 class="card-title">قبل أن تبدأ بالتسجيل</h3>
-                                <p class="card-subtitle">تأكد من أنك في مكان هادئ وبجودة صوت جيدة</p>
+                    <!-- Card 2: Recitation Tips -->
+                    <div class="guidance-card tips-card">
+                        <div class="guidance-card-header">
+                            <div class="guidance-icon-badge gold-star">
+                                <i class="fa-solid fa-star"></i>
                             </div>
+                            <h4 class="guidance-title">نصائح للتلاوة</h4>
                         </div>
-                    </div>
-
-                    <!-- Card 3: Best Recitation Tips Guidelines -->
-                    <div class="sidebar-card guidelines-card">
-                        <div class="guidelines-header">
-                            <i class="fa-solid fa-star card-pure-icon"></i>
-                            <h3 class="guidelines-title">نصائح لقراءة أفضل</h3>
-                        </div>
-                        <ul class="guidelines-list">
+                        <ul class="tips-checklist">
                             <li>
                                 <i class="fa-solid fa-check check-gold"></i>
-                                <span>ركّز على مخارج الحروف</span>
+                                <span>تأكد من إخراج الحروف من مخارجها</span>
                             </li>
                             <li>
                                 <i class="fa-solid fa-check check-gold"></i>
@@ -300,7 +315,7 @@
                             </li>
                             <li>
                                 <i class="fa-solid fa-check check-gold"></i>
-                                <span>تحدّث بطمأنينة وهدوء</span>
+                                <span>تحدث بطمأنينة وهدوء</span>
                             </li>
                             <li>
                                 <i class="fa-solid fa-check check-gold"></i>
@@ -309,79 +324,87 @@
                         </ul>
                     </div>
 
+                    <!-- Card 3: Quranic Light & Mosque Night Banner -->
+                    <div class="spiritual-mosque-card">
+                        <div class="spiritual-card-bg" style="background-image: url('assets/quran_light_card.jpg');"></div>
+                        <div class="spiritual-overlay"></div>
+                        <div class="spiritual-quote-content">
+                            <p class="spiritual-quote-text">القرآن نُور في قَلبك وتلاوتك عبادة عظيمة</p>
+                        </div>
+                    </div>
+
                 </aside>
 
             </div>
+        </main>
 
-            <!-- Evaluation & Results Modal -->
-            <div class="evaluation-modal-backdrop" id="evaluation-modal-backdrop">
-                <div class="evaluation-modal-card" id="evaluation-modal-card">
-                    <button type="button" class="modal-close-btn" id="btn-close-evaluation" title="إغلاق التقرير">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+        <!-- Evaluation & Results Modal -->
+        <div class="evaluation-modal-backdrop" id="evaluation-modal-backdrop" role="dialog" aria-modal="true">
+            <div class="evaluation-modal-card" id="evaluation-modal-card">
+                <button type="button" class="modal-close-btn" id="btn-close-evaluation" title="إغلاق التقرير">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
 
-                    <div class="eval-header">
-                        <div class="eval-badge"><i class="fa-solid fa-award"></i> نتيجة التدقيق القرآني</div>
-                        <h2 class="eval-title" id="score-evaluation-title">تقييم تلاوتك الكريمة</h2>
-                    </div>
+                <div class="eval-header">
+                    <div class="eval-badge"><i class="fa-solid fa-award"></i> نتيجة التدقيق القرآني</div>
+                    <h2 class="eval-title" id="score-evaluation-title">تقييم تلاوتك الكريمة</h2>
+                </div>
 
-                    <!-- Score Radial Gauge -->
-                    <div class="eval-score-box">
-                        <div class="score-circle-wrap">
-                            <span class="score-number" id="score-number">95%</span>
-                            <span class="score-label">نسبة الإتقان</span>
-                        </div>
-                    </div>
-
-                    <!-- Summary Stats Pill Chips -->
-                    <div class="eval-stats-row">
-                        <div class="stat-pill stat-correct">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span>كلمات صحيحة:</span>
-                            <strong id="count-correct">0</strong>
-                        </div>
-                        <div class="stat-pill stat-errors">
-                            <i class="fa-solid fa-circle-xmark"></i>
-                            <span>أخطاء في النطق:</span>
-                            <strong id="count-errors">0</strong>
-                        </div>
-                        <div class="stat-pill stat-missing">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <span>كلمات ناقصة:</span>
-                            <strong id="count-missing">0</strong>
-                        </div>
-                    </div>
-
-                    <!-- Word-by-Word Diff Cloud -->
-                    <div class="eval-words-section">
-                        <div class="eval-words-heading">
-                            <i class="fa-solid fa-magnifying-glass-chart"></i> التدقيق التفصيلي كلمة بكلمة:
-                        </div>
-                        <div class="words-alignment-cloud" id="words-alignment-cloud">
-                            <!-- Comparison word chips injected here -->
-                        </div>
-                    </div>
-
-                    <!-- What was transcribed -->
-                    <div class="eval-transcription-box">
-                        <div class="transcription-label">النص المفرغ من صوتك:</div>
-                        <div class="transcription-text" id="transcription-text-display">...</div>
-                    </div>
-
-                    <!-- Actions Bottom Row -->
-                    <div class="eval-actions-row">
-                        <button type="button" class="eval-btn eval-btn-retry" id="btn-eval-retry">
-                            <i class="fa-solid fa-rotate-left"></i> إعادة تسميع الآية
-                        </button>
-                        <button type="button" class="eval-btn eval-btn-next" id="btn-eval-next">
-                            <span>الانتقال للآية التالية</span>
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
+                <!-- Score Radial Gauge -->
+                <div class="eval-score-box">
+                    <div class="score-circle-wrap">
+                        <span class="score-number" id="score-number">95%</span>
+                        <span class="score-label">نسبة الإتقان</span>
                     </div>
                 </div>
-            </div>
 
-        </main>
+                <!-- Summary Stats Pill Chips -->
+                <div class="eval-stats-row">
+                    <div class="stat-pill stat-correct">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>كلمات صحيحة:</span>
+                        <strong id="count-correct">0</strong>
+                    </div>
+                    <div class="stat-pill stat-errors">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>أخطاء في النطق:</span>
+                        <strong id="count-errors">0</strong>
+                    </div>
+                    <div class="stat-pill stat-missing">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>كلمات ناقصة:</span>
+                        <strong id="count-missing">0</strong>
+                    </div>
+                </div>
+
+                <!-- Word-by-Word Diff Cloud -->
+                <div class="eval-words-section">
+                    <div class="eval-words-heading">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> التدقيق التفصيلي كلمة بكلمة:
+                    </div>
+                    <div class="words-alignment-cloud" id="words-alignment-cloud">
+                        <!-- Comparison word chips injected here -->
+                    </div>
+                </div>
+
+                <!-- What was transcribed -->
+                <div class="eval-transcription-box">
+                    <div class="transcription-label">النص المفرغ من صوتك:</div>
+                    <div class="transcription-text" id="transcription-text-display">...</div>
+                </div>
+
+                <!-- Actions Bottom Row -->
+                <div class="eval-actions-row">
+                    <button type="button" class="eval-btn eval-btn-retry" id="btn-eval-retry">
+                        <i class="fa-solid fa-rotate-left"></i> إعادة تسميع الآية
+                    </button>
+                    <button type="button" class="eval-btn eval-btn-next" id="btn-eval-next">
+                        <span>الانتقال للآية التالية</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- AI Engine Settings Modal -->
         <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-label="إعدادات محرك الذكاء الاصطناعي">
@@ -395,43 +418,36 @@
                     </button>
                 </div>
 
-                <!-- Step-by-Step Token Guidance Box -->
                 <div class="hf-guide-box">
-                    <div class="hf-guide-title"><i class="fa-solid fa-graduation-cap"></i> كيف تحصل على توكن Hugging Face المجاني في دقيقة:</div>
-                    <ol class="hf-guide-steps">
-                        <li>سجّل حساباً مجانياً على موقع <a href="https://huggingface.co/join" target="_blank" rel="noopener">HuggingFace.co/join <i class="fa-solid fa-arrow-up-right-from-square"></i></a></li>
-                        <li>ادخل على صفحة المفاتيح: <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens <i class="fa-solid fa-arrow-up-right-from-square"></i></a> واضغط <strong>Create new token</strong> (واختر نوعه Read).</li>
-                        <li>انسخ التوكن الذي يبدأ بـ <code>hf_...</code> وضعه في خانة <strong>توكن Hugging Face</strong> بالأسفل، ثم اضغط حفظ الإعدادات.</li>
-                    </ol>
+                    <div class="hf-guide-title"><i class="fa-solid fa-graduation-cap"></i> إعدادات الذكاء الاصطناعي والمعالجة:</div>
+                    <p style="font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6;">
+                        يتم تحليل الصوت محلياً عبر تقنية التعرف الصوتي الذكية المدمجة، أو من خلال ربط Webhook مخصص.
+                    </p>
                 </div>
 
                 <div class="settings-group">
                     <label for="setting-engine-mode">طريقة معالجة الذكاء الاصطناعي:</label>
                     <select id="setting-engine-mode" class="settings-input">
-                        <option value="make" selected>سيناريو Make.com (Hugging Face Webhook)</option>
-                        <option value="direct_hf">Hugging Face Direct Inference API (مباشر عبر التوكن)</option>
-                        <option value="python">سيرفر بايثون المحلي (FastAPI Microservice)</option>
-                        <option value="smart_demo">الوضع التجريبي الذكي السريع (محاكي بدون مفاتيح)</option>
+                        <option value="smart_demo" selected>الوضع الذكي السريع المدمج (بدون مفاتيح)</option>
+                        <option value="make">سيناريو Make.com (Hugging Face Webhook)</option>
+                        <option value="direct_hf">Hugging Face Direct Inference API (مباشر)</option>
+                        <option value="python">سيرفر بايثون المحلي (FastAPI)</option>
                     </select>
-                    <div class="settings-help">اختر الطريقة التي تفضلها لمعالجة الصوت واستخراج النص القرآني.</div>
                 </div>
 
                 <div class="settings-group">
                     <label for="setting-make-webhook">رابط Make.com Webhook URL:</label>
-                    <input type="text" id="setting-make-webhook" class="settings-input" placeholder="https://hook.eu1.make.com/cidwvfapp9ikvvgfs37fr9upt32nxtbx" />
-                    <div class="settings-help">ضع رابط الـ Custom Webhook الذي أنشأته في Make.com.</div>
+                    <input type="text" id="setting-make-webhook" class="settings-input" placeholder="https://hook.eu1.make.com/..." />
                 </div>
 
                 <div class="settings-group">
                     <label for="setting-python-url">رابط سيرفر بايثون (FastAPI Base URL):</label>
                     <input type="text" id="setting-python-url" class="settings-input" placeholder="http://localhost:8080" />
-                    <div class="settings-help">في حال تشغيل <code>python api/recitation_service.py</code>.</div>
                 </div>
 
                 <div class="settings-group">
                     <label for="setting-hf-token">توكن Hugging Face (HF API Token):</label>
                     <input type="password" id="setting-hf-token" class="settings-input" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" />
-                    <div class="settings-help">توكن Access Token من موقع Hugging Face لاستدعاء نموذج tarteel-ai مباشرة.</div>
                 </div>
 
                 <div class="modal-footer">
@@ -442,7 +458,7 @@
             </div>
         </div>
 
-        <!-- Footer without Background -->
+        <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-container">
                 <div class="footer-side-spacer" aria-hidden="true"></div>
@@ -468,6 +484,6 @@
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
     <script src="core/quran_data.js"></script>
-    <script src="features/recite/recite.js?v=21"></script>
+    <script src="features/recite/recite.js?v=26"></script>
 </body>
 </html>

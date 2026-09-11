@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css">
+    <link rel="stylesheet" href="features/recite/recite.css?v=21">
     <script src="core/player-bridge.js"></script>
 </head>
 <body>
@@ -53,31 +53,12 @@
                     <i class="fa-solid fa-arrow-right"></i>
                     <span>الرجوع للصفحة الرئيسية</span>
                 </a>
-              
+                <button type="button" class="top-settings-btn" id="btn-open-settings" title="إعدادات المصحح والذكاء الاصطناعي">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
             </div>
             <h1 class="title">المصحح القرآني</h1>
         </header>
-
-        <!-- Navigation Bar (Hidden on Mobile for zero distraction) -->
-        <nav class="nav-bar desktop-only-nav">
-            <a href="home.html" class="nav-item"><i class="fa-solid fa-clock"></i> المواقيت</a>
-            <a href="reminders.html" class="nav-item"><i class="fa-solid fa-bell"></i> التذكيرات</a>
-            <a href="quran.html" class="nav-item"><i class="fa-solid fa-book-quran"></i> المصحف</a>
-            <div class="nav-break"></div>
-            <a href="tafseer.html" class="nav-item"><i class="fa-solid fa-book-open-reader"></i> التفسير</a>
-            <a href="hadith.html" class="nav-item"><i class="fa-solid fa-book-bookmark"></i> الأحاديث</a>
-            <a href="azkar.html?m=sm" class="nav-item"><i class="fa-solid fa-sun"></i> الصباح والمساء</a>
-            <div class="nav-break"></div>
-            <a href="azkar.html" class="nav-item"><i class="fa-solid fa-hands-praying"></i> الأذكار</a>
-            <a href="names.html" class="nav-item"><i class="fa-solid fa-list-ol"></i> أسماء الله</a>
-            <a href="qibla.html" class="nav-item"><i class="fa-solid fa-compass"></i> القبلة</a>
-            <div class="nav-break"></div>
-            <a href="distance.html" class="nav-item"><i class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-            <a href="listen.html" class="nav-item"><i class="fa-solid fa-headphones"></i> الاستماع</a>
-            <div class="nav-break"></div>
-            <a href="mosques.html" class="nav-item"><i class="fa-solid fa-mosque"></i> أقرب مسجد</a>
-            <a href="recite.html" class="nav-item active"><i class="fa-solid fa-microphone-lines"></i> المصحح القرآني</a>
-        </nav>
 
         <!-- Main Studio Container -->
         <main class="main-content recite-studio-content">
@@ -125,20 +106,27 @@
                         </div>
 
                         <!-- Ayah Mode / Stepper Selector -->
-                        <div class="selector-card ayah-selector-card" id="ayah-selector-card">
-                            <button type="button" class="ayah-mode-btn" id="btn-toggle-surah-mode" title="التبديل بين كامل السورة أو آية محددة">
-                                <i class="fa-solid fa-layer-group"></i>
-                                <span id="surah-mode-label">كامل السورة</span>
-                            </button>
+                        <div class="selector-card recite-scope-card" id="recite-scope-card">
+                            <div class="mode-segmented-control" role="group" aria-label="نطاق التسميع">
+                                <button type="button" class="mode-segment-btn active" id="btn-mode-full" title="تسميع كامل السورة">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                    <span>كامل السورة</span>
+                                </button>
+                                <button type="button" class="mode-segment-btn" id="btn-mode-single" title="تسميع آية محددة">
+                                    <i class="fa-solid fa-bookmark"></i>
+                                    <span>آية محددة</span>
+                                </button>
+                            </div>
                             <div class="ayah-stepper-inner" id="ayah-stepper-inner" style="display: none;">
-                                <button type="button" class="ayah-stepper-btn" id="btn-ayah-prev" title="الآية السابقة">
+                                <button type="button" class="ayah-stepper-btn" id="btn-ayah-prev" title="الآية السابقة (-)">
                                     <i class="fa-solid fa-chevron-right"></i>
                                 </button>
                                 <div class="current-ayah-indicator" id="current-ayah-indicator">
                                     <span class="ayah-prefix">الآية</span>
-                                    <span class="ayah-number-badge" id="selected-ayah-num">1</span>
+                                    <input type="number" id="input-ayah-num" class="ayah-number-input" min="1" max="7" value="1" title="اكتب رقم الآية مباشرة" />
+                                    <span class="ayah-total-badge" id="total-ayat-badge">من 7</span>
                                 </div>
-                                <button type="button" class="ayah-stepper-btn" id="btn-ayah-next" title="الآية التالية">
+                                <button type="button" class="ayah-stepper-btn" id="btn-ayah-next" title="الآية التالية (+)">
                                     <i class="fa-solid fa-chevron-left"></i>
                                 </button>
                             </div>
@@ -180,9 +168,18 @@
                                     <div class="mushaf-verses-flow" id="mushaf-verses-flow" role="region" aria-label="استوديو التسميع والتدوين القرآني الحي">
                                         <div class="inscribe-canvas-wrapper" id="inscribe-canvas-wrapper">
                                             <div class="inscribe-prompt-hint" id="inscribe-prompt-hint">
-                                                <i class="fa-solid fa-pen-nib inscribe-nib-icon"></i>
-                                                <p>اضغط على زر الميكروفون بالأسفل وابدأ التسميع بصوتك...</p>
-                                                <span>سيقوم القلم القرآني بخطّ وتدوين الكلمات داخل المصحف الشريف وتصحيحها لحظياً</span>
+                                                <i class="fa-solid fa-feather-pointed inscribe-nib-icon"></i>
+                                                <h3 class="inscribe-scope-title" id="prompt-scope-title">تسميع كامل سورة الفاتحة</h3>
+                                                <p class="inscribe-scope-sub" id="prompt-scope-sub">المصحف جاهز لاستقبال تلاوتك لجميع آيات السورة (7 آيات)</p>
+                                                <div class="inscribe-instruction-badge">
+                                                    <i class="fa-solid fa-microphone-lines"></i>
+                                                    <span>اضغط زر الميكروفون بالأسفل وابدأ التسميع.. ما تقرؤه بصوتك سيظهر ويُصحّح هنا مباشرة</span>
+                                                </div>
+                                                <button type="button" class="btn-peek-mushaf" id="btn-peek-mushaf" title="كشف نص الآية للمساعدة">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    <span id="peek-btn-text">كشف النص للمراجعة</span>
+                                                </button>
+                                                <div class="peek-verse-box" id="peek-verse-box" style="display: none;"></div>
                                             </div>
                                             <div class="live-inscribed-stream" id="live-inscribed-stream" style="display: none;"></div>
                                         </div>
@@ -197,7 +194,7 @@
 
                     <!-- Floating Bottom Recording Studio Card (Pure Transparent Glass) -->
                     <div class="bottom-recorder-card" id="bottom-recorder-card">
-                        <div class="recorder-prompt-title">بعد الاستماع، اقرأ الآية بصوتك</div>
+                        <div class="recorder-prompt-title" id="recorder-prompt-title">اضغط على الميكروفون وابدأ بالتسميع بصوتك</div>
 
                         <!-- Big Circular Glowing Recording Button -->
                         <div class="record-btn-container">
@@ -470,6 +467,7 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js"></script>
+    <script src="core/quran_data.js"></script>
+    <script src="features/recite/recite.js?v=21"></script>
 </body>
 </html>

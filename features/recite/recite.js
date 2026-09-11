@@ -184,12 +184,15 @@ const selectedSurahTitle = document.getElementById('selected-surah-title');
 const surahSearchInput = document.getElementById('surah-search-input');
 const surahItemsList = document.getElementById('surah-items-list');
 
-const btnToggleSurahMode = document.getElementById('btn-toggle-surah-mode');
-const surahModeLabel = document.getElementById('surah-mode-label');
+const btnModeFull = document.getElementById('btn-mode-full');
+const btnModeSingle = document.getElementById('btn-mode-single');
 const ayahStepperInner = document.getElementById('ayah-stepper-inner');
 const btnAyahPrev = document.getElementById('btn-ayah-prev');
 const btnAyahNext = document.getElementById('btn-ayah-next');
-const selectedAyahNum = document.getElementById('selected-ayah-num');
+const inputAyahNum = document.getElementById('input-ayah-num');
+const totalAyatBadge = document.getElementById('total-ayat-badge');
+const recorderPromptTitle = document.getElementById('recorder-prompt-title');
+const btnToggleSurahMode = document.getElementById('btn-toggle-surah-mode'); // backward compat
 
 // Mushaf 3D Elements
 const mushafSurahName = document.getElementById('mushaf-surah-name');
@@ -353,21 +356,40 @@ async function loadSurahAndVerses(surahNum, targetAyahNum) {
     const surahMeta = SURAHS_DB.find(s => s.number === surahNum) || SURAHS_DB[0];
 
     // Update Dropdown and Headers
-    selectedSurahTitle.textContent = `سورة ${surahMeta.name}`;
-    mushafSurahName.textContent = `سُوْرَةُ ${surahMeta.name}`;
-    selectedAyahNum.textContent = targetAyahNum;
-
-    // Basmala visibility
-    if (surahNum === 9) { // At-Tawbah has no Basmala
-        mushafBasmala.style.display = 'none';
-    } else {
-        mushafBasmala.style.display = 'block';
+    if (selectedSurahTitle) selectedSurahTitle.textContent = `سورة ${surahMeta.name}`;
+    if (mushafSurahName) mushafSurahName.textContent = `سُوْرَةُ ${surahMeta.name}`;
+    
+    // Update Stepper Input & Total Badge
+    if (inputAyahNum) {
+        inputAyahNum.max = surahMeta.ayat;
+        inputAyahNum.value = targetAyahNum;
+    }
+    if (totalAyatBadge) {
+        totalAyatBadge.textContent = `من ${surahMeta.ayat}`;
     }
 
-    // Set Mushaf Canvas in Ready State
+    // Basmala visibility
+    if (mushafBasmala) {
+        if (surahNum === 9) { // At-Tawbah has no Basmala
+            mushafBasmala.style.display = 'none';
+        } else {
+            mushafBasmala.style.display = 'block';
+        }
+    }
+
+    // Set Mushaf Canvas in Ready State (Quran text is NOT displayed beforehand)
     resetMushafCanvasToReady();
 
-    // Fetch Full Surah Verses for target verification
+    // 1. Instant offline loading from pre-loaded full Quran database (all 114 Surahs)
+    if (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[surahNum] && window.QURAN_FULL_DATA[surahNum].ayahs) {
+        currentSurahVerses = processVersesData(window.QURAN_FULL_DATA[surahNum].ayahs, surahNum);
+        const found = currentSurahVerses.find(a => a.numberInSurah === targetAyahNum);
+        currentTargetVerseText = found ? found.text : (currentSurahVerses[0] ? currentSurahVerses[0].text : "");
+        prepareExemplaryAudio(surahNum, targetAyahNum);
+        return;
+    }
+
+    // 2. Fetch Full Surah Verses for target verification via API
     try {
         const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}/quran-uthmani`);
         if (res.ok) {
@@ -384,7 +406,7 @@ async function loadSurahAndVerses(surahNum, targetAyahNum) {
         console.warn("AlQuran Cloud API fetch notice:", e);
     }
 
-    // Offline Fallback
+    // 3. Offline Fallback
     const fallbackRaw = [];
     for (let i = 1; i <= surahMeta.ayat; i++) {
         const key = `${surahNum}:${i}`;
@@ -393,15 +415,16 @@ async function loadSurahAndVerses(surahNum, targetAyahNum) {
     }
     currentSurahVerses = processVersesData(fallbackRaw, surahNum);
     const found = currentSurahVerses.find(a => a.numberInSurah === targetAyahNum);
-    currentTargetVerseText = found ? found.text : currentSurahVerses[0].text;
+    currentTargetVerseText = found ? found.text : (currentSurahVerses[0] ? currentSurahVerses[0].text : "");
     prepareExemplaryAudio(surahNum, targetAyahNum);
 }
 
 function processVersesData(ayahs, surahNum) {
     return ayahs.map((a, idx) => {
-        let txt = a.text || "";
+        let txt = (a.text || "").replace(/^\uFEFF/, '').trim();
         if (surahNum !== 1 && surahNum !== 9 && idx === 0) {
-            txt = txt.replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*/, '');
+            txt = txt.replace(/^بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '')
+                     .replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*/, '');
         }
         const rawWords = txt.split(/\s+/).filter(Boolean);
         const normWords = rawWords.map(normalizeArabicText);
@@ -422,30 +445,115 @@ function getActiveTargetAyahs() {
     return single ? [single] : (currentSurahVerses && currentSurahVerses.length ? [currentSurahVerses[0]] : []);
 }
 
+function setReciteMode(mode) {
+    const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
+
+    if (mode === 'full') {
+        isFullSurahMode = true;
+        if (btnModeFull) btnModeFull.classList.add('active');
+        if (btnModeSingle) btnModeSingle.classList.remove('active');
+        if (ayahStepperInner) ayahStepperInner.style.display = 'none';
+        if (recorderPromptTitle) recorderPromptTitle.textContent = 'اضغط على الميكروفون وابدأ بتسميع السورة كاملة بصوتك';
+        showToast(`تم تفعيل وضع تسميع كامل سورة ${surahMeta.name}`);
+    } else {
+        isFullSurahMode = false;
+        if (btnModeSingle) btnModeSingle.classList.add('active');
+        if (btnModeFull) btnModeFull.classList.remove('active');
+        if (ayahStepperInner) ayahStepperInner.style.display = 'flex';
+        if (recorderPromptTitle) recorderPromptTitle.textContent = `اضغط على الميكروفون وابدأ بتسميع الآية رقم ${currentAyahNumber} بصوتك`;
+        showToast(`تم تفعيل وضع تسميع الآية رقم ${currentAyahNumber} من سورة ${surahMeta.name}`);
+    }
+
+    resetMushafCanvasToReady();
+    resetStudioRecording();
+}
+
+let isPeekRevealed = false;
+
 function resetMushafCanvasToReady() {
+    if (!mushafVersesFlow) return;
+
+    const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
+    const scopeTitle = isFullSurahMode 
+        ? `تسميع كامل سورة ${surahMeta.name}`
+        : `تسميع الآية رقم ${currentAyahNumber} من سورة ${surahMeta.name}`;
+    const scopeSub = isFullSurahMode 
+        ? `المصحف جاهز لاستقبال تلاوتك لجميع آيات السورة (${surahMeta.ayat} آيات)`
+        : `المصحف مخفي لاختبار حفظك عن ظهر قلب - اقرأ الآية وسيقوم القلم بخطّ ما تقرأه وتصحيحه`;
+
+    isPeekRevealed = false;
+
     mushafVersesFlow.innerHTML = `
         <div class="inscribe-canvas-wrapper" id="inscribe-canvas-wrapper">
             <div class="inscribe-prompt-hint" id="inscribe-prompt-hint">
-                <i class="fa-solid fa-pen-nib inscribe-nib-icon"></i>
-                <p>اضغط على زر الميكروفون بالأسفل وابدأ التسميع بصوتك...</p>
-                <span>سيقوم القلم القرآني بخطّ وتدوين الكلمات داخل المصحف الشريف وتصحيحها لحظياً</span>
+                <i class="fa-solid fa-feather-pointed inscribe-nib-icon"></i>
+                <h3 class="inscribe-scope-title" id="prompt-scope-title">${escapeHTML(scopeTitle)}</h3>
+                <p class="inscribe-scope-sub" id="prompt-scope-sub">${escapeHTML(scopeSub)}</p>
+                <div class="inscribe-instruction-badge">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                    <span>اضغط زر الميكروفون بالأسفل وابدأ التسميع.. ما تقرؤه بصوتك سيظهر ويُصحّح هنا مباشرة</span>
+                </div>
+                <button type="button" class="btn-peek-mushaf" id="btn-peek-mushaf" title="كشف نص الآية للمساعدة">
+                    <i class="fa-solid fa-eye"></i>
+                    <span id="peek-btn-text">كشف النص للمراجعة</span>
+                </button>
+                <div class="peek-verse-box" id="peek-verse-box" style="display: none;"></div>
             </div>
             <div class="live-inscribed-stream" id="live-inscribed-stream" style="display: none;"></div>
         </div>
     `;
+
+    // Attach Peek Button Listener
+    const btnPeek = document.getElementById('btn-peek-mushaf');
+    const peekBox = document.getElementById('peek-verse-box');
+    const peekBtnText = document.getElementById('peek-btn-text');
+
+    if (btnPeek && peekBox) {
+        btnPeek.addEventListener('click', () => {
+            isPeekRevealed = !isPeekRevealed;
+            if (isPeekRevealed) {
+                peekBox.style.display = 'block';
+                if (peekBtnText) peekBtnText.textContent = 'إخفاء النص للمواصلة في الحفظ';
+                const eyeIcon = btnPeek.querySelector('i');
+                if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye-slash';
+
+                if (isFullSurahMode) {
+                    let peekHtml = '';
+                    currentSurahVerses.forEach(a => {
+                        peekHtml += `${escapeHTML(a.text)} <span class="ayah-end-num">﴿ ${toArabicDigits(a.numberInSurah)} ﴾</span> `;
+                    });
+                    peekBox.innerHTML = peekHtml || 'جاري تحميل الآيات...';
+                } else {
+                    const found = currentSurahVerses.find(a => a.numberInSurah === currentAyahNumber);
+                    const txt = found ? found.text : currentTargetVerseText;
+                    peekBox.innerHTML = `${escapeHTML(txt)} <span class="ayah-end-num">﴿ ${toArabicDigits(currentAyahNumber)} ﴾</span>`;
+                }
+            } else {
+                peekBox.style.display = 'none';
+                if (peekBtnText) peekBtnText.textContent = 'كشف النص للمراجعة';
+                const eyeIcon = btnPeek.querySelector('i');
+                if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye';
+            }
+        });
+    }
 }
 
 function goToAyah(ayahNum) {
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
-    if (ayahNum < 1) ayahNum = 1;
-    if (ayahNum > surahMeta.ayat) ayahNum = surahMeta.ayat;
+    let targetNum = parseInt(ayahNum, 10);
+    if (isNaN(targetNum) || targetNum < 1) targetNum = 1;
+    if (targetNum > surahMeta.ayat) targetNum = surahMeta.ayat;
 
-    currentAyahNumber = ayahNum;
-    selectedAyahNum.textContent = currentAyahNumber;
+    currentAyahNumber = targetNum;
+    if (inputAyahNum) inputAyahNum.value = currentAyahNumber;
 
-    const foundAyah = currentSurahVerses.find(a => a.numberInSurah === ayahNum);
+    const foundAyah = currentSurahVerses.find(a => a.numberInSurah === currentAyahNumber);
     if (foundAyah) {
         currentTargetVerseText = foundAyah.text;
+    }
+
+    if (!isFullSurahMode && recorderPromptTitle) {
+        recorderPromptTitle.textContent = `اضغط على الميكروفون وابدأ بتسميع الآية رقم ${currentAyahNumber} بصوتك`;
     }
 
     resetMushafCanvasToReady();
@@ -809,8 +917,8 @@ function updateLiveInscribedWords(spokenText) {
                 span.textContent = expectedRaw;
             } else {
                 span.className += ' slip';
-                span.textContent = expectedRaw;
-                span.title = `نطقت: ${currentSpoken}`;
+                span.textContent = currentSpoken; // What the user actually recited!
+                span.title = `نطقت: ${currentSpoken} | المتوقع: ${expectedRaw}`;
             }
             stream.appendChild(span);
             spokenIdx++;
@@ -827,6 +935,16 @@ function updateLiveInscribedWords(spokenText) {
         if (spokenIdx >= spokenWords.length) {
             break;
         }
+    }
+
+    // Inscribe any extra words spoken beyond target
+    while (spokenIdx < spokenWords.length) {
+        const span = document.createElement('span');
+        span.className = 'inscribed-word slip extra';
+        span.textContent = spokenWords[spokenIdx];
+        span.title = 'كلمة زائدة';
+        stream.appendChild(span);
+        spokenIdx++;
     }
 }
 
@@ -1046,8 +1164,8 @@ function renderRecitationResults(targetAyahs, transcribedText) {
                 } else {
                     totalMismatches++;
                     span.className += ' slip';
-                    span.textContent = expectedRaw;
-                    span.title = `نطقت: ${currentSpoken}`;
+                    span.textContent = currentSpoken; // What user actually recited!
+                    span.title = `نطقت: ${currentSpoken} | المتوقع: ${expectedRaw}`;
                     allWordChips.push({
                         status: 'mismatch',
                         original: expectedRaw,
@@ -1082,10 +1200,17 @@ function renderRecitationResults(targetAyahs, transcribedText) {
 
     // Handle any extra words spoken beyond target
     while (spokenIdx < spokenWords.length) {
+        const extraWord = spokenWords[spokenIdx];
+        const span = document.createElement('span');
+        span.className = 'inscribed-word slip extra';
+        span.textContent = extraWord;
+        span.title = 'كلمة زائدة';
+        if (stream) stream.appendChild(span);
+
         allWordChips.push({
             status: 'extra',
             original: null,
-            recited: spokenWords[spokenIdx]
+            recited: extraWord
         });
         spokenIdx++;
     }
@@ -1140,25 +1265,40 @@ function renderRecitationResults(targetAyahs, transcribedText) {
 // 13. Event Listeners & Settings
 // -----------------------------------------------------------------------------
 function initEventListeners() {
-    // Mode Toggle (Full Surah vs Specific Ayah)
-    if (btnToggleSurahMode) {
-        btnToggleSurahMode.addEventListener('click', () => {
-            isFullSurahMode = !isFullSurahMode;
-            if (isFullSurahMode) {
-                surahModeLabel.textContent = 'كامل السورة';
-                if (ayahStepperInner) ayahStepperInner.style.display = 'none';
-                showToast(`تم تفعيل وضع تلاوة السورة كاملة مع علامات الآيات ﴿ ﴾`);
-            } else {
-                surahModeLabel.textContent = 'آية محددة';
-                if (ayahStepperInner) ayahStepperInner.style.display = 'flex';
-                showToast(`تم تفعيل وضع التسميع للآية رقم ${currentAyahNumber}`);
-            }
-            resetMushafCanvasToReady();
-            resetStudioRecording();
+    // Mode Segmented Buttons (Full Surah vs Specific Ayah)
+    if (btnModeFull) {
+        btnModeFull.addEventListener('click', () => {
+            setReciteMode('full');
         });
     }
 
-    // Ayah Stepper Buttons (< and >)
+    if (btnModeSingle) {
+        btnModeSingle.addEventListener('click', () => {
+            setReciteMode('single');
+        });
+    }
+
+    // Direct Ayah Number Input Field
+    if (inputAyahNum) {
+        inputAyahNum.addEventListener('change', () => {
+            const val = parseInt(inputAyahNum.value, 10);
+            if (!isNaN(val)) {
+                goToAyah(val);
+            }
+        });
+        inputAyahNum.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = parseInt(inputAyahNum.value, 10);
+                if (!isNaN(val)) {
+                    goToAyah(val);
+                }
+                inputAyahNum.blur();
+            }
+        });
+    }
+
+    // Ayah Stepper Buttons (< and > / + and -)
     if (btnAyahPrev) {
         btnAyahPrev.addEventListener('click', () => {
             goToAyah(currentAyahNumber - 1);

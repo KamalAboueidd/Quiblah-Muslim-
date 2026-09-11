@@ -481,56 +481,183 @@ body {
     color: rgba(255, 255, 255, 0.45);
 }
 
-/* Ayah Stepper Selector Card (Pure Transparent, No Solid Background) */
+/* Recite Mode Segmented Control & Ayah Stepper Selector Card */
+.recite-scope-card,
 .ayah-selector-card {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 6px 12px;
-    min-width: 160px;
+    min-width: 150px;
+    flex-wrap: wrap;
+}
+
+.mode-segmented-control {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(197, 168, 89, 0.28);
+    border-radius: 14px;
+    padding: 3px;
+    gap: 4px;
+}
+
+.mode-segment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: rgba(255, 255, 255, 0.72);
+    padding: 8px 16px;
+    border-radius: 11px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    user-select: none;
+    outline: none;
+}
+
+.mode-segment-btn:hover {
+    color: var(--white);
+    background: rgba(197, 168, 89, 0.12);
+    border-color: rgba(197, 168, 89, 0.3);
+}
+
+.mode-segment-btn i {
+    font-size: 13.5px;
+    color: inherit;
+    transition: transform 0.25s ease;
+}
+
+.mode-segment-btn:hover i {
+    transform: scale(1.12);
+}
+
+/* Active state for BOTH full surah and single ayah: Unified Gold Luxury Style (No Green!) */
+.mode-segment-btn.active {
+    background: linear-gradient(135deg, rgba(197, 168, 89, 0.28), rgba(197, 168, 89, 0.14));
+    border-color: var(--gold);
+    color: var(--gold);
+    font-weight: 800;
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.22);
+}
+
+.mode-segment-btn.active:hover {
+    background: var(--gold);
+    color: #0b0d10;
+    box-shadow: 0 0 18px var(--gold-glow);
+}
+
+/* Fallback for old ayah-mode-btn */
+.ayah-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.45);
+    color: var(--gold);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    user-select: none;
+    outline: none;
+}
+
+.ayah-stepper-inner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 10px;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    animation: fadeInRight 0.25s ease;
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(8px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 .ayah-stepper-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: transparent;
-    border: 1px solid rgba(197, 168, 89, 0.3);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(197, 168, 89, 0.35);
     color: var(--gold);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12.5px;
     transition: all 0.25s ease;
+    outline: none;
 }
 
 .ayah-stepper-btn:hover {
-    background: rgba(197, 168, 89, 0.2);
+    background: var(--gold);
+    color: #0b0d10;
     border-color: var(--gold);
-    transform: scale(1.05);
+    transform: scale(1.08);
+    box-shadow: 0 0 12px var(--gold-glow);
 }
 
 .current-ayah-indicator {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 0 6px;
+    padding: 2px 6px;
     user-select: none;
 }
 
 .current-ayah-indicator .ayah-prefix {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
 }
 
-.current-ayah-indicator .ayah-number-badge {
-    font-size: 16px;
-    font-weight: 900;
+.ayah-number-input {
+    width: 52px;
+    height: 32px;
+    text-align: center;
+    background: rgba(197, 168, 89, 0.15);
+    border: 1px solid rgba(197, 168, 89, 0.45);
+    border-radius: 8px;
     color: var(--gold);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    outline: none;
+    transition: all 0.2s ease;
+    -moz-appearance: textfield;
+}
+
+.ayah-number-input::-webkit-outer-spin-button,
+.ayah-number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.ayah-number-input:focus {
+    border-color: var(--gold);
+    background: rgba(197, 168, 89, 0.25);
+    box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.ayah-total-badge {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -715,8 +842,132 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 10px 8px;
+    min-height: 280px;
+}
+
+/* Full Surah Quranic View */
+.mushaf-full-surah-view {
+    width: 100%;
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 25px;
+    line-height: 2.6;
+    color: #1a1917;
+    direction: rtl;
+    text-align: justify;
+    text-align-last: center;
+    word-spacing: 4px;
+    padding: 10px 14px;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.mushaf-full-surah-view::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mushaf-full-surah-view::-webkit-scrollbar-thumb {
+    background: rgba(187, 161, 83, 0.45);
+    border-radius: 10px;
+}
+
+/* Single Ayah Focused View */
+.mushaf-single-ayah-view {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 14px;
+    gap: 16px;
+}
+
+.single-ayah-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(187, 161, 83, 0.2);
+    border: 1px solid #bba153;
+    color: #6d5423;
+    font-size: 13.5px;
+    font-weight: 800;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-family: 'Tajawal', sans-serif;
+}
+
+.single-ayah-text-content {
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 32px;
+    line-height: 2.6;
+    color: #1a1917;
+    direction: rtl;
+    text-align: center;
+    word-spacing: 5px;
+    max-width: 650px;
+    padding: 10px 0;
+}
+
+/* Quranic Word & Ayah Number Ornaments */
+.mushaf-ayah-ornament {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #bba153;
+    font-size: 22px;
+    margin: 0 6px;
+    user-select: none;
+    font-family: 'Amiri Quran', serif;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.quran-word {
+    display: inline-block;
+    margin: 0 3px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    transition: all 0.25s ease;
+}
+
+.quran-word.spoken-match {
+    background: rgba(46, 204, 113, 0.25);
+    color: #125e33 !important;
+    font-weight: 700;
+}
+
+.quran-word.spoken-slip {
+    background: rgba(231, 76, 60, 0.25);
+    color: #a92014 !important;
+    font-weight: 700;
+}
+
+.quran-word.active-focus {
+    background: rgba(197, 168, 89, 0.35);
+    color: #000 !important;
+    box-shadow: 0 0 8px rgba(197, 168, 89, 0.6);
+    transform: scale(1.05);
+}
+
+.mushaf-recite-guide-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #7b6230;
+    background: rgba(187, 161, 83, 0.15);
+    padding: 6px 16px;
+    border-radius: 18px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    user-select: none;
+}
+
+.mushaf-recite-guide-hint i {
+    color: #bba153;
 }
 
 /* Live Inscribed Prompt Hint */
@@ -734,17 +985,18 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: #7b6230;
     user-select: none;
-    max-width: 480px;
+    max-width: 540px;
     margin: 0 auto;
+    padding: 10px 0;
 }
 
 .inscribe-nib-icon {
-    font-size: 28px;
-    color: var(--gold);
-    margin-bottom: 4px;
+    font-size: 32px;
+    color: #9d7c2e;
+    margin-bottom: 2px;
     animation: bounceSlow 2.5s infinite ease-in-out;
 }
 
@@ -753,16 +1005,81 @@ body {
     50% { transform: translateY(-6px); }
 }
 
-.inscribe-prompt-hint p {
-    font-size: 16px;
-    font-weight: 800;
-    color: #1a1917;
+.inscribe-scope-title {
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #3b2c12;
+    margin: 0;
+    text-shadow: 0 0 1px rgba(187, 161, 83, 0.4);
 }
 
-.inscribe-prompt-hint span {
+.inscribe-scope-sub {
+    font-size: 15px;
+    font-weight: 700;
+    color: #685022;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.inscribe-instruction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(187, 161, 83, 0.18);
+    border: 1px solid rgba(187, 161, 83, 0.35);
+    padding: 7px 16px;
+    border-radius: 20px;
     font-size: 13px;
-    color: #8c733e;
-    line-height: 1.5;
+    font-weight: 800;
+    color: #513e17;
+    margin-top: 4px;
+}
+
+.inscribe-instruction-badge i {
+    color: #9d7c2e;
+    font-size: 14px;
+}
+
+.btn-peek-mushaf {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(187, 161, 83, 0.12);
+    border: 1px dashed rgba(187, 161, 83, 0.5);
+    color: #72551e;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    outline: none;
+}
+
+.btn-peek-mushaf:hover {
+    background: rgba(187, 161, 83, 0.25);
+    color: #3f2d0c;
+    border-color: #9d7c2e;
+    transform: translateY(-1px);
+}
+
+.peek-verse-box {
+    margin-top: 12px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(197, 168, 89, 0.45);
+    border-radius: 12px;
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 21px;
+    line-height: 2.3;
+    color: #1a1917;
+    text-align: center;
+    max-width: 520px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.3s ease;
 }
 
 /* Live Inscribed Stream on Mushaf */

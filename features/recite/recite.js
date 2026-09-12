@@ -138,12 +138,12 @@ const LOCAL_SAMPLE_VERSES = {
 // -----------------------------------------------------------------------------
 // 2. Application State
 // -----------------------------------------------------------------------------
-let currentSurahNumber = 1;
-let currentAyahNumber = 5; // Default: Ayah 5 (Matches Mockup Screenshot)
+let currentSurahNumber = null;
+let currentAyahNumber = null;
 let isFullSurahMode = false;
 let recitationScopeMode = 'single'; // 'single' | 'range' | 'full'
 let rangeFromAyah = 1;
-let rangeToAyah = 5;
+let rangeToAyah = 1;
 let currentSurahVerses = []; // Array of { numberInSurah, text, rawWords, normWords }
 let currentTargetVerseText = "";
 
@@ -233,8 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initEventListeners();
     initSettingsModal();
 
-    // Initial load: Surah Al-Fatiha, Ayah 5 (Matches Mockup Screenshot)
-    loadSurahAndVerses(currentSurahNumber, currentAyahNumber);
+    // Default initial state: no surah/ayah selected until the user chooses one
+    renderInitialEmptyState();
 });
 
 function cacheDomElements() {
@@ -412,6 +412,61 @@ function renderSurahList(list) {
     });
 }
 
+function openSurahFlyout() {
+    closeAllFlyouts();
+    if (surahDropdownFlyout && cardSelectSurah) {
+        surahDropdownFlyout.style.display = 'block';
+        cardSelectSurah.classList.add('open');
+        cardSelectSurah.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => surahSearchInput && surahSearchInput.focus(), 60);
+    }
+}
+
+function renderInitialEmptyState() {
+    if (selectedSurahDisplay) selectedSurahDisplay.textContent = 'اختر السورة';
+    if (selectedAyahDisplay) selectedAyahDisplay.textContent = 'اختر الآية';
+    if (centerSurahTitle) centerSurahTitle.textContent = 'اختر السورة';
+    if (centerAyahsRange) centerAyahsRange.textContent = 'بانتظار اختيار السورة';
+    if (ayahMaxLabel) ayahMaxLabel.textContent = 'من -';
+    if (inputAyahNum) {
+        inputAyahNum.value = 1;
+        inputAyahNum.max = 1;
+    }
+    if (mushafPageBasmala) mushafPageBasmala.style.display = 'none';
+    if (playerStatusMain) playerStatusMain.textContent = 'اختر السورة والآية للبدء';
+    if (playerStatusSub) playerStatusSub.textContent = 'حدد السورة والآية الكريمة من القائمة الجانبية لبدء التلاوة أو التسميع والتدقيق';
+
+    renderMushafView();
+    updateMemorizeHintState();
+}
+
+function updateMemorizeHintState() {
+    if (!memorizeCanvasHint) return;
+    if (!currentSurahNumber) {
+        memorizeCanvasHint.innerHTML = `
+            <div class="feather-quill-icon mosque-hint-icon"><i class="fa-solid fa-book-quran"></i></div>
+            <h3 class="hint-main-text">اختر السورة والآية أولاً</h3>
+            <p class="hint-sub-text">يرجى اختيار السورة والآية الكريمة من القائمة الجانبية للبدء بالتسميع الغيبي وتدقيق الحفظ كلمة بكلمة</p>
+            <button type="button" class="empty-prompt-btn" id="btn-prompt-open-surahs-mem" style="margin-top: 14px;">
+                <i class="fa-solid fa-hand-pointer"></i> <span>اختر السورة الآن</span>
+            </button>
+        `;
+        const btnMemPrompt = document.getElementById('btn-prompt-open-surahs-mem');
+        if (btnMemPrompt) {
+            btnMemPrompt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openSurahFlyout();
+            });
+        }
+    } else {
+        memorizeCanvasHint.innerHTML = `
+            <div class="feather-quill-icon mosque-hint-icon"><i class="fa-solid fa-mosque"></i></div>
+            <h3 class="hint-main-text">ابدأ التسميع الآن بصوتك</h3>
+            <p class="hint-sub-text">النص مخفي لتسميع غيبي متقن، وسيتم تدوين ما تقرؤه فقط وتدقيقه كلمة بكلمة</p>
+        `;
+    }
+}
+
 function selectSurah(surahNum) {
     currentSurahNumber = surahNum;
     currentAyahNumber = 1;
@@ -424,10 +479,19 @@ function selectSurah(surahNum) {
     loadSurahAndVerses(currentSurahNumber, currentAyahNumber);
     renderAyahGrid();
     renderSurahList(SURAHS_DB);
+    updateMemorizeHintState();
+    if (playerStatusMain) playerStatusMain.textContent = 'اضغط على زر الميكروفون بالأسفل لبدء التسجيل';
+    if (playerStatusSub) playerStatusSub.textContent = 'اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
     showToast(`تم اختيار سورة ${surahMeta.name}`);
 }
 
 function clampRangeInputs(maxAyat) {
+    if (!maxAyat) {
+        if (!currentSurahNumber) return;
+        const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber);
+        if (!surahMeta) return;
+        maxAyat = surahMeta.ayat;
+    }
     if (rangeFromAyah < 1) rangeFromAyah = 1;
     if (rangeFromAyah > maxAyat) rangeFromAyah = maxAyat;
     if (rangeToAyah < 1) rangeToAyah = 1;
@@ -446,6 +510,11 @@ function clampRangeInputs(maxAyat) {
 }
 
 function stepRangeFrom(delta) {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً');
+        openSurahFlyout();
+        return;
+    }
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
     let val = (parseInt(inputRangeFrom ? inputRangeFrom.value : rangeFromAyah, 10) || 1) + delta;
     if (val < 1) val = 1;
@@ -455,6 +524,11 @@ function stepRangeFrom(delta) {
 }
 
 function stepRangeTo(delta) {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً');
+        openSurahFlyout();
+        return;
+    }
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
     let val = (parseInt(inputRangeTo ? inputRangeTo.value : rangeToAyah, 10) || 1) + delta;
     if (val < 1) val = 1;
@@ -464,6 +538,11 @@ function stepRangeTo(delta) {
 }
 
 function applyAyahRange() {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً');
+        openSurahFlyout();
+        return;
+    }
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
     let fromVal = parseInt(inputRangeFrom ? inputRangeFrom.value : rangeFromAyah, 10);
     let toVal = parseInt(inputRangeTo ? inputRangeTo.value : rangeToAyah, 10);
@@ -490,6 +569,11 @@ function initAyahDropdown() {
 
     cardSelectAyah.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (!currentSurahNumber) {
+            showToast('يرجى اختيار السورة أولاً لتحديد الآية');
+            openSurahFlyout();
+            return;
+        }
         const isOpen = ayahDropdownFlyout.style.display === 'block';
         closeAllFlyouts();
         if (!isOpen) {
@@ -567,6 +651,10 @@ function initAyahDropdown() {
 
 function renderAyahGrid() {
     if (!ayahGridScrollable) return;
+    if (!currentSurahNumber) {
+        ayahGridScrollable.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:16px; color:rgba(255,255,255,0.6); font-size:12px;">يرجى اختيار السورة أولاً لعرض آياتها</div>';
+        return;
+    }
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
     ayahGridScrollable.innerHTML = '';
 
@@ -584,6 +672,11 @@ function renderAyahGrid() {
 }
 
 function setRecitationScope(mode) {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً');
+        openSurahFlyout();
+        return;
+    }
     recitationScopeMode = mode;
     isFullSurahMode = (mode === 'full');
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
@@ -628,6 +721,11 @@ function setReciteMode(fullSurah) {
 }
 
 function goToAyah(ayahNum) {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً');
+        openSurahFlyout();
+        return;
+    }
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
     let num = parseInt(ayahNum, 10);
     if (isNaN(num) || num < 1) num = 1;
@@ -791,6 +889,28 @@ function getActiveTargetAyahs() {
 function renderMushafView() {
     if (!mushafVersesFlow) return;
 
+    if (!currentSurahNumber) {
+        mushafVersesFlow.innerHTML = `
+            <div class="mushaf-empty-prompt">
+                <div class="empty-prompt-icon"><i class="fa-solid fa-book-quran"></i></div>
+                <h3 class="empty-prompt-title">اختر السورة والآية للبدء</h3>
+                <p class="empty-prompt-desc">يرجى اختيار السورة والآية الكريمة من القائمة الجانبية لعرض آيات المصحف وتدقيق تلاوتك بالذكاء الاصطناعي</p>
+                <button type="button" class="empty-prompt-btn" id="btn-prompt-open-surahs">
+                    <i class="fa-solid fa-hand-pointer"></i>
+                    <span>اختر السورة الآن</span>
+                </button>
+            </div>
+        `;
+        const btnPrompt = document.getElementById('btn-prompt-open-surahs');
+        if (btnPrompt) {
+            btnPrompt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openSurahFlyout();
+            });
+        }
+        return;
+    }
+
     if (!currentSurahVerses || !currentSurahVerses.length) {
         mushafVersesFlow.innerHTML = '<div style="padding:20px;text-align:center;color:#836724;">جاري تحميل آيات السورة...</div>';
         return;
@@ -916,7 +1036,7 @@ function getGlobalAyahNumber(surahNum, ayahNum) {
 // 9. Exemplary Reciter Player ("استمع للتلاوة النموذجية")
 // -----------------------------------------------------------------------------
 function prepareExemplaryAudio(surahNum, ayahNum) {
-    if (!audioExemplary) return;
+    if (!audioExemplary || !surahNum) return;
     pauseExemplaryAudio();
 
     let targetNum = ayahNum;
@@ -969,6 +1089,11 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
 }
 
 function toggleExemplaryAudio() {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً للاستماع للتلاوة');
+        openSurahFlyout();
+        return;
+    }
     if (!audioExemplary) return;
     if (isExemplaryPlaying) {
         pauseExemplaryAudio();
@@ -978,6 +1103,11 @@ function toggleExemplaryAudio() {
 }
 
 function playExemplaryAudio() {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة أولاً للاستماع للتلاوة');
+        openSurahFlyout();
+        return;
+    }
     if (!audioExemplary || !audioExemplary.src) return;
 
     if (isRecording) {
@@ -1035,8 +1165,16 @@ function setStudioMode(mode) {
         if (mushafMemorizeCanvas) mushafMemorizeCanvas.style.display = 'flex';
         if (quickListenContainer) quickListenContainer.style.display = 'none';
         if (cardListenExemplary) cardListenExemplary.style.display = 'none';
-        if (playerStatusMain) playerStatusMain.textContent = 'وضع التسميع نشط (النص مخفي)';
-        if (playerStatusSub) playerStatusSub.textContent = 'سمّع الآية غيباً، وسيتم كتابة ما تقرؤه فقط وتدقيقه فوراً';
+
+        updateMemorizeHintState();
+
+        if (!currentSurahNumber) {
+            if (playerStatusMain) playerStatusMain.textContent = 'وضع التسميع (اختر السورة والآية أولاً)';
+            if (playerStatusSub) playerStatusSub.textContent = 'يرجى اختيار السورة والآية الكريمة من القائمة الجانبية للبدء بالتسميع';
+        } else {
+            if (playerStatusMain) playerStatusMain.textContent = 'وضع التسميع نشط (النص مخفي)';
+            if (playerStatusSub) playerStatusSub.textContent = 'سمّع الآية غيباً، وسيتم كتابة ما تقرؤه فقط وتدقيقه فوراً';
+        }
         showToast('تم تفعيل وضع التسميع (النص مخفي للتسميع الغيبي)');
     } else {
         if (btnModeRecite) btnModeRecite.classList.add('active');
@@ -1045,8 +1183,15 @@ function setStudioMode(mode) {
         if (mushafMemorizeCanvas) mushafMemorizeCanvas.style.display = 'none';
         if (quickListenContainer) quickListenContainer.style.display = 'flex';
         if (cardListenExemplary) cardListenExemplary.style.display = 'flex';
-        if (playerStatusMain) playerStatusMain.textContent = 'وضع التلاوة نشط (عرض المصحف)';
-        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ من المصحف الشريف أو استمع لتلاوة الآيات';
+
+        if (!currentSurahNumber) {
+            renderMushafView();
+            if (playerStatusMain) playerStatusMain.textContent = 'وضع التلاوة (اختر السورة والآية أولاً)';
+            if (playerStatusSub) playerStatusSub.textContent = 'يرجى اختيار السورة والآية الكريمة من القائمة الجانبية لعرض المصحف';
+        } else {
+            if (playerStatusMain) playerStatusMain.textContent = 'وضع التلاوة نشط (عرض المصحف)';
+            if (playerStatusSub) playerStatusSub.textContent = 'اقرأ من المصحف الشريف أو استمع لتلاوة الآيات';
+        }
         showToast('تم تفعيل وضع التلاوة (عرض المصحف)');
     }
 }
@@ -1119,6 +1264,11 @@ function stopLiveWaveform() {
 }
 
 async function startRecording() {
+    if (!currentSurahNumber) {
+        showToast('يرجى اختيار السورة والآية أولاً لبدء التسميع والتدقيق');
+        openSurahFlyout();
+        return;
+    }
     pauseExemplaryAudio();
 
     if (recitationEvalBanner) recitationEvalBanner.style.display = 'none';
@@ -2192,6 +2342,11 @@ function initEventListeners() {
     // "عرض المصحف" Button: switch to recite mode and scroll smoothly to Mushaf
     if (btnShowMushaf && mushafOpenBook) {
         btnShowMushaf.addEventListener('click', () => {
+            if (!currentSurahNumber) {
+                showToast('يرجى اختيار السورة أولاً لعرض المصحف');
+                openSurahFlyout();
+                return;
+            }
             setStudioMode('recite');
             mushafOpenBook.scrollIntoView({ behavior: 'smooth', block: 'center' });
             showToast('تم عرض المصحف الشريف');

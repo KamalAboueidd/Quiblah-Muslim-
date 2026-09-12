@@ -961,97 +961,11 @@ async function startRecording() {
         if (speechLiveTextDisplay) speechLiveTextDisplay.innerHTML = '<span class="speech-placeholder">تحدث الآن، ستظهر كلماتك هنا فوراً أثناء القراءة...</span>';
     }
 
-    // 1. Resume AudioContext synchronously on user gesture (vital for mobile Chrome, Brave, Safari)
-    try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-            if (!audioCtx) audioCtx = new AudioContextClass();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume().catch(() => {});
-            }
-        }
-    } catch (e) {}
-
-    // 2. Safe cross-platform getUserMedia FIRST (ensures hardware microphone is captured)
-    let stream = null;
-    try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-                });
-            } catch (e1) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                } catch (e2) {
-                    console.warn("Standard getUserMedia failed:", e2);
-                    if (e2.name === 'NotAllowedError' || e2.name === 'PermissionDeniedError') {
-                        showToast("يرجى إعطاء الإذن للميكروفون في المتصفح لبدء التسجيل", "fa-solid fa-microphone-slash");
-                        if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ تم رفض إذن الميكروفون';
-                    }
-                }
-            }
-        } else {
-            const legacyGetUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-            if (legacyGetUserMedia) {
-                stream = await new Promise((resolve) => {
-                    legacyGetUserMedia.call(navigator, { audio: true }, resolve, () => resolve(null));
-                });
-            }
-        }
-    } catch (err) {
-        console.warn("Microphone access notice:", err);
-    }
-
-    if (stream) {
-        audioStream = stream;
-        audioChunks = [];
-
-        startLiveWaveform(stream);
-
-        let recorder = null;
-        if (window.MediaRecorder) {
-            const mimeTypes = [
-                'audio/webm;codecs=opus',
-                'audio/webm',
-                'audio/mp4',
-                'audio/aac',
-                'audio/ogg'
-            ];
-            let chosenMime = '';
-            for (const m of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(m)) {
-                    chosenMime = m;
-                    break;
-                }
-            }
-            try {
-                recorder = chosenMime ? new MediaRecorder(stream, { mimeType: chosenMime }) : new MediaRecorder(stream);
-            } catch (errRec) {
-                try { recorder = new MediaRecorder(stream); } catch (e3) {}
-            }
-        }
-
-        if (recorder) {
-            mediaRecorder = recorder;
-            mediaRecorder.ondataavailable = (e) => {
-                if (e.data && e.data.size > 0) audioChunks.push(e.data);
-            };
-            try {
-                mediaRecorder.start(100);
-            } catch (eRecStart) {
-                console.warn("mediaRecorder start error:", eRecStart);
-            }
-        }
-    }
-
-    // 3. Start live speech recognition safely (if available in browser)
-    try {
-        startLiveSpeechRecognition();
-    } catch (eSpeech) {
-        console.warn("Live speech recognition init note:", eSpeech);
-    }
-
+    // 1. Reset state
+    liveTranscript = "";
+    accumulatedSpeechText = "";
+    currentInterimSpeechText = "";
+    audioChunks = [];
     isRecording = true;
     recordStartTime = Date.now();
 
@@ -1078,6 +992,44 @@ async function startRecording() {
         const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
         if (barTimeDisplay) barTimeDisplay.textContent = formatTime(elapsed);
     }, 1000);
+
+    // 2. CRITICAL: Start SpeechRecognition SYNCHRONOUSLY within the user-gesture tick!
+    // Mobile browsers (Chrome Android / Safari iOS) reject SpeechRecognition if called after an async await.
+    try {
+        startLiveSpeechRecognition();
+    } catch (eSpeech) {
+        console.warn("Live speech recognition init note:", eSpeech);
+    }
+
+    // 3. Audio Stream & Hardware Capture Handling:
+    // On Android/Mobile devices, starting getUserMedia + MediaRecorder simultaneously with SpeechRecognizer
+    // causes a hardware lock conflict (Android AudioRecord exclusive access), which breaks SpeechRecognition.
+    // Therefore on mobile, SpeechRecognition handles the mic exclusively without interference.
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (!isMobile) {
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                });
+                if (stream && isRecording) {
+                    audioStream = stream;
+                    startLiveWaveform(stream);
+                    if (window.MediaRecorder) {
+                        try {
+                            mediaRecorder = new MediaRecorder(stream);
+                            mediaRecorder.ondataavailable = (e) => {
+                                if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                            };
+                            mediaRecorder.start(100);
+                        } catch (eRec) {}
+                    }
+                }
+            }
+        } catch (eDesktopStream) {
+            console.warn("Desktop audio stream capture note:", eDesktopStream);
+        }
+    }
 }
 
 function triggerSilenceCountdown() {
@@ -1203,10 +1155,10 @@ function startLiveSpeechRecognition() {
         speechRecognizer = new SpeechRec();
         speechRecognizer.lang = 'ar-SA';
         
-        // On mobile Android/iOS, continuous=false avoids immediate crash/hang
-        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-        speechRecognizer.continuous = !isMobile;
+        // Continuous recognition ensures the user can recite the whole Ayah with natural pauses
+        speechRecognizer.continuous = true;
         speechRecognizer.interimResults = true;
+        speechRecognizer.maxAlternatives = 1;
 
         accumulatedSpeechText = "";
         currentInterimSpeechText = "";
@@ -1240,15 +1192,22 @@ function startLiveSpeechRecognition() {
 
         speechRecognizer.onerror = (e) => {
             console.warn("SpeechRecognition notice:", e.error);
-            // DO NOT trigger false 'not-allowed' toast if we already have an active audioStream from getUserMedia!
-            if (e.error === 'not-allowed' && !audioStream) {
-                if (speechFeedbackLabel) {
-                    speechFeedbackLabel.textContent = '⚠️ تم رفض إذن الميكروفون في المتصفح';
+            const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+
+            if (e.error === 'not-allowed') {
+                if (isBrave) {
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يحجب خدمة التعرف الصوتي';
+                    showToast("متصفح Brave يحجب التعرف الصوتي (Google Speech) لحماية الخصوصية. يرجى فتح التطبيق في Google Chrome.", "fa-solid fa-triangle-exclamation");
+                } else {
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ يرجى تفعيل إذن الميكروفون';
+                    showToast("يرجى إعطاء صلاحية الميكروفون للمتصفح لتسميع الآيات", "fa-solid fa-microphone-slash");
                 }
-                showToast("يرجى إعطاء الإذن للميكروفون لبدء التسجيل وتدقيق التلاوة", "fa-solid fa-microphone-slash");
             } else if (e.error === 'network') {
-                if (speechFeedbackLabel) {
-                    speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
+                if (isBrave) {
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يمنع الاتصال بسيرفرات التعرف الصوتي';
+                    showToast("متصفح Brave يمنع الاتصال بسيرفرات التعرف الصوتي. يرجى استخدام Google Chrome للتسميع.", "fa-solid fa-triangle-exclamation");
+                } else {
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
                 }
             }
         };
@@ -1530,31 +1489,25 @@ function executeImmediateEvaluation(audioBlob) {
             transcribedText = accumulatedSpeechText.trim();
         }
 
-        const hasAudioData = (audioChunks && audioChunks.length > 0) || (audioBlob && audioBlob.size > 0);
-        const elapsedSeconds = recordStartTime ? Math.floor((Date.now() - recordStartTime) / 1000) : 0;
-
-        // Smart Mobile & Shielded Browser Fallback (e.g. Brave, Samsung, iOS where Google Speech API is blocked/disabled):
+        // Honest evaluation: Never fake user recitation with the target verse!
         if (!transcribedText || transcribedText.length === 0) {
-            if (hasAudioData || elapsedSeconds >= 1) {
-                // The user recited through the microphone!
-                // Use the active target verse for seamless, instant evaluation
-                transcribedText = currentTargetVerseText || (currentSurahVerses && currentSurahVerses[0] ? currentSurahVerses[0].text : "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ");
-                if (speechLiveTextDisplay) {
-                    speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(transcribedText)}</span>`;
-                }
-            } else {
-                if (playerStatusMain) {
-                    playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط صوت كافٍ من الميكروفون</span>`;
-                }
-                if (playerStatusSub) {
-                    playerStatusSub.textContent = 'اضغط على الميكروفون واقرأ الآية بوضوح ثم اضغط إيقاف';
-                }
-                if (speechFeedbackLabel) {
-                    speechFeedbackLabel.textContent = '⚠️ يرجى القراءة بوضوح بالقرب من الميكروفون';
-                }
-                showToast('يرجى القراءة بوضوح بالقرب من الميكروفون ثم إيقاف التسجيل', 'fa-solid fa-microphone-slash');
-                return;
+            const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+            
+            if (playerStatusMain) {
+                playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط كلمات واضحة</span>`;
             }
+            if (playerStatusSub) {
+                if (isBrave) {
+                    playerStatusSub.textContent = 'متصفح Brave يحجب خدمة التعرف الصوتي (Google Speech) افتراضياً. يرجى فتح التطبيق في Google Chrome للتسميع الصوتي.';
+                } else {
+                    playerStatusSub.textContent = 'تأكد من التلاوة بصوت مسموع وواضح بالقرب من الميكروفون ثم اضغط إنهاء.';
+                }
+            }
+            if (speechFeedbackLabel) {
+                speechFeedbackLabel.textContent = isBrave ? '⚠️ متصفح Brave يحجب خدمة التعرف الصوتي' : '⚠️ لم يتم سماع أي كلمات';
+            }
+            showToast(isBrave ? 'متصفح Brave يحجب خدمة التعرف الصوتي. يرجى استخدام متصفح Google Chrome للتسميع' : 'لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت واضح بالقرب من الميكروفون', 'fa-solid fa-microphone-slash');
+            return;
         }
 
         // Preprocess spoken words

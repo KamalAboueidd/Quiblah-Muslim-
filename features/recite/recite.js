@@ -209,11 +209,13 @@ let inputEngineMode, inputMakeWebhook, inputPythonUrl, inputHfToken;
 // -----------------------------------------------------------------------------
 // 4. Safe Toast Fallback (core/toast.js provides window.showToast)
 // -----------------------------------------------------------------------------
-// Note: Do NOT declare a top-level "function showToast" here, as it hoists and overwrites window.showToast in global browser scope, causing infinite recursion.
-if (typeof window !== 'undefined' && typeof window.showToast !== 'function') {
-    window.showToast = function(msg, icon = "fa-solid fa-bell") {
+// Safe Toast Notification Helper with recursion protection
+function showToast(msg, icon = "fa-solid fa-bell") {
+    if (typeof window !== 'undefined' && typeof window.showToast === 'function' && window.showToast !== showToast) {
+        window.showToast(msg, icon);
+    } else {
         console.log("[Toast]", msg);
-    };
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1147,84 +1149,100 @@ function resetStudioRecording() {
 // 12. Web Speech API (Live Inscription & Live Highlights)
 // -----------------------------------------------------------------------------
 
-// Helper to stitch speech sessions across restarts without duplicating overlapping words
-function stitchSpeechSessions(committed, current) {
-    if (!committed) return current || "";
-    if (!current) return committed;
+// Helper to merge speech segments seamlessly without repeating shared prefixes or suffixes
+function mergeTwoSpeechSegments(prev, next) {
+    if (!prev) return next || "";
+    if (!next) return prev;
 
-    const committedWords = committed.trim().split(/\s+/);
-    const currentWords = current.trim().split(/\s+/);
+    const prevWords = prev.trim().split(/\s+/).filter(Boolean);
+    const nextWords = next.trim().split(/\s+/).filter(Boolean);
+    if (!prevWords.length) return next.trim();
+    if (!nextWords.length) return prev.trim();
 
-    const maxOverlap = Math.min(committedWords.length, currentWords.length, 4);
-    let overlapSize = 0;
+    const normPrev = prevWords.map(normalizeArabicText);
+    const normNext = nextWords.map(normalizeArabicText);
 
+    // Case 1: next starts with prev (e.g. prev: 'بسم الله', next: 'بسم الله الرحمن الرحيم')
+    if (normNext.length >= normPrev.length) {
+        let isPrefix = true;
+        for (let i = 0; i < normPrev.length; i++) {
+            if (normNext[i] !== normPrev[i]) {
+                isPrefix = false;
+                break;
+            }
+        }
+        if (isPrefix) return next.trim();
+    }
+
+    // Case 2: prev contains next at end (e.g. prev: 'بسم الله الرحمن الرحيم', next: 'الرحمن الرحيم')
+    if (normPrev.length >= normNext.length) {
+        let isSuffix = true;
+        for (let i = 0; i < normNext.length; i++) {
+            if (normPrev[normPrev.length - normNext.length + i] !== normNext[i]) {
+                isSuffix = false;
+                break;
+            }
+        }
+        if (isSuffix) return prev.trim();
+    }
+
+    // Case 3: Overlap between end of prev and start of next (from max overlap down to 1)
+    const maxOverlap = Math.min(prevWords.length, nextWords.length);
     for (let size = maxOverlap; size >= 1; size--) {
         let match = true;
         for (let k = 0; k < size; k++) {
-            const wCommit = normalizeArabicText(committedWords[committedWords.length - size + k]);
-            const wCurr = normalizeArabicText(currentWords[k]);
-            if (wCommit !== wCurr) {
+            if (normPrev[normPrev.length - size + k] !== normNext[k]) {
                 match = false;
                 break;
             }
         }
         if (match) {
-            overlapSize = size;
-            break;
+            return prevWords.concat(nextWords.slice(size)).join(' ');
         }
     }
 
-    if (overlapSize > 0) {
-        return committedWords.concat(currentWords.slice(overlapSize)).join(' ');
-    }
-    return committed + ' ' + current;
+    // Case 4: No overlap
+    return prev.trim() + ' ' + next.trim();
 }
 
-// Target-aware deduplicator: removes consecutive accidental repetitions while preserving Quranic duplicates (e.g. دكاً دكا)
-function deduplicateSpokenText(text) {
+// Phrase-aware deduplicator: removes repeated words or phrases of any length (1, 2, 3, 4+ words)
+// unless they legitimately exist in the target Quranic verse (e.g. دكاً دكا)
+function deduplicateSpokenPhrases(text, targetText) {
     if (!text) return "";
-    const words = text.trim().split(/\s+/);
+    let words = text.trim().split(/\s+/).filter(Boolean);
     if (words.length <= 1) return text.trim();
 
-    let targetNormalizedWords = [];
-    try {
-        const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
-        if (targetAyahs && targetAyahs.length) {
-            targetAyahs.forEach(a => {
-                if (a.rawWords) {
-                    a.rawWords.forEach(w => targetNormalizedWords.push(normalizeArabicText(w)));
-                }
-            });
-        } else if (typeof currentTargetVerseText === 'string' && currentTargetVerseText) {
-            targetNormalizedWords = normalizeArabicText(currentTargetVerseText).split(/\s+/);
-        }
-    } catch (e) {}
+    let targetNorm = targetText ? normalizeArabicText(targetText) : "";
 
-    const result = [];
-    for (let i = 0; i < words.length; i++) {
-        const current = words[i];
-        const prev = result.length > 0 ? result[result.length - 1] : null;
+    let changed = true;
+    let iterations = 0;
+    while (changed && iterations < 5) {
+        changed = false;
+        iterations++;
+        const maxLen = Math.floor(words.length / 2);
 
-        if (prev) {
-            const normCurrent = normalizeArabicText(current);
-            const normPrev = normalizeArabicText(prev);
+        for (let len = maxLen; len >= 1; len--) {
+            for (let i = 0; i <= words.length - 2 * len; i++) {
+                const phrase1Words = words.slice(i, i + len);
+                const phrase2Words = words.slice(i + len, i + 2 * len);
 
-            if (normCurrent && normCurrent === normPrev) {
-                let legitimateInTarget = false;
-                for (let k = 0; k < targetNormalizedWords.length - 1; k++) {
-                    if (targetNormalizedWords[k] === normCurrent && targetNormalizedWords[k + 1] === normCurrent) {
-                        legitimateInTarget = true;
+                const norm1 = phrase1Words.map(normalizeArabicText).join(' ');
+                const norm2 = phrase2Words.map(normalizeArabicText).join(' ');
+
+                if (norm1 && norm1 === norm2) {
+                    const repeatedInTarget = norm1 + ' ' + norm1;
+                    if (!targetNorm || !targetNorm.includes(repeatedInTarget)) {
+                        words.splice(i + len, len);
+                        changed = true;
                         break;
                     }
                 }
-                if (!legitimateInTarget) {
-                    continue;
-                }
             }
+            if (changed) break;
         }
-        result.push(current);
     }
-    return result.join(' ');
+
+    return words.join(' ');
 }
 
 function startLiveSpeechRecognition() {
@@ -1257,25 +1275,33 @@ function startLiveSpeechRecognition() {
             let sessionFinal = '';
             let sessionInterim = '';
 
-            // CRITICAL: Reconstruct current session fresh from 0 to results.length - 1.
-            // On Android Chrome, event.resultIndex fails to advance and stays 0 across events.
-            // Never use accumulatedSpeechText += transcript, as it multiplies words on every chunk.
             for (let i = 0; i < event.results.length; ++i) {
                 const res = event.results[i];
+                const segment = (res[0]?.transcript || '').trim();
+                if (!segment) continue;
+
                 if (res.isFinal) {
-                    sessionFinal += res[0].transcript + ' ';
+                    sessionFinal = mergeTwoSpeechSegments(sessionFinal, segment);
                 } else {
-                    sessionInterim += res[0].transcript + ' ';
+                    sessionInterim = mergeTwoSpeechSegments(sessionInterim, segment);
                 }
             }
 
             currentSessionFinalText = sessionFinal.trim();
             currentInterimSpeechText = sessionInterim.trim();
 
-            const combinedFinal = stitchSpeechSessions(committedPreviousSessionsText, currentSessionFinalText);
-            const fullRaw = (combinedFinal + ' ' + currentInterimSpeechText).trim().replace(/\s+/g, ' ');
+            const combinedFinal = mergeTwoSpeechSegments(committedPreviousSessionsText, currentSessionFinalText);
+            const fullRaw = mergeTwoSpeechSegments(combinedFinal, currentInterimSpeechText);
 
-            liveTranscript = deduplicateSpokenText(fullRaw);
+            let targetText = currentTargetVerseText || "";
+            try {
+                const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                if (targetAyahs && targetAyahs.length) {
+                    targetText = targetAyahs.map(a => a.text).join(' ');
+                }
+            } catch (e) {}
+
+            liveTranscript = deduplicateSpokenPhrases(fullRaw, targetText);
             accumulatedSpeechText = liveTranscript;
 
             if (liveTranscript) {
@@ -1314,7 +1340,7 @@ function startLiveSpeechRecognition() {
 
         speechRecognizer.onend = () => {
             if (currentSessionFinalText) {
-                committedPreviousSessionsText = stitchSpeechSessions(committedPreviousSessionsText, currentSessionFinalText);
+                committedPreviousSessionsText = mergeTwoSpeechSegments(committedPreviousSessionsText, currentSessionFinalText);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
             }
@@ -1361,40 +1387,16 @@ function preprocessSpokenWords(words) {
         }
     });
 
-    // Clean any residual consecutive duplicates that are not legitimate in the active verse
-    const deduped = [];
-    let targetNormalizedWords = [];
+    let targetText = currentTargetVerseText || "";
     try {
         const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
         if (targetAyahs && targetAyahs.length) {
-            targetAyahs.forEach(a => {
-                if (a.rawWords) {
-                    a.rawWords.forEach(w => targetNormalizedWords.push(normalizeArabicText(w)));
-                }
-            });
+            targetText = targetAyahs.map(a => a.text).join(' ');
         }
     } catch (e) {}
 
-    for (let i = 0; i < res.length; i++) {
-        const current = res[i];
-        const prev = deduped.length > 0 ? deduped[deduped.length - 1] : null;
-        if (prev) {
-            const normCurr = normalizeArabicText(current);
-            const normPrev = normalizeArabicText(prev);
-            if (normCurr && normCurr === normPrev) {
-                let legitimate = false;
-                for (let k = 0; k < targetNormalizedWords.length - 1; k++) {
-                    if (targetNormalizedWords[k] === normCurr && targetNormalizedWords[k + 1] === normCurr) {
-                        legitimate = true;
-                        break;
-                    }
-                }
-                if (!legitimate) continue;
-            }
-        }
-        deduped.push(current);
-    }
-    return deduped;
+    const dedupedStr = deduplicateSpokenPhrases(res.join(' '), targetText);
+    return dedupedStr.split(/\s+/).filter(Boolean);
 }
 
 function detectSpokenSurahAndAyah(spokenWords) {
@@ -1648,6 +1650,18 @@ function executeImmediateEvaluation(audioBlob) {
             showToast(isBrave ? 'متصفح Brave يحجب خدمة التعرف الصوتي. يرجى استخدام متصفح Google Chrome للتسميع' : 'لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت واضح بالقرب من الميكروفون', 'fa-solid fa-microphone-slash');
             return;
         }
+
+        let targetText = currentTargetVerseText || "";
+        try {
+            const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+            if (targetAyahs && targetAyahs.length) {
+                targetText = targetAyahs.map(a => a.text).join(' ');
+            }
+        } catch (e) {}
+
+        transcribedText = deduplicateSpokenPhrases(transcribedText, targetText);
+        liveTranscript = transcribedText;
+        accumulatedSpeechText = transcribedText;
 
         // Preprocess spoken words
         const rawWords = transcribedText.split(/\s+/).filter(Boolean);

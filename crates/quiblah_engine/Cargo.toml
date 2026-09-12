@@ -1,0 +1,21 @@
+[package]
+name = "quiblah-engine"
+version = "1.0.0"
+edition = "2021"
+authors = ["Kamal Abou Eid <kamalaboueidd@gmail.com>"]
+description = "Ultra high-performance Islamic astronomical prayer calculation, geodesic Qibla azimuth, and Quranic recitation phonetics engine."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/KamalAboueidd/Quiblah-Muslim-"
+keywords = ["islamic", "prayer-times", "qibla", "quran", "phonetics"]
+
+[lib]
+name = "quiblah_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "quiblah-cli"
+path = "src/main.rs"
+
+[dependencies]
+# Zero external dependencies for maximum portability, speed, and safety

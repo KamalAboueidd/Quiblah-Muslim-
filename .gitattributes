@@ -1,9 +1,16 @@
 # GitHub Linguist Language Configuration
-# Ensures JavaScript is recognized as the dominant language and data files are excluded from code stats
+# Ensures multi-language ecosystem (JavaScript, Go, Rust, Python, Shell, PowerShell, Dockerfile, Makefile) is detected
 
 *.js linguist-detectable=true
 *.go linguist-detectable=true
+*.rs linguist-detectable=true
+*.py linguist-detectable=true
+*.sh linguist-detectable=true
+*.ps1 linguist-detectable=true
+Makefile linguist-detectable=true
 Dockerfile linguist-detectable=true
+
+# Exclude large raw JSON database files from code stats
 *.json linguist-detectable=false
 *.json linguist-documentation=false
 

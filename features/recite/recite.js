@@ -726,6 +726,14 @@ function escapeHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
+function getGlobalAyahNumber(surahNum, ayahNum) {
+    let count = 0;
+    for (let i = 0; i < surahNum - 1; i++) {
+        count += (SURAHS_DB[i] ? SURAHS_DB[i].ayat : 0);
+    }
+    return count + ayahNum;
+}
+
 // -----------------------------------------------------------------------------
 // 9. Exemplary Reciter Player ("استمع للتلاوة النموذجية")
 // -----------------------------------------------------------------------------
@@ -757,8 +765,14 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
     };
 
     audioExemplary.onerror = () => {
-        const fallbackUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${targetNum}.mp3`;
-        if (audioExemplary.src !== fallbackUrl) audioExemplary.src = fallbackUrl;
+        const globalNum = getGlobalAyahNumber(surahNum, targetNum);
+        const fallbackUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
+        if (audioExemplary.src !== fallbackUrl) {
+            audioExemplary.src = fallbackUrl;
+            if (isExemplaryPlaying) {
+                audioExemplary.play().catch(e => console.warn("Fallback play error:", e));
+            }
+        }
     };
 }
 

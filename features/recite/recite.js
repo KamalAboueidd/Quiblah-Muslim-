@@ -185,6 +185,7 @@ let cardListenExemplary, btnPlayExemplary, exemplaryPlayIcon;
 let cardReciteVoice, btnMainRecord, recordMicIcon;
 let centerSurahTitle, centerAyahsRange, mushafPageBasmala, mushafVersesFlow;
 let barBtnRecord, barRecordIcon, barWaveformVisualizer, barTimeDisplay, barRecordingIndicator, barRecLabel;
+let barBtnPlay, barPlayIcon;
 let barVolumeBtn, barVolumeIcon;
 let playerStatusMain, playerStatusSub;
 
@@ -263,6 +264,8 @@ function cacheDomElements() {
     mushafPageBasmala = document.getElementById('mushaf-page-basmala');
     mushafVersesFlow = document.getElementById('mushaf-verses-flow');
 
+    barBtnPlay = document.getElementById('bar-btn-play');
+    barPlayIcon = document.getElementById('bar-play-icon');
     barBtnRecord = document.getElementById('bar-btn-record');
     barRecordIcon = document.getElementById('bar-record-icon');
     barWaveformVisualizer = document.getElementById('bar-waveform-visualizer');
@@ -629,15 +632,15 @@ function renderMushafView() {
         const isCurrentActive = !isFullSurahMode && (ayah.numberInSurah === currentAyahNumber);
         
         if (isCurrentActive) {
-            // In Mockup: ❖ ⑤ [Words] ❖ inside the emerald ribbon
+            // In Mockup: ❖ [Words] ⑤ ❖ inside the emerald ribbon in RTL
             html += `<div class="mushaf-verse-row active-ayah-banner" id="ayah-banner-${ayah.numberInSurah}">`;
             html += `<span class="banner-bracket">❖</span> `;
-            html += `<span class="verse-num-circle active-circle">${toArabicEasternDigits(ayah.numberInSurah)}</span> `;
             
             ayah.rawWords.forEach((w, wIdx) => {
                 html += `<span class="quran-word" id="word-${ayah.numberInSurah}-${wIdx}" data-ayah="${ayah.numberInSurah}">${escapeHTML(w)}</span> `;
             });
 
+            html += `<span class="verse-num-circle active-circle">${toArabicEasternDigits(ayah.numberInSurah)}</span> `;
             html += `<span class="banner-bracket">❖</span></div>`;
         } else {
             // Normal Verse: [Words] ①
@@ -778,7 +781,9 @@ function playExemplaryAudio() {
     audioExemplary.play().then(() => {
         isExemplaryPlaying = true;
         if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-pause';
+        if (barPlayIcon) barPlayIcon.className = 'fa-solid fa-pause';
         if (cardListenExemplary) cardListenExemplary.classList.add('playing');
+        if (barBtnPlay) barBtnPlay.classList.add('playing');
         if (barWaveformVisualizer) barWaveformVisualizer.classList.add('playing');
         if (playerStatusMain) playerStatusMain.textContent = 'جاري تشغيل التلاوة النموذجية (الشيخ مشاري العفاسي)';
         if (playerStatusSub) playerStatusSub.textContent = 'استمع جيداً إلى مخارج الحروف وأحكام التجويد';
@@ -792,7 +797,9 @@ function pauseExemplaryAudio() {
     audioExemplary.pause();
     isExemplaryPlaying = false;
     if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-play';
+    if (barPlayIcon) barPlayIcon.className = 'fa-solid fa-play';
     if (cardListenExemplary) cardListenExemplary.classList.remove('playing');
+    if (barBtnPlay) barBtnPlay.classList.remove('playing');
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('playing');
     if (playerStatusMain) playerStatusMain.textContent = 'استمع للتلاوة النموذجية أو ابدأ التسميع';
     if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر التسجيل بالأسفل لقراءة وتدقيق الآية';
@@ -1624,6 +1631,12 @@ function initEventListeners() {
     if (cardListenExemplary) cardListenExemplary.addEventListener('click', toggleExemplaryAudio);
     if (btnPlayExemplary) {
         btnPlayExemplary.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleExemplaryAudio();
+        });
+    }
+    if (barBtnPlay) {
+        barBtnPlay.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleExemplaryAudio();
         });

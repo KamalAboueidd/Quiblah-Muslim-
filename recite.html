@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=42">
+    <link rel="stylesheet" href="features/recite/recite.css?v=46">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -288,14 +288,14 @@
                     <!-- In-Page Recitation Evaluation Banner (Visible after evaluation in both modes!) -->
                     <div class="recitation-eval-banner" id="recitation-eval-banner" style="display: none;">
                         <div class="eval-banner-top">
-                            <div class="eval-banner-badge" id="eval-banner-badge">
-                                <i class="fa-solid fa-award"></i>
-                                <span id="eval-banner-score-text">نسبة الإتقان: 75%</span>
+                            <div class="eval-banner-badge" id="eval-banner-badge" style="background: transparent !important; background-color: transparent !important; border: none !important; box-shadow: none !important; color: var(--gold, #c5a859) !important; padding: 0 !important;">
+                                <i class="fa-solid fa-award" style="color: var(--gold, #c5a859) !important;"></i>
+                                <span id="eval-banner-score-text" style="color: var(--gold, #c5a859) !important; font-weight: 800;">نسبة الإتقان: 75%</span>
                             </div>
                             <div class="eval-banner-counts">
-                                <span class="eb-stat eb-correct"><i class="fa-solid fa-check"></i> <strong id="eb-correct-count">0</strong> صحيح</span>
-                                <span class="eb-stat eb-errors"><i class="fa-solid fa-xmark"></i> <strong id="eb-errors-count">0</strong> أخطاء</span>
-                                <span class="eb-stat eb-missing"><i class="fa-solid fa-minus"></i> <strong id="eb-missing-count">0</strong> منسية</span>
+                                <span class="eb-stat eb-correct" style="background: transparent !important; background-color: transparent !important; border: none !important; box-shadow: none !important; color: #2ecc71 !important; padding: 0 !important;"><i class="fa-solid fa-check"></i> <strong id="eb-correct-count">0</strong> صحيح</span>
+                                <span class="eb-stat eb-errors" style="background: transparent !important; background-color: transparent !important; border: none !important; box-shadow: none !important; color: #e74c3c !important; padding: 0 !important;"><i class="fa-solid fa-xmark"></i> <strong id="eb-errors-count">0</strong> أخطاء</span>
+                                <span class="eb-stat eb-missing" style="background: transparent !important; background-color: transparent !important; border: none !important; box-shadow: none !important; color: #f39c12 !important; padding: 0 !important;"><i class="fa-solid fa-minus"></i> <strong id="eb-missing-count">0</strong> منسية</span>
                             </div>
                             <button type="button" class="btn-banner-modal" id="btn-banner-open-modal">
                                 <i class="fa-solid fa-magnifying-glass-chart"></i> <span>تقرير تفصيلي</span>
@@ -411,64 +411,64 @@
         <!-- Evaluation & Results Modal -->
         <div class="evaluation-modal-backdrop" id="evaluation-modal-backdrop" role="dialog" aria-modal="true">
             <div class="evaluation-modal-card" id="evaluation-modal-card">
-                <button type="button" class="modal-close-btn" id="btn-close-evaluation" title="إغلاق التقرير">
+                <button type="button" class="modal-close-btn" id="btn-close-evaluation" title="إغلاق التقرير" style="background: transparent !important; border: none !important; box-shadow: none !important; color: #a0aec0 !important;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
 
                 <div class="eval-header">
-                    <div class="eval-badge"><i class="fa-solid fa-award"></i> نتيجة التدقيق القرآني</div>
+                    <div class="eval-badge" style="background: transparent !important; border: none !important; box-shadow: none !important; color: var(--gold, #c5a859) !important; padding: 0 !important; font-size: 15px !important; font-weight: 800 !important;"><i class="fa-solid fa-award"></i> نتيجة التدقيق القرآني</div>
                     <h2 class="eval-title" id="score-evaluation-title">تقييم تلاوتك الكريمة</h2>
                 </div>
 
                 <!-- Score Radial Gauge -->
                 <div class="eval-score-box">
-                    <div class="score-circle-wrap">
+                    <div class="score-circle-wrap" style="background: transparent !important; box-shadow: none !important; border: 3px solid var(--gold) !important;">
                         <span class="score-number" id="score-number">95%</span>
-                        <span class="score-label">نسبة الإتقان</span>
+                        <span class="score-label" style="color: var(--gold, #c5a859) !important;">نسبة الإتقان</span>
                     </div>
                 </div>
 
                 <!-- Summary Stats Pill Chips -->
-                <div class="eval-stats-row">
-                    <div class="stat-pill stat-correct">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>كلمات صحيحة:</span>
-                        <strong id="count-correct">0</strong>
+                <div class="eval-stats-row" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 6px 0 !important;">
+                    <div class="stat-pill stat-correct" style="background: transparent !important; border: none !important; box-shadow: none !important; color: #2ecc71 !important; padding: 4px !important;">
+                        <i class="fa-solid fa-circle-check" style="color: #2ecc71 !important;"></i>
+                        <span style="color: #2ecc71 !important;">كلمات صحيحة:</span>
+                        <strong id="count-correct" style="color: #2ecc71 !important;">0</strong>
                     </div>
-                    <div class="stat-pill stat-errors">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                        <span>أخطاء في النطق:</span>
-                        <strong id="count-errors">0</strong>
+                    <div class="stat-pill stat-errors" style="background: transparent !important; border: none !important; box-shadow: none !important; color: #e74c3c !important; padding: 4px !important;">
+                        <i class="fa-solid fa-circle-xmark" style="color: #e74c3c !important;"></i>
+                        <span style="color: #e74c3c !important;">أخطاء في النطق:</span>
+                        <strong id="count-errors" style="color: #e74c3c !important;">0</strong>
                     </div>
-                    <div class="stat-pill stat-missing">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span>كلمات ناقصة:</span>
-                        <strong id="count-missing">0</strong>
+                    <div class="stat-pill stat-missing" style="background: transparent !important; border: none !important; box-shadow: none !important; color: #f39c12 !important; padding: 4px !important;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #f39c12 !important;"></i>
+                        <span style="color: #f39c12 !important;">كلمات ناقصة:</span>
+                        <strong id="count-missing" style="color: #f39c12 !important;">0</strong>
                     </div>
                 </div>
 
                 <!-- Word-by-Word Diff Cloud -->
                 <div class="eval-words-section">
-                    <div class="eval-words-heading">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i> التدقيق التفصيلي كلمة بكلمة:
+                    <div class="eval-words-heading" style="background: transparent !important; border: none !important; color: var(--gold, #c5a859) !important; font-weight: 800;">
+                        <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--gold, #c5a859) !important; margin-left: 6px;"></i> التدقيق التفصيلي كلمة بكلمة:
                     </div>
-                    <div class="words-alignment-cloud" id="words-alignment-cloud">
+                    <div class="words-alignment-cloud" id="words-alignment-cloud" style="background: transparent !important; border: none !important;">
                         <!-- Comparison word chips injected here -->
                     </div>
                 </div>
 
                 <!-- What was transcribed -->
-                <div class="eval-transcription-box">
+                <div class="eval-transcription-box" style="background: transparent !important; border: none !important;">
                     <div class="transcription-label">النص المفرغ من صوتك:</div>
                     <div class="transcription-text" id="transcription-text-display">...</div>
                 </div>
 
                 <!-- Actions Bottom Row -->
-                <div class="eval-actions-row">
-                    <button type="button" class="eval-btn eval-btn-retry" id="btn-eval-retry">
+                <div class="eval-actions-row" style="background: transparent !important; border-top: 1px solid rgba(255,255,255,0.08); justify-content: center; gap: 16px;">
+                    <button type="button" class="eval-btn eval-btn-retry" id="btn-eval-retry" style="background: transparent !important; border: none !important; box-shadow: none !important; color: rgba(255, 255, 255, 0.85) !important; width: auto !important; flex: 0 0 auto !important;">
                         <i class="fa-solid fa-rotate-left"></i> إعادة تسميع الآية
                     </button>
-                    <button type="button" class="eval-btn eval-btn-next" id="btn-eval-next">
+                    <button type="button" class="eval-btn eval-btn-next" id="btn-eval-next" style="background: transparent !important; border: none !important; box-shadow: none !important; color: var(--gold, #c5a859) !important; font-weight: 800; width: auto !important; flex: 0 0 auto !important;">
                         <span>الانتقال للآية التالية</span>
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
@@ -501,6 +501,6 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js?v=42"></script>
+    <script src="features/recite/recite.js?v=46"></script>
 </body>
 </html>

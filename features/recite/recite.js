@@ -1566,7 +1566,16 @@ function executeImmediateEvaluation(audioBlob) {
         // 2. Update status bar immediately with the golden result button
         const accuracy = Math.round(lastAccuracy || 95);
         if (playerStatusMain) {
-            playerStatusMain.innerHTML = `<button type="button" class="btn-open-result-pill" id="btn-reopen-eval" style="background:linear-gradient(135deg,#f5df9a,#c5a859); border:none; color:#0b0d10; font-weight:800; padding:8px 22px; border-radius:24px; cursor:pointer; font-size:13.5px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 16px rgba(197,168,89,0.6);"><i class="fa-solid fa-award"></i> <span>نسبة الإتقان: ${accuracy}% - عرض التفاصيل والأخطاء</span> <i class="fa-solid fa-chevron-up"></i></button>`;
+            playerStatusMain.innerHTML = `
+                <div class="eval-status-display-row" style="display:inline-flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;">
+                    <span style="color:var(--gold,#c5a859); font-weight:800; font-size:15.5px; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-award"></i> <span>نسبة الإتقان: ${accuracy}%</span>
+                    </span>
+                    <button type="button" class="btn-open-result-pill" id="btn-reopen-eval" style="background:transparent; border:none; color:var(--gold-light,#f5df9a); cursor:pointer; font-weight:700; font-size:13px; padding:2px 4px; display:inline-flex; align-items:center; gap:5px; text-decoration:underline; text-underline-offset:3px;">
+                        <span>تقرير تفصيلي</span> <i class="fa-solid fa-chevron-left" style="font-size:10px;"></i>
+                    </button>
+                </div>
+            `;
             const btnReopen = document.getElementById('btn-reopen-eval');
             if (btnReopen && evaluationModalBackdrop) {
                 btnReopen.onclick = () => evaluationModalBackdrop.classList.add('active');

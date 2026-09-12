@@ -367,14 +367,39 @@ body.mushaf-studio-body {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(197, 168, 89, 0.5) rgba(0, 0, 0, 0.25);
 }
 
-.dropdown-items-list::-webkit-scrollbar {
+.dropdown-items-list::-webkit-scrollbar,
+.ayah-grid-scrollable::-webkit-scrollbar {
     width: 5px;
+    height: 5px;
 }
-.dropdown-items-list::-webkit-scrollbar-thumb {
-    background: rgba(197, 168, 89, 0.4);
+
+.dropdown-items-list::-webkit-scrollbar-track,
+.ayah-grid-scrollable::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+}
+
+.dropdown-items-list::-webkit-scrollbar-thumb,
+.ayah-grid-scrollable::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #c5a859 0%, #8f7230 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(197, 168, 89, 0.2);
+}
+
+.dropdown-items-list::-webkit-scrollbar-thumb:hover,
+.ayah-grid-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #e6c670;
+}
+
+.dropdown-items-list::-webkit-scrollbar-button,
+.ayah-grid-scrollable::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 .dropdown-item {
@@ -407,16 +432,25 @@ body.mushaf-studio-body {
 }
 
 .item-num-badge {
-    width: 24px;
+    min-width: 24px;
     height: 24px;
-    border-radius: 6px;
-    background: rgba(197, 168, 89, 0.15);
-    color: var(--gold);
-    display: flex;
+    border-radius: 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold, #c5a859) !important;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 11.5px;
-    font-weight: 700;
+    font-size: 13.5px;
+    font-weight: 800;
+    font-family: 'Tajawal', sans-serif;
+}
+
+.dropdown-item:hover .item-num-badge,
+.dropdown-item.selected .item-num-badge {
+    color: var(--gold-light, #f5df9a) !important;
+    background: transparent !important;
 }
 
 .item-ayat-count {
@@ -544,8 +578,10 @@ body.mushaf-studio-body {
     gap: 5px;
     max-height: 140px;
     overflow-y: auto;
-    padding-top: 6px;
+    padding: 6px 4px 4px 4px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(197, 168, 89, 0.5) rgba(0, 0, 0, 0.25);
 }
 
 .ayah-chip {
@@ -2369,28 +2405,66 @@ body.mushaf-studio-body {
         top: calc(100% + 6px) !important;
         right: 0 !important;
         left: auto !important;
-        width: calc(100vw - 20px) !important;
+        width: min(320px, calc(100vw - 20px)) !important;
         max-width: 320px !important;
         z-index: 1000 !important;
         box-sizing: border-box !important;
-        background: rgba(13, 17, 24, 0.96) !important;
-        border: 1px solid rgba(197, 168, 89, 0.35) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8) !important;
+        background: rgba(12, 16, 23, 0.92) !important;
+        border: 1px solid rgba(197, 168, 89, 0.28) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        padding: 10px 12px !important;
     }
     .ayah-dropdown-flyout {
         position: absolute !important;
         top: calc(100% + 6px) !important;
         left: 0 !important;
         right: auto !important;
-        width: calc(100vw - 20px) !important;
+        width: min(320px, calc(100vw - 20px)) !important;
         max-width: 320px !important;
         z-index: 1000 !important;
         box-sizing: border-box !important;
-        background: rgba(13, 17, 24, 0.96) !important;
-        border: 1px solid rgba(197, 168, 89, 0.35) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8) !important;
+        background: rgba(12, 16, 23, 0.92) !important;
+        border: 1px solid rgba(197, 168, 89, 0.28) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        padding: 12px !important;
+    }
+
+    .surah-dropdown-flyout .dropdown-items-list,
+    .ayah-dropdown-flyout .ayah-grid-scrollable {
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(197, 168, 89, 0.5) rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .surah-dropdown-flyout .item-num-badge {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: var(--gold, #c5a859) !important;
+        font-weight: 800 !important;
+        font-size: 13.5px !important;
+    }
+
+    .dropdown-item {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+    }
+
+    .ayah-grid-scrollable {
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: 5px !important;
+        max-height: 140px !important;
+        padding: 6px 4px 4px 4px !important;
+    }
+
+    .ayah-chip {
+        padding: 6px 0 !important;
+        font-size: 12px !important;
     }
 
     /* Center Column & Mode Segmented Bar */
@@ -2761,150 +2835,6 @@ body.mushaf-studio-body {
     gap: 10px;
     margin: 8px 0 16px 0;
     width: 100%;
-}
-
-.btn-tool-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-}
-
-.btn-test-sample {
-    background: rgba(197, 168, 89, 0.12);
-    border: 1px solid rgba(197, 168, 89, 0.45);
-    color: var(--gold-light, #f5df9a);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-}
-
-.btn-test-sample:hover,
-.btn-test-sample:active {
-    background: rgba(197, 168, 89, 0.25);
-    border-color: var(--gold, #c5a859);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(197, 168, 89, 0.35);
-}
-
-.btn-manual-toggle {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #e2e8f0;
-}
-
-.btn-manual-toggle:hover,
-.btn-manual-toggle:active {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-}
-
-/* Manual Input Drawer */
-.manual-input-drawer {
-    width: 100%;
-    max-width: 650px;
-    margin: 0 auto 16px auto;
-    animation: fadeInSlideDown 0.3s ease;
-}
-
-.manual-input-card {
-    background: rgba(17, 24, 39, 0.95);
-    border: 1px solid rgba(197, 168, 89, 0.4);
-    border-radius: 14px;
-    padding: 14px 18px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(12px);
-}
-
-.manual-input-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-}
-
-.manual-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--gold, #c5a859);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-close-drawer {
-    background: transparent;
-    border: none;
-    color: var(--text-dim, #94a3b8);
-    font-size: 15px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: color 0.2s;
-}
-
-.btn-close-drawer:hover {
-    color: #ffffff;
-}
-
-.manual-desc {
-    font-size: 12.5px;
-    color: #cbd5e1;
-    margin: 0 0 10px 0;
-    line-height: 1.5;
-}
-
-.manual-input-row {
-    display: flex;
-    gap: 8px;
-}
-
-.manual-input-field {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 15px;
-    color: #ffffff;
-    font-family: 'Amiri', 'Tajawal', serif;
-    direction: rtl;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.manual-input-field:focus {
-    border-color: var(--gold, #c5a859);
-    box-shadow: 0 0 0 3px rgba(197, 168, 89, 0.25);
-}
-
-.btn-submit-manual {
-    background: linear-gradient(135deg, #c5a859, #9e8339);
-    border: none;
-    color: #0b0d10;
-    font-weight: 800;
-    font-family: inherit;
-    font-size: 13.5px;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.btn-submit-manual:hover {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(197, 168, 89, 0.4);
 }
 
 /* ==========================================================================

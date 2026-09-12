@@ -2749,3 +2749,486 @@ body.mushaf-studio-body {
         display: none !important;
     }
 }
+
+/* ==========================================================================
+   18. Interactive Studio Tools Row (Quick Listen, Error Demo, Manual Input)
+   ========================================================================== */
+.studio-quick-tools-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 8px 0 16px 0;
+    width: 100%;
+}
+
+.btn-tool-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.btn-test-sample {
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.45);
+    color: var(--gold-light, #f5df9a);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.btn-test-sample:hover,
+.btn-test-sample:active {
+    background: rgba(197, 168, 89, 0.25);
+    border-color: var(--gold, #c5a859);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(197, 168, 89, 0.35);
+}
+
+.btn-manual-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+}
+
+.btn-manual-toggle:hover,
+.btn-manual-toggle:active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+/* Manual Input Drawer */
+.manual-input-drawer {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto 16px auto;
+    animation: fadeInSlideDown 0.3s ease;
+}
+
+.manual-input-card {
+    background: rgba(17, 24, 39, 0.95);
+    border: 1px solid rgba(197, 168, 89, 0.4);
+    border-radius: 14px;
+    padding: 14px 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+}
+
+.manual-input-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.manual-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--gold, #c5a859);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-close-drawer {
+    background: transparent;
+    border: none;
+    color: var(--text-dim, #94a3b8);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s;
+}
+
+.btn-close-drawer:hover {
+    color: #ffffff;
+}
+
+.manual-desc {
+    font-size: 12.5px;
+    color: #cbd5e1;
+    margin: 0 0 10px 0;
+    line-height: 1.5;
+}
+
+.manual-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.manual-input-field {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #ffffff;
+    font-family: 'Amiri', 'Tajawal', serif;
+    direction: rtl;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.manual-input-field:focus {
+    border-color: var(--gold, #c5a859);
+    box-shadow: 0 0 0 3px rgba(197, 168, 89, 0.25);
+}
+
+.btn-submit-manual {
+    background: linear-gradient(135deg, #c5a859, #9e8339);
+    border: none;
+    color: #0b0d10;
+    font-weight: 800;
+    font-family: inherit;
+    font-size: 13.5px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-submit-manual:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(197, 168, 89, 0.4);
+}
+
+/* ==========================================================================
+   19. Real-Time Live Speech Feedback Strip
+   ========================================================================== */
+.live-speech-feedback-strip {
+    width: 100%;
+    max-width: 780px;
+    margin: 12px auto 16px auto;
+    background: rgba(14, 20, 27, 0.88);
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    border-radius: 14px;
+    padding: 12px 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    animation: fadeInSlideDown 0.25s ease;
+}
+
+.speech-feedback-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.speech-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pulse-rec-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e74c3c;
+    box-shadow: 0 0 10px #e74c3c;
+    animation: liveRecPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes liveRecPulse {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.speech-status-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold, #c5a859);
+}
+
+.speech-live-box {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    padding: 8px 14px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    direction: rtl;
+    font-family: 'Amiri', 'Amiri Quran', serif;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.speech-placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13.5px;
+    font-family: 'Tajawal', sans-serif;
+}
+
+.speech-active-text {
+    color: #f5df9a;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   20. In-Page Recitation Evaluation Banner & Word-by-Word Diff
+   ========================================================================== */
+.recitation-eval-banner {
+    width: 100%;
+    max-width: 780px;
+    margin: 16px auto 18px auto;
+    background: linear-gradient(135deg, rgba(16, 26, 23, 0.95), rgba(12, 18, 28, 0.95));
+    border: 1.5px solid rgba(197, 168, 89, 0.5);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 20px rgba(197, 168, 89, 0.15);
+    backdrop-filter: blur(14px);
+    animation: fadeInSlideDown 0.35s ease;
+}
+
+.eval-banner-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.eval-banner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #c5a859, #9e8339);
+    color: #0b0d10;
+    font-weight: 900;
+    font-size: 15px;
+    padding: 6px 18px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(197, 168, 89, 0.4);
+}
+
+.eval-banner-counts {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.eb-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.eb-stat.eb-correct {
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    color: #2ecc71;
+}
+
+.eb-stat.eb-errors {
+    background: rgba(231, 76, 60, 0.18);
+    border: 1px solid rgba(231, 76, 60, 0.5);
+    color: #e74c3c;
+}
+
+.eb-stat.eb-missing {
+    background: rgba(243, 156, 18, 0.15);
+    border: 1px solid rgba(243, 156, 18, 0.4);
+    color: #f39c12;
+}
+
+.btn-banner-modal {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-banner-modal:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.eval-banner-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(197, 168, 89, 0.35), transparent);
+    margin: 10px 0 14px 0;
+}
+
+.eval-banner-words-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    direction: rtl;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+/* Individual Word Diff Chips */
+.eval-diff-chip {
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 18px;
+    line-height: 1.4;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.eval-diff-chip.chip-correct {
+    background: rgba(46, 204, 113, 0.14);
+    border: 1.5px solid rgba(46, 204, 113, 0.6);
+    color: #2ecc71;
+}
+
+.eval-diff-chip.chip-correct .chip-word-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.eval-diff-chip.chip-correct .chip-badge {
+    background: #2ecc71;
+    color: #0b0d10;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+}
+
+/* Mismatch Slip Chip (Highlighted with Red, Strikethrough & Correction) */
+.eval-diff-chip.chip-mismatch {
+    background: rgba(231, 76, 60, 0.18);
+    border: 1.5px solid #e74c3c;
+    color: #ff7675;
+    box-shadow: 0 0 14px rgba(231, 76, 60, 0.25);
+}
+
+.eval-diff-chip.chip-mismatch .chip-wrong-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.eval-diff-chip.chip-mismatch .chip-wrong-text {
+    text-decoration: underline wavy #e74c3c 2px;
+    font-weight: 800;
+}
+
+.eval-diff-chip.chip-mismatch .chip-badge-cross {
+    background: #e74c3c;
+    color: #ffffff;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+}
+
+.eval-diff-chip.chip-mismatch .chip-correction-box {
+    font-size: 12.5px;
+    font-family: 'Tajawal', sans-serif;
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.15);
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+}
+
+.eval-diff-chip.chip-mismatch .chip-correction-box strong {
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 15px;
+}
+
+/* Missing Word Chip */
+.eval-diff-chip.chip-missing {
+    background: rgba(243, 156, 18, 0.14);
+    border: 1.5px dashed rgba(243, 156, 18, 0.5);
+    color: #f39c12;
+}
+
+.eval-diff-chip.chip-missing .chip-miss-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.eval-diff-chip.chip-missing .chip-miss-label {
+    font-size: 11px;
+    font-family: 'Tajawal', sans-serif;
+    color: #f1c40f;
+    margin-top: 2px;
+}
+
+@keyframes fadeInSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+    .studio-quick-tools-row {
+        gap: 6px;
+    }
+    .btn-tool-pill {
+        font-size: 11.5px;
+        padding: 6px 12px;
+    }
+    .eval-banner-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .eval-banner-counts {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .eval-banner-words-grid {
+        gap: 6px;
+    }
+    .eval-diff-chip {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+}
+

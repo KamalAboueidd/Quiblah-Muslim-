@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=37">
+    <link rel="stylesheet" href="features/recite/recite.css?v=38">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -198,12 +198,44 @@
                         </button>
                     </div>
 
-                    <!-- Quick Listen Button (استمع للآيات) - يظهر فقط في وضع التلاوة ويختفي في وضع التسميع -->
-                    <div class="quick-listen-container" id="quick-listen-container">
-                        <button type="button" class="btn-quick-listen" id="btn-quick-listen" title="استمع لتلاوة الآيات بصوت الشيخ مشاري العفاسي">
-                            <i class="fa-solid fa-play" id="quick-listen-icon"></i>
-                            <span id="quick-listen-text">استمع للآيات</span>
+                    <!-- Quick Listen & Interactive Tools Row -->
+                    <div class="studio-quick-tools-row">
+                        <!-- Quick Listen Button (استمع للآيات) - يظهر في وضع التلاوة -->
+                        <div class="quick-listen-container" id="quick-listen-container">
+                            <button type="button" class="btn-quick-listen" id="btn-quick-listen" title="استمع لتلاوة الآيات بصوت الشيخ مشاري العفاسي">
+                                <i class="fa-solid fa-play" id="quick-listen-icon"></i>
+                                <span id="quick-listen-text">استمع للآيات</span>
+                            </button>
+                        </div>
+
+                        <!-- One-Click Mistake Demo Test -->
+                        <button type="button" class="btn-tool-pill btn-test-sample" id="btn-test-sample-mistake" title="اضغط لتجربة خطأ متعمد ومعاينة تصحيحه باللون الأحمر والأخضر فوراً">
+                            <i class="fa-solid fa-vial-circle-check"></i>
+                            <span>تجربة خطأ ومعاينة التصحيح 🎯</span>
                         </button>
+
+                        <!-- Manual Recitation Input Toggle -->
+                        <button type="button" class="btn-tool-pill btn-manual-toggle" id="btn-toggle-manual-input" title="كتابة أو تعديل التلاوة يدوياً للتدقيق">
+                            <i class="fa-solid fa-keyboard"></i>
+                            <span>تدقيق تلاوة مكتوبة</span>
+                        </button>
+                    </div>
+
+                    <!-- Expandable Manual Recitation Input Drawer -->
+                    <div class="manual-input-drawer" id="manual-input-drawer" style="display: none;">
+                        <div class="manual-input-card">
+                            <div class="manual-input-header">
+                                <div class="manual-title"><i class="fa-solid fa-pen-to-square"></i> تدقيق التلاوة المكتوبة كلمة بكلمة</div>
+                                <button type="button" class="btn-close-drawer" id="btn-close-manual-drawer" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <p class="manual-desc">اكتب أو عدل الكلمات التي نطقتها (أو جرب كتابة خطأ متعمد) للتدقيق الفوري والمقارنة مع المصحف:</p>
+                            <div class="manual-input-row">
+                                <input type="text" id="manual-recite-input" class="manual-input-field" placeholder="مثال: بِسْمِ اللَّهِ الرَّحْمَنِ الْعَظِيمِ" dir="rtl">
+                                <button type="button" id="btn-submit-manual-recite" class="btn-submit-manual">
+                                    <i class="fa-solid fa-check-double"></i> <span>تدقيق الآن</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Surah Header Banner Above Mushaf -->
@@ -266,6 +298,41 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Speech Feedback Strip (Visible while listening/recording) -->
+                    <div class="live-speech-feedback-strip" id="live-speech-feedback-strip" style="display: none;">
+                        <div class="speech-feedback-header">
+                            <div class="speech-status-indicator">
+                                <span class="pulse-rec-dot"></span>
+                                <span class="speech-status-label" id="speech-feedback-label">جاري الاستماع لتلاوتك الكريمة الآن...</span>
+                            </div>
+                        </div>
+                        <div class="speech-live-box" id="speech-live-text-display">
+                            <span class="speech-placeholder">تحدث الآن، ستظهر كلماتك هنا فوراً أثناء القراءة...</span>
+                        </div>
+                    </div>
+
+                    <!-- In-Page Recitation Evaluation Banner (Visible after evaluation in both modes!) -->
+                    <div class="recitation-eval-banner" id="recitation-eval-banner" style="display: none;">
+                        <div class="eval-banner-top">
+                            <div class="eval-banner-badge" id="eval-banner-badge">
+                                <i class="fa-solid fa-award"></i>
+                                <span id="eval-banner-score-text">نسبة الإتقان: 75%</span>
+                            </div>
+                            <div class="eval-banner-counts">
+                                <span class="eb-stat eb-correct"><i class="fa-solid fa-check"></i> <strong id="eb-correct-count">0</strong> صحيح</span>
+                                <span class="eb-stat eb-errors"><i class="fa-solid fa-xmark"></i> <strong id="eb-errors-count">0</strong> أخطاء</span>
+                                <span class="eb-stat eb-missing"><i class="fa-solid fa-minus"></i> <strong id="eb-missing-count">0</strong> منسية</span>
+                            </div>
+                            <button type="button" class="btn-banner-modal" id="btn-banner-open-modal">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i> <span>تقرير تفصيلي</span>
+                            </button>
+                        </div>
+                        <div class="eval-banner-divider"></div>
+                        <div class="eval-banner-words-grid" id="eval-banner-words-grid">
+                            <!-- Injected word-by-word diff items -->
                         </div>
                     </div>
 
@@ -463,6 +530,6 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js?v=37"></script>
+    <script src="features/recite/recite.js?v=38"></script>
 </body>
 </html>

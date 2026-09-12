@@ -164,6 +164,8 @@ let recordedAudioBlob = null;
 // Live Speech Recognition
 let speechRecognizer = null;
 let liveTranscript = "";
+let accumulatedSpeechText = "";
+let currentInterimSpeechText = "";
 let isRecognizing = false;
 let audioCtx = null, audioAnalyser = null, audioAnimFrameId = null;
 let lastAccuracy = 100;
@@ -190,6 +192,11 @@ let barBtnRecord, barRecordIcon, barWaveformVisualizer, barTimeDisplay, barRecor
 let quickListenContainer, btnQuickListen, quickListenIcon, quickListenText;
 let barVolumeBtn, barVolumeIcon;
 let playerStatusMain, playerStatusSub;
+
+// New Live Speech & Evaluation UI Elements
+let liveSpeechFeedbackStrip, speechFeedbackLabel, speechLiveTextDisplay;
+let recitationEvalBanner, evalBannerScoreText, ebCorrectCount, ebErrorsCount, ebMissingCount, btnBannerOpenModal, evalBannerWordsGrid;
+let btnTestSampleMistake, btnToggleManualInput, manualInputDrawer, manualReciteInput, btnSubmitManualRecite, btnCloseManualDrawer;
 
 // Modals
 let evaluationModalBackdrop, btnCloseEvaluation, scoreNumber, scoreEvaluationTitle;
@@ -301,6 +308,25 @@ function cacheDomElements() {
     inputMakeWebhook = document.getElementById('setting-make-webhook');
     inputPythonUrl = document.getElementById('setting-python-url');
     inputHfToken = document.getElementById('setting-hf-token');
+
+    liveSpeechFeedbackStrip = document.getElementById('live-speech-feedback-strip');
+    speechFeedbackLabel = document.getElementById('speech-feedback-label');
+    speechLiveTextDisplay = document.getElementById('speech-live-text-display');
+
+    recitationEvalBanner = document.getElementById('recitation-eval-banner');
+    evalBannerScoreText = document.getElementById('eval-banner-score-text');
+    ebCorrectCount = document.getElementById('eb-correct-count');
+    ebErrorsCount = document.getElementById('eb-errors-count');
+    ebMissingCount = document.getElementById('eb-missing-count');
+    btnBannerOpenModal = document.getElementById('btn-banner-open-modal');
+    evalBannerWordsGrid = document.getElementById('eval-banner-words-grid');
+
+    btnTestSampleMistake = document.getElementById('btn-test-sample-mistake');
+    btnToggleManualInput = document.getElementById('btn-toggle-manual-input');
+    manualInputDrawer = document.getElementById('manual-input-drawer');
+    manualReciteInput = document.getElementById('manual-recite-input');
+    btnSubmitManualRecite = document.getElementById('btn-submit-manual-recite');
+    btnCloseManualDrawer = document.getElementById('btn-close-manual-drawer');
 }
 
 // -----------------------------------------------------------------------------
@@ -934,6 +960,13 @@ function stopLiveWaveform() {
 async function startRecording() {
     pauseExemplaryAudio();
 
+    if (recitationEvalBanner) recitationEvalBanner.style.display = 'none';
+    if (liveSpeechFeedbackStrip) {
+        liveSpeechFeedbackStrip.style.display = 'block';
+        if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'جاري الاستماع لتلاوتك الكريمة الآن...';
+        if (speechLiveTextDisplay) speechLiveTextDisplay.innerHTML = '<span class="speech-placeholder">تحدث الآن، ستظهر كلماتك هنا فوراً أثناء القراءة...</span>';
+    }
+
     // 1. Start live speech recognition safely
     startLiveSpeechRecognition();
 
@@ -1095,7 +1128,11 @@ function resetStudioRecording() {
     }
 
     liveTranscript = "";
+    accumulatedSpeechText = "";
+    currentInterimSpeechText = "";
     isVerseRevealed = false;
+    if (liveSpeechFeedbackStrip) liveSpeechFeedbackStrip.style.display = 'none';
+    if (recitationEvalBanner) recitationEvalBanner.style.display = 'none';
     if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
     if (recordMicIcon) recordMicIcon.className = 'fa-solid fa-microphone';
     if (barBtnRecord) barBtnRecord.classList.remove('recording');
@@ -1125,7 +1162,14 @@ function resetStudioRecording() {
 // -----------------------------------------------------------------------------
 function startLiveSpeechRecognition() {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRec) return;
+    if (!SpeechRec) {
+        if (speechFeedbackLabel) {
+            speechFeedbackLabel.innerHTML = '⚠️ المتصفح لا يدعم التعرف الصوتي المباشر. يمكنك استخدام التدقيق النصي اليدوي بالأسفل.';
+        }
+        showToast("المتصفح لا يدعم التعرف الصوتي المباشر، يمكنك استخدام التدقيق النصي اليدوي", "fa-solid fa-circle-info");
+        if (manualInputDrawer) manualInputDrawer.style.display = 'block';
+        return;
+    }
 
     try {
         speechRecognizer = new SpeechRec();
@@ -1133,16 +1177,31 @@ function startLiveSpeechRecognition() {
         speechRecognizer.continuous = true;
         speechRecognizer.interimResults = true;
 
+        accumulatedSpeechText = "";
+        currentInterimSpeechText = "";
         liveTranscript = "";
         isRecognizing = true;
 
         speechRecognizer.onresult = (event) => {
-            let fullText = '';
-            for (let i = 0; i < event.results.length; i++) {
-                fullText += event.results[i][0].transcript + ' ';
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const res = event.results[i];
+                if (res.isFinal) {
+                    accumulatedSpeechText += res[0].transcript + ' ';
+                } else {
+                    interim += res[0].transcript;
+                }
             }
-            liveTranscript = fullText.trim();
+            currentInterimSpeechText = interim;
+            liveTranscript = (accumulatedSpeechText + ' ' + currentInterimSpeechText).trim();
+
             if (liveTranscript) {
+                if (speechLiveTextDisplay) {
+                    speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(liveTranscript)}</span>`;
+                }
+                if (speechFeedbackLabel) {
+                    speechFeedbackLabel.textContent = '🎙️ نستمع لتلاوتك الكريمة الآن بوضوح...';
+                }
                 updateLiveSpokenHighlights(liveTranscript);
                 triggerSilenceCountdown();
             }
@@ -1150,6 +1209,20 @@ function startLiveSpeechRecognition() {
 
         speechRecognizer.onerror = (e) => {
             console.warn("SpeechRecognition notice:", e.error);
+            if (e.error === 'not-allowed') {
+                if (speechFeedbackLabel) {
+                    speechFeedbackLabel.textContent = '⚠️ تم رفض إذن الميكروفون في المتصفح';
+                }
+                showToast("يرجى إعطاء الإذن للميكروفون لبدء التسجيل وتدقيق التلاوة", "fa-solid fa-microphone-slash");
+            } else if (e.error === 'network') {
+                if (speechFeedbackLabel) {
+                    speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
+                }
+            } else if (e.error === 'no-speech') {
+                if (speechFeedbackLabel && isRecording) {
+                    speechFeedbackLabel.textContent = '🎙️ لم يتم سماع صوت بعد.. اقرأ بوضوح بالقرب من الميكروفون';
+                }
+            }
         };
 
         speechRecognizer.onend = () => {
@@ -1434,14 +1507,27 @@ async function processRecitationInference(audioBlob) {
             }
         }
 
-        // Fallback if SpeechRecognition was not active or picked nothing
+        // If no speech was captured from mic, DO NOT fake 100% success!
         if (!transcribedText || transcribedText.trim().length === 0) {
-            const currentTargs = getActiveTargetAyahs();
-            if (currentTargs.length > 0) {
-                transcribedText = currentTargs.map(a => a.rawWords.join(' ')).join(' ');
-            } else {
-                transcribedText = "الحمد لله رب العالمين";
+            if (playerStatusMain) {
+                playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط صوت واضح من الميكروفون</span>`;
             }
+            if (playerStatusSub) {
+                playerStatusSub.textContent = 'تأكد من إعطاء إذن الميكروفون والتحدث بصوت مسموع، أو استخدم التدقيق النصي بالأسفل';
+            }
+            if (speechFeedbackLabel) {
+                speechFeedbackLabel.textContent = '⚠️ لم يتم التقاط كلمات من الميكروفون، يرجى المحاولة مجدداً بصوت أعلى';
+            }
+            showToast('لم يتم التقاط أي صوت! يرجى التأكد من التحدث بوضوح أو استخدام التدقيق النصي', 'fa-solid fa-microphone-slash');
+            
+            if (manualInputDrawer) {
+                manualInputDrawer.style.display = 'block';
+                const curTargs = getActiveTargetAyahs();
+                if (curTargs.length && manualReciteInput && !manualReciteInput.value) {
+                    manualReciteInput.value = curTargs[0].rawWords.join(' ');
+                }
+            }
+            return;
         }
 
         const rawWords = transcribedText.split(/\s+/).filter(Boolean);
@@ -1485,7 +1571,7 @@ async function processRecitationInference(audioBlob) {
             }
         }
         if (playerStatusSub) {
-            playerStatusSub.textContent = 'تم تدقيق التلاوة بنجاح وتحديد الكلمات الصحيحة والأخطاء';
+            playerStatusSub.textContent = 'تم تدقيق التلاوة بنجاح وتحديد الكلمات الصحيحة والأخطاء وتصحيحها';
         }
 
         // Auto-open evaluation modal smoothly
@@ -1495,7 +1581,7 @@ async function processRecitationInference(audioBlob) {
                 const modalCard = document.getElementById('evaluation-modal-card');
                 if (modalCard) modalCard.scrollTop = 0;
             }
-        }, 500);
+        }, 600);
 
     } catch (error) {
         console.error("AI Inference Error:", error);
@@ -1550,6 +1636,7 @@ function renderRecitationResults(targetAyahs, transcribedText) {
     const alignment = alignRecitation(expectedWordsList, spokenWords);
 
     let evaluatedParchmentHtml = '';
+    let bannerGridHtml = '';
     let lastAyahNum = expectedWordsList[0]?.ayahNum || 1;
     let hasSpokenForThisAyah = false;
 
@@ -1582,6 +1669,15 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             evaluatedParchmentHtml += `<span class="inscribed-word word-eval-correct" title="نطق صحيح ✓">${escapeHTML(item.expectedObj.raw)} <span class="eval-tag tag-correct"><i class="fa-solid fa-check"></i></span></span> `;
             hasSpokenForThisAyah = true;
 
+            bannerGridHtml += `
+                <div class="eval-diff-chip chip-correct" title="نطق صحيح ✓">
+                    <div class="chip-word-row">
+                        <span>${escapeHTML(item.expectedObj.raw)}</span>
+                        <span class="chip-badge"><i class="fa-solid fa-check"></i></span>
+                    </div>
+                </div>
+            `;
+
         } else if (item.type === 'mismatch') {
             totalMismatches++;
             const aNum = item.expectedObj.ayahNum;
@@ -1603,6 +1699,18 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             evaluatedParchmentHtml += `<span class="inscribed-word word-eval-slip" title="المتوقع: ${escapeHTML(item.expectedObj.raw)} | نطقت: ${escapeHTML(item.spoken)}">${escapeHTML(item.spoken)} <span class="eval-tag tag-slip"><i class="fa-solid fa-xmark"></i></span></span> `;
             hasSpokenForThisAyah = true;
 
+            bannerGridHtml += `
+                <div class="eval-diff-chip chip-mismatch" title="خطأ: نطقت ${escapeHTML(item.spoken)} بدلاً من ${escapeHTML(item.expectedObj.raw)}">
+                    <div class="chip-wrong-row">
+                        <span class="chip-wrong-text"><del>${escapeHTML(item.spoken)}</del></span>
+                        <span class="chip-badge-cross"><i class="fa-solid fa-xmark"></i></span>
+                    </div>
+                    <div class="chip-correction-box">
+                        <i class="fa-solid fa-arrow-left"></i> الصواب: <strong>${escapeHTML(item.expectedObj.raw)}</strong>
+                    </div>
+                </div>
+            `;
+
         } else if (item.type === 'missing') {
             totalMissing++;
             const aNum = item.expectedObj.ayahNum;
@@ -1615,10 +1723,32 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             evaluatedParchmentHtml += `<span class="inscribed-word word-eval-missing" title="كلمة منسية لم تُسمع: ${escapeHTML(item.expectedObj.raw)}"><del>${escapeHTML(item.expectedObj.raw)}</del> <span class="eval-tag tag-missing"><i class="fa-solid fa-minus"></i></span></span> `;
             hasSpokenForThisAyah = true;
 
+            bannerGridHtml += `
+                <div class="eval-diff-chip chip-missing" title="كلمة منسية: ${escapeHTML(item.expectedObj.raw)}">
+                    <div class="chip-miss-row">
+                        <span><del>${escapeHTML(item.expectedObj.raw)}</del></span>
+                        <span class="chip-badge-cross" style="background:#f39c12;"><i class="fa-solid fa-minus"></i></span>
+                    </div>
+                    <span class="chip-miss-label">كلمة منسية</span>
+                </div>
+            `;
+
         } else if (item.type === 'extra') {
             allWordChips.push({ status: 'extra', original: null, recited: item.spoken });
             evaluatedParchmentHtml += `<span class="inscribed-word word-eval-slip" title="كلمة زائدة">${escapeHTML(item.spoken)} <span class="eval-tag tag-slip"><i class="fa-solid fa-plus"></i></span></span> `;
             hasSpokenForThisAyah = true;
+
+            bannerGridHtml += `
+                <div class="eval-diff-chip chip-mismatch" title="كلمة زائدة غير موجودة بالآية">
+                    <div class="chip-wrong-row">
+                        <span class="chip-wrong-text">${escapeHTML(item.spoken)}</span>
+                        <span class="chip-badge-cross"><i class="fa-solid fa-plus"></i></span>
+                    </div>
+                    <div class="chip-correction-box" style="color:#f39c12;">
+                        <span>كلمة زائدة</span>
+                    </div>
+                </div>
+            `;
         }
     });
 
@@ -1633,9 +1763,21 @@ function renderRecitationResults(targetAyahs, transcribedText) {
         if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
     }
 
-    const evaluatedWordsCount = Math.max(totalCorrect + totalMismatches, 1);
-    const accuracy = Math.max(0, Math.round((totalCorrect / evaluatedWordsCount) * 100));
+    // In-Page Evaluation Banner (Visible in BOTH Recite & Memorize Modes!)
+    if (evalBannerWordsGrid) evalBannerWordsGrid.innerHTML = bannerGridHtml;
+
+    const totalWordsEvaluated = Math.max(totalExpected, totalCorrect + totalMismatches + totalMissing, 1);
+    const accuracy = Math.max(0, Math.round((totalCorrect / totalWordsEvaluated) * 100));
     lastAccuracy = accuracy;
+
+    if (evalBannerScoreText) evalBannerScoreText.textContent = `نسبة الإتقان: ${accuracy}%`;
+    if (ebCorrectCount) ebCorrectCount.textContent = totalCorrect;
+    if (ebErrorsCount) ebErrorsCount.textContent = totalMismatches;
+    if (ebMissingCount) ebMissingCount.textContent = totalMissing;
+
+    if (recitationEvalBanner) {
+        recitationEvalBanner.style.display = 'block';
+    }
 
     if (scoreNumber) scoreNumber.textContent = `${accuracy}%`;
     if (countCorrect) countCorrect.textContent = totalCorrect;
@@ -1647,10 +1789,10 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             scoreEvaluationTitle.textContent = "ما شاء الله! تلاوة ممتازة ومتقنة جداً";
             scoreEvaluationTitle.style.color = "var(--success-green)";
         } else if (accuracy >= 75) {
-            scoreEvaluationTitle.textContent = "تلاوة طيبة، واصل التحسين والتدريب";
+            scoreEvaluationTitle.textContent = "تلاوة طيبة، راجع الكلمات المحددة باللون الأحمر";
             scoreEvaluationTitle.style.color = "var(--gold)";
         } else {
-            scoreEvaluationTitle.textContent = "توجد كلمات تحتاج لتصحيح نطقها - حاول مجدداً 🔄";
+            scoreEvaluationTitle.textContent = "توجد أخطاء تم رصدها وتحديد صوابها - استمع وتدرب مجدداً 🔄";
             scoreEvaluationTitle.style.color = "var(--warn-orange)";
         }
     }
@@ -1662,14 +1804,13 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             chip.className = `word-chip ${item.status}`;
 
             if (item.status === 'match') {
-                chip.textContent = item.original;
+                chip.innerHTML = `<span>${escapeHTML(item.original)}</span> <i class="fa-solid fa-check" style="color:#2ecc71; margin-right:4px;"></i>`;
             } else if (item.status === 'mismatch') {
-                chip.innerHTML = `<span>${escapeHTML(item.original)}</span> <small style="color:var(--gold-light); font-size:12px;">(نطقت: ${escapeHTML(item.recited)})</small>`;
+                chip.innerHTML = `<span style="text-decoration:underline wavy #e74c3c 1.5px;">${escapeHTML(item.recited)}</span> <i class="fa-solid fa-xmark" style="color:#e74c3c; margin-right:4px;"></i> <small style="color:#2ecc71; font-size:12px; margin-right:6px; font-weight:700;">(الصواب: ${escapeHTML(item.original)})</small>`;
             } else if (item.status === 'missing') {
-                chip.textContent = item.original;
-                chip.title = "كلمة منسية أو لم تُسمع";
+                chip.innerHTML = `<del>${escapeHTML(item.original)}</del> <i class="fa-solid fa-minus" style="color:#f39c12; margin-right:4px;"></i> <small style="color:#f39c12; font-size:11px;">(منسية)</small>`;
             } else if (item.status === 'extra') {
-                chip.innerHTML = `<span>${escapeHTML(item.recited)}</span> <small style="font-size:11px;">(زائدة)</small>`;
+                chip.innerHTML = `<span>${escapeHTML(item.recited)}</span> <i class="fa-solid fa-plus" style="color:#e74c3c; margin-right:4px;"></i> <small style="color:#ff7675; font-size:11px;">(زائدة)</small>`;
             }
             wordsAlignmentCloud.appendChild(chip);
         });
@@ -1681,6 +1822,63 @@ function renderRecitationResults(targetAyahs, transcribedText) {
         const modalCard = document.getElementById('evaluation-modal-card');
         if (modalCard) modalCard.scrollTop = 0;
     }
+}
+
+// -----------------------------------------------------------------------------
+// Interactive Mistake Demo & Manual Recitation Check
+// -----------------------------------------------------------------------------
+function runSampleMistakeDemo() {
+    const targetAyahs = getActiveTargetAyahs();
+    if (!targetAyahs || !targetAyahs.length) return;
+    const curAyah = targetAyahs[0];
+    const words = [...curAyah.rawWords];
+
+    // Create a realistic intentional mistake on the last word
+    if (words.length > 1) {
+        words[words.length - 1] = "الْعَظِيمِ"; // Intentional mistake vs الرحيم / القدوس / etc
+    } else {
+        words[0] = "الْعَظِيمِ";
+    }
+    const simulatedText = words.join(' ');
+    liveTranscript = simulatedText;
+
+    if (liveSpeechFeedbackStrip) {
+        liveSpeechFeedbackStrip.style.display = 'block';
+        if (speechFeedbackLabel) speechFeedbackLabel.textContent = "🎯 تجربة محاكاة تلاوة تحتوي على خطأ بالكلمة الأخيرة:";
+        if (speechLiveTextDisplay) speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(simulatedText)}</span>`;
+    }
+
+    showToast("جاري تدقيق تلاوة تجريبية تحتوي على خطأ لمعاينة التصحيح 🎯");
+    renderRecitationResults(targetAyahs, simulatedText);
+
+    if (playerStatusMain) {
+        playerStatusMain.innerHTML = `<button type="button" class="btn-open-result-pill" id="btn-reopen-eval" style="background:linear-gradient(135deg,#f5df9a,#c5a859); border:none; color:#0b0d10; font-weight:800; padding:8px 22px; border-radius:24px; cursor:pointer; font-size:13.5px; display:inline-flex; align-items:center; gap:8px;"><i class="fa-solid fa-award"></i> <span>تم رصد الخطأ وتصحيحه بنجاح - تفاصيل</span> <i class="fa-solid fa-chevron-up"></i></button>`;
+        const btnReopen = document.getElementById('btn-reopen-eval');
+        if (btnReopen && evaluationModalBackdrop) {
+            btnReopen.onclick = () => evaluationModalBackdrop.classList.add('active');
+        }
+    }
+}
+
+function runManualRecitationCheck() {
+    if (!manualReciteInput) return;
+    const text = manualReciteInput.value.trim();
+    if (!text) {
+        showToast("يرجى كتابة كلمات التلاوة في الحقل أولاً", "fa-solid fa-circle-exclamation");
+        manualReciteInput.focus();
+        return;
+    }
+    const targetAyahs = getActiveTargetAyahs();
+    liveTranscript = text;
+
+    if (liveSpeechFeedbackStrip) {
+        liveSpeechFeedbackStrip.style.display = 'block';
+        if (speechFeedbackLabel) speechFeedbackLabel.textContent = "✍️ تدقيق التلاوة المكتوبة:";
+        if (speechLiveTextDisplay) speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(text)}</span>`;
+    }
+
+    showToast("جاري تدقيق النص المكتوب ومقارنته بالمصحف الشريف...");
+    renderRecitationResults(targetAyahs, text);
 }
 
 // -----------------------------------------------------------------------------
@@ -1760,6 +1958,56 @@ function initEventListeners() {
         btnEvalNext.addEventListener('click', () => {
             evaluationModalBackdrop.classList.remove('active');
             goToAyah(currentAyahNumber + 1);
+        });
+    }
+
+    // In-Page Evaluation Banner "التقرير المفصل"
+    if (btnBannerOpenModal && evaluationModalBackdrop) {
+        btnBannerOpenModal.addEventListener('click', () => {
+            evaluationModalBackdrop.classList.add('active');
+        });
+    }
+
+    // Interactive Demo Mistake Button ("تجربة خطأ ومعاينة التصحيح 🎯")
+    if (btnTestSampleMistake) {
+        btnTestSampleMistake.addEventListener('click', () => {
+            runSampleMistakeDemo();
+        });
+    }
+
+    // Manual Recitation Input Drawer & Actions
+    if (btnToggleManualInput && manualInputDrawer) {
+        btnToggleManualInput.addEventListener('click', () => {
+            const isShown = manualInputDrawer.style.display === 'block';
+            manualInputDrawer.style.display = isShown ? 'none' : 'block';
+            if (!isShown && manualReciteInput) {
+                const curTargs = getActiveTargetAyahs();
+                if (curTargs.length && !manualReciteInput.value) {
+                    manualReciteInput.value = curTargs[0].rawWords.join(' ');
+                }
+                setTimeout(() => manualReciteInput.focus(), 60);
+            }
+        });
+    }
+
+    if (btnCloseManualDrawer && manualInputDrawer) {
+        btnCloseManualDrawer.addEventListener('click', () => {
+            manualInputDrawer.style.display = 'none';
+        });
+    }
+
+    if (btnSubmitManualRecite) {
+        btnSubmitManualRecite.addEventListener('click', () => {
+            runManualRecitationCheck();
+        });
+    }
+
+    if (manualReciteInput) {
+        manualReciteInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                runManualRecitationCheck();
+            }
         });
     }
 

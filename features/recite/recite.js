@@ -141,6 +141,9 @@ const LOCAL_SAMPLE_VERSES = {
 let currentSurahNumber = 1;
 let currentAyahNumber = 5; // Default: Ayah 5 (Matches Mockup Screenshot)
 let isFullSurahMode = false;
+let recitationScopeMode = 'single'; // 'single' | 'range' | 'full'
+let rangeFromAyah = 1;
+let rangeToAyah = 5;
 let currentSurahVerses = []; // Array of { numberInSurah, text, rawWords, normWords }
 let currentTargetVerseText = "";
 
@@ -182,7 +185,9 @@ let hfApiToken = localStorage.getItem("recite_hf_token") || "";
 // 3. DOM Elements Cache
 // -----------------------------------------------------------------------------
 let cardSelectSurah, selectedSurahDisplay, surahDropdownFlyout, surahSearchInput, surahItemsList;
-let cardSelectAyah, selectedAyahDisplay, ayahDropdownFlyout, tabFullSurah, tabSingleAyah;
+let cardSelectAyah, selectedAyahDisplay, ayahDropdownFlyout, tabFullSurah, tabSingleAyah, tabRangeAyah;
+let wrapSingleAyah, wrapRangeAyah, inputRangeFrom, inputRangeTo;
+let btnRangeFromPrev, btnRangeFromNext, btnRangeToPrev, btnRangeToNext, btnApplyRange;
 let inputAyahNum, btnAyahPrev, btnAyahNext, ayahMaxLabel, ayahGridScrollable;
 let btnShowMushaf, mushafOpenBook;
 let btnModeRecite, btnModeMemorize;
@@ -246,6 +251,18 @@ function cacheDomElements() {
     ayahDropdownFlyout = document.getElementById('ayah-dropdown-flyout');
     tabFullSurah = document.getElementById('tab-full-surah');
     tabSingleAyah = document.getElementById('tab-single-ayah');
+    tabRangeAyah = document.getElementById('tab-range-ayah');
+
+    wrapSingleAyah = document.getElementById('wrap-single-ayah');
+    wrapRangeAyah = document.getElementById('wrap-range-ayah');
+    inputRangeFrom = document.getElementById('input-range-from');
+    inputRangeTo = document.getElementById('input-range-to');
+    btnRangeFromPrev = document.getElementById('btn-range-from-prev');
+    btnRangeFromNext = document.getElementById('btn-range-from-next');
+    btnRangeToPrev = document.getElementById('btn-range-to-prev');
+    btnRangeToNext = document.getElementById('btn-range-to-next');
+    btnApplyRange = document.getElementById('btn-apply-range');
+
     inputAyahNum = document.getElementById('input-ayah-num');
     btnAyahPrev = document.getElementById('btn-ayah-prev');
     btnAyahNext = document.getElementById('btn-ayah-next');
@@ -398,12 +415,74 @@ function renderSurahList(list) {
 function selectSurah(surahNum) {
     currentSurahNumber = surahNum;
     currentAyahNumber = 1;
+    recitationScopeMode = 'single';
     isFullSurahMode = false;
     const surahMeta = SURAHS_DB.find(s => s.number === surahNum) || SURAHS_DB[0];
+    rangeFromAyah = 1;
+    rangeToAyah = Math.min(surahMeta.ayat, 5);
+    clampRangeInputs(surahMeta.ayat);
     loadSurahAndVerses(currentSurahNumber, currentAyahNumber);
     renderAyahGrid();
     renderSurahList(SURAHS_DB);
     showToast(`تم اختيار سورة ${surahMeta.name}`);
+}
+
+function clampRangeInputs(maxAyat) {
+    if (rangeFromAyah < 1) rangeFromAyah = 1;
+    if (rangeFromAyah > maxAyat) rangeFromAyah = maxAyat;
+    if (rangeToAyah < 1) rangeToAyah = 1;
+    if (rangeToAyah > maxAyat) rangeToAyah = maxAyat;
+
+    if (inputRangeFrom) {
+        inputRangeFrom.min = 1;
+        inputRangeFrom.max = maxAyat;
+        inputRangeFrom.value = rangeFromAyah;
+    }
+    if (inputRangeTo) {
+        inputRangeTo.min = 1;
+        inputRangeTo.max = maxAyat;
+        inputRangeTo.value = rangeToAyah;
+    }
+}
+
+function stepRangeFrom(delta) {
+    const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
+    let val = (parseInt(inputRangeFrom ? inputRangeFrom.value : rangeFromAyah, 10) || 1) + delta;
+    if (val < 1) val = 1;
+    if (val > surahMeta.ayat) val = surahMeta.ayat;
+    rangeFromAyah = val;
+    if (inputRangeFrom) inputRangeFrom.value = rangeFromAyah;
+}
+
+function stepRangeTo(delta) {
+    const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
+    let val = (parseInt(inputRangeTo ? inputRangeTo.value : rangeToAyah, 10) || 1) + delta;
+    if (val < 1) val = 1;
+    if (val > surahMeta.ayat) val = surahMeta.ayat;
+    rangeToAyah = val;
+    if (inputRangeTo) inputRangeTo.value = rangeToAyah;
+}
+
+function applyAyahRange() {
+    const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
+    let fromVal = parseInt(inputRangeFrom ? inputRangeFrom.value : rangeFromAyah, 10);
+    let toVal = parseInt(inputRangeTo ? inputRangeTo.value : rangeToAyah, 10);
+    if (isNaN(fromVal) || fromVal < 1) fromVal = 1;
+    if (fromVal > surahMeta.ayat) fromVal = surahMeta.ayat;
+    if (isNaN(toVal) || toVal < 1) toVal = 1;
+    if (toVal > surahMeta.ayat) toVal = surahMeta.ayat;
+
+    if (fromVal > toVal) {
+        const temp = fromVal;
+        fromVal = toVal;
+        toVal = temp;
+    }
+
+    rangeFromAyah = fromVal;
+    rangeToAyah = toVal;
+    clampRangeInputs(surahMeta.ayat);
+    setRecitationScope('range');
+    closeAllFlyouts();
 }
 
 function initAyahDropdown() {
@@ -422,14 +501,20 @@ function initAyahDropdown() {
 
     if (tabFullSurah) {
         tabFullSurah.addEventListener('click', () => {
-            setReciteMode(true);
+            setRecitationScope('full');
             closeAllFlyouts();
         });
     }
 
     if (tabSingleAyah) {
         tabSingleAyah.addEventListener('click', () => {
-            setReciteMode(false);
+            setRecitationScope('single');
+        });
+    }
+
+    if (tabRangeAyah) {
+        tabRangeAyah.addEventListener('click', () => {
+            setRecitationScope('range');
         });
     }
 
@@ -459,6 +544,25 @@ function initAyahDropdown() {
             }
         });
     }
+
+    if (btnRangeFromPrev) btnRangeFromPrev.addEventListener('click', () => stepRangeFrom(-1));
+    if (btnRangeFromNext) btnRangeFromNext.addEventListener('click', () => stepRangeFrom(1));
+    if (btnRangeToPrev) btnRangeToPrev.addEventListener('click', () => stepRangeTo(-1));
+    if (btnRangeToNext) btnRangeToNext.addEventListener('click', () => stepRangeTo(1));
+    if (btnApplyRange) btnApplyRange.addEventListener('click', applyAyahRange);
+
+    if (inputRangeFrom) {
+        inputRangeFrom.addEventListener('change', () => {
+            const val = parseInt(inputRangeFrom.value, 10);
+            if (!isNaN(val)) rangeFromAyah = val;
+        });
+    }
+    if (inputRangeTo) {
+        inputRangeTo.addEventListener('change', () => {
+            const val = parseInt(inputRangeTo.value, 10);
+            if (!isNaN(val)) rangeToAyah = val;
+        });
+    }
 }
 
 function renderAyahGrid() {
@@ -469,7 +573,7 @@ function renderAyahGrid() {
     for (let i = 1; i <= surahMeta.ayat; i++) {
         const chip = document.createElement('button');
         chip.type = 'button';
-        chip.className = `ayah-chip ${!isFullSurahMode && i === currentAyahNumber ? 'active' : ''}`;
+        chip.className = `ayah-chip ${recitationScopeMode === 'single' && !isFullSurahMode && i === currentAyahNumber ? 'active' : ''}`;
         chip.textContent = i;
         chip.addEventListener('click', () => {
             goToAyah(i);
@@ -479,27 +583,48 @@ function renderAyahGrid() {
     }
 }
 
-function setReciteMode(fullSurah) {
-    isFullSurahMode = fullSurah;
+function setRecitationScope(mode) {
+    recitationScopeMode = mode;
+    isFullSurahMode = (mode === 'full');
     const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
 
-    if (isFullSurahMode) {
-        if (tabFullSurah) tabFullSurah.classList.add('active');
-        if (tabSingleAyah) tabSingleAyah.classList.remove('active');
+    if (tabSingleAyah) tabSingleAyah.classList.toggle('active', mode === 'single');
+    if (tabRangeAyah) tabRangeAyah.classList.toggle('active', mode === 'range');
+    if (tabFullSurah) tabFullSurah.classList.toggle('active', mode === 'full');
+
+    if (wrapSingleAyah) wrapSingleAyah.style.display = (mode === 'single') ? 'block' : 'none';
+    if (wrapRangeAyah) wrapRangeAyah.style.display = (mode === 'range') ? 'block' : 'none';
+    if (ayahGridScrollable) ayahGridScrollable.style.display = (mode === 'range') ? 'none' : 'grid';
+
+    if (mode === 'full') {
         if (selectedAyahDisplay) selectedAyahDisplay.textContent = 'كامل السورة';
         if (centerAyahsRange) centerAyahsRange.textContent = `الآيات 1 - ${surahMeta.ayat}`;
         showToast(`تم اختيار كامل سورة ${surahMeta.name}`);
+        renderMushafView();
+        prepareExemplaryAudio(currentSurahNumber, 1);
+        resetStudioRecording();
+    } else if (mode === 'range') {
+        clampRangeInputs(surahMeta.ayat);
+        const from = Math.min(rangeFromAyah, rangeToAyah);
+        const to = Math.max(rangeFromAyah, rangeToAyah);
+        if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآيات ${from} - ${to}`;
+        if (centerAyahsRange) centerAyahsRange.textContent = `من الآية ${from} إلى ${to} (سورة ${surahMeta.name})`;
+        showToast(`تم تحديد النطاق: من الآية ${from} إلى ${to}`);
+        renderMushafView();
+        prepareExemplaryAudio(currentSurahNumber, from);
+        resetStudioRecording();
     } else {
-        if (tabSingleAyah) tabSingleAyah.classList.add('active');
-        if (tabFullSurah) tabFullSurah.classList.remove('active');
         if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآية ${currentAyahNumber}`;
         if (centerAyahsRange) centerAyahsRange.textContent = `الآية ${currentAyahNumber} من ${surahMeta.ayat}`;
         showToast(`تم تحديد الآية ${currentAyahNumber} من سورة ${surahMeta.name}`);
+        renderMushafView();
+        prepareExemplaryAudio(currentSurahNumber, currentAyahNumber);
+        resetStudioRecording();
     }
+}
 
-    renderMushafView();
-    prepareExemplaryAudio(currentSurahNumber, currentAyahNumber);
-    resetStudioRecording();
+function setReciteMode(fullSurah) {
+    setRecitationScope(fullSurah ? 'full' : 'single');
 }
 
 function goToAyah(ayahNum) {
@@ -509,10 +634,16 @@ function goToAyah(ayahNum) {
     if (num > surahMeta.ayat) num = surahMeta.ayat;
 
     currentAyahNumber = num;
+    recitationScopeMode = 'single';
     isFullSurahMode = false;
 
     if (tabSingleAyah) tabSingleAyah.classList.add('active');
+    if (tabRangeAyah) tabRangeAyah.classList.remove('active');
     if (tabFullSurah) tabFullSurah.classList.remove('active');
+    if (wrapSingleAyah) wrapSingleAyah.style.display = 'block';
+    if (wrapRangeAyah) wrapRangeAyah.style.display = 'none';
+    if (ayahGridScrollable) ayahGridScrollable.style.display = 'grid';
+
     if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآية ${currentAyahNumber}`;
     if (inputAyahNum) inputAyahNum.value = currentAyahNumber;
     if (centerAyahsRange) centerAyahsRange.textContent = `الآية ${currentAyahNumber} من ${surahMeta.ayat}`;
@@ -557,10 +688,16 @@ async function loadSurahAndVerses(surahNum, targetAyahNum) {
         inputAyahNum.max = surahMeta.ayat;
         inputAyahNum.value = targetAyahNum;
     }
+    clampRangeInputs(surahMeta.ayat);
 
-    if (isFullSurahMode) {
+    if (recitationScopeMode === 'full') {
         if (selectedAyahDisplay) selectedAyahDisplay.textContent = 'كامل السورة';
         if (centerAyahsRange) centerAyahsRange.textContent = `الآيات 1 - ${surahMeta.ayat}`;
+    } else if (recitationScopeMode === 'range') {
+        const from = Math.min(rangeFromAyah, rangeToAyah);
+        const to = Math.max(rangeFromAyah, rangeToAyah);
+        if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآيات ${from} - ${to}`;
+        if (centerAyahsRange) centerAyahsRange.textContent = `من الآية ${from} إلى ${to} (سورة ${surahMeta.name})`;
     } else {
         if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآية ${targetAyahNum}`;
         if (centerAyahsRange) centerAyahsRange.textContent = `الآية ${targetAyahNum} من ${surahMeta.ayat}`;
@@ -636,8 +773,15 @@ function processVersesData(ayahs, surahNum) {
 }
 
 function getActiveTargetAyahs() {
-    if (isFullSurahMode) {
+    if (recitationScopeMode === 'full' || isFullSurahMode) {
         return currentSurahVerses && currentSurahVerses.length ? currentSurahVerses : [];
+    }
+    if (recitationScopeMode === 'range') {
+        const from = Math.min(rangeFromAyah, rangeToAyah);
+        const to = Math.max(rangeFromAyah, rangeToAyah);
+        return (currentSurahVerses && currentSurahVerses.length)
+            ? currentSurahVerses.filter(a => a.numberInSurah >= from && a.numberInSurah <= to)
+            : [];
     }
     const single = currentSurahVerses.find(a => a.numberInSurah === currentAyahNumber);
     return single ? [single] : (currentSurahVerses && currentSurahVerses.length ? [currentSurahVerses[0]] : []);
@@ -653,9 +797,16 @@ function renderMushafView() {
     }
 
     let html = '';
+    const fromR = Math.min(rangeFromAyah, rangeToAyah);
+    const toR = Math.max(rangeFromAyah, rangeToAyah);
 
     currentSurahVerses.forEach(ayah => {
-        const isCurrentActive = !isFullSurahMode && (ayah.numberInSurah === currentAyahNumber);
+        let isCurrentActive = false;
+        if (recitationScopeMode === 'range') {
+            isCurrentActive = (ayah.numberInSurah >= fromR && ayah.numberInSurah <= toR);
+        } else if (recitationScopeMode === 'single' && !isFullSurahMode) {
+            isCurrentActive = (ayah.numberInSurah === currentAyahNumber);
+        }
         
         if (isCurrentActive) {
             // In Mockup: ❖ [Words] ⑤ ❖ inside the emerald ribbon in RTL
@@ -694,7 +845,8 @@ function renderMushafView() {
 
     // Auto scroll active ayah banner into view
     setTimeout(() => {
-        const activeEl = document.getElementById(`ayah-banner-${currentAyahNumber}`);
+        const scrollTargetId = (recitationScopeMode === 'range') ? `ayah-banner-${fromR}` : `ayah-banner-${currentAyahNumber}`;
+        const activeEl = document.getElementById(scrollTargetId);
         if (activeEl && mushafVersesFlow) {
             activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
@@ -767,7 +919,14 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
     if (!audioExemplary) return;
     pauseExemplaryAudio();
 
-    const targetNum = isFullSurahMode ? 1 : ayahNum;
+    let targetNum = ayahNum;
+    if (recitationScopeMode === 'full') {
+        targetNum = ayahNum || 1;
+    } else if (recitationScopeMode === 'range') {
+        const from = Math.min(rangeFromAyah, rangeToAyah);
+        targetNum = ayahNum || from;
+    }
+
     const sPadded = String(surahNum).padStart(3, '0');
     const aPadded = String(targetNum).padStart(3, '0');
     const audioUrl = `https://everyayah.com/data/Alafasy_128kbps/${sPadded}${aPadded}.mp3`;
@@ -775,10 +934,17 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
     audioExemplary.src = audioUrl;
 
     audioExemplary.onended = () => {
-        if (isFullSurahMode) {
+        if (recitationScopeMode === 'full') {
             // Advance to next ayah in full surah mode
             const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
             if (targetNum < surahMeta.ayat) {
+                prepareExemplaryAudio(currentSurahNumber, targetNum + 1);
+                playExemplaryAudio();
+                return;
+            }
+        } else if (recitationScopeMode === 'range') {
+            const to = Math.max(rangeFromAyah, rangeToAyah);
+            if (targetNum < to) {
                 prepareExemplaryAudio(currentSurahNumber, targetNum + 1);
                 playExemplaryAudio();
                 return;
@@ -984,12 +1150,12 @@ async function startRecording() {
     if (barWaveformVisualizer) barWaveformVisualizer.classList.add('recording');
 
     if (studioDisplayMode === 'memorize') {
-        if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآية من حفظك';
-        if (playerStatusSub) playerStatusSub.textContent = 'سيتم كتابة الكلمات المنطوقة وتدقيقها فوراً بالذكاء الاصطناعي';
+        if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآيات من حفظك';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ برياحتك، وعند الانتهاء اضغط زر الإيقاف للتدقيق الفوري';
         if (!isVerseRevealed && memorizeLiveWords) memorizeLiveWords.innerHTML = '';
     } else {
         if (playerStatusMain) playerStatusMain.textContent = 'جاري الاستماع لتلاوتك الكريمة...';
-        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ برياحتك وبدون استعجال، وعند الانتهاء اضغط زر الإيقاف للتدقيق';
     }
 
     if (timerInterval) clearInterval(timerInterval);
@@ -1038,13 +1204,11 @@ async function startRecording() {
 }
 
 function triggerSilenceCountdown() {
-    if (silenceTimer) clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(() => {
-        if (isRecording) {
-            if (playerStatusMain) playerStatusMain.textContent = 'تم اكتمال التلاوة، جاري التحليل التلقائي...';
-            stopRecordingAndAnalyze();
-        }
-    }, 4000);
+    // Disabled: Recitation continues uninterrupted while breathing/pausing until user clicks stop
+    if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+    }
 }
 
 async function stopRecordingAndAnalyze() {
@@ -1312,7 +1476,6 @@ function startLiveSpeechRecognition() {
                     speechFeedbackLabel.textContent = '🎙️ نستمع لتلاوتك الكريمة الآن بوضوح...';
                 }
                 updateLiveSpokenHighlights(liveTranscript);
-                triggerSilenceCountdown();
             }
         };
 
@@ -1345,11 +1508,16 @@ function startLiveSpeechRecognition() {
                 currentInterimSpeechText = "";
             }
             if (isRecording) {
-                setTimeout(() => {
-                    if (isRecording && speechRecognizer) {
-                        try { speechRecognizer.start(); } catch (err) {}
-                    }
-                }, 100);
+                // Seamlessly restart if the user pauses or takes a breath on mobile
+                try {
+                    speechRecognizer.start();
+                } catch (err) {
+                    setTimeout(() => {
+                        if (isRecording && speechRecognizer) {
+                            try { speechRecognizer.start(); } catch (e) {}
+                        }
+                    }, 50);
+                }
             } else {
                 isRecognizing = false;
             }

@@ -86,40 +86,59 @@ body.mushaf-studio-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px 6px;
+    padding: 16px 24px 8px;
     background: transparent;
     border: none;
     position: relative;
     z-index: 100;
-    direction: ltr;
+    direction: rtl;
 }
 
-.header-brand-group,
-.header-right-side {
+.header-brand-group {
     display: flex;
     align-items: center;
     gap: 14px;
     direction: rtl;
 }
 
-.header-back-btn {
-    width: auto;
-    height: auto;
-    background: transparent;
-    border: none;
-    color: var(--gold);
+.header-nav-left {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 20px;
+}
+
+.header-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    background: rgba(189, 160, 80, 0.12);
+    border: 1px solid rgba(189, 160, 80, 0.35);
+    border-radius: 999px;
+    color: var(--gold);
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: inherit;
     text-decoration: none;
     transition: all 0.25s ease;
     cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .header-back-btn:hover {
-    color: #fff;
-    transform: translateX(3px);
+    color: #ffffff;
+    background: rgba(189, 160, 80, 0.25);
+    border-color: var(--gold);
+    transform: translateX(-3px);
+    box-shadow: 0 4px 14px rgba(189, 160, 80, 0.25);
+}
+
+.header-back-btn i {
+    font-size: 14px;
+    transition: transform 0.25s ease;
+}
+
+.header-back-btn:hover i {
+    transform: translateX(-2px);
 }
 
 .header-logo-badge {
@@ -131,7 +150,7 @@ body.mushaf-studio-body {
     align-items: center;
     justify-content: center;
     color: var(--gold);
-    font-size: 22px;
+    font-size: 24px;
     box-shadow: none;
 }
 
@@ -570,6 +589,78 @@ body.mushaf-studio-body {
 .ayah-max-label {
     font-size: 11.5px;
     color: var(--text-dim);
+}
+
+.ayah-range-input-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 6px 4px 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.range-inputs-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.range-field-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.range-field-col label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.range-arrow-divider {
+    color: var(--gold);
+    font-size: 14px;
+    margin-top: 16px;
+    opacity: 0.8;
+}
+
+.ayah-input-row.mini .ayah-stepper-btn {
+    width: 24px;
+    height: 26px;
+    border-radius: 6px;
+}
+
+.ayah-input-row.mini .ayah-num-field {
+    width: 36px;
+    height: 26px;
+    font-size: 12px;
+}
+
+.btn-apply-range-pill {
+    width: 100%;
+    padding: 7px 12px;
+    background: linear-gradient(135deg, rgba(197, 168, 89, 0.25), rgba(197, 168, 89, 0.1));
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    color: var(--gold-light);
+    border-radius: 8px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+
+.btn-apply-range-pill:hover {
+    background: var(--gold);
+    color: #0b0d10;
+    box-shadow: 0 2px 10px rgba(197, 168, 89, 0.3);
 }
 
 .ayah-grid-scrollable {
@@ -1300,6 +1391,19 @@ body.mushaf-studio-body {
     margin-bottom: 12px;
     filter: drop-shadow(0 2px 8px rgba(189, 160, 80, 0.35));
     animation: featherFloat 2.8s ease-in-out infinite alternate;
+}
+
+.mosque-hint-icon {
+    font-size: 38px;
+    color: #bda050;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 2px 10px rgba(189, 160, 80, 0.45));
+    animation: mosqueFloat 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes mosqueFloat {
+    0% { transform: translateY(0px) scale(1); }
+    100% { transform: translateY(-6px) scale(1.05); }
 }
 
 @keyframes featherFloat {
@@ -2349,11 +2453,13 @@ body.mushaf-studio-body {
         direction: rtl !important;
     }
     .header-brand-group {
-        gap: 10px !important;
+        gap: 8px !important;
         direction: rtl !important;
     }
     .header-back-btn {
-        font-size: 18px !important;
+        font-size: 11.5px !important;
+        padding: 5px 11px !important;
+        gap: 5px !important;
         color: var(--gold) !important;
     }
     .header-logo-badge {

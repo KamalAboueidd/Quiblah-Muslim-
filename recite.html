@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=48">
+    <link rel="stylesheet" href="features/recite/recite.css?v=50">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -44,12 +44,10 @@
     </div>
 
     <div class="app-layout">
-        <!-- Top Header (Seamless on page: No background, No border, Clean Icons) -->
+        <!-- Top Header (Seamless on page: Clean Icons & Luxury RTL Alignment) -->
         <header class="top-bar-mockup">
+            <!-- Right Side (على اليمين): أيكون المسجد ومصحح التلاوة الذكي -->
             <div class="header-brand-group">
-                <a href="home.html" class="header-back-btn" id="btn-back-home" title="الرجوع للرئيسية">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </a>
                 <div class="header-logo-badge">
                     <i class="fa-solid fa-mosque"></i>
                 </div>
@@ -57,6 +55,14 @@
                     <h1 class="header-main-title">مصحح التلاوة الذكي</h1>
                     <p class="header-sub-title">تلاوة أدق .. وقرب أكبر من الله</p>
                 </div>
+            </div>
+
+            <!-- Left Side (على الشمال): الآرو وزر العودة للمواقيت -->
+            <div class="header-nav-left">
+                <a href="index.html" class="header-back-btn return-prayers-btn" id="btn-back-home" title="العودة لمواقيت الصلاة">
+                    <span class="back-btn-text">العودة للمواقيت</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
             </div>
         </header>
 
@@ -121,10 +127,13 @@
                         <!-- Ayah Dropdown / Stepper Flyout (Transparent Glassmorphism with Reduced Borders) -->
                         <div class="ayah-dropdown-flyout" id="ayah-dropdown-flyout" style="display: none;">
                             <div class="ayah-mode-selector-tabs">
-                                <button type="button" class="ayah-tab-btn" id="tab-full-surah">كامل السورة</button>
                                 <button type="button" class="ayah-tab-btn active" id="tab-single-ayah">آية محددة</button>
+                                <button type="button" class="ayah-tab-btn" id="tab-range-ayah">من كذا لكذا</button>
+                                <button type="button" class="ayah-tab-btn" id="tab-full-surah">كامل السورة</button>
                             </div>
-                            <div class="ayah-direct-input-wrap">
+
+                            <!-- 1. Single Ayah Section -->
+                            <div class="ayah-direct-input-wrap" id="wrap-single-ayah">
                                 <label for="input-ayah-num">رقم الآية:</label>
                                 <div class="ayah-input-row">
                                     <button type="button" class="ayah-stepper-btn" id="btn-ayah-prev" title="السابقة (-)"><i class="fa-solid fa-minus"></i></button>
@@ -133,6 +142,33 @@
                                     <button type="button" class="ayah-stepper-btn" id="btn-ayah-next" title="التالية (+)"><i class="fa-solid fa-plus"></i></button>
                                 </div>
                             </div>
+
+                            <!-- 2. Range of Ayahs Section ("من كذا لكذا") -->
+                            <div class="ayah-range-input-wrap" id="wrap-range-ayah" style="display: none;">
+                                <div class="range-inputs-flex">
+                                    <div class="range-field-col">
+                                        <label for="input-range-from">من الآية:</label>
+                                        <div class="ayah-input-row mini">
+                                            <button type="button" class="ayah-stepper-btn" id="btn-range-from-prev" title="إنقاص"><i class="fa-solid fa-minus"></i></button>
+                                            <input type="number" id="input-range-from" class="ayah-num-field" min="1" max="7" value="1" />
+                                            <button type="button" class="ayah-stepper-btn" id="btn-range-from-next" title="زيادة"><i class="fa-solid fa-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="range-arrow-divider"><i class="fa-solid fa-arrow-left-long"></i></div>
+                                    <div class="range-field-col">
+                                        <label for="input-range-to">إلى الآية:</label>
+                                        <div class="ayah-input-row mini">
+                                            <button type="button" class="ayah-stepper-btn" id="btn-range-to-prev" title="إنقاص"><i class="fa-solid fa-minus"></i></button>
+                                            <input type="number" id="input-range-to" class="ayah-num-field" min="1" max="7" value="5" />
+                                            <button type="button" class="ayah-stepper-btn" id="btn-range-to-next" title="زيادة"><i class="fa-solid fa-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-apply-range-pill" id="btn-apply-range">
+                                    <i class="fa-solid fa-check"></i> <span>تطبيق النطاق</span>
+                                </button>
+                            </div>
+
                             <div class="ayah-grid-scrollable" id="ayah-grid-scrollable">
                                 <!-- Injected dynamically: 1 to total ayat chips -->
                             </div>
@@ -256,12 +292,9 @@
                                     <!-- 2. Memorization Mode: Canvas that hides text and inscribes spoken words live -->
                                     <div class="mushaf-memorize-canvas" id="mushaf-memorize-canvas" style="display: none;">
                                         <div class="memorize-canvas-hint" id="memorize-canvas-hint">
-                                            <div class="feather-quill-icon"><i class="fa-solid fa-feather-pointed"></i></div>
+                                            <div class="feather-quill-icon mosque-hint-icon"><i class="fa-solid fa-mosque"></i></div>
                                             <h3 class="hint-main-text">ابدأ التسميع الآن بصوتك</h3>
                                             <p class="hint-sub-text">النص مخفي لتسميع غيبي متقن، وسيتم تدوين ما تقرؤه فقط وتدقيقه كلمة بكلمة</p>
-                                            <button type="button" class="btn-reveal-verse-hint" id="btn-reveal-verse" title="كشف نص الآية للتأكد">
-                                                <i class="fa-solid fa-eye"></i> <span>كشف النص للمساعدة</span>
-                                            </button>
                                         </div>
                                         <div class="memorize-live-inscribed-words" id="memorize-live-words">
                                             <!-- Dynamically written words as the user speaks -->
@@ -501,6 +534,6 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js?v=51"></script>
+    <script src="features/recite/recite.js?v=53"></script>
 </body>
 </html>

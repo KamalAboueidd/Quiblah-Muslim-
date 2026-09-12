@@ -1337,31 +1337,88 @@ body.mushaf-studio-body {
     color: #14120c;
 }
 
-/* After recitation evaluation: Correct word (clean emerald accent) */
+/* After recitation evaluation: Correct word (clean emerald accent + green checkmark tag) */
 .inscribed-word.evaluated-correct,
-.inscribed-word.word-correct {
+.inscribed-word.word-correct,
+.inscribed-word.word-eval-correct {
     color: #1b6b3e !important;
-    font-weight: 700;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 0 4px;
+    margin: 2px 2px;
 }
 
-/* After recitation evaluation: Slip word (subtle red wavy underline - absolutely NO background box) */
+.inscribed-word .eval-tag.tag-correct {
+    font-size: 11px;
+    color: #1b6b3e;
+    background: rgba(27, 107, 62, 0.12);
+    border: 1px solid rgba(27, 107, 62, 0.4);
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+/* After recitation evaluation: Slip word (vibrant red + wavy underline + red cross tag) */
 .inscribed-word.evaluated-slip,
-.inscribed-word.word-slip {
+.inscribed-word.word-slip,
+.inscribed-word.word-eval-slip {
     color: #c0392b !important;
-    text-decoration: underline wavy #e74c3c 1.5px !important;
+    font-weight: 800;
+    text-decoration: underline wavy #e74c3c 2px !important;
     text-underline-offset: 6px;
-    background: transparent !important;
-    border-radius: 0 !important;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 0 4px;
+    margin: 2px 2px;
+}
+
+.inscribed-word .eval-tag.tag-slip {
+    font-size: 10px;
+    color: #ffffff;
+    background: #e74c3c;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
 }
 
 /* Omitted or missed word indicator */
-.inscribed-word.word-missing {
+.inscribed-word.word-missing,
+.inscribed-word.word-eval-missing {
     color: #888888 !important;
-    opacity: 0.7;
-    text-decoration: line-through #e74c3c 1.5px !important;
+    opacity: 0.8;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
     font-size: 0.9em;
-    margin: 0 3px;
-    background: transparent !important;
+    margin: 2px 4px;
+}
+
+.inscribed-word.word-eval-missing del {
+    text-decoration: line-through #e74c3c 1.5px !important;
+}
+
+.inscribed-word .eval-tag.tag-missing {
+    font-size: 9px;
+    color: #e67e22;
+    background: rgba(230, 126, 34, 0.15);
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
 }
 
 /* Ornate Verse Number Circle in continuous text */

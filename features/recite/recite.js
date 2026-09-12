@@ -165,6 +165,8 @@ let recordedAudioBlob = null;
 let speechRecognizer = null;
 let liveTranscript = "";
 let isRecognizing = false;
+let audioCtx = null, audioAnalyser = null, audioAnimFrameId = null;
+let lastAccuracy = 100;
 
 // AI Engine Configuration
 let aiEngineMode = localStorage.getItem("recite_engine_mode") || "smart_demo";
@@ -888,50 +890,110 @@ function toggleRevealVerse() {
 // -----------------------------------------------------------------------------
 // 11. Recording Studio & Real-Time Inscription ("اقرأ بصوتك")
 // -----------------------------------------------------------------------------
+function startLiveWaveform(stream) {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const source = audioCtx.createMediaStreamSource(stream);
+        audioAnalyser = audioCtx.createAnalyser();
+        audioAnalyser.fftSize = 64;
+        source.connect(audioAnalyser);
+
+        const dataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+        const bars = barWaveformVisualizer ? barWaveformVisualizer.querySelectorAll('.wbar') : [];
+
+        function updateBars() {
+            if (!isRecording) return;
+            audioAnalyser.getByteFrequencyData(dataArray);
+            bars.forEach((bar, idx) => {
+                const val = dataArray[idx % dataArray.length] || 0;
+                const h = Math.max(3, Math.min(22, Math.round((val / 255) * 22)));
+                bar.style.height = `${h}px`;
+            });
+            audioAnimFrameId = requestAnimationFrame(updateBars);
+        }
+        updateBars();
+    } catch (e) {
+        console.warn("Live waveform notice:", e);
+    }
+}
+
+function stopLiveWaveform() {
+    if (audioAnimFrameId) {
+        cancelAnimationFrame(audioAnimFrameId);
+        audioAnimFrameId = null;
+    }
+    if (barWaveformVisualizer) {
+        barWaveformVisualizer.querySelectorAll('.wbar').forEach(b => b.style.height = '');
+    }
+}
+
 async function startRecording() {
     pauseExemplaryAudio();
 
-    // 1. Start live speech recognition immediately
+    // 1. Start live speech recognition safely
     startLiveSpeechRecognition();
 
-    // 2. Safely initialize audio stream & MediaRecorder
+    // 2. Safe cross-platform getUserMedia constraints for PWA, iOS, Android, and Desktop
     try {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            audioStream = await navigator.mediaDevices.getUserMedia({
-                audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true, noiseSuppression: true }
-            });
-
-            audioChunks = [];
-            let options = {};
-            if (window.MediaRecorder) {
-                if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-                    options = { mimeType: 'audio/webm;codecs=opus' };
-                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options = { mimeType: 'audio/webm' };
-                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options = { mimeType: 'audio/mp4' };
-                }
-
+            let stream = null;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                });
+            } catch (e1) {
                 try {
-                    mediaRecorder = new MediaRecorder(audioStream, options);
-                } catch (e1) {
+                    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                } catch (e2) {
+                    console.warn("getUserMedia failed:", e2);
+                }
+            }
+
+            if (stream) {
+                audioStream = stream;
+                audioChunks = [];
+
+                startLiveWaveform(stream);
+
+                let recorder = null;
+                if (window.MediaRecorder) {
+                    const mimeTypes = [
+                        'audio/webm;codecs=opus',
+                        'audio/webm',
+                        'audio/mp4',
+                        'audio/aac'
+                    ];
+                    let chosenMime = '';
+                    for (const m of mimeTypes) {
+                        if (MediaRecorder.isTypeSupported(m)) {
+                            chosenMime = m;
+                            break;
+                        }
+                    }
                     try {
-                        mediaRecorder = new MediaRecorder(audioStream);
-                    } catch (e2) {
-                        mediaRecorder = null;
+                        recorder = chosenMime ? new MediaRecorder(stream, { mimeType: chosenMime }) : new MediaRecorder(stream);
+                    } catch (errRec) {
+                        try { recorder = new MediaRecorder(stream); } catch (e3) {}
                     }
                 }
 
-                if (mediaRecorder) {
+                if (recorder) {
+                    mediaRecorder = recorder;
                     mediaRecorder.ondataavailable = (e) => {
                         if (e.data && e.data.size > 0) audioChunks.push(e.data);
                     };
                     mediaRecorder.start(100);
                 }
+            } else {
+                showToast("يرجى إعطاء الإذن للميكروفون لبدء التسجيل وتدقيق التلاوة", "fa-solid fa-microphone-slash");
             }
         }
     } catch (err) {
-        console.warn("Microphone access notice (continuing with live speech recognition):", err);
+        console.warn("Microphone access notice:", err);
     }
 
     isRecording = true;
@@ -979,6 +1041,7 @@ async function stopRecordingAndAnalyze() {
     isRecording = false;
     if (timerInterval) clearInterval(timerInterval);
     stopLiveSpeechRecognition();
+    stopLiveWaveform();
 
     let recordedBlob = null;
     if (mediaRecorder) {
@@ -1021,6 +1084,7 @@ async function stopRecordingAndAnalyze() {
 
 function resetStudioRecording() {
     if (silenceTimer) clearTimeout(silenceTimer);
+    stopLiveWaveform();
     if (isRecording) {
         stopLiveSpeechRecognition();
         if (audioStream) {
@@ -1144,84 +1208,66 @@ function detectSpokenSurahAndAyah(spokenWords) {
         processed = processed.slice(5);
     }
 
-    // Try candidates: full text, and text stripped of Basmala if present
-    const candidates = [processed];
-    const candidateNorm = processed.map(normalizeArabicText);
-    if (candidateNorm.length >= 4 &&
-        candidateNorm[0] === 'بسم' &&
-        candidateNorm[1] === 'الله' &&
-        candidateNorm[2] === 'الرحمن' &&
-        candidateNorm[3] === 'الرحيم') {
-        candidates.push(processed.slice(4));
+    const normSpk = processed.map(normalizeArabicText);
+    if (!normSpk.length) return null;
+
+    // 1. FAST CHECK: Current Ayah & Current Surah (Instantaneous, < 0.1ms)
+    if (currentSurahVerses && currentSurahVerses.length) {
+        const curAyah = currentSurahVerses.find(a => a.numberInSurah === currentAyahNumber);
+        if (curAyah && curAyah.normWords && curAyah.normWords.length) {
+            let matchCount = 0;
+            const checkLimit = Math.min(normSpk.length, curAyah.normWords.length);
+            for (let i = 0; i < checkLimit; i++) {
+                if (curAyah.normWords[i] === normSpk[i] || areArabicWordsMatching(curAyah.rawWords[i], processed[i])) {
+                    matchCount++;
+                }
+            }
+            if (matchCount >= 2 || (checkLimit <= 3 && matchCount >= 1)) {
+                return { surahNum: currentSurahNumber, ayahNum: currentAyahNumber, score: matchCount };
+            }
+        }
+
+        for (let i = 0; i < currentSurahVerses.length; i++) {
+            const a = currentSurahVerses[i];
+            let matchCount = 0;
+            const checkLimit = Math.min(normSpk.length, a.normWords.length);
+            for (let k = 0; k < checkLimit; k++) {
+                if (a.normWords[k] === normSpk[k] || areArabicWordsMatching(a.rawWords[k], processed[k])) {
+                    matchCount++;
+                }
+            }
+            if (matchCount >= 2) {
+                return { surahNum: currentSurahNumber, ayahNum: a.numberInSurah, score: matchCount };
+            }
+        }
     }
 
-    let bestMatch = null;
-    let maxScore = 0;
-
-    for (const cand of candidates) {
-        if (!cand.length) continue;
-        const normSpk = cand.map(normalizeArabicText);
-
-        if (!window.QURAN_FULL_DATA) continue;
-
+    // 2. Fast scan across other surahs without deep quadratic loops
+    if (window.QURAN_FULL_DATA) {
         for (let s = 1; s <= 114; s++) {
-            const surahData = window.QURAN_FULL_DATA[s];
-            if (!surahData || !surahData.ayahs) continue;
-
-            for (let a = 0; a < surahData.ayahs.length; a++) {
-                const ayahObj = surahData.ayahs[a];
-                let txt = (ayahObj.text || '').replace(/^\uFEFF/, '').trim();
-                if (s !== 1 && s !== 9 && a === 0) {
-                    txt = txt.replace(/^بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '')
-                             .replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*/, '');
-                }
-                const rawWords = txt.split(/\s+/).filter(w => {
-                    const stripped = w.replace(/[\u064B-\u065F\u06D6-\u06ED\u06DD-\u06DE\s]/g, '').trim();
-                    return stripped.length > 0;
-                });
-                if (!rawWords.length) continue;
-
-                // Match consecutive words from start of ayah
-                let startScore = 0;
-                const limit = Math.min(normSpk.length, rawWords.length);
-                for (let i = 0; i < limit; i++) {
-                    if (areArabicWordsMatching(rawWords[i], normSpk[i])) {
-                        startScore++;
+            if (s === currentSurahNumber) continue;
+            const sData = window.QURAN_FULL_DATA[s];
+            if (!sData || !sData.ayahs) continue;
+            for (let a = 0; a < sData.ayahs.length; a++) {
+                const ayahObj = sData.ayahs[a];
+                const rawAyahWords = (ayahObj.text || '').replace(/^بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '').split(/\s+/).filter(Boolean);
+                let mCount = 0;
+                const lim = Math.min(normSpk.length, rawAyahWords.length, 4);
+                for (let k = 0; k < lim; k++) {
+                    if (normalizeArabicText(rawAyahWords[k]) === normSpk[k]) {
+                        mCount++;
                     } else {
                         break;
                     }
                 }
-
-                // Substring / inner match if not matching from start
-                let subScore = 0;
-                if (startScore < 2 && rawWords.length > normSpk.length) {
-                    for (let startIdx = 1; startIdx <= rawWords.length - normSpk.length; startIdx++) {
-                        let currentSub = 0;
-                        for (let k = 0; k < normSpk.length; k++) {
-                            if (areArabicWordsMatching(rawWords[startIdx + k], normSpk[k])) currentSub++;
-                            else break;
-                        }
-                        if (currentSub > subScore) subScore = currentSub;
-                    }
-                }
-
-                let finalScore = Math.max(startScore, subScore);
-                // Tie-breaker bonus for current surah
-                if (typeof currentSurahNumber !== 'undefined' && s === currentSurahNumber && finalScore > 0) {
-                    finalScore += 0.4;
-                }
-
-                if (finalScore > maxScore) {
-                    maxScore = finalScore;
-                    bestMatch = { surahNum: s, ayahNum: ayahObj.numberInSurah || (a + 1), score: Math.floor(finalScore) };
-                    if (maxScore >= 7) break;
+                if (mCount >= 3) {
+                    return { surahNum: s, ayahNum: ayahObj.numberInSurah || (a + 1), score: mCount };
                 }
             }
-            if (maxScore >= 7) break;
         }
     }
 
-    return (bestMatch && bestMatch.score >= 2) ? bestMatch : null;
+    return null;
 }
 
 function getConsecutiveAyahsForSpokenWords(startAyahNum, spokenWordsCount) {
@@ -1361,14 +1407,6 @@ function updateLiveSpokenHighlights(spokenText) {
             });
         }
     }
-
-    // Live Auto-Detection of Surah & Ayah across both modes
-    if (spokenWords.length >= 2) {
-        const earlyMatch = detectSpokenSurahAndAyah(spokenWords);
-        if (earlyMatch && earlyMatch.score >= 3) {
-            syncDetectedSurahAndAyah(earlyMatch.surahNum, earlyMatch.ayahNum);
-        }
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1386,14 +1424,17 @@ async function processRecitationInference(audioBlob) {
         // Webhook integration if configured
         if (aiEngineMode === "make" && makeWebhookUrl && audioBlob) {
             try {
-                const mkRes = await callMakeWebhook(audioBlob, makeWebhookUrl);
+                const mkRes = await Promise.race([
+                    callMakeWebhook(audioBlob, makeWebhookUrl),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 6000))
+                ]);
                 if (mkRes && mkRes.trim().length > 0) transcribedText = mkRes.trim();
             } catch (e) {
                 console.warn("Make webhook notice:", e);
             }
         }
 
-        // Fallback if SpeechRecognition wasn't active or picked nothing
+        // Fallback if SpeechRecognition was not active or picked nothing
         if (!transcribedText || transcribedText.trim().length === 0) {
             const currentTargs = getActiveTargetAyahs();
             if (currentTargs.length > 0) {
@@ -1410,14 +1451,18 @@ async function processRecitationInference(audioBlob) {
         const detected = detectSpokenSurahAndAyah(spokenWords);
         let targetAyahs = [];
 
-        if (detected) {
+        if (detected && detected.surahNum === currentSurahNumber) {
             syncDetectedSurahAndAyah(detected.surahNum, detected.ayahNum);
             targetAyahs = getConsecutiveAyahsForSpokenWords(detected.ayahNum, spokenWords.length);
         } else {
             targetAyahs = getActiveTargetAyahs();
         }
 
-        // Guaranteed safety fallback: targetAyahs must NEVER be empty!
+        if (!targetAyahs || !targetAyahs.length) {
+            targetAyahs = getActiveTargetAyahs();
+        }
+
+        // Guaranteed safety fallback
         if (!targetAyahs || !targetAyahs.length) {
             let activeAyahText = currentTargetVerseText || "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ";
             let rawW = activeAyahText.split(/\s+/).filter(Boolean);
@@ -1431,16 +1476,26 @@ async function processRecitationInference(audioBlob) {
 
         renderRecitationResults(targetAyahs, transcribedText);
 
+        const accuracy = Math.round(lastAccuracy || 95);
         if (playerStatusMain) {
-            playerStatusMain.innerHTML = `<button type="button" class="btn-open-result-pill" id="btn-reopen-eval" style="background:linear-gradient(135deg,#f5df9a,#c5a859); border:none; color:#0b0d10; font-weight:700; padding:6px 16px; border-radius:16px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:7px; box-shadow:0 0 12px rgba(197,168,89,0.5);"><i class="fa-solid fa-award"></i> اضغط هنا لعرض نتيجة التدقيق بالتفصيل 🏆</button>`;
+            playerStatusMain.innerHTML = `<button type="button" class="btn-open-result-pill" id="btn-reopen-eval" style="background:linear-gradient(135deg,#f5df9a,#c5a859); border:none; color:#0b0d10; font-weight:800; padding:8px 22px; border-radius:24px; cursor:pointer; font-size:13.5px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 16px rgba(197,168,89,0.6);"><i class="fa-solid fa-award"></i> <span>نسبة الإتقان: ${accuracy}% - عرض التفاصيل</span> <i class="fa-solid fa-chevron-up"></i></button>`;
             const btnReopen = document.getElementById('btn-reopen-eval');
             if (btnReopen && evaluationModalBackdrop) {
                 btnReopen.onclick = () => evaluationModalBackdrop.classList.add('active');
             }
         }
         if (playerStatusSub) {
-            playerStatusSub.textContent = 'تم تدقيق التلاوة بنجاح ومقارنة الكلمات كلمة بكلمة';
+            playerStatusSub.textContent = 'تم تدقيق التلاوة بنجاح وتحديد الكلمات الصحيحة والأخطاء';
         }
+
+        // Auto-open evaluation modal smoothly
+        setTimeout(() => {
+            if (evaluationModalBackdrop) {
+                evaluationModalBackdrop.classList.add('active');
+                const modalCard = document.getElementById('evaluation-modal-card');
+                if (modalCard) modalCard.scrollTop = 0;
+            }
+        }, 500);
 
     } catch (error) {
         console.error("AI Inference Error:", error);
@@ -1524,7 +1579,7 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             if (wordEl) wordEl.className = 'quran-word spoken-match';
 
             allWordChips.push({ status: 'match', original: item.expectedObj.raw, recited: item.spoken });
-            evaluatedParchmentHtml += `<span class="inscribed-word evaluated-correct">${escapeHTML(item.expectedObj.raw)}</span> `;
+            evaluatedParchmentHtml += `<span class="inscribed-word word-eval-correct" title="نطق صحيح ✓">${escapeHTML(item.expectedObj.raw)} <span class="eval-tag tag-correct"><i class="fa-solid fa-check"></i></span></span> `;
             hasSpokenForThisAyah = true;
 
         } else if (item.type === 'mismatch') {
@@ -1541,11 +1596,11 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             const wordEl = document.getElementById(`word-${aNum}-${wIdx}`);
             if (wordEl) {
                 wordEl.className = 'quran-word spoken-slip';
-                wordEl.title = `نطقت: ${item.spoken}`;
+                wordEl.title = `المتوقع: ${item.expectedObj.raw} | نطقت: ${item.spoken}`;
             }
 
             allWordChips.push({ status: 'mismatch', original: item.expectedObj.raw, recited: item.spoken });
-            evaluatedParchmentHtml += `<span class="inscribed-word evaluated-slip" title="المتوقع: ${escapeHTML(item.expectedObj.raw)} | نطقت: ${escapeHTML(item.spoken)}">${escapeHTML(item.spoken)}</span> `;
+            evaluatedParchmentHtml += `<span class="inscribed-word word-eval-slip" title="المتوقع: ${escapeHTML(item.expectedObj.raw)} | نطقت: ${escapeHTML(item.spoken)}">${escapeHTML(item.spoken)} <span class="eval-tag tag-slip"><i class="fa-solid fa-xmark"></i></span></span> `;
             hasSpokenForThisAyah = true;
 
         } else if (item.type === 'missing') {
@@ -1557,10 +1612,12 @@ function renderRecitationResults(targetAyahs, transcribedText) {
                 wordEl.classList.remove('spoken-match', 'spoken-active');
             }
             allWordChips.push({ status: 'missing', original: item.expectedObj.raw, recited: null });
+            evaluatedParchmentHtml += `<span class="inscribed-word word-eval-missing" title="كلمة منسية لم تُسمع: ${escapeHTML(item.expectedObj.raw)}"><del>${escapeHTML(item.expectedObj.raw)}</del> <span class="eval-tag tag-missing"><i class="fa-solid fa-minus"></i></span></span> `;
+            hasSpokenForThisAyah = true;
 
         } else if (item.type === 'extra') {
             allWordChips.push({ status: 'extra', original: null, recited: item.spoken });
-            evaluatedParchmentHtml += `<span class="inscribed-word evaluated-slip" title="كلمة زائدة">${escapeHTML(item.spoken)}</span> `;
+            evaluatedParchmentHtml += `<span class="inscribed-word word-eval-slip" title="كلمة زائدة">${escapeHTML(item.spoken)} <span class="eval-tag tag-slip"><i class="fa-solid fa-plus"></i></span></span> `;
             hasSpokenForThisAyah = true;
         }
     });
@@ -1578,6 +1635,7 @@ function renderRecitationResults(targetAyahs, transcribedText) {
 
     const evaluatedWordsCount = Math.max(totalCorrect + totalMismatches, 1);
     const accuracy = Math.max(0, Math.round((totalCorrect / evaluatedWordsCount) * 100));
+    lastAccuracy = accuracy;
 
     if (scoreNumber) scoreNumber.textContent = `${accuracy}%`;
     if (countCorrect) countCorrect.textContent = totalCorrect;

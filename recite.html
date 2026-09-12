@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=35">
+    <link rel="stylesheet" href="features/recite/recite.css?v=36">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -198,6 +198,14 @@
                         </button>
                     </div>
 
+                    <!-- Quick Listen Button (استمع للآيات) - يظهر فقط في وضع التلاوة ويختفي في وضع التسميع -->
+                    <div class="quick-listen-container" id="quick-listen-container">
+                        <button type="button" class="btn-quick-listen" id="btn-quick-listen" title="استمع لتلاوة الآيات بصوت الشيخ مشاري العفاسي">
+                            <i class="fa-solid fa-play" id="quick-listen-icon"></i>
+                            <span id="quick-listen-text">استمع للآيات</span>
+                        </button>
+                    </div>
+
                     <!-- Surah Header Banner Above Mushaf -->
                     <div class="mushaf-center-header">
                         <h2 class="mushaf-header-surah-title">
@@ -264,11 +272,6 @@
                     <!-- Bottom Dedicated Recording Bar (Dedicated for recording voice, NOT reciter audio) -->
                     <div class="mushaf-bottom-player-wrap">
                         <div class="bottom-audio-bar">
-                            <!-- Circular Gold Play Button for Exemplary Recitation -->
-                            <button type="button" class="bar-play-circle" id="bar-btn-play" title="استمع لتلاوة القارئ النموذجية">
-                                <i class="fa-solid fa-play" id="bar-play-icon"></i>
-                            </button>
-
                             <!-- Circular Gold Record Button specifically for recording! -->
                             <button type="button" class="bar-record-circle" id="bar-btn-record" title="بدء التسجيل والتسميع بصوتك">
                                 <i class="fa-solid fa-microphone" id="bar-record-icon"></i>

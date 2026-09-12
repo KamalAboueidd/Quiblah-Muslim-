@@ -857,6 +857,72 @@ body.mushaf-studio-body {
     font-size: 14px;
 }
 
+/* Quick Listen Button Below Mode Bar (وضع التلاوة only) */
+.quick-listen-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: -2px;
+    margin-bottom: 2px;
+    transition: all 0.3s ease;
+}
+
+.btn-quick-listen {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.4);
+    border-radius: 24px;
+    padding: 7px 22px;
+    color: #f5df9a;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-quick-listen:hover {
+    background: rgba(197, 168, 89, 0.22);
+    border-color: #f5df9a;
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-quick-listen.playing {
+    background: linear-gradient(135deg, rgba(197, 168, 89, 0.3), rgba(20, 26, 36, 0.95));
+    border-color: #c5a859;
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(197, 168, 89, 0.55);
+    animation: quickListenPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes quickListenPulse {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(197, 168, 89, 0.35);
+        border-color: rgba(197, 168, 89, 0.45);
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(197, 168, 89, 0.7);
+        border-color: #f5df9a;
+    }
+}
+
+.btn-quick-listen i {
+    font-size: 13px;
+    color: #f5df9a;
+    transition: transform 0.2s ease;
+}
+
+.btn-quick-listen.playing i {
+    color: #c5a859;
+}
+
 /* Center Header (Surah Title Above Book) */
 .mushaf-center-header {
     display: flex;
@@ -2300,6 +2366,13 @@ body.mushaf-studio-body {
     .studio-mode-pill-btn i {
         font-size: 12px !important;
     }
+    .quick-listen-container {
+        margin: 2px auto 4px !important;
+    }
+    .btn-quick-listen {
+        font-size: 12px !important;
+        padding: 6px 16px !important;
+    }
 
     /* Surah Header Banner */
     .mushaf-center-header {
@@ -2455,8 +2528,7 @@ body.mushaf-studio-body {
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
         direction: rtl !important;
     }
-    .bar-record-circle,
-    .bar-play-circle {
+    .bar-record-circle {
         width: 38px !important;
         height: 38px !important;
         font-size: 14px !important;
@@ -2465,7 +2537,7 @@ body.mushaf-studio-body {
     .bar-waveform-visualizer {
         flex: 1 !important;
         min-width: 20px !important;
-        max-width: 70px !important;
+        max-width: 100px !important;
         height: 20px !important;
         overflow: hidden !important;
         gap: 2px !important;

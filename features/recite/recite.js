@@ -185,7 +185,7 @@ let cardListenExemplary, btnPlayExemplary, exemplaryPlayIcon;
 let cardReciteVoice, btnMainRecord, recordMicIcon;
 let centerSurahTitle, centerAyahsRange, mushafPageBasmala, mushafVersesFlow;
 let barBtnRecord, barRecordIcon, barWaveformVisualizer, barTimeDisplay, barRecordingIndicator, barRecLabel;
-let barBtnPlay, barPlayIcon;
+let quickListenContainer, btnQuickListen, quickListenIcon, quickListenText;
 let barVolumeBtn, barVolumeIcon;
 let playerStatusMain, playerStatusSub;
 
@@ -264,8 +264,11 @@ function cacheDomElements() {
     mushafPageBasmala = document.getElementById('mushaf-page-basmala');
     mushafVersesFlow = document.getElementById('mushaf-verses-flow');
 
-    barBtnPlay = document.getElementById('bar-btn-play');
-    barPlayIcon = document.getElementById('bar-play-icon');
+    quickListenContainer = document.getElementById('quick-listen-container');
+    btnQuickListen = document.getElementById('btn-quick-listen');
+    quickListenIcon = document.getElementById('quick-listen-icon');
+    quickListenText = document.getElementById('quick-listen-text');
+
     barBtnRecord = document.getElementById('bar-btn-record');
     barRecordIcon = document.getElementById('bar-record-icon');
     barWaveformVisualizer = document.getElementById('bar-waveform-visualizer');
@@ -795,11 +798,12 @@ function playExemplaryAudio() {
     audioExemplary.play().then(() => {
         isExemplaryPlaying = true;
         if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-pause';
-        if (barPlayIcon) barPlayIcon.className = 'fa-solid fa-pause';
+        if (quickListenIcon) quickListenIcon.className = 'fa-solid fa-pause';
+        if (quickListenText) quickListenText.textContent = 'إيقاف التلاوة';
+        if (btnQuickListen) btnQuickListen.classList.add('playing');
         if (cardListenExemplary) cardListenExemplary.classList.add('playing');
-        if (barBtnPlay) barBtnPlay.classList.add('playing');
         if (barWaveformVisualizer) barWaveformVisualizer.classList.add('playing');
-        if (playerStatusMain) playerStatusMain.textContent = 'جاري تشغيل التلاوة النموذجية (الشيخ مشاري العفاسي)';
+        if (playerStatusMain) playerStatusMain.textContent = 'جاري تشغيل تلاوة الآيات (الشيخ مشاري العفاسي)';
         if (playerStatusSub) playerStatusSub.textContent = 'استمع جيداً إلى مخارج الحروف وأحكام التجويد';
     }).catch(err => {
         console.warn("Exemplary play notice:", err);
@@ -811,12 +815,13 @@ function pauseExemplaryAudio() {
     audioExemplary.pause();
     isExemplaryPlaying = false;
     if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-play';
-    if (barPlayIcon) barPlayIcon.className = 'fa-solid fa-play';
+    if (quickListenIcon) quickListenIcon.className = 'fa-solid fa-play';
+    if (quickListenText) quickListenText.textContent = 'استمع للآيات';
+    if (btnQuickListen) btnQuickListen.classList.remove('playing');
     if (cardListenExemplary) cardListenExemplary.classList.remove('playing');
-    if (barBtnPlay) barBtnPlay.classList.remove('playing');
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('playing');
-    if (playerStatusMain) playerStatusMain.textContent = 'استمع للتلاوة النموذجية أو ابدأ التسميع';
-    if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر التسجيل بالأسفل لقراءة وتدقيق الآية';
+    if (playerStatusMain) playerStatusMain.textContent = 'اضغط على زر الميكروفون لبدء التسجيل';
+    if (playerStatusSub) playerStatusSub.textContent = 'اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
 }
 
 function formatTime(sec) {
@@ -834,10 +839,13 @@ function setStudioMode(mode) {
     resetStudioRecording();
 
     if (mode === 'memorize') {
+        pauseExemplaryAudio();
         if (btnModeMemorize) btnModeMemorize.classList.add('active');
         if (btnModeRecite) btnModeRecite.classList.remove('active');
         if (mushafVersesFlow) mushafVersesFlow.style.display = 'none';
         if (mushafMemorizeCanvas) mushafMemorizeCanvas.style.display = 'flex';
+        if (quickListenContainer) quickListenContainer.style.display = 'none';
+        if (cardListenExemplary) cardListenExemplary.style.display = 'none';
         if (playerStatusMain) playerStatusMain.textContent = 'وضع التسميع نشط (النص مخفي)';
         if (playerStatusSub) playerStatusSub.textContent = 'سمّع الآية غيباً، وسيتم كتابة ما تقرؤه فقط وتدقيقه فوراً';
         showToast('تم تفعيل وضع التسميع (النص مخفي للتسميع الغيبي)');
@@ -846,8 +854,10 @@ function setStudioMode(mode) {
         if (btnModeMemorize) btnModeMemorize.classList.remove('active');
         if (mushafVersesFlow) mushafVersesFlow.style.display = 'block';
         if (mushafMemorizeCanvas) mushafMemorizeCanvas.style.display = 'none';
+        if (quickListenContainer) quickListenContainer.style.display = 'flex';
+        if (cardListenExemplary) cardListenExemplary.style.display = 'flex';
         if (playerStatusMain) playerStatusMain.textContent = 'وضع التلاوة نشط (عرض المصحف)';
-        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ من المصحف الشريف مباشرة أو استمع للتلاوة النموذجية';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ من المصحف الشريف أو استمع لتلاوة الآيات';
         showToast('تم تفعيل وضع التلاوة (عرض المصحف)');
     }
 }
@@ -1641,16 +1651,16 @@ function initEventListeners() {
         });
     }
 
-    // Exemplary Reciter Audio: Dedicated exclusively to Sheikh Mishary's exemplary recitation
-    if (cardListenExemplary) cardListenExemplary.addEventListener('click', toggleExemplaryAudio);
-    if (btnPlayExemplary) {
-        btnPlayExemplary.addEventListener('click', (e) => {
+    // Exemplary Reciter Audio: Dedicated to Sheikh Mishary's recitation
+    if (btnQuickListen) {
+        btnQuickListen.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleExemplaryAudio();
         });
     }
-    if (barBtnPlay) {
-        barBtnPlay.addEventListener('click', (e) => {
+    if (cardListenExemplary) cardListenExemplary.addEventListener('click', toggleExemplaryAudio);
+    if (btnPlayExemplary) {
+        btnPlayExemplary.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleExemplaryAudio();
         });

@@ -432,6 +432,9 @@
         if (window.innerWidth <= 768 && document.getElementById('player-bar').classList.contains('expanded')) {
              playPauseBtn.innerHTML = isPlaying ? '<i aria-hidden="true" class="fa-solid fa-pause"></i>' : '<i aria-hidden="true" class="fa-solid fa-play"></i>';
         }
+        if (document.getElementById('fav-drawer-overlay')?.classList.contains('active')) {
+            renderFavoritesList();
+        }
     }
 
     function updateSurahListUI() {
@@ -444,6 +447,10 @@
         if (activeRow && currentReciterName === document.getElementById('current-reciter-name').textContent) {
             activeRow.classList.add('playing');
             activeRow.querySelector('.play-icon i').className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+        }
+
+        if (document.getElementById('fav-drawer-overlay')?.classList.contains('active')) {
+            renderFavoritesList();
         }
     }
 
@@ -710,20 +717,29 @@
             return;
         }
 
-        container.innerHTML = favs.map(item => `
-            <div class="fav-item" onclick="playFavoriteItem('${item.id}')">
+        container.innerHTML = favs.map((item, idx) => {
+            const isCurrentlyPlaying = (currentPlayingSurahNum === item.surahNum && currentReciterName === item.reciterName);
+            const surahNameClean = item.surahName.startsWith('سورة') ? item.surahName : `سورة ${item.surahName}`;
+            return `
+            <div class="fav-item ${isCurrentlyPlaying ? 'playing' : ''}" onclick="playFavoriteItem('${item.id}')">
                 <div class="fav-item-right">
-                    <div class="fav-item-play"><i class="fa-solid fa-play"></i></div>
+                    <div class="fav-item-idx">
+                        ${isCurrentlyPlaying && isPlaying ? 
+                            '<div class="fav-playing-bars"><span></span><span></span><span></span></div>' : 
+                            `<span class="fav-item-num">${idx + 1}</span><i class="fa-solid fa-play fav-hover-play"></i>`
+                        }
+                    </div>
                     <div class="fav-item-info">
-                        <div class="fav-item-title">سورة ${item.surahName}</div>
-                        <div class="fav-item-reciter"><i class="fa-solid fa-microphone"></i> ${item.reciterName}</div>
+                        <div class="fav-item-title">${surahNameClean}</div>
+                        <div class="fav-item-reciter">${item.reciterName}</div>
                     </div>
                 </div>
-                <button class="fav-item-remove" onclick="removeFavoriteItem(event, '${item.id}')" title="إزالة من المفضلة">
-                    <i class="fa-solid fa-trash-can"></i>
+                <button class="fav-item-heart" onclick="removeFavoriteItem(event, '${item.id}')" title="إزالة من المفضلة">
+                    <i class="fa-solid fa-heart"></i>
                 </button>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function playFavoriteItem(favId) {

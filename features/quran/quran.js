@@ -299,12 +299,12 @@
                         <span>${data.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
                         <span>آياتها: ${data.numberOfAyahs}</span>
                     </div>
-                    <div class="surah-header-actions" style="margin-top: 16px; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; max-width: 440px; margin-left: auto; margin-right: auto; flex-wrap: nowrap;">
-                        <a href="tafseer.html?surah=${data.number}" style="flex: 1 1 50%; justify-content: center; font-size: 12px; padding: 8px 10px; border: 1px solid var(--gold); border-radius: 20px; background: rgba(0,0,0,0.45); color: var(--gold); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
-                            <i class="fa-solid fa-book-open-reader"></i> تفسير سورة ${data.name}
+                    <div class="surah-header-actions">
+                        <a href="tafseer.html?surah=${data.number}" class="header-action-link" title="تفسير السورة">
+                            <i class="fa-solid fa-book-open-reader"></i> <span>تفسير السورة</span>
                         </a>
-                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" style="flex: 1 1 50%; justify-content: center; font-size: 12px; padding: 8px 10px; border: 1px solid var(--gold); border-radius: 20px; background: rgba(197, 168, 89, 0.25); color: var(--gold); cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
-                            <i class="fa-solid fa-circle-play"></i> استمع للسورة
+                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="header-action-link" title="استمع للسورة">
+                            <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
                         </button>
                     </div>
                 </div>

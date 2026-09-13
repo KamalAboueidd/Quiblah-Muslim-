@@ -435,10 +435,10 @@
                 </div>
                 <div class="surah-header-actions">
                     <a href="quran.html?surah=${meta.number}" class="header-action-link">
-                        <i class="fa-solid fa-book-quran"></i> قراءة في المصحف
+                        <i class="fa-solid fa-book-quran"></i> <span>المصحف الشريف</span>
                     </a>
                     <button onclick="playSurahGlobalAudio(${meta.number}, '${meta.name}')" class="header-action-link">
-                        <i class="fa-solid fa-circle-play"></i> استمع للسورة
+                        <i class="fa-solid fa-circle-play"></i> <span>استمع للسورة</span>
                     </button>
                 </div>
             `;

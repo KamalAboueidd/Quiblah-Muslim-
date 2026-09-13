@@ -73,9 +73,12 @@
         .loader-text { font-size:18px; font-weight: 700; }
 
         @media (max-width: 768px) {
-            .names-table th, .names-table td { padding: 10px; font-size: 13px; }
-            .td-number { width: 30px; font-size: 14px !important; }
-            .td-name { font-size: 16px !important; width: 120px; }
+            .main-content { padding: 10px 12px 30px; }
+            .names-table-container { overflow-x: auto; width: 100%; box-sizing: border-box; }
+            .names-table th, .names-table td { padding: 10px 8px; font-size: 13px; }
+            .td-number { width: 30px; font-size: 13px !important; }
+            .td-name { font-size: 15px !important; width: 100px; }
+            .td-meaning { padding-right: 8px; line-height: 1.6; }
         }
         
         /* --- Footer & Visitor Counter --- */

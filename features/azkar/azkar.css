@@ -647,7 +647,14 @@ body {
     .reader-title { font-size: 20px; }
     
     .zikr-card { padding: 20px 15px; border-radius: 16px; }
-    .zikr-text { font-size: 22px; line-height: 1.8; margin-bottom: 15px;}
+    .zikr-text { 
+        font-size: 22px; 
+        line-height: 1.8; 
+        margin-bottom: 15px;
+        text-align: right;
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
     .zikr-number { width: 30px; height: 30px; font-size: 14px; top: -10px; right: -10px; border-width: 1px; }
     
     .zikr-footer { flex-direction: column-reverse; gap: 15px; align-items: stretch; padding-top: 15px; }

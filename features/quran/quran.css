@@ -346,9 +346,9 @@
         }
 
         .surah-header-card {
-            padding: 20px 20px 10px 20px;
+            padding: 20px 20px 0 20px;
             text-align: center;
-            margin: 0 auto 35px auto;
+            margin: 0 auto 10px auto;
             max-width: 650px;
             width: 100%;
             box-sizing: border-box;
@@ -381,7 +381,7 @@
             gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 0 auto 26px auto;
+            margin: 0 auto 0 auto;
             width: 100%;
             max-width: 460px;
         }
@@ -415,7 +415,7 @@
             text-align: center;
             font-family: 'Amiri Quran', serif;
             font-size: 34px;
-            margin: 20px auto 40px auto;
+            margin: 6px auto 28px auto;
             color: #ffffff;
             text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
@@ -588,7 +588,7 @@
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(197, 168, 89, 0.35);
             transition: all 0.25s ease;
-            margin-bottom: 28px;
+            margin-bottom: 0;
         }
 
         .open-surah-drawer-btn:hover {
@@ -599,53 +599,6 @@
 
         .open-surah-drawer-btn:active {
             transform: translateY(0);
-        }
-
-        .quick-surahs-section {
-            width: 100%;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 22px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .quick-surahs-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .quick-surahs-chips {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .quick-surah-chip {
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(197, 168, 89, 0.35);
-            color: #e2e8f0;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-family: inherit;
-            font-size: 12.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .quick-surah-chip:hover {
-            background: rgba(197, 168, 89, 0.25);
-            border-color: var(--gold);
-            color: #ffffff;
-            transform: translateY(-1px);
         }
 
         /* Quick Tafseer Modal */
@@ -971,8 +924,8 @@
                 overflow-x: hidden;
             }
             .surah-header-card { 
-                padding: 15px 8px; 
-                margin-bottom: 20px; 
+                padding: 15px 8px 0; 
+                margin-bottom: 8px; 
                 width: 100%;
                 max-width: 100%;
                 box-sizing: border-box;
@@ -987,7 +940,7 @@
                 flex-wrap: nowrap;
                 width: auto;
                 max-width: 100%;
-                margin: 0 auto 22px auto;
+                margin: 0 auto 0 auto;
             }
             .header-action-link {
                 flex: 0 0 auto;
@@ -997,7 +950,7 @@
                 white-space: nowrap;
                 justify-content: center;
             }
-            .bismillah { font-size: 25px; margin: 15px auto 25px auto; }
+            .bismillah { font-size: 25px; margin: 4px auto 20px auto; }
             
             .verses-container { 
                 line-height: 2.5; 
@@ -1093,11 +1046,7 @@
                 max-width: 320px;
                 padding: 12px 20px;
                 font-size: 14px;
-                margin-bottom: 22px;
-            }
-            .quick-surah-chip {
-                padding: 5px 11px;
-                font-size: 12px;
+                margin-bottom: 0;
             }
         }
 
@@ -1118,11 +1067,11 @@
             }
             .bismillah {
                 font-size: 24px;
-                margin: 10px auto 20px auto;
+                margin: 4px auto 16px auto;
             }
             .surah-header-card {
-                padding: 10px 4px;
-                margin-bottom: 15px;
+                padding: 10px 4px 0;
+                margin-bottom: 6px;
             }
             .surah-header-actions {
                 display: inline-flex;
@@ -1130,7 +1079,7 @@
                 justify-content: center;
                 gap: 8px;
                 flex-wrap: nowrap;
-                margin-bottom: 18px;
+                margin-bottom: 0;
             }
             .header-action-link {
                 padding: 6px 12px;
@@ -1155,10 +1104,10 @@
             .sidebar { width: 300px; }
             .reader-area { padding: 25px 40px 60px; }
             
-            .surah-header-card { padding: 20px 20px 10px 20px; margin: 0 auto 35px auto; max-width: 650px; }
+            .surah-header-card { padding: 20px 20px 0 20px; margin: 0 auto 10px auto; max-width: 650px; }
             .surah-title { font-size: 54px; margin: 0 0 28px 0; }
             .surah-meta { font-size: 16px; gap: 28px; margin-bottom: 26px; }
-            .bismillah { font-size: 34px; margin: 20px auto 40px auto; }
+            .bismillah { font-size: 34px; margin: 6px auto 28px auto; }
             
             .verses-container { max-width: 950px; padding: 0 20px; line-height: 2.5; }
             .verse { font-size: 30px; }

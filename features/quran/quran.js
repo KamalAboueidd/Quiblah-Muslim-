@@ -323,19 +323,6 @@
                         <i class="fa-solid fa-list-ul"></i>
                         <span>فتح قائمة السور (114 سورة)</span>
                     </button>
-
-                    <div class="quick-surahs-section">
-                        <span class="quick-surahs-label"><i class="fa-solid fa-star"></i> سور مباركة للقراءة السريعة:</span>
-                        <div class="quick-surahs-chips">
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(1)">الفاتحة (1)</button>
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(18)">الكهف (18)</button>
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(36)">يس (36)</button>
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(55)">الرحمن (55)</button>
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(56)">الواقعة (56)</button>
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(67)">الملك (67)</button>
-                            <button type="button" class="quick-surah-chip" onclick="loadSurah(112)">الإخلاص (112)</button>
-                        </div>
-                    </div>
                 </div>
             `;
         }

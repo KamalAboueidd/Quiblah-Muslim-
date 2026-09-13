@@ -696,7 +696,7 @@
             text-align: center;
             font-family: 'Amiri Quran', serif;
             font-size: 32px;
-            margin: 25px auto 35px auto; /* Generous breathing room */
+            margin: 8px auto 26px auto;
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
         }
@@ -1405,7 +1405,7 @@
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(197, 168, 89, 0.35);
             transition: all 0.25s ease;
-            margin-bottom: 28px;
+            margin-bottom: 0;
         }
 
         .open-surah-drawer-btn:hover {
@@ -1416,53 +1416,6 @@
 
         .open-surah-drawer-btn:active {
             transform: translateY(0);
-        }
-
-        .quick-surahs-section {
-            width: 100%;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 22px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .quick-surahs-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .quick-surahs-chips {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .quick-surah-chip {
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(197, 168, 89, 0.35);
-            color: #e2e8f0;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-family: inherit;
-            font-size: 12.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .quick-surah-chip:hover {
-            background: rgba(197, 168, 89, 0.25);
-            border-color: var(--gold);
-            color: #ffffff;
-            transform: translateY(-1px);
         }
 
         @media (max-width: 850px) {
@@ -1494,10 +1447,6 @@
                 max-width: 320px;
                 padding: 12px 20px;
                 font-size: 14px;
-                margin-bottom: 22px;
-            }
-            .quick-surah-chip {
-                padding: 5px 11px;
-                font-size: 12px;
+                margin-bottom: 0;
             }
         }

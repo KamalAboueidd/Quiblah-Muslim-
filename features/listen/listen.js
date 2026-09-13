@@ -43,7 +43,7 @@
     let currentPlayingSurahNum = null;
     let isPlaying = false;
     let isScrubbing = false;
-    let showRemainingTime = true;
+    let showRemainingTime = false;
 
     const audio = document.getElementById('audio-player');
     const playPauseBtn = document.getElementById('btn-play-pause');
@@ -207,6 +207,8 @@
         const list = document.getElementById('surah-list');
         list.innerHTML = "";
 
+        const favs = getFavorites();
+
         currentSurahList.forEach(num => {
             const item = document.createElement('div');
             item.className = 'surah-item';
@@ -217,16 +219,61 @@
             
             const isPlayingThis = item.classList.contains('playing') && isPlaying;
             const playIconClass = isPlayingThis ? 'fa-pause' : 'fa-play';
+            const surahTitle = SURAH_NAMES[num - 1] || `سورة ${num}`;
+            const isFav = favs.some(f => f.surahNum === num && f.reciterName === currentReciterName);
 
             item.innerHTML = `
                 <div class="surah-num">${num}</div>
-                <div class="surah-name">سورة ${SURAH_NAMES[num - 1]}</div>
-                <div class="play-icon"><i aria-hidden="true" class="fa-solid ${playIconClass}"></i></div>
+                <div class="surah-name">سورة ${surahTitle}</div>
+                <div class="surah-item-actions">
+                    <button class="surah-row-fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavoriteFromRow(event, ${num})" title="${isFav ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}">
+                        <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                    </button>
+                    <div class="play-icon"><i aria-hidden="true" class="fa-solid ${playIconClass}"></i></div>
+                </div>
             `;
             
-            item.onclick = () => playSurah(num, currentServer, currentReciterName);
+            item.onclick = (e) => {
+                if (e.target.closest('.surah-row-fav-btn')) return;
+                playSurah(num, currentServer, currentReciterName);
+            };
             list.appendChild(item);
         });
+    }
+
+    function toggleFavoriteFromRow(e, num) {
+        if (e) e.stopPropagation();
+        if (!currentReciterName) return;
+
+        let favs = getFavorites();
+        const surahTitle = SURAH_NAMES[num - 1] || `سورة ${num}`;
+        const existingIndex = favs.findIndex(f => f.surahNum === num && f.reciterName === currentReciterName);
+
+        if (existingIndex > -1) {
+            favs.splice(existingIndex, 1);
+            saveFavorites(favs);
+            showToast(`تمت إزالة سورة ${surahTitle} من المفضلة`, 'fa-regular fa-heart');
+        } else {
+            const currentReciterObj = allReciters.find(r => r.name === currentReciterName);
+            favs.unshift({
+                id: `${currentReciterName}_${num}`,
+                surahNum: num,
+                surahName: surahTitle,
+                reciterName: currentReciterName,
+                reciterId: currentReciterObj ? currentReciterObj.id : null,
+                server: currentServer,
+                moshafName: document.getElementById('current-moshaf-name')?.textContent || 'حفص عن عاصم',
+                surahList: currentSurahList,
+                addedAt: Date.now()
+            });
+            saveFavorites(favs);
+            showToast(`تمت إضافة سورة ${surahTitle} للمفضلة`, 'fa-solid fa-heart');
+        }
+
+        updatePlayerFavButtonUI();
+        updateFavoritesBadges();
+        renderFavoritesList();
+        renderSurahs();
     }
 
     // --- Audio Player Logic ---
@@ -305,6 +352,14 @@
         document.getElementById('player-bar').classList.add('visible');
         updatePlayerFavButtonUI();
         
+        const playerThumb = document.getElementById('player-thumb');
+        if (playerThumb) {
+            playerThumb.style.backgroundImage = `url('${imgUrl}')`;
+            playerThumb.style.backgroundSize = 'cover';
+            playerThumb.style.backgroundPosition = 'top center';
+            playerThumb.innerHTML = '';
+        }
+        
         // Reset progress
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
@@ -317,7 +372,7 @@
         }
         if (progressThumb) progressThumb.style.left = '0%';
         if (timeCurrent) timeCurrent.textContent = '0:00';
-        if (timeTotal) timeTotal.textContent = '-0:00';
+        if (timeTotal) timeTotal.textContent = '0:00';
         
         // Auto expand the player immediately on mobile just like Spotify
         if (window.innerWidth <= 768) {
@@ -423,7 +478,7 @@
         if (timeCurrent) timeCurrent.textContent = formatTime(c);
 
         const remaining = Math.max(0, d - c);
-        const remStr = '-' + formatTime(remaining);
+        const remStr = formatTime(remaining);
         if (timeTotal) {
             timeTotal.textContent = showRemainingTime ? remStr : formatTime(d);
         }
@@ -433,7 +488,7 @@
         const timeTotal = document.getElementById('time-total');
         if (timeTotal && audio.duration) {
             const remaining = Math.max(0, audio.duration - audio.currentTime);
-            timeTotal.textContent = showRemainingTime ? ('-' + formatTime(remaining)) : formatTime(audio.duration);
+            timeTotal.textContent = showRemainingTime ? formatTime(remaining) : formatTime(audio.duration);
         }
     });
 
@@ -444,7 +499,7 @@
             showRemainingTime = !showRemainingTime;
             if (audio.duration) {
                 const remaining = Math.max(0, audio.duration - audio.currentTime);
-                timeTotalEl.textContent = showRemainingTime ? ('-' + formatTime(remaining)) : formatTime(audio.duration);
+                timeTotalEl.textContent = showRemainingTime ? formatTime(remaining) : formatTime(audio.duration);
             }
         });
     }
@@ -481,7 +536,7 @@
         if (timeCurrent) timeCurrent.textContent = formatTime(audio.currentTime);
 
         const remaining = Math.max(0, audio.duration - audio.currentTime);
-        const remStr = '-' + formatTime(remaining);
+        const remStr = formatTime(remaining);
         if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatTime(audio.duration);
     }
 
@@ -753,12 +808,13 @@
 
     // --- Volume Control Logic ---
     let currentVolume = 1;
-    function seekVolume(e) {
-        e.stopPropagation();
+    let isVolumeDragging = false;
+
+    function applyVolume(clientX) {
         const bar = document.getElementById('volume-bar');
+        if (!bar) return;
         const rect = bar.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        // LTR logic
+        const clickX = clientX - rect.left;
         let pct = clickX / rect.width;
         if (pct < 0) pct = 0;
         if (pct > 1) pct = 1;
@@ -768,8 +824,39 @@
         updateVolumeUI();
     }
 
+    function seekVolume(e) {
+        if (e) e.stopPropagation();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        applyVolume(clientX);
+    }
+
+    const volBarEl = document.getElementById('volume-bar');
+    if (volBarEl) {
+        volBarEl.addEventListener('mousedown', (e) => {
+            isVolumeDragging = true;
+            applyVolume(e.clientX);
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (isVolumeDragging) applyVolume(e.clientX);
+        });
+        window.addEventListener('mouseup', () => {
+            isVolumeDragging = false;
+        });
+
+        volBarEl.addEventListener('touchstart', (e) => {
+            isVolumeDragging = true;
+            if (e.touches && e.touches[0]) applyVolume(e.touches[0].clientX);
+        }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+            if (isVolumeDragging && e.touches && e.touches[0]) applyVolume(e.touches[0].clientX);
+        }, { passive: true });
+        window.addEventListener('touchend', () => {
+            isVolumeDragging = false;
+        });
+    }
+
     function toggleMute(e) {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         if (audio.volume > 0) {
             audio.volume = 0;
         } else {
@@ -807,6 +894,7 @@
     window.toggleFavoritesDrawer = toggleFavoritesDrawer;
     window.closeFavoritesDrawer = closeFavoritesDrawer;
     window.toggleFavoriteSurah = toggleFavoriteSurah;
+    window.toggleFavoriteFromRow = toggleFavoriteFromRow;
     window.playFavoriteItem = playFavoriteItem;
     window.removeFavoriteItem = removeFavoriteItem;
     window.showReciters = showReciters;

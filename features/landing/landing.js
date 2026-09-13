@@ -40,6 +40,7 @@
         const timeTotal = document.getElementById('time-total');
         const volumeBar = document.getElementById('volume-bar');
         const volumeFill = document.getElementById('volume-fill');
+        const volumeThumb = document.getElementById('volume-thumb');
         const btnMute = document.getElementById('btn-mute');
         const btnRepeat = document.getElementById('btn-repeat');
         const btnSpeed = document.getElementById('btn-speed');
@@ -54,7 +55,7 @@
         let currentReciterImg = "";
         let isAudioPlaying = false;
         let isScrubbing = false;
-        let showRemainingTime = true;
+        let showRemainingTime = false;
 
         // Initialize target page from URL param (e.g. index.html?page=quran.html)
         const params = new URLSearchParams(window.location.search);
@@ -156,7 +157,7 @@
             if (scrubberFill) scrubberFill.style.width = '0%';
             if (scrubberThumb) scrubberThumb.style.left = '0%';
             if (timeCurrent) timeCurrent.textContent = '0:00';
-            if (timeTotal) timeTotal.textContent = '-0:00';
+            if (timeTotal) timeTotal.textContent = '0:00';
 
             // Set audio source & play
             audio.src = audioSrc;
@@ -285,7 +286,7 @@
             if (timeCurrent) timeCurrent.textContent = formatSeconds(c);
             
             const remaining = Math.max(0, d - c);
-            const remainingFormatted = '-' + formatSeconds(remaining);
+            const remainingFormatted = formatSeconds(remaining);
             
             if (timeTotal) {
                 timeTotal.textContent = showRemainingTime ? remainingFormatted : formatSeconds(d);
@@ -295,18 +296,18 @@
         audio.addEventListener('loadedmetadata', () => {
             if (timeTotal && audio.duration) {
                 const remaining = Math.max(0, audio.duration - audio.currentTime);
-                timeTotal.textContent = showRemainingTime ? ('-' + formatSeconds(remaining)) : formatSeconds(audio.duration);
+                timeTotal.textContent = showRemainingTime ? formatSeconds(remaining) : formatSeconds(audio.duration);
             }
         });
 
-        // Click to toggle between remaining time (-mm:ss) and total duration (mm:ss)
+        // Click to toggle between remaining time and total duration
         if (timeTotal) {
             timeTotal.addEventListener('click', (e) => {
                 e.stopPropagation();
                 showRemainingTime = !showRemainingTime;
                 if (audio.duration) {
                     const remaining = Math.max(0, audio.duration - audio.currentTime);
-                    timeTotal.textContent = showRemainingTime ? ('-' + formatSeconds(remaining)) : formatSeconds(audio.duration);
+                    timeTotal.textContent = showRemainingTime ? formatSeconds(remaining) : formatSeconds(audio.duration);
                 }
             });
         }
@@ -333,7 +334,7 @@
             if (scrubberThumb) scrubberThumb.style.left = `${p}%`;
             if (timeCurrent) timeCurrent.textContent = formatSeconds(audio.currentTime);
             const remaining = Math.max(0, audio.duration - audio.currentTime);
-            const remStr = '-' + formatSeconds(remaining);
+            const remStr = formatSeconds(remaining);
             if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatSeconds(audio.duration);
         }
 
@@ -364,19 +365,52 @@
             window.addEventListener('touchend', endScrub);
         }
 
-        // Volume Control
-        volumeBar.addEventListener('click', (e) => {
+        // Volume Control with Drag Support
+        let isVolumeDragging = false;
+        function applyVolume(clientX) {
+            if (!volumeBar) return;
             const rect = volumeBar.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
+            const clickX = clientX - rect.left;
             const percent = Math.max(0, Math.min(1, clickX / rect.width));
             audio.volume = percent;
-            volumeFill.style.width = `${percent * 100}%`;
+            if (audio.muted && percent > 0) audio.muted = false;
+            updateVolumeUI();
+        }
+
+        function updateVolumeUI() {
+            const pct = (audio.muted ? 0 : audio.volume) * 100;
+            if (volumeFill) volumeFill.style.width = `${pct}%`;
+            if (volumeThumb) volumeThumb.style.left = `${pct}%`;
             updateVolumeIcon();
-        });
+        }
+
+        if (volumeBar) {
+            volumeBar.addEventListener('mousedown', (e) => {
+                isVolumeDragging = true;
+                applyVolume(e.clientX);
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (isVolumeDragging) applyVolume(e.clientX);
+            });
+            window.addEventListener('mouseup', () => {
+                isVolumeDragging = false;
+            });
+
+            volumeBar.addEventListener('touchstart', (e) => {
+                isVolumeDragging = true;
+                if (e.touches && e.touches[0]) applyVolume(e.touches[0].clientX);
+            }, { passive: true });
+            window.addEventListener('touchmove', (e) => {
+                if (isVolumeDragging && e.touches && e.touches[0]) applyVolume(e.touches[0].clientX);
+            }, { passive: true });
+            window.addEventListener('touchend', () => {
+                isVolumeDragging = false;
+            });
+        }
 
         function toggleMute() {
             audio.muted = !audio.muted;
-            updateVolumeIcon();
+            updateVolumeUI();
         }
 
         function updateVolumeIcon() {
@@ -472,22 +506,28 @@
             const surahTitle = playerSurahTitle.textContent.replace('سورة ', '').trim();
             const reciter = playerReciterTitle.textContent.trim();
             if (!reciter || reciter === '---') return;
-            const idx = favs.findIndex(f => (f.surahName === surahTitle || f.surahName === `سورة ${surahTitle}`) && f.reciterName === reciter);
+            const surahNum = currentSurahNum || 1;
+            const idx = favs.findIndex(f => (f.surahNum === surahNum || f.surahName === surahTitle || f.surahName === `سورة ${surahTitle}`) && f.reciterName === reciter);
             if (idx > -1) {
                 favs.splice(idx, 1);
                 saveLandingFavorites(favs);
                 updateLandingFavUI();
+                if (window.showToast) window.showToast(`تمت إزالة سورة ${surahTitle} من المفضلة`, 'fa-regular fa-heart');
             } else {
                 favs.unshift({
-                    id: `${reciter}_${currentPlayingSurah || 1}`,
-                    surahNum: currentPlayingSurah || 1,
+                    id: `${reciter}_${surahNum}`,
+                    surahNum: surahNum,
                     surahName: surahTitle,
                     reciterName: reciter,
                     audioUrl: audio.src,
+                    serverUrl: currentServerUrl,
+                    surahList: currentSurahList,
+                    reciterImg: currentReciterImg,
                     addedAt: Date.now()
                 });
                 saveLandingFavorites(favs);
                 updateLandingFavUI();
+                if (window.showToast) window.showToast(`تمت إضافة سورة ${surahTitle} للمفضلة`, 'fa-solid fa-heart');
             }
         }
 
@@ -498,5 +538,20 @@
                 navigator.share({ title: 'قبلة المسلم', text: text, url: window.location.href }).catch(() => {});
             } else if (navigator.clipboard) {
                 navigator.clipboard.writeText(text);
+                if (window.showToast) window.showToast('تم نسخ رابط السورة للحافظة', 'fa-solid fa-check');
             }
         }
+
+        // Export all player control handlers to window for HTML inline onclick
+        window.toggleFavoriteSurah = toggleFavoriteSurah;
+        window.toggleRepeat = toggleRepeat;
+        window.cyclePlaybackSpeed = cyclePlaybackSpeed;
+        window.togglePlayerExpand = togglePlayerExpand;
+        window.expandPlayerMobile = expandPlayerMobile;
+        window.shareCurrentSurah = shareCurrentSurah;
+        window.playPrevSurah = playPrevSurah;
+        window.playNextSurah = playNextSurah;
+        window.togglePlayPause = togglePlayPause;
+        window.closePlayer = closePlayer;
+        window.toggleMute = toggleMute;
+        window.seek = (e) => seekElement(e, scrubberBar);

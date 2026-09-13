@@ -58,14 +58,15 @@
 
     <!-- Persistent Global Audio Player Bar -->
     <div class="global-player-bar" id="global-player-bar">
-        <!-- Top Edge Scrubber / Progress Loader -->
-        <div class="player-top-progress" id="player-top-progress" title="شريط تقدم السورة (اضغط للتقديم أو التأخير)">
-            <div class="player-top-fill" id="player-top-fill"></div>
-        </div>
-
-        <!-- Close / Minimize for mobile expanded -->
-        <div class="mobile-expand-toggle" id="mobile-expand-toggle" onclick="togglePlayerExpand(event)">
-            <i class="fa-solid fa-chevron-down"></i>
+        <!-- Mobile Top Bar (Spotify style) -->
+        <div class="mobile-player-top" id="mobile-player-top">
+            <button class="mobile-expand-toggle" id="mobile-expand-toggle" onclick="togglePlayerExpand(event)" title="تصغير المشغل">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="mobile-header-title">مشغل القرآن الكريم</div>
+            <button class="mobile-top-opt" onclick="shareCurrentSurah(event)" title="مشاركة">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
         </div>
 
         <!-- Track Info -->
@@ -77,11 +78,26 @@
                 <div class="player-track-title" id="player-surah-title">سورة الفاتحة</div>
                 <div class="player-artist-title" id="player-reciter-title">مشاري العفاسي</div>
             </div>
+            <button class="player-fav-btn" id="player-fav-btn" onclick="toggleFavoriteSurah(event)" title="إضافة للمفضلة">
+                <i class="fa-regular fa-heart"></i>
+            </button>
         </div>
 
         <!-- Controls & Scrubber -->
         <div class="player-center-section">
+            <div class="scrubber-row">
+                <span id="time-current">0:00</span>
+                <div class="scrubber-bar" id="scrubber-bar">
+                    <div class="scrubber-fill" id="scrubber-fill"></div>
+                    <div class="scrubber-thumb" id="scrubber-thumb"></div>
+                </div>
+                <span id="time-total">0:00</span>
+            </div>
+
             <div class="player-buttons-row">
+                <button class="ctrl-btn btn-extra btn-repeat" id="btn-repeat" title="تكرار السورة" onclick="toggleRepeat(event)">
+                    <i class="fa-solid fa-repeat"></i>
+                </button>
                 <button class="ctrl-btn btn-skip-prev" id="btn-skip-prev" title="السورة السابقة" onclick="playPrevSurah(event)">
                     <i class="fa-solid fa-backward-step"></i>
                 </button>
@@ -91,15 +107,9 @@
                 <button class="ctrl-btn btn-skip-next" id="btn-skip-next" title="السورة التالية" onclick="playNextSurah(event)">
                     <i class="fa-solid fa-forward-step"></i>
                 </button>
-            </div>
-
-            <div class="scrubber-row">
-                <span id="time-current">0:00</span>
-                <div class="scrubber-bar" id="scrubber-bar">
-                    <div class="scrubber-fill" id="scrubber-fill"></div>
-                    <div class="scrubber-thumb" id="scrubber-thumb"></div>
-                </div>
-                <span id="time-total">0:00</span>
+                <button class="ctrl-btn btn-extra btn-speed" id="btn-speed" title="سرعة التلاوة" onclick="cyclePlaybackSpeed(event)">
+                    <span id="speed-label">1x</span>
+                </button>
             </div>
         </div>
 
@@ -116,6 +126,13 @@
             <button class="player-close-btn" title="إغلاق المشغل" onclick="closePlayer()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
+        </div>
+
+        <!-- Mobile Spotify Footer Actions -->
+        <div class="mobile-player-footer">
+            <button class="mobile-footer-btn" title="جودة الصوت"><i class="fa-solid fa-headphones"></i></button>
+            <button class="mobile-footer-btn" onclick="shareCurrentSurah(event)" title="مشاركة السورة"><i class="fa-solid fa-share-nodes"></i></button>
+            <button class="mobile-footer-btn" onclick="togglePlayerExpand(event)" title="إغلاق"><i class="fa-solid fa-list-ul"></i></button>
         </div>
     </div>
 

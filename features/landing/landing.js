@@ -36,13 +36,15 @@
         const scrubberBar = document.getElementById('scrubber-bar');
         const scrubberFill = document.getElementById('scrubber-fill');
         const scrubberThumb = document.getElementById('scrubber-thumb');
-        const playerTopProgress = document.getElementById('player-top-progress');
-        const playerTopFill = document.getElementById('player-top-fill');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
         const volumeBar = document.getElementById('volume-bar');
         const volumeFill = document.getElementById('volume-fill');
         const btnMute = document.getElementById('btn-mute');
+        const btnRepeat = document.getElementById('btn-repeat');
+        const btnSpeed = document.getElementById('btn-speed');
+        const speedLabel = document.getElementById('speed-label');
+        const playerFavBtn = document.getElementById('player-fav-btn');
 
         // State
         let currentSurahNum = 1;
@@ -153,10 +155,6 @@
             // Reset progress & loader
             if (scrubberFill) scrubberFill.style.width = '0%';
             if (scrubberThumb) scrubberThumb.style.left = '0%';
-            if (playerTopFill) {
-                playerTopFill.style.width = '0%';
-                playerTopFill.classList.add('buffering');
-            }
             if (timeCurrent) timeCurrent.textContent = '0:00';
             if (timeTotal) timeTotal.textContent = '-0:00';
 
@@ -265,15 +263,12 @@
 
         // Buffering & Network state handling
         audio.addEventListener('waiting', () => {
-            if (playerTopFill) playerTopFill.classList.add('buffering');
             if (scrubberFill) scrubberFill.classList.add('buffering');
         });
         audio.addEventListener('playing', () => {
-            if (playerTopFill) playerTopFill.classList.remove('buffering');
             if (scrubberFill) scrubberFill.classList.remove('buffering');
         });
         audio.addEventListener('canplay', () => {
-            if (playerTopFill) playerTopFill.classList.remove('buffering');
             if (scrubberFill) scrubberFill.classList.remove('buffering');
         });
 
@@ -286,7 +281,6 @@
             
             if (scrubberFill) scrubberFill.style.width = `${percent}%`;
             if (scrubberThumb) scrubberThumb.style.left = `${percent}%`;
-            if (playerTopFill) playerTopFill.style.width = `${percent}%`;
             
             if (timeCurrent) timeCurrent.textContent = formatSeconds(c);
             
@@ -318,7 +312,12 @@
         }
 
         audio.addEventListener('ended', () => {
-            playNextSurah();
+            if (isRepeatEnabled) {
+                audio.currentTime = 0;
+                audio.play();
+            } else {
+                playNextSurah();
+            }
         });
 
         // Unified Seeking helper
@@ -332,19 +331,10 @@
             const p = percent * 100;
             if (scrubberFill) scrubberFill.style.width = `${p}%`;
             if (scrubberThumb) scrubberThumb.style.left = `${p}%`;
-            if (playerTopFill) playerTopFill.style.width = `${p}%`;
             if (timeCurrent) timeCurrent.textContent = formatSeconds(audio.currentTime);
             const remaining = Math.max(0, audio.duration - audio.currentTime);
             const remStr = '-' + formatSeconds(remaining);
             if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatSeconds(audio.duration);
-        }
-
-        // Seeking on top edge progress loader
-        if (playerTopProgress) {
-            playerTopProgress.addEventListener('click', (e) => {
-                e.stopPropagation();
-                seekElement(e, playerTopProgress);
-            });
         }
 
         // Seeking on center scrubber with click & drag (mouse + touch)
@@ -417,4 +407,41 @@
             playerBar.classList.remove('visible');
             playerBar.classList.remove('expanded');
             document.body.classList.remove('player-active');
+        }
+
+        // --- Spotify Controls Additions ---
+        let isRepeatEnabled = false;
+        function toggleRepeat(e) {
+            if (e) e.stopPropagation();
+            isRepeatEnabled = !isRepeatEnabled;
+            if (btnRepeat) btnRepeat.classList.toggle('active', isRepeatEnabled);
+        }
+
+        const PLAYBACK_SPEEDS = [1.0, 1.25, 1.5, 0.75];
+        let currentSpeedIndex = 0;
+        function cyclePlaybackSpeed(e) {
+            if (e) e.stopPropagation();
+            currentSpeedIndex = (currentSpeedIndex + 1) % PLAYBACK_SPEEDS.length;
+            const newSpeed = PLAYBACK_SPEEDS[currentSpeedIndex];
+            audio.playbackRate = newSpeed;
+            if (speedLabel) speedLabel.textContent = `${newSpeed}x`;
+        }
+
+        function toggleFavoriteSurah(e) {
+            if (e) e.stopPropagation();
+            if (playerFavBtn) {
+                playerFavBtn.classList.toggle('active');
+                const isFav = playerFavBtn.classList.contains('active');
+                playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
+            }
+        }
+
+        function shareCurrentSurah(e) {
+            if (e) e.stopPropagation();
+            const text = `استمع الآن إلى ${playerSurahTitle.textContent} بصوت ${playerReciterTitle.textContent} عبر تطبيق قبلة المسلم: ${window.location.href}`;
+            if (navigator.share) {
+                navigator.share({ title: 'قبلة المسلم', text: text, url: window.location.href }).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+            }
         }

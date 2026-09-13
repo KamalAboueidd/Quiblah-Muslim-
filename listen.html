@@ -81,42 +81,70 @@
         </div>
     </div>
 
-    <!-- View: Surahs List -->
+    <!-- View: Surahs List (Spotify Desktop Layout) -->
     <div class="view-section" id="view-surahs">
         <button class="back-btn" onclick="showReciters()"><i aria-hidden="true" class="fa-solid fa-arrow-right"></i> عودة للقراء</button>
-        <div class="reciter-header">
-            <div class="reciter-icon"><i aria-hidden="true" class="fa-solid fa-microphone-lines"></i></div>
-            <div>
-                <h2 id="current-reciter-name">اسم القارئ</h2>
-                <p id="current-moshaf-name">الرواية</p>
+        
+        <!-- Spotify Hero Banner -->
+        <div class="spotify-hero-banner" id="spotify-hero-banner">
+            <div class="spotify-hero-avatar" id="spotify-hero-avatar"></div>
+            <div class="spotify-hero-info">
+                <span class="spotify-hero-badge"><i class="fa-solid fa-circle-check"></i> قارئ معتمد</span>
+                <h1 class="spotify-hero-name" id="current-reciter-name">اسم القارئ</h1>
+                <p class="spotify-hero-sub" id="current-moshaf-name">الرواية والمصحف</p>
+            </div>
+            <button class="spotify-big-play-btn" id="hero-play-btn" onclick="playFirstSurah()" title="تشغيل التلاوات">
+                <i class="fa-solid fa-play"></i>
+            </button>
+        </div>
+
+        <!-- Spotify Content Layout: Main List & Right Side Panel -->
+        <div class="spotify-content-layout">
+            <div class="spotify-main-col">
+                <div class="section-title">السور والتلاوات المتاحة</div>
+                <div class="surah-list" id="surah-list"></div>
+            </div>
+            <div class="spotify-side-panel" id="spotify-side-panel">
+                <div class="side-panel-header">
+                    <h3 id="side-reciter-name">اسم القارئ</h3>
+                </div>
+                <div class="side-panel-card">
+                    <div class="side-panel-art" id="side-panel-art"></div>
+                    <div class="side-panel-info">
+                        <h4 class="side-track-title" id="side-track-title">اختر سورة للاستماع</h4>
+                        <p class="side-reciter-title" id="side-reciter-title">اسم القارئ</p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="surah-list" id="surah-list"></div>
     </div>
 </div>
 
-<!-- Player Bar -->
+<!-- Player Bar (Spotify Style) -->
 <div class="player-bar" id="player-bar">
-    <!-- Top Edge Scrubber / Progress Loader -->
-    <div class="player-top-progress" id="player-top-progress" title="شريط تقدم السورة (اضغط للتقديم أو التأخير)">
-        <div class="player-top-fill" id="player-top-fill"></div>
+    <!-- Mobile Top Bar (Spotify style) -->
+    <div class="mobile-player-top" id="mobile-player-top">
+        <button class="mobile-expand-btn" onclick="togglePlayerExpand(event)" title="تصغير المشغل">
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="mobile-header-title">مشغل القرآن الكريم</div>
+        <button class="mobile-top-opt" onclick="shareCurrentSurah(event)" title="مشاركة">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
     </div>
 
-    <button class="mobile-expand-btn" onclick="togglePlayerExpand(event)"><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button>
-    <div class="player-info">
-        <div class="player-thumb"><i aria-hidden="true" class="fa-solid fa-book-quran"></i></div>
+    <div class="player-info" onclick="expandPlayerMobile()">
+        <div class="player-thumb" id="player-thumb"><i aria-hidden="true" class="fa-solid fa-book-quran"></i></div>
         <div class="player-titles">
             <div class="player-track" id="player-surah-name">---</div>
             <div class="player-artist" id="player-reciter-name">---</div>
         </div>
+        <button class="player-fav-btn" id="player-fav-btn" onclick="toggleFavoriteSurah(event)" title="إضافة للمفضلة">
+            <i class="fa-regular fa-heart"></i>
+        </button>
     </div>
     
     <div class="player-controls-wrap">
-        <div class="player-buttons">
-            <button class="btn-ctrl" onclick="playNext(event)" title="السورة التالية (للخلف)"><i aria-hidden="true" class="fa-solid fa-backward-step"></i></button>
-            <button class="btn-play" id="btn-play-pause" onclick="togglePlayPause(event)"><i aria-hidden="true" class="fa-solid fa-play"></i></button>
-            <button class="btn-ctrl" onclick="playPrev(event)" title="السورة السابقة (للأمام)"><i aria-hidden="true" class="fa-solid fa-forward-step"></i></button>
-        </div>
         <div class="progress-container">
             <span id="time-current">0:00</span>
             <div class="progress-bar" id="progress-bar" onclick="seek(event)" title="اسحب أو اضغط للتقديم والتأخير">
@@ -124,6 +152,13 @@
                 <div class="progress-thumb" id="progress-thumb"></div>
             </div>
             <span id="time-total" title="اضغط للتبديل بين الوقت المتبقي والكلي">-0:00</span>
+        </div>
+        <div class="player-buttons">
+            <button class="btn-ctrl btn-extra btn-repeat" id="btn-repeat" onclick="toggleRepeat(event)" title="تكرار السورة"><i class="fa-solid fa-repeat"></i></button>
+            <button class="btn-ctrl" onclick="playNext(event)" title="السورة التالية (للخلف)"><i aria-hidden="true" class="fa-solid fa-backward-step"></i></button>
+            <button class="btn-play" id="btn-play-pause" onclick="togglePlayPause(event)"><i aria-hidden="true" class="fa-solid fa-play"></i></button>
+            <button class="btn-ctrl" onclick="playPrev(event)" title="السورة السابقة (للأمام)"><i aria-hidden="true" class="fa-solid fa-forward-step"></i></button>
+            <button class="btn-ctrl btn-extra btn-speed" id="btn-speed" onclick="cyclePlaybackSpeed(event)" title="سرعة التلاوة"><span id="speed-label">1x</span></button>
         </div>
     </div>
     
@@ -135,6 +170,13 @@
                 <div class="volume-thumb" id="volume-thumb"></div>
             </div>
         </div>
+    </div>
+
+    <!-- Mobile Spotify Footer Actions -->
+    <div class="mobile-player-footer">
+        <button class="mobile-footer-btn" title="جودة الصوت"><i class="fa-solid fa-headphones"></i></button>
+        <button class="mobile-footer-btn" onclick="shareCurrentSurah(event)" title="مشاركة السورة"><i class="fa-solid fa-share-nodes"></i></button>
+        <button class="mobile-footer-btn" onclick="togglePlayerExpand(event)" title="إغلاق"><i class="fa-solid fa-list-ul"></i></button>
     </div>
 </div>
 

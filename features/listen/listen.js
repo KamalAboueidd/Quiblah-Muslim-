@@ -143,20 +143,41 @@
         document.getElementById('current-reciter-name').textContent = reciter.name;
         document.getElementById('current-moshaf-name').textContent = moshaf.name;
         
-        const headerIcon = document.querySelector('.reciter-header .reciter-icon');
         const imgUrl = RECITER_IMAGES[reciter.id] || `https://ui-avatars.com/api/?name=${encodeURIComponent(reciter.name)}&background=116035&color=C5A859&size=150&font-size=0.33&bold=true`;
         
-        headerIcon.style.backgroundImage = `url('${imgUrl}')`;
-        headerIcon.style.backgroundSize = 'cover';
-        headerIcon.style.backgroundPosition = 'top center';
-        headerIcon.innerHTML = '';
+        const heroAvatar = document.getElementById('spotify-hero-avatar');
+        if (heroAvatar) {
+            heroAvatar.style.backgroundImage = `url('${imgUrl}')`;
+            heroAvatar.style.backgroundSize = 'cover';
+            heroAvatar.style.backgroundPosition = 'top center';
+        }
+
+        const sideReciterName = document.getElementById('side-reciter-name');
+        if (sideReciterName) sideReciterName.textContent = reciter.name;
+
+        const sideReciterTitle = document.getElementById('side-reciter-title');
+        if (sideReciterTitle) sideReciterTitle.textContent = reciter.name;
+
+        const sidePanelArt = document.getElementById('side-panel-art');
+        if (sidePanelArt) {
+            sidePanelArt.style.backgroundImage = `url('${imgUrl}')`;
+            sidePanelArt.style.backgroundSize = 'cover';
+            sidePanelArt.style.backgroundPosition = 'top center';
+        }
+
+        const sideTrackTitle = document.getElementById('side-track-title');
+        if (sideTrackTitle && currentSurahList.length > 0) {
+            sideTrackTitle.textContent = `سورة ${SURAH_NAMES[currentSurahList[0] - 1]}`;
+        }
         
         // Set player thumb image too
-        const playerThumb = document.querySelector('.player-thumb');
-        playerThumb.style.backgroundImage = `url('${imgUrl}')`;
-        playerThumb.style.backgroundSize = 'cover';
-        playerThumb.style.backgroundPosition = 'top center';
-        playerThumb.innerHTML = '';
+        const playerThumb = document.getElementById('player-thumb');
+        if (playerThumb) {
+            playerThumb.style.backgroundImage = `url('${imgUrl}')`;
+            playerThumb.style.backgroundSize = 'cover';
+            playerThumb.style.backgroundPosition = 'top center';
+            playerThumb.innerHTML = '';
+        }
 
         renderSurahs();
         
@@ -210,15 +231,33 @@
         }
     }
 
+    function playFirstSurah() {
+        if (!currentSurahList || currentSurahList.length === 0) return;
+        if (isPlaying && currentReciterName === document.getElementById('current-reciter-name').textContent) {
+            togglePlayPause();
+            return;
+        }
+        playSurah(currentSurahList[0], currentServer, currentReciterName);
+    }
+
     function playSurah(num, server, reciterName) {
         const numStr = String(num).padStart(3, '0');
         const serverUrl = server.endsWith('/') ? server : server + '/';
         const url = `${serverUrl}${numStr}.mp3`;
         
+        const currentReciterObj = allReciters.find(r => r.name === reciterName);
+        const imgUrl = (currentReciterObj && RECITER_IMAGES[currentReciterObj.id]) || `https://ui-avatars.com/api/?name=${encodeURIComponent(reciterName)}&background=116035&color=C5A859&size=150&font-size=0.33&bold=true`;
+
+        // Update Spotify Desktop Side Panel
+        const sideTrackTitle = document.getElementById('side-track-title');
+        if (sideTrackTitle) sideTrackTitle.textContent = `سورة ${SURAH_NAMES[num - 1]}`;
+        const sideReciterTitle = document.getElementById('side-reciter-title');
+        if (sideReciterTitle) sideReciterTitle.textContent = reciterName;
+        const sidePanelArt = document.getElementById('side-panel-art');
+        if (sidePanelArt) sidePanelArt.style.backgroundImage = `url('${imgUrl}')`;
+
         // Forward to persistent parent shell if present
         if (window.parent && window.parent !== window && typeof window.parent.playGlobalQuran === 'function') {
-            const currentReciterObj = allReciters.find(r => r.name === reciterName);
-            const imgUrl = (currentReciterObj && RECITER_IMAGES[currentReciterObj.id]) || `https://ui-avatars.com/api/?name=${encodeURIComponent(reciterName)}&background=116035&color=C5A859&size=150&font-size=0.33&bold=true`;
             window.parent.playGlobalQuran({
                 surahNum: num,
                 surahName: `سورة ${SURAH_NAMES[num - 1]}`,
@@ -231,13 +270,13 @@
             currentPlayingSurahNum = num;
             isPlaying = true;
             updateSurahListUI();
+            updatePlayPauseIcon();
             return;
         }
 
         if (currentPlayingSurahNum === num && currentReciterName === reciterName) {
             // Toggle play/pause if clicking the same surah
             togglePlayPause();
-            // Also auto-expand on mobile if clicked again
             if (window.innerWidth <= 768) {
                 document.getElementById('player-bar').classList.add('expanded');
                 document.body.style.overflow = 'hidden';
@@ -252,10 +291,9 @@
         document.getElementById('player-reciter-name').textContent = reciterName;
         document.getElementById('player-bar').classList.add('visible');
         
-        // Reset progress & loader
+        // Reset progress
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
-        const playerTopFill = document.getElementById('player-top-fill');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
 
@@ -264,10 +302,6 @@
             progressFill.classList.add('buffering');
         }
         if (progressThumb) progressThumb.style.left = '0%';
-        if (playerTopFill) {
-            playerTopFill.style.width = '0%';
-            playerTopFill.classList.add('buffering');
-        }
         if (timeCurrent) timeCurrent.textContent = '0:00';
         if (timeTotal) timeTotal.textContent = '-0:00';
         
@@ -347,21 +381,15 @@
     // Buffering Shimmer Handlers
     audio.addEventListener('waiting', () => {
         const pFill = document.getElementById('progress-fill');
-        const tFill = document.getElementById('player-top-fill');
         if (pFill) pFill.classList.add('buffering');
-        if (tFill) tFill.classList.add('buffering');
     });
     audio.addEventListener('playing', () => {
         const pFill = document.getElementById('progress-fill');
-        const tFill = document.getElementById('player-top-fill');
         if (pFill) pFill.classList.remove('buffering');
-        if (tFill) tFill.classList.remove('buffering');
     });
     audio.addEventListener('canplay', () => {
         const pFill = document.getElementById('progress-fill');
-        const tFill = document.getElementById('player-top-fill');
         if (pFill) pFill.classList.remove('buffering');
-        if (tFill) tFill.classList.remove('buffering');
     });
 
     audio.addEventListener('timeupdate', () => {
@@ -372,13 +400,11 @@
         
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
-        const playerTopFill = document.getElementById('player-top-fill');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
 
         if (progressFill) progressFill.style.width = `${pct}%`;
         if (progressThumb) progressThumb.style.left = `${pct}%`;
-        if (playerTopFill) playerTopFill.style.width = `${pct}%`;
         
         if (timeCurrent) timeCurrent.textContent = formatTime(c);
 
@@ -409,9 +435,17 @@
         });
     }
 
-    audio.addEventListener('ended', () => playNext());
+    let isRepeatEnabled = false;
+    audio.addEventListener('ended', () => {
+        if (isRepeatEnabled) {
+            audio.currentTime = 0;
+            audio.play();
+        } else {
+            playNext();
+        }
+    });
 
-    // Seeking Helper Function for both center bar and top edge bar
+    // Seeking Helper Function for center bar
     function seekFromElement(e, barElement) {
         if (!audio.duration) return;
         const rect = barElement.getBoundingClientRect();
@@ -425,13 +459,11 @@
         const p = pct * 100;
         const progressFill = document.getElementById('progress-fill');
         const progressThumb = document.getElementById('progress-thumb');
-        const playerTopFill = document.getElementById('player-top-fill');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
 
         if (progressFill) progressFill.style.width = `${p}%`;
         if (progressThumb) progressThumb.style.left = `${p}%`;
-        if (playerTopFill) playerTopFill.style.width = `${p}%`;
         if (timeCurrent) timeCurrent.textContent = formatTime(audio.currentTime);
 
         const remaining = Math.max(0, audio.duration - audio.currentTime);
@@ -443,13 +475,56 @@
         seekFromElement(e, document.getElementById('progress-bar'));
     }
 
-    // Top progress bar click seeking
-    const playerTopProgress = document.getElementById('player-top-progress');
-    if (playerTopProgress) {
-        playerTopProgress.addEventListener('click', (e) => {
-            e.stopPropagation();
-            seekFromElement(e, playerTopProgress);
-        });
+    function expandPlayerMobile() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('player-bar').classList.add('expanded');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function toggleRepeat(e) {
+        if (e) e.stopPropagation();
+        isRepeatEnabled = !isRepeatEnabled;
+        const btn = document.getElementById('btn-repeat');
+        if (btn) btn.classList.toggle('active', isRepeatEnabled);
+        showToast(isRepeatEnabled ? 'تم تفعيل تكرار السورة' : 'تم إلغاء تكرار السورة', 'fa-solid fa-repeat');
+    }
+
+    const PLAYBACK_SPEEDS = [1.0, 1.25, 1.5, 0.75];
+    let currentSpeedIndex = 0;
+    function cyclePlaybackSpeed(e) {
+        if (e) e.stopPropagation();
+        currentSpeedIndex = (currentSpeedIndex + 1) % PLAYBACK_SPEEDS.length;
+        const newSpeed = PLAYBACK_SPEEDS[currentSpeedIndex];
+        audio.playbackRate = newSpeed;
+        const label = document.getElementById('speed-label');
+        if (label) label.textContent = `${newSpeed}x`;
+        showToast(`سرعة التلاوة: ${newSpeed}x`, 'fa-solid fa-gauge-high');
+    }
+
+    function toggleFavoriteSurah(e) {
+        if (e) e.stopPropagation();
+        const favBtn = document.getElementById('player-fav-btn');
+        if (favBtn) {
+            favBtn.classList.toggle('active');
+            const isFav = favBtn.classList.contains('active');
+            favBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
+            showToast(isFav ? 'تمت إضافة السورة للمفضلة' : 'تمت إزالة السورة من المفضلة', isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart');
+        }
+    }
+
+    function shareCurrentSurah(e) {
+        if (e) e.stopPropagation();
+        const trackName = document.getElementById('player-surah-name').textContent;
+        const reciterName = document.getElementById('player-reciter-name').textContent;
+        const text = `استمع الآن إلى ${trackName} بصوت ${reciterName} عبر تطبيق قبلة المسلم: ${window.location.href}`;
+        if (navigator.share) {
+            navigator.share({ title: 'قبلة المسلم', text: text, url: window.location.href }).catch(() => {});
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('تم نسخ رابط التلاوة بنجاح', 'fa-solid fa-check');
+            });
+        }
     }
 
     // Touch and drag support for progress-bar

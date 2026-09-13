@@ -84,6 +84,25 @@
         document.body.style.overflow = '';
     }
 
+    function closePlayer(e) {
+        if (e) e.stopPropagation();
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+        isPlaying = false;
+        updatePlayPauseIcon();
+        updateSurahListUI();
+        setMetaThemeColor(originalThemeColor);
+        const playerBar = document.getElementById('player-bar');
+        if (playerBar) {
+            playerBar.classList.remove('visible');
+            playerBar.classList.remove('expanded');
+        }
+        document.body.style.overflow = '';
+        document.body.classList.remove('player-active');
+    }
+
     function fetchReciters() {
         document.getElementById('loader-reciters').style.display = 'block';
         axios.get('https://www.mp3quran.net/api/v3/reciters?language=ar')
@@ -912,3 +931,4 @@
     window.seek = seek;
     window.seekVolume = seekVolume;
     window.toggleMute = toggleMute;
+    window.closePlayer = closePlayer;

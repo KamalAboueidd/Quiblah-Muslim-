@@ -166,6 +166,8 @@ let recordedAudioBlob = null;
 
 // Live Speech Recognition
 let speechRecognizer = null;
+let speechRestartTimeout = null;
+let speechRestartAttempts = 0;
 let liveTranscript = "";
 let accumulatedSpeechText = "";
 let currentInterimSpeechText = "";
@@ -1322,39 +1324,10 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
-    // 3. Audio Stream & Hardware Capture Handling:
-    // On Android/Mobile devices, starting getUserMedia + MediaRecorder simultaneously with SpeechRecognizer
-    // causes a hardware lock conflict (Android AudioRecord exclusive access), which breaks SpeechRecognition.
-    // Therefore on mobile, SpeechRecognition handles the mic exclusively without interference.
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (!isMobile) {
-        try {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-                });
-                if (stream && isRecording) {
-                    audioStream = stream;
-                    startLiveWaveform(stream);
-                    if (window.MediaRecorder) {
-                        try {
-                            mediaRecorder = new MediaRecorder(stream);
-                            mediaRecorder.ondataavailable = (e) => {
-                                if (e.data && e.data.size > 0) audioChunks.push(e.data);
-                            };
-                            mediaRecorder.start(100);
-                        } catch (eRec) {}
-                    }
-                }
-            }
-        } catch (eDesktopStream) {
-            console.warn("Desktop audio stream capture note:", eDesktopStream);
-        }
-    }
 }
 
 function triggerSilenceCountdown() {
-    // Disabled: Recitation continues uninterrupted while breathing/pausing until user clicks stop
+    // Recitation continues uninterrupted across pauses and ayahs until user explicitly clicks stop
     if (silenceTimer) {
         clearTimeout(silenceTimer);
         silenceTimer = null;
@@ -1367,31 +1340,35 @@ async function stopRecordingAndAnalyze() {
 
     isRecording = false;
     if (timerInterval) clearInterval(timerInterval);
+
+    // 1. Commit any in-flight words from current session before shutting down
+    const chunkToCommit = (currentSessionFinalText || currentInterimSpeechText || "").trim();
+    if (chunkToCommit) {
+        committedPreviousSessionsText = mergeTwoSpeechSegments(committedPreviousSessionsText, chunkToCommit);
+        currentSessionFinalText = "";
+        currentInterimSpeechText = "";
+    }
+    if (committedPreviousSessionsText) {
+        let targetText = currentTargetVerseText || "";
+        try {
+            const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+            if (targetAyahs && targetAyahs.length) {
+                targetText = targetAyahs.map(a => a.text).join(' ');
+            }
+        } catch (e) {}
+        liveTranscript = deduplicateSpokenPhrases(committedPreviousSessionsText, targetText);
+        accumulatedSpeechText = liveTranscript;
+    }
+
     stopLiveSpeechRecognition();
     stopLiveWaveform();
 
     let recordedBlob = null;
-    if (mediaRecorder) {
+    if (audioChunks && audioChunks.length) {
         try {
-            if (mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-            }
-        } catch (e) {
-            console.warn("MediaRecorder stop notice:", e);
-        }
-    }
-    if (audioStream) {
-        try {
-            audioStream.getTracks().forEach(t => t.stop());
+            recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
         } catch (e) {}
     }
-
-    try {
-        const mime = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
-        if (audioChunks && audioChunks.length) {
-            recordedBlob = new Blob(audioChunks, { type: mime });
-        }
-    } catch (e) {}
 
     // Update UI states immediately
     if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
@@ -1560,32 +1537,58 @@ function deduplicateSpokenPhrases(text, targetText) {
 }
 
 function startLiveSpeechRecognition() {
+    accumulatedSpeechText = "";
+    currentInterimSpeechText = "";
+    committedPreviousSessionsText = "";
+    currentSessionFinalText = "";
+    liveTranscript = "";
+    speechRestartAttempts = 0;
+    if (speechRestartTimeout) {
+        clearTimeout(speechRestartTimeout);
+        speechRestartTimeout = null;
+    }
+    spawnSpeechRecognizer();
+}
+
+function spawnSpeechRecognizer() {
+    if (!isRecording) return;
+
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) {
         console.log("Speech recognition not supported natively in this browser.");
         return;
     }
 
+    // Cleanly tear down any prior recognizer
+    if (speechRecognizer) {
+        try {
+            speechRecognizer.onresult = null;
+            speechRecognizer.onend = null;
+            speechRecognizer.onerror = null;
+            speechRecognizer.abort();
+        } catch (e) {}
+        speechRecognizer = null;
+    }
+
     try {
-        if (speechRecognizer) {
-            try { speechRecognizer.abort(); } catch (e) {}
-        }
-        speechRecognizer = new SpeechRec();
-        speechRecognizer.lang = 'ar-SA';
-        
-        // Continuous recognition ensures the user can recite the whole Ayah with natural pauses
-        speechRecognizer.continuous = true;
-        speechRecognizer.interimResults = true;
-        speechRecognizer.maxAlternatives = 1;
+        const recognizer = new SpeechRec();
+        speechRecognizer = recognizer;
+        recognizer.lang = 'ar-SA';
+        recognizer.continuous = true;
+        recognizer.interimResults = true;
+        recognizer.maxAlternatives = 1;
 
-        accumulatedSpeechText = "";
-        currentInterimSpeechText = "";
-        committedPreviousSessionsText = "";
         currentSessionFinalText = "";
-        liveTranscript = "";
-        isRecognizing = true;
+        currentInterimSpeechText = "";
 
-        speechRecognizer.onresult = (event) => {
+        recognizer.onstart = () => {
+            isRecognizing = true;
+            speechRestartAttempts = 0;
+        };
+
+        recognizer.onresult = (event) => {
+            if (!isRecording) return;
+
             let sessionFinal = '';
             let sessionInterim = '';
 
@@ -1629,8 +1632,13 @@ function startLiveSpeechRecognition() {
             }
         };
 
-        speechRecognizer.onerror = (e) => {
+        recognizer.onerror = (e) => {
             console.warn("SpeechRecognition notice:", e.error);
+            // Non-fatal pause / breath silences - never abort or reset recording
+            if (e.error === 'no-speech' || e.error === 'aborted') {
+                return;
+            }
+
             const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
 
             if (e.error === 'not-allowed') {
@@ -1651,38 +1659,56 @@ function startLiveSpeechRecognition() {
             }
         };
 
-        speechRecognizer.onend = () => {
-            if (currentSessionFinalText) {
-                committedPreviousSessionsText = mergeTwoSpeechSegments(committedPreviousSessionsText, currentSessionFinalText);
+        recognizer.onend = () => {
+            // Commit all recognized words from this session (including interim if not marked final before pause)
+            const chunkToCommit = (currentSessionFinalText || currentInterimSpeechText || "").trim();
+            if (chunkToCommit) {
+                committedPreviousSessionsText = mergeTwoSpeechSegments(committedPreviousSessionsText, chunkToCommit);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
             }
+
+            // If user is still in recording mode, seamlessly restart with a fresh instance
             if (isRecording) {
-                // Seamlessly restart if the user pauses or takes a breath on mobile
-                try {
-                    speechRecognizer.start();
-                } catch (err) {
-                    setTimeout(() => {
-                        if (isRecording && speechRecognizer) {
-                            try { speechRecognizer.start(); } catch (e) {}
-                        }
-                    }, 50);
-                }
+                if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+                speechRestartTimeout = setTimeout(() => {
+                    if (isRecording) {
+                        spawnSpeechRecognizer();
+                    }
+                }, 30);
             } else {
                 isRecognizing = false;
             }
         };
 
-        speechRecognizer.start();
+        recognizer.start();
     } catch (e) {
         console.warn("Failed to start SpeechRecognition:", e);
+        if (isRecording) {
+            if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+            speechRestartTimeout = setTimeout(() => {
+                if (isRecording) {
+                    spawnSpeechRecognizer();
+                }
+            }, 100);
+        }
     }
 }
 
 function stopLiveSpeechRecognition() {
     isRecognizing = false;
+    if (speechRestartTimeout) {
+        clearTimeout(speechRestartTimeout);
+        speechRestartTimeout = null;
+    }
     if (speechRecognizer) {
-        try { speechRecognizer.stop(); } catch (e) {}
+        try {
+            speechRecognizer.onresult = null;
+            speechRecognizer.onend = null;
+            speechRecognizer.onerror = null;
+            speechRecognizer.stop();
+        } catch (e) {}
+        speechRecognizer = null;
     }
 }
 

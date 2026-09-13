@@ -497,6 +497,24 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
     transform: translate(-50%, -50%) scale(1.15);
 }
 
+.player-close-btn {
+    background: none;
+    border: none;
+    color: #1a1813;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.player-close-btn:hover {
+    color: #b91c1c;
+    transform: scale(1.2);
+}
+
 .mobile-expand-btn { display: none; }
 
 /* Mobile Viewports (Max Width: 768px) */
@@ -706,16 +724,23 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         letter-spacing: 0.5px !important;
     }
 
-    .player-bar.expanded .mobile-top-opt {
+    .player-bar.expanded .mobile-top-opt,
+    .player-bar.expanded .mobile-close-btn {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         background: none !important;
         border: none !important;
         font-size: 20px !important;
-        color: #b3b3b3 !important;
+        color: #e2e8f0 !important;
         cursor: pointer !important;
         padding: 6px !important;
+        transition: color 0.2s, transform 0.2s;
+    }
+
+    .player-bar.expanded .mobile-close-btn:hover {
+        color: #ef4444 !important;
+        transform: scale(1.15);
     }
 
     /* Center Group: Photo + Centered Titles */

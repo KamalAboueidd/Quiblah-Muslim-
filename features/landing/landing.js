@@ -452,7 +452,8 @@
             document.body.style.overflow = '';
         }
 
-        function closePlayer() {
+        function closePlayer(e) {
+            if (e) e.stopPropagation();
             audio.pause();
             isAudioPlaying = false;
             setLandingThemeColor(landingOriginalTheme);
@@ -460,6 +461,7 @@
             playerBar.classList.remove('expanded');
             document.body.style.overflow = '';
             document.body.classList.remove('player-active');
+            updatePlayPauseState();
         }
 
         // --- Spotify Controls Additions ---

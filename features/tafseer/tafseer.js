@@ -89,7 +89,7 @@
         };
 
         let allSurahs = [];
-        let currentSurahNumber = 1;
+        let currentSurahNumber = null;
         let currentTafseerEdition = 'ar.muyassar';
         let currentSurahData = null;
         let tafseerCache = {};
@@ -122,7 +122,7 @@
 
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
-            const surah = parseInt(params.get('surah')) || 1;
+            const surah = parseInt(params.get('surah')) || null;
             const ayah = parseInt(params.get('ayah')) || null;
             const edition = params.get('tafseer') || null;
             return { surah, ayah, edition };
@@ -198,11 +198,56 @@
             }
             updateDropdownUI(currentTafseerEdition);
 
-            if (surah >= 1 && surah <= 114) {
+            if (surah && surah >= 1 && surah <= 114) {
                 currentSurahNumber = surah;
+                updateActiveSurahSidebar();
+                loadSurahTafseer(currentSurahNumber, ayah);
+            } else {
+                currentSurahNumber = null;
+                updateActiveSurahSidebar();
+                renderTafseerPickerLanding();
             }
-            updateActiveSurahSidebar();
-            loadSurahTafseer(currentSurahNumber, ayah);
+        }
+
+        function renderTafseerPickerLanding() {
+            currentSurahNumber = null;
+            if (mobileTitle) {
+                mobileTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> <span>تفسير القرآن</span>`;
+            }
+            const headerContainer = document.getElementById('surah-header-container');
+            if (headerContainer) headerContainer.innerHTML = '';
+
+            const controlsBar = document.querySelector('.tafseer-controls-bar');
+            if (controlsBar) controlsBar.style.display = 'none';
+
+            contentContainer.innerHTML = `
+                <div class="surah-picker-landing">
+                    <div class="picker-icon-box">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                    </div>
+                    <div class="picker-ayah-quote">« كِتَابٌ أَنزَلْنَاهُ إِلَيْكَ مُبَارَكٌ لِّيَدَّبَّرُوا آيَاتِهِ »</div>
+                    <h2 class="picker-main-title">اختر السورة المباركة للبدء في تدارس تفسيرها</h2>
+                    <p class="picker-subtext">تصفح فهرس سور القرآن الكريم (114 سورة) واقرأ تفسير الآيات الكريمة عبر نخبة من أمهات كتب التفسير بالمأثور والتفاسير الميسرة والمعاصرة</p>
+                    
+                    <button type="button" class="open-surah-drawer-btn" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-list-ul"></i>
+                        <span>فتح فهرس السور (114 سورة)</span>
+                    </button>
+
+                    <div class="quick-surahs-section">
+                        <span class="quick-surahs-label"><i class="fa-solid fa-star"></i> سور مباركة للتفسير السريع:</span>
+                        <div class="quick-surahs-chips">
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(1)">الفاتحة (1)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(18)">الكهف (18)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(36)">يس (36)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(55)">الرحمن (55)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(56)">الواقعة (56)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(67)">الملك (67)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurahTafseer(112)">الإخلاص (112)</button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderSurahList(surahs) {
@@ -461,6 +506,15 @@
 
         async function loadSurahTafseer(surahNumber, targetAyahNumber = null) {
             stopAudio();
+            currentSurahNumber = surahNumber;
+            updateActiveSurahSidebar();
+
+            const controlsBar = document.querySelector('.tafseer-controls-bar');
+            if (controlsBar) controlsBar.style.display = 'flex';
+
+            if (window.innerWidth <= 850 && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
 
             // 0ms instant surah header update from static metadata
             const cachedSurahMeta = (allSurahs && allSurahs.find(s => s.number === surahNumber)) || 
@@ -821,5 +875,10 @@
                 copyAyahTafseer(ayahNumberInSurah);
             }
         }
+
+        // Expose helpers globally for inline onclick handlers
+        window.loadSurahTafseer = loadSurahTafseer;
+        window.toggleSidebar = toggleSidebar;
+        window.renderTafseerPickerLanding = renderTafseerPickerLanding;
 
         fetchSurahs();

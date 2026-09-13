@@ -27,7 +27,7 @@
 
         // API Integration
         let allSurahs = [];
-        let currentSurahNumber = 1;
+        let currentSurahNumber = null;
 
         const surahListEl = document.getElementById('surah-list');
         const searchInput = document.getElementById('search-input');
@@ -113,7 +113,7 @@
 
             let html = '';
             surahs.forEach(surah => {
-                const isActive = surah.number === currentSurahNumber ? 'active' : '';
+                const isActive = (currentSurahNumber && surah.number === currentSurahNumber) ? 'active' : '';
                 html += `
                     <div class="surah-item ${isActive}" data-id="${surah.number}">
                         <div class="surah-number">${surah.number}</div>
@@ -231,7 +231,23 @@
 
         // Load Specific Surah Content (with instant caching & multi-tier resilience)
         async function loadSurah(id) {
+            currentSurahNumber = id;
             readerArea.scrollTop = 0;
+
+            // Sync active state in sidebar
+            document.querySelectorAll('.surah-item').forEach(el => {
+                if (parseInt(el.getAttribute('data-id')) === id) {
+                    el.classList.add('active');
+                    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            // Close sidebar on mobile if open
+            if (window.innerWidth <= 900 && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
 
             const surahMeta = (allSurahs && allSurahs.find(s => s.number === id)) || 
                               (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === id));
@@ -287,6 +303,41 @@
                 `;
                 console.error("Error fetching surah content:", error);
             }
+        }
+
+        function renderSurahPickerLanding() {
+            currentSurahNumber = null;
+            if (mobileTitle) {
+                mobileTitle.innerHTML = `<i class="fa-solid fa-book-quran"></i> <span>القرآن الكريم</span>`;
+            }
+            contentContainer.innerHTML = `
+                <div class="surah-picker-landing">
+                    <div class="picker-icon-box">
+                        <i class="fa-solid fa-book-quran"></i>
+                    </div>
+                    <div class="picker-ayah-quote">« وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا »</div>
+                    <h2 class="picker-main-title">اختر السورة المباركة للبدء في القراءة</h2>
+                    <p class="picker-subtext">تصفح فهرس سور القرآن الكريم (114 سورة) واقرأ آيات الذكر الحكيم برسم المصحف العثماني الشريف</p>
+                    
+                    <button type="button" class="open-surah-drawer-btn" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-list-ul"></i>
+                        <span>فتح قائمة السور (114 سورة)</span>
+                    </button>
+
+                    <div class="quick-surahs-section">
+                        <span class="quick-surahs-label"><i class="fa-solid fa-star"></i> سور مباركة للقراءة السريعة:</span>
+                        <div class="quick-surahs-chips">
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(1)">الفاتحة (1)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(18)">الكهف (18)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(36)">يس (36)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(55)">الرحمن (55)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(56)">الواقعة (56)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(67)">الملك (67)</button>
+                            <button type="button" class="quick-surah-chip" onclick="loadSurah(112)">الإخلاص (112)</button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderSurahView(data) {
@@ -487,13 +538,21 @@
             if (e.key === 'Escape') closeQuickTafseer();
         });
 
+        // Expose helpers globally for inline onclick handlers
+        window.loadSurah = loadSurah;
+        window.toggleSidebar = toggleSidebar;
+        window.renderSurahPickerLanding = renderSurahPickerLanding;
+
         // Initialize with query params support
         const urlParams = new URLSearchParams(window.location.search);
         const urlSurah = parseInt(urlParams.get('surah'));
-        if (urlSurah && urlSurah >= 1 && urlSurah <= 114) {
-            currentSurahNumber = urlSurah;
-        }
 
         fetchSurahs();
-        // Load target surah immediately (defaults to Surah 1 Al-Fatihah)
-        loadSurah(currentSurahNumber);
+
+        if (urlSurah && urlSurah >= 1 && urlSurah <= 114) {
+            currentSurahNumber = urlSurah;
+            loadSurah(urlSurah);
+        } else {
+            currentSurahNumber = null;
+            renderSurahPickerLanding();
+        }

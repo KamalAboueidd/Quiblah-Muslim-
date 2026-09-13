@@ -1312,3 +1312,192 @@
                 justify-content: center;
             }
         }
+
+        /* --- Surah Picker Landing / Welcome State for Tafseer --- */
+        .surah-picker-landing {
+            max-width: 720px;
+            width: 100%;
+            margin: 35px auto;
+            padding: 40px 28px;
+            background: rgba(10, 12, 16, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55), 0 0 25px rgba(197, 168, 89, 0.12);
+            text-align: center;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .picker-icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(197, 168, 89, 0.12);
+            border: 1.5px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--gold);
+            margin-bottom: 20px;
+            box-shadow: 0 0 25px rgba(197, 168, 89, 0.25);
+            transition: transform 0.3s ease;
+        }
+
+        .picker-icon-box:hover {
+            transform: scale(1.08) rotate(-3deg);
+        }
+
+        .picker-ayah-quote {
+            font-family: 'Amiri Quran', serif;
+            font-size: 30px;
+            color: #ffffff;
+            margin: 0 0 14px 0;
+            line-height: 1.6;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+        }
+
+        .picker-main-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0 0 10px 0;
+            letter-spacing: 0.3px;
+        }
+
+        .picker-subtext {
+            font-size: 14.5px;
+            color: #cbd5e1;
+            max-width: 520px;
+            line-height: 1.65;
+            margin: 0 0 26px 0;
+        }
+
+        .open-surah-drawer-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 13px 32px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #C5A859 0%, #a88938 100%);
+            color: #111;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(197, 168, 89, 0.35);
+            transition: all 0.25s ease;
+            margin-bottom: 28px;
+        }
+
+        .open-surah-drawer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(197, 168, 89, 0.5);
+            filter: brightness(1.08);
+        }
+
+        .open-surah-drawer-btn:active {
+            transform: translateY(0);
+        }
+
+        .quick-surahs-section {
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .quick-surahs-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-surahs-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .quick-surah-chip {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-surah-chip:hover {
+            background: rgba(197, 168, 89, 0.25);
+            border-color: var(--gold);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 850px) {
+            .surah-picker-landing {
+                margin: 20px auto;
+                padding: 26px 16px;
+                border-radius: 18px;
+            }
+            .picker-icon-box {
+                width: 65px;
+                height: 65px;
+                font-size: 28px;
+                margin-bottom: 14px;
+            }
+            .picker-ayah-quote {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+            .picker-main-title {
+                font-size: 18.5px;
+                margin-bottom: 8px;
+            }
+            .picker-subtext {
+                font-size: 13px;
+                margin-bottom: 20px;
+            }
+            .open-surah-drawer-btn {
+                width: 100%;
+                max-width: 320px;
+                padding: 12px 20px;
+                font-size: 14px;
+                margin-bottom: 22px;
+            }
+            .quick-surah-chip {
+                padding: 5px 11px;
+                font-size: 12px;
+            }
+        }

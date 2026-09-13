@@ -25,6 +25,8 @@
     let distanceTooltip = null;
     let selectedRadius = 1000; // النطاق الافتراضي 1 كم
     let activeAbortController = null;
+    let isAddModalOpen = false;
+    let tempPickMarker = null;
 
     // ── دوال قياس وحساب المسافات الدقيقة ───────────────────
     function getDistance(lat1, lon1, lat2, lon2) {
@@ -127,7 +129,8 @@
         if (currentPos) {
             // تصفية فورية إن وُجدت مساجد في الذاكرة
             if (cachedMosquesPool.length > 0) {
-                const inRadius = cachedMosquesPool.filter(m => m.dist <= radius + 100);
+                const tolerance = radius <= 200 ? 50 : (radius <= 500 ? 80 : 120);
+                const inRadius = cachedMosquesPool.filter(m => m.dist <= radius + tolerance);
                 if (inRadius.length >= 3) {
                     renderMosques(inRadius);
                 }
@@ -321,10 +324,28 @@
             if (areaName.startsWith("شارع ")) areaName = areaName.replace("شارع ", "");
 
             const dist = getDistance(lat, lng, mLat, mLng);
-            if (dist > radius + 150) return;
+            const tolerance = radius <= 200 ? 50 : (radius <= 500 ? 80 : 120);
+            if (dist > radius + tolerance) return;
 
             parsedList.push({ name, lat: mLat, lng: mLng, areaName, dist });
         });
+
+        // 4. دمج المساجد المجتمعية المضافة محلياً ومن Supabase
+        try {
+            const communityMosques = await getCommunityMosques(lat, lng, radius);
+            communityMosques.forEach(cm => {
+                const dist = getDistance(lat, lng, cm.lat, cm.lng);
+                const tolerance = radius <= 200 ? 50 : (radius <= 500 ? 80 : 150);
+                if (dist <= radius + tolerance) {
+                    parsedList.push({
+                        ...cm,
+                        dist: dist
+                    });
+                }
+            });
+        } catch (comErr) {
+            console.warn("[Mosques] Community mosques integration notice:", comErr);
+        }
 
         processAndDisplayMosques(parsedList, lat, lng, radius);
     }
@@ -372,22 +393,27 @@
             const formattedDist = formatDistanceText(m.dist);
             const timeEst = estimateTimeText(m.dist);
 
-            // إنشاء علامة مخصصة مميزة على الخريطة
+            // إنشاء علامة مخصصة مميزة على الخريطة (تمييز مساجد المجتمع بنجمة ذهبية)
+            const isCommunity = !!m.isCommunity;
+            const pinClass = isCommunity ? 'mosque-map-pin community-pin' : 'mosque-map-pin';
+            const pinIcon = isCommunity ? '<i aria-hidden="true" class="fa-solid fa-star"></i>' : '<i aria-hidden="true" class="fa-solid fa-mosque"></i>';
+
             const marker = L.marker([m.lat, m.lng], {
                 icon: L.divIcon({
                     className: '',
                     iconSize: [36, 36],
                     iconAnchor: [18, 36],
                     html: `
-                        <div class="mosque-map-pin">
-                            <i aria-hidden="true" class="fa-solid fa-mosque"></i>
+                        <div class="${pinClass}">
+                            ${pinIcon}
                         </div>`
                 })
             }).bindPopup(`
                 <div class="custom-popup-content">
                     <div class="popup-mosque-title">
-                        <i class="fa-solid fa-mosque" style="color:var(--gold);"></i> ${m.name}
+                        <i class="${isCommunity ? 'fa-solid fa-star' : 'fa-solid fa-mosque'}" style="color:var(--gold);"></i> ${m.name}
                     </div>
+                    ${isCommunity ? `<div style="font-size:11.5px; color:var(--gold); font-weight:700; margin-bottom:6px;"><i class="fa-solid fa-users"></i> مضاف بواسطة المصلين</div>` : ''}
                     <div class="popup-meta-row">
                         <span class="popup-meta-dist"><i class="fa-solid fa-person-walking"></i> ${formattedDist} (${timeEst})</span>
                         ${m.areaName ? `<span class="popup-meta-area"><i class="fa-solid fa-location-dot"></i> ${m.areaName}</span>` : ''}
@@ -413,7 +439,8 @@
                 lng: m.lng,
                 dist: m.dist,
                 marker: marker,
-                areaName: m.areaName || 'مسجد'
+                areaName: m.areaName || 'مسجد',
+                isCommunity: isCommunity
             });
         });
 
@@ -438,10 +465,15 @@
                 <div style="text-align:center; padding:30px 20px; color:#aaa; line-height:1.8;">
                     <i class="fa-solid fa-mosque" style="font-size:38px; color:rgba(197,168,89,0.5); margin-bottom:12px;"></i><br>
                     <strong style="color:var(--white); font-size:16px;">لم يتم العثور على مساجد ضمن نطاق ${radiusLabel}</strong><br>
+                    ${selectedRadius < 1000 ? `
                     يمكنك توسيع نطاق البحث للعثور على مساجد أخرى قريبة.<br>
-                    <button type="button" onclick="setSearchRadius(${Math.min(selectedRadius + 1000, 5000)})" style="margin-top:16px; background:rgba(197,168,89,0.25); border:1px solid var(--gold); color:var(--gold); padding:8px 22px; border-radius:20px; cursor:pointer; font-family:inherit; font-weight:700; font-size:13.5px; transition:0.3s;">
-                        <i class="fa-solid fa-arrows-maximize"></i> توسيع البحث إلى ${Math.min(selectedRadius + 1000, 5000) / 1000} كم
-                    </button>
+                    <button type="button" onclick="setSearchRadius(${selectedRadius < 500 ? 500 : 1000})" style="margin-top:16px; background:rgba(197,168,89,0.25); border:1px solid var(--gold); color:var(--gold); padding:8px 22px; border-radius:20px; cursor:pointer; font-family:inherit; font-weight:700; font-size:13.5px; transition:0.3s;">
+                        <i class="fa-solid fa-arrows-maximize"></i> توسيع البحث إلى ${selectedRadius < 500 ? '500 متر' : '1 كم'}
+                    </button>` : `
+                    يمكنك البحث في كامل نطاق الخريطة المعروضة.<br>
+                    <button type="button" onclick="fetchMosquesInView()" style="margin-top:16px; background:rgba(197,168,89,0.25); border:1px solid var(--gold); color:var(--gold); padding:8px 22px; border-radius:20px; cursor:pointer; font-family:inherit; font-weight:700; font-size:13.5px; transition:0.3s;">
+                        <i class="fa-solid fa-magnifying-glass-location"></i> البحث في نطاق الخريطة
+                    </button>`}
                 </div>`;
             return;
         }
@@ -468,6 +500,7 @@
                         <span class="mosque-area-label" id="list-area-${m.id}">
                             <i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${m.areaName}
                         </span>
+                        ${m.isCommunity ? `<span class="mosque-community-badge"><i class="fa-solid fa-users"></i> مضاف بواسطة المصلين</span>` : ''}
                     </div>
 
                     <div class="mosque-actions-bar" onclick="event.stopPropagation();">
@@ -670,6 +703,16 @@
             subdomains: ['a', 'b', 'c']
         }).addTo(map);
 
+        // الاستماع للنقر على الخريطة لاختيار موقع مسجد جديد إذا كانت النافذة مفتوحة
+        map.on('click', (e) => {
+            if (isAddModalOpen) {
+                setPickedLocation(e.latlng.lat, e.latlng.lng);
+                if (typeof showToast === 'function') {
+                    showToast('تم تحديد مكان المسجد على الخريطة بنجاح', 1500, 'info');
+                }
+            }
+        });
+
         // 1. التحميل اللحظي الفوري من الموقع المحفوظ في الذاكرة
         const cachedLat = localStorage.getItem('quiblah_user_lat');
         const cachedLng = localStorage.getItem('quiblah_user_lng');
@@ -691,5 +734,272 @@
             startLocationSearch();
         }
     });
+
+    // ── منطق إضافة المساجد المجتمعية وقاعدة البيانات ─────────
+
+    // جلب المساجد المجتمعية من LocalStorage و Supabase
+    async function getCommunityMosques(centerLat, centerLng, radius) {
+        const communityMosques = [];
+        const seenKeys = new Set();
+
+        // 1. من الذاكرة المحلية (LocalStorage)
+        try {
+            const localData = JSON.parse(localStorage.getItem('quiblah_community_mosques') || '[]');
+            if (Array.isArray(localData)) {
+                localData.forEach(m => {
+                    const key = `${parseFloat(m.lat).toFixed(4)},${parseFloat(m.lng).toFixed(4)}`;
+                    if (!seenKeys.has(key)) {
+                        seenKeys.add(key);
+                        communityMosques.push({
+                            id: m.id || ('local_' + Math.random()),
+                            name: m.name,
+                            areaName: m.areaName || '',
+                            lat: parseFloat(m.lat),
+                            lng: parseFloat(m.lng),
+                            isCommunity: true
+                        });
+                    }
+                });
+            }
+        } catch (err) {
+            console.warn('[Community] LocalStorage read notice:', err);
+        }
+
+        // 2. من Supabase في حال كانت الإعدادات متوفرة
+        if (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey) {
+            try {
+                const supaUrl = window.SUPABASE_CONFIG.url.replace(/\/$/, '');
+                const res = await fetch(`${supaUrl}/rest/v1/mosques?select=*`, {
+                    headers: {
+                        'apikey': window.SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${window.SUPABASE_CONFIG.anonKey}`
+                    },
+                    signal: AbortSignal.timeout(3500)
+                });
+                if (res.ok) {
+                    const supaRows = await res.json();
+                    if (Array.isArray(supaRows)) {
+                        supaRows.forEach(row => {
+                            const mLat = parseFloat(row.latitude);
+                            const mLng = parseFloat(row.longitude);
+                            const key = `${mLat.toFixed(4)},${mLng.toFixed(4)}`;
+                            if (!seenKeys.has(key) && !isNaN(mLat) && !isNaN(mLng)) {
+                                seenKeys.add(key);
+                                communityMosques.push({
+                                    id: 'supa_' + row.id,
+                                    name: row.name,
+                                    areaName: row.area_name || '',
+                                    lat: mLat,
+                                    lng: mLng,
+                                    isCommunity: true
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (supaErr) {
+                console.warn('[Community] Supabase fetch notice:', supaErr);
+            }
+        }
+
+        return communityMosques;
+    }
+
+    // فتح نافذة إضافة مسجد
+    window.openAddMosqueModal = function() {
+        const overlay = document.getElementById('add-mosque-modal-overlay');
+        if (!overlay) return;
+        isAddModalOpen = true;
+        overlay.classList.add('active');
+
+        const latInput = document.getElementById('new-mosque-lat');
+        const lngInput = document.getElementById('new-mosque-lng');
+        const coordsText = document.getElementById('coords-text');
+
+        // إذا كان هناك موقع محدد مسبقاً والحقول فارغة، نملؤها بموقع المستخدم الافتراضي
+        if ((!latInput.value || !lngInput.value) && currentPos) {
+            setPickedLocation(currentPos.lat, currentPos.lng);
+        } else if (latInput.value && lngInput.value) {
+            placePickMarker(parseFloat(latInput.value), parseFloat(lngInput.value));
+        }
+
+        setTimeout(() => {
+            const nameInput = document.getElementById('new-mosque-name');
+            if (nameInput) nameInput.focus();
+        }, 200);
+    };
+
+    // إغلاق نافذة إضافة مسجد
+    window.closeAddMosqueModal = function(e) {
+        if (e && e.target && e.target !== e.currentTarget && !e.target.closest('.modal-close-btn') && !e.target.closest('.btn-cancel')) {
+            return;
+        }
+        const overlay = document.getElementById('add-mosque-modal-overlay');
+        if (overlay) overlay.classList.remove('active');
+        isAddModalOpen = false;
+
+        if (tempPickMarker && map) {
+            map.removeLayer(tempPickMarker);
+            tempPickMarker = null;
+        }
+    };
+
+    // استخدام الموقع الحالي كإحداثيات للمسجد
+    window.useCurrentLocationForMosque = function() {
+        if (currentPos) {
+            setPickedLocation(currentPos.lat, currentPos.lng);
+            if (map) map.panTo([currentPos.lat, currentPos.lng]);
+            if (typeof showToast === 'function') showToast('تم تعيين إحداثيات موقعك الحالي', 1800, 'info');
+        } else if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    setPickedLocation(currentPos.lat, currentPos.lng);
+                    if (map) map.panTo([currentPos.lat, currentPos.lng]);
+                    if (typeof showToast === 'function') showToast('تم تعيين إحداثيات موقعك الحالي', 1800, 'info');
+                },
+                () => {
+                    if (typeof showToast === 'function') showToast('يرجى النقر مباشرة على الخريطة لتحديد مكان المسجد', 2500, 'warning');
+                }
+            );
+        }
+    };
+
+    // تعيين الإحداثيات المختارة وتحديث حقول الإدخال
+    function setPickedLocation(lat, lng) {
+        const latInput = document.getElementById('new-mosque-lat');
+        const lngInput = document.getElementById('new-mosque-lng');
+        const coordsText = document.getElementById('coords-text');
+
+        if (latInput) latInput.value = lat;
+        if (lngInput) lngInput.value = lng;
+        if (coordsText) coordsText.textContent = `${lat.toFixed(5)} ، ${lng.toFixed(5)}`;
+
+        placePickMarker(lat, lng);
+    }
+
+    // وضع أو تحريك العلامة المؤقتة على الخريطة
+    function placePickMarker(lat, lng) {
+        if (!map) return;
+        if (tempPickMarker) {
+            tempPickMarker.setLatLng([lat, lng]);
+        } else {
+            tempPickMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: '',
+                    iconSize: [34, 34],
+                    iconAnchor: [17, 34],
+                    html: `<div class="temp-pick-marker-icon"><i class="fa-solid fa-mosque"></i></div>`
+                }),
+                zIndexOffset: 1000
+            }).addTo(map);
+        }
+    }
+
+    // إرسال وحفظ المسجد الجديد
+    window.submitNewMosque = async function(event) {
+        if (event) event.preventDefault();
+        const nameInput = document.getElementById('new-mosque-name');
+        const areaInput = document.getElementById('new-mosque-area');
+        const latInput = document.getElementById('new-mosque-lat');
+        const lngInput = document.getElementById('new-mosque-lng');
+        const submitBtn = document.getElementById('btn-submit-mosque');
+
+        const name = nameInput ? nameInput.value.trim() : '';
+        const area = areaInput ? areaInput.value.trim() : '';
+        const lat = latInput ? parseFloat(latInput.value) : NaN;
+        const lng = lngInput ? parseFloat(lngInput.value) : NaN;
+
+        if (!name) {
+            if (typeof showToast === 'function') showToast('يرجى كتابة اسم المسجد', 2500, 'warning');
+            return;
+        }
+        if (isNaN(lat) || isNaN(lng)) {
+            if (typeof showToast === 'function') showToast('يرجى تحديد موقع المسجد بالضغط على الخريطة أو زر موقعي', 3000, 'warning');
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...`;
+        }
+
+        const newMosqueObj = {
+            id: 'custom_' + Date.now(),
+            name: name,
+            areaName: area || 'مسجد مضاف',
+            lat: lat,
+            lng: lng,
+            isCommunity: true,
+            createdAt: new Date().toISOString()
+        };
+
+        // 1. الحفظ الفوري محلياً في الذاكرة لضمان العمل حتى دون اتصال
+        try {
+            const localCommunity = JSON.parse(localStorage.getItem('quiblah_community_mosques') || '[]');
+            localCommunity.push(newMosqueObj);
+            localStorage.setItem('quiblah_community_mosques', JSON.stringify(localCommunity));
+        } catch (storageErr) {
+            console.warn('[Community] LocalStorage save error:', storageErr);
+        }
+
+        // 2. الإرسال إلى Supabase في حال كانت الإعدادات متوفرة
+        if (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey) {
+            try {
+                const supaUrl = window.SUPABASE_CONFIG.url.replace(/\/$/, '');
+                await fetch(`${supaUrl}/rest/v1/mosques`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': window.SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${window.SUPABASE_CONFIG.anonKey}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        area_name: area,
+                        latitude: lat,
+                        longitude: lng
+                    })
+                });
+            } catch (supaPostErr) {
+                console.warn('[Community] Supabase post error:', supaPostErr);
+            }
+        }
+
+        // 3. إغلاق النافذة وتنظيف النموذج
+        closeAddMosqueModal();
+        if (nameInput) nameInput.value = '';
+        if (areaInput) areaInput.value = '';
+        if (latInput) latInput.value = '';
+        if (lngInput) lngInput.value = '';
+        const coordsText = document.getElementById('coords-text');
+        if (coordsText) coordsText.textContent = 'لم يتم تحديد الموقع بعد';
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> حفظ وإضافة المسجد`;
+        }
+
+        // 4. إشعار نجاح فوري
+        if (typeof showToast === 'function') {
+            showToast(`تمت إضافة "${name}" بنجاح! جزاك الله خيراً`, 4000, 'success');
+        }
+
+        // 5. إضافة المسجد فوراً إلى العرض الحالي والخريطة
+        const userBaseLat = (userMarker && userMarker.getLatLng().lat) || (currentPos && currentPos.lat) || lat;
+        const userBaseLng = (userMarker && userMarker.getLatLng().lng) || (currentPos && currentPos.lng) || lng;
+        newMosqueObj.dist = getDistance(userBaseLat, userBaseLng, lat, lng);
+
+        cachedMosquesPool = cachedMosquesPool.filter(m => getDistance(m.lat, m.lng, lat, lng) > 15);
+        cachedMosquesPool.unshift(newMosqueObj);
+        cachedMosquesPool.sort((a, b) => a.dist - b.dist);
+
+        renderMosques(cachedMosquesPool);
+
+        if (map) {
+            map.flyTo([lat, lng], 17, { duration: 0.8 });
+        }
+    };
 
 })();

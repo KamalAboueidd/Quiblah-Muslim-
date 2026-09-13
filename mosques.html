@@ -44,22 +44,12 @@
 </div>
 
 <div class="app-container">
-    <div class="top-bar"><div class="title">قبلة المسلم</div></div>
-
-    <div class="nav-bar">
-        <a href="home.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
-        <a href="reminders.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-bell"></i> التذكيرات</a>
-        <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
-        <a href="tafseer.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> التفسير</a>
-        <a href="hadith.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-bookmark"></i> الأحاديث</a>
-        <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
-        <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
-        <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
-        <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
-        <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
-        <a href="recite.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-microphone-lines"></i> المصحح القرآني</a>
+    <div class="top-bar">
+        <div class="title">قبلة المسلم</div>
+        <a href="home.html" class="back-home-btn" title="الرجوع لصفحة المواقيت الرئيسية">
+            <i class="fa-solid fa-arrow-right"></i>
+            <span>الرجوع للمواقيت</span>
+        </a>
     </div>
 
     <div class="main-content">
@@ -75,17 +65,21 @@
                 <button type="button" class="btn-my-location" id="start-btn" onclick="startLocationSearch()">
                     <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> موقعي
                 </button>
+
+                <!-- Add Mosque Button -->
+                <button type="button" class="btn-add-mosque" id="btn-add-mosque" onclick="openAddMosqueModal()" title="أضف مسجداً غير موجود على الخريطة">
+                    <i class="fa-solid fa-plus"></i> إضافة مسجد
+                </button>
                 <span id="loader-text" style="display: none; color: var(--gold); font-weight: 700; font-size: 13px; align-items: center; gap: 6px;">
                     <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري...
                 </span>
 
-                <!-- Distance selector pills (1km default as requested) -->
+                <!-- Distance selector pills (200m, 500m, 1km) -->
                 <div class="radius-selector" style="display: flex; gap: 5px; align-items: center;">
                     <span class="radius-label" style="font-size: 12px; color: rgba(255,255,255,0.7); margin-left: 2px;">النطاق:</span>
+                    <button type="button" class="radius-pill" id="pill-200" onclick="setSearchRadius(200)">200 م</button>
+                    <button type="button" class="radius-pill" id="pill-500" onclick="setSearchRadius(500)">500 م</button>
                     <button type="button" class="radius-pill active" id="pill-1000" onclick="setSearchRadius(1000)"><i class="fa-solid fa-person-walking"></i> 1 كم</button>
-                    <button type="button" class="radius-pill" id="pill-2000" onclick="setSearchRadius(2000)">2 كم</button>
-                    <button type="button" class="radius-pill" id="pill-3000" onclick="setSearchRadius(3000)">3 كم</button>
-                    <button type="button" class="radius-pill" id="pill-5000" onclick="setSearchRadius(5000)">5 كم</button>
                 </div>
 
                 <!-- Desktop Search by City/Area Name -->
@@ -133,11 +127,68 @@
     </footer>
 </div>
 
+    <!-- Add Mosque Modal -->
+    <div class="add-mosque-modal-overlay" id="add-mosque-modal-overlay" onclick="closeAddMosqueModal(event)">
+        <div class="add-mosque-modal" id="add-mosque-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <i class="fa-solid fa-mosque modal-icon"></i>
+                    <div>
+                        <h3>إضافة مسجد غير مسجل</h3>
+                        <p class="modal-sub">ليظهر للجميع عند البحث في هذا النطاق</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeAddMosqueModal(event)" title="إغلاق">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form class="modal-form" id="add-mosque-form" onsubmit="submitNewMosque(event)">
+                <div class="form-group">
+                    <label for="new-mosque-name">اسم المسجد <span class="required">*</span></label>
+                    <input type="text" id="new-mosque-name" class="modal-input" placeholder="مثال: مسجد بلال بن رباح" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="new-mosque-area">المنطقة / الشارع (اختياري)</label>
+                    <input type="text" id="new-mosque-area" class="modal-input" placeholder="مثال: عزبة المراغي الجديدة" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>موقع المسجد على الخريطة <span class="required">*</span></label>
+                    <div class="coords-box">
+                        <div class="coords-display" id="coords-display">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span id="coords-text">لم يتم تحديد الموقع بعد</span>
+                        </div>
+                        <button type="button" class="btn-set-cur-loc" onclick="useCurrentLocationForMosque()">
+                            <i class="fa-solid fa-location-crosshairs"></i> موقعي الحالي
+                        </button>
+                    </div>
+                    <div class="location-hint">
+                        <i class="fa-solid fa-circle-info"></i> يمكنك أيضاً الضغط على الخريطة مباشرة لتحديد مكان المسجد بدقة
+                    </div>
+                </div>
+
+                <input type="hidden" id="new-mosque-lat">
+                <input type="hidden" id="new-mosque-lng">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddMosqueModal(event)">إلغاء</button>
+                    <button type="submit" class="btn-submit-mosque" id="btn-submit-mosque">
+                        <i class="fa-solid fa-check"></i> حفظ وإضافة المسجد
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="core/toast.js"></script>
 <script src="core/pwa.js"></script>
 <script src="core/visitor-counter.js"></script>
+<script src="core/supabase-config.js"></script>
 <script src="features/mosques/mosques.js"></script>
 </body>
 </html>

@@ -14,7 +14,16 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 .fullscreen-carousel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; }
 .carousel-slide.active { opacity: 1; }
-.carousel-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.65); }
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
 
 .app-container { position: relative; z-index: 10; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 90px; }
 
@@ -183,13 +192,13 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
     flex-shrink: 0;
     position: sticky;
     top: 20px;
-    background: rgba(18, 22, 28, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 20px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 .side-panel-header h3 {
@@ -340,27 +349,6 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
     filter: drop-shadow(0 2px 14px rgba(197, 168, 89, 0.75));
 }
 
-.fav-badge {
-    position: absolute;
-    top: -6px;
-    right: -10px;
-    background: #ef4444;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 800;
-    min-width: 17px;
-    height: 17px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    border: 1.5px solid #121216;
-}
-
-.fav-badge.empty {
-    display: none !important;
-}
 
 .fav-btn-label {
     font-size: 11px;
@@ -656,7 +644,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         right: 0 !important;
         bottom: 0 !important;
         z-index: 999999 !important;
-        padding: max(14px, env(safe-area-inset-top)) 20px max(14px, env(safe-area-inset-bottom)) 20px !important;
+        padding: max(16px, env(safe-area-inset-top)) 20px max(32px, calc(env(safe-area-inset-bottom) + 24px)) 20px !important;
         background: linear-gradient(180deg, #1c202a 0%, #0c0e12 100%) !important;
         border-top: none !important;
         overflow-y: auto !important;
@@ -712,9 +700,9 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         justify-content: center !important;
         width: 100% !important;
         max-width: 320px !important;
-        margin: auto auto !important;
+        margin: auto auto 18px auto !important;
         position: relative !important;
-        flex: 1 1 auto !important;
+        flex: 0 1 auto !important;
         min-height: 0 !important;
         cursor: default !important;
         gap: 14px !important;
@@ -800,7 +788,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         flex-direction: column !important;
         width: 100% !important;
         max-width: min(300px, 86vw) !important;
-        margin: 0 auto 6px !important;
+        margin: 0 auto 20px !important;
         flex-shrink: 0 !important;
     }
 
@@ -810,7 +798,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         justify-content: space-between !important;
         width: 100% !important;
         gap: 10px !important;
-        margin-bottom: 12px !important;
+        margin-bottom: 16px !important;
         direction: ltr !important;
     }
 
@@ -843,7 +831,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        margin-bottom: 4px !important;
+        margin-bottom: 6px !important;
         gap: 0 !important;
     }
 
@@ -914,8 +902,8 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         justify-content: space-between !important;
         width: 100% !important;
         max-width: min(300px, 86vw) !important;
-        margin-top: auto !important;
-        padding-top: 4px !important;
+        margin-top: 0 !important;
+        padding-top: 6px !important;
         flex-shrink: 0 !important;
     }
 
@@ -985,15 +973,15 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
     width: 100%;
     max-width: 420px;
     height: 100%;
-    background: rgba(13, 16, 22, 0.95);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.8);
     position: relative;
     overflow: hidden;
 }
@@ -1020,7 +1008,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 .fav-header-heart {
     font-size: 20px;
     color: var(--gold);
-    filter: drop-shadow(0 0 10px rgba(197, 168, 89, 0.4));
+    filter: none;
 }
 
 .fav-drawer-title-wrap h3 {
@@ -1031,34 +1019,32 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 }
 
 .fav-total-count {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--gold);
-    background: rgba(197, 168, 89, 0.12);
-    border: 1px solid rgba(197, 168, 89, 0.25);
-    padding: 3px 10px;
-    border-radius: 12px;
+    background: none;
+    border: none;
+    padding: 0;
 }
 
 .fav-drawer-close-btn {
-    background: rgba(255, 255, 255, 0.08);
+    background: transparent;
     border: none;
     color: #cbd5e1;
     width: 34px;
     height: 34px;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 18px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.2s;
 }
 
 .fav-drawer-close-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: transparent;
     color: #ffffff;
-    transform: rotate(90deg);
+    transform: none;
 }
 
 .fav-drawer-body {
@@ -1108,7 +1094,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 }
 
 .fav-item.playing {
-    background: rgba(197, 168, 89, 0.08);
+    background: transparent;
 }
 
 .fav-item.playing::after {

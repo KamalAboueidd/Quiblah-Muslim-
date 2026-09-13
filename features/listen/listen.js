@@ -616,20 +616,6 @@
     function updateFavoritesBadges() {
         const favs = getFavorites();
         const count = favs.length;
-        const badges = [
-            document.getElementById('fav-count-badge'),
-            document.getElementById('fav-count-badge-rec')
-        ];
-        badges.forEach(b => {
-            if (b) {
-                b.textContent = count;
-                if (count > 0) {
-                    b.classList.remove('empty');
-                } else {
-                    b.classList.add('empty');
-                }
-            }
-        });
         const totalCountEl = document.getElementById('fav-total-count');
         if (totalCountEl) {
             totalCountEl.textContent = `${count} ${count === 1 ? 'سورة' : 'سور'}`;

@@ -489,7 +489,7 @@
                 right: 0 !important;
                 bottom: 0 !important;
                 z-index: 999999 !important;
-                padding: max(14px, env(safe-area-inset-top)) 20px max(14px, env(safe-area-inset-bottom)) 20px !important;
+                padding: max(16px, env(safe-area-inset-top)) 20px max(32px, calc(env(safe-area-inset-bottom) + 24px)) 20px !important;
                 background: linear-gradient(180deg, #1c202a 0%, #0c0e12 100%) !important;
                 border-top: none !important;
                 overflow-y: auto !important;
@@ -545,9 +545,9 @@
                 justify-content: center !important;
                 width: 100% !important;
                 max-width: 320px !important;
-                margin: auto auto !important;
+                margin: auto auto 18px auto !important;
                 position: relative !important;
-                flex: 1 1 auto !important;
+                flex: 0 1 auto !important;
                 min-height: 0 !important;
                 cursor: default !important;
                 gap: 14px !important;
@@ -633,7 +633,7 @@
                 flex-direction: column !important;
                 width: 100% !important;
                 max-width: min(300px, 86vw) !important;
-                margin: 0 auto 6px !important;
+                margin: 0 auto 20px !important;
                 flex-shrink: 0 !important;
             }
 
@@ -643,7 +643,7 @@
                 justify-content: space-between !important;
                 width: 100% !important;
                 gap: 10px !important;
-                margin-bottom: 12px !important;
+                margin-bottom: 16px !important;
                 direction: ltr !important;
             }
 
@@ -677,7 +677,7 @@
                 display: flex !important;
                 justify-content: space-between !important;
                 align-items: center !important;
-                margin-bottom: 4px !important;
+                margin-bottom: 6px !important;
             }
 
             .global-player-bar.expanded .btn-extra {
@@ -746,8 +746,8 @@
                 justify-content: space-between !important;
                 width: 100% !important;
                 max-width: min(300px, 86vw) !important;
-                margin-top: auto !important;
-                padding-top: 4px !important;
+                margin-top: 0 !important;
+                padding-top: 6px !important;
                 flex-shrink: 0 !important;
             }
 

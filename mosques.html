@@ -134,7 +134,7 @@
                 <div class="modal-title-wrap">
                     <i class="fa-solid fa-mosque modal-icon"></i>
                     <div>
-                        <h3>إضافة مسجد غير مسجل</h3>
+                        <h3 class="modal-title">إضافة مسجد غير مسجل</h3>
                         <p class="modal-sub">ليظهر للجميع عند البحث في هذا النطاق</p>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
 
                 <div class="form-group">
                     <label for="new-mosque-area">المنطقة / الشارع (اختياري)</label>
-                    <input type="text" id="new-mosque-area" class="modal-input" placeholder="مثال: عزبة المراغي الجديدة" autocomplete="off">
+                    <input type="text" id="new-mosque-area" class="modal-input" placeholder="مثال: سموحة، الإسكندرية" autocomplete="off">
                 </div>
 
                 <div class="form-group">
@@ -161,12 +161,14 @@
                             <i class="fa-solid fa-location-dot"></i>
                             <span id="coords-text">لم يتم تحديد الموقع بعد</span>
                         </div>
-                        <button type="button" class="btn-set-cur-loc" onclick="useCurrentLocationForMosque()">
-                            <i class="fa-solid fa-location-crosshairs"></i> موقعي الحالي
-                        </button>
-                    </div>
-                    <div class="location-hint">
-                        <i class="fa-solid fa-circle-info"></i> يمكنك أيضاً الضغط على الخريطة مباشرة لتحديد مكان المسجد بدقة
+                        <div class="location-btn-group">
+                            <button type="button" class="btn-location-action" id="btn-set-cur-loc" onclick="useCurrentLocationForMosque()" title="تحديد الموقع عبر GPS موقعك الحالي">
+                                <i class="fa-solid fa-location-crosshairs"></i> موقعي الحالي
+                            </button>
+                            <button type="button" class="btn-location-action" id="btn-pick-map" onclick="activateMapPicker()" title="تحديد الموقع بالنقر على الخريطة">
+                                <i class="fa-solid fa-map-pin"></i> تحديده على الخريطة
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -181,6 +183,17 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Floating banner for map picking -->
+    <div class="map-picker-banner" id="map-picker-banner" style="display: none;">
+        <div class="picker-banner-text">
+            <i class="fa-solid fa-crosshairs"></i>
+            <span>اضغط على أي مكان بالخريطة لتحديد موقع المسجد</span>
+        </div>
+        <button type="button" class="picker-done-btn" onclick="returnFromMapPicker()">
+            <i class="fa-solid fa-check"></i> تم التحديد
+        </button>
     </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

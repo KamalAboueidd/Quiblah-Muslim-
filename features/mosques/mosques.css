@@ -596,7 +596,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.78);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             z-index: 10000;
@@ -606,6 +606,7 @@
             padding: 18px;
             opacity: 0;
             visibility: hidden;
+            overscroll-behavior: contain;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
@@ -615,7 +616,7 @@
         }
 
         .add-mosque-modal {
-            background: rgba(18, 22, 28, 0.96);
+            background: rgba(18, 22, 28, 0.97);
             border: 1px solid rgba(197, 168, 89, 0.35);
             border-radius: 16px;
             max-width: 480px;
@@ -648,24 +649,26 @@
         }
 
         .modal-icon {
-            font-size: 22px;
-            color: var(--gold);
-            background: rgba(197, 168, 89, 0.12);
-            border: 1px solid rgba(197, 168, 89, 0.3);
-            width: 42px;
-            height: 42px;
-            display: flex;
+            font-size: 26px !important;
+            color: var(--gold) !important;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 0 !important;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
             flex-shrink: 0;
         }
 
-        .modal-title-wrap h3 {
-            font-size: 17.5px;
-            font-weight: 800;
-            color: var(--white);
-            margin: 0;
+        .modal-title-wrap h3,
+        .modal-title {
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            color: var(--gold) !important;
+            margin: 0 !important;
         }
 
         .modal-sub {
@@ -743,12 +746,11 @@
 
         .coords-box {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
             background: rgba(0, 0, 0, 0.45);
             border: 1px solid rgba(197, 168, 89, 0.25);
             border-radius: 10px;
-            padding: 8px 12px;
+            padding: 12px;
             gap: 10px;
         }
 
@@ -759,20 +761,26 @@
             font-size: 13px;
             color: var(--gold);
             font-weight: 600;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            word-break: break-word;
         }
 
         .coords-display i {
             font-size: 14px;
+            color: var(--gold);
         }
 
-        .btn-set-cur-loc {
+        .location-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-location-action {
             background: rgba(197, 168, 89, 0.15);
             border: 1px solid var(--gold);
             color: var(--gold);
-            padding: 6px 12px;
+            padding: 6px 13px;
             border-radius: 8px;
             font-size: 12.5px;
             font-weight: 700;
@@ -783,12 +791,12 @@
             align-items: center;
             gap: 6px;
             white-space: nowrap;
-            flex-shrink: 0;
         }
 
-        .btn-set-cur-loc:hover {
+        .btn-location-action:hover {
             background: var(--gold);
             color: #000;
+            box-shadow: 0 0 10px rgba(197, 168, 89, 0.35);
         }
 
         .location-hint {
@@ -810,29 +818,28 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 12px;
             margin-top: 8px;
             padding-top: 14px;
             border-top: 1px solid rgba(197, 168, 89, 0.15);
         }
 
         .btn-cancel {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: rgba(255, 255, 255, 0.75);
-            padding: 9px 18px;
-            border-radius: 10px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: rgba(255, 255, 255, 0.65) !important;
+            padding: 9px 16px;
             font-size: 13.5px;
             font-weight: 700;
             font-family: 'Tajawal', sans-serif;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: color 0.2s ease;
         }
 
         .btn-cancel:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff !important;
+            background: transparent !important;
         }
 
         .btn-submit-mosque {
@@ -914,4 +921,68 @@
         @keyframes tempPinBounce {
             0% { transform: translateY(-16px) rotate(-45deg); opacity: 0; }
             100% { transform: translateY(0) rotate(-45deg); opacity: 1; }
+        }
+
+        /* ── شريط تحديد الموقع على الخريطة (Map Picker Floating Banner) ── */
+        .map-picker-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10005;
+            background: rgba(18, 22, 28, 0.96);
+            border: 1px solid var(--gold);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 20px rgba(197, 168, 89, 0.25);
+            border-radius: 30px;
+            padding: 8px 14px 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #fff;
+            font-size: 13.5px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            animation: bannerDrop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 90vw;
+        }
+
+        .picker-banner-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: var(--white);
+            white-space: nowrap;
+        }
+
+        .picker-banner-text i {
+            color: var(--gold);
+            font-size: 15px;
+        }
+
+        .picker-done-btn {
+            background: linear-gradient(135deg, #c5a859 0%, #a88d44 100%);
+            color: #000;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 12.5px;
+            font-weight: 800;
+            font-family: 'Tajawal', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .picker-done-btn:hover {
+            transform: scale(1.04);
+            filter: brightness(1.1);
+        }
+
+        @keyframes bannerDrop {
+            from { transform: translate(-50%, -25px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }

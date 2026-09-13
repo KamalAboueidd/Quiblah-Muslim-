@@ -644,7 +644,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         right: 0 !important;
         bottom: 0 !important;
         z-index: 999999 !important;
-        padding: max(16px, env(safe-area-inset-top)) 20px max(32px, calc(env(safe-area-inset-bottom) + 24px)) 20px !important;
+        padding: max(16px, env(safe-area-inset-top)) 20px max(56px, calc(env(safe-area-inset-bottom) + 42px)) 20px !important;
         background: linear-gradient(180deg, #1c202a 0%, #0c0e12 100%) !important;
         border-top: none !important;
         overflow-y: auto !important;
@@ -657,8 +657,8 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
-        max-width: 320px !important;
-        margin: 0 auto 10px !important;
+        max-width: min(340px, 88vw) !important;
+        margin: 0 auto 8px !important;
         flex-shrink: 0 !important;
     }
 
@@ -675,7 +675,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
     }
 
     .player-bar.expanded .mobile-header-title {
-        font-size: 13px !important;
+        font-size: 13.5px !important;
         font-weight: 700 !important;
         color: #b3b3b3 !important;
         letter-spacing: 0.5px !important;
@@ -699,24 +699,24 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         align-items: center !important;
         justify-content: center !important;
         width: 100% !important;
-        max-width: 320px !important;
-        margin: auto auto 18px auto !important;
+        max-width: min(350px, 90vw) !important;
+        margin: auto auto 16px auto !important;
         position: relative !important;
         flex: 0 1 auto !important;
         min-height: 0 !important;
         cursor: default !important;
-        gap: 14px !important;
+        gap: 16px !important;
     }
 
     .player-bar.expanded .player-thumb {
-        width: min(220px, 58vw) !important;
-        height: min(220px, 58vw) !important;
-        max-height: 30vh !important;
-        aspect-ratio: 1 / 1 !important;
-        border-radius: 16px !important;
+        width: min(330px, 86vw) !important;
+        height: min(285px, 74vw) !important;
+        max-height: 35vh !important;
+        aspect-ratio: auto !important;
+        border-radius: 20px !important;
         margin: 0 auto !important;
-        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7) !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(197, 168, 89, 0.15) !important;
+        border: 1px solid rgba(197, 168, 89, 0.3) !important;
         background-size: cover !important;
         background-position: top center !important;
         flex: 0 0 auto !important;
@@ -730,7 +730,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
-        max-width: min(280px, 80vw) !important;
+        max-width: min(330px, 86vw) !important;
         margin: 0 auto !important;
         flex: 0 0 auto !important;
         height: auto !important;
@@ -740,24 +740,24 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         display: flex !important;
         flex-direction: column !important;
         text-align: right !important;
-        max-width: calc(100% - 46px) !important;
+        max-width: calc(100% - 48px) !important;
         overflow: hidden !important;
     }
 
     .player-bar.expanded .player-track {
-        font-size: 20px !important;
+        font-size: 21px !important;
         font-weight: 800 !important;
         color: #ffffff !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 3px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
     }
 
     .player-bar.expanded .player-artist {
-        font-size: 14px !important;
-        color: #b3b3b3 !important;
-        font-weight: 500 !important;
+        font-size: 14.5px !important;
+        color: var(--gold) !important;
+        font-weight: 600 !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -787,8 +787,9 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        max-width: min(300px, 86vw) !important;
-        margin: 0 auto 20px !important;
+        max-width: min(340px, 88vw) !important;
+        margin: 0 auto 28px !important;
+        padding-bottom: 8px !important;
         flex-shrink: 0 !important;
     }
 
@@ -797,15 +798,15 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
-        gap: 10px !important;
-        margin-bottom: 16px !important;
+        gap: 12px !important;
+        margin-bottom: 22px !important;
         direction: ltr !important;
     }
 
     .player-bar.expanded .progress-bar {
-        height: 4px !important;
+        height: 5px !important;
         background: rgba(255, 255, 255, 0.2) !important;
-        border-radius: 2px !important;
+        border-radius: 3px !important;
     }
 
     .player-bar.expanded .progress-fill {
@@ -814,8 +815,8 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 
     .player-bar.expanded .progress-thumb {
         opacity: 1 !important;
-        width: 12px !important;
-        height: 12px !important;
+        width: 13px !important;
+        height: 13px !important;
     }
 
     .player-bar.expanded #time-current,
@@ -831,7 +832,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        margin-bottom: 6px !important;
+        margin-bottom: 10px !important;
         gap: 0 !important;
     }
 
@@ -839,7 +840,7 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 20px !important;
+        font-size: 21px !important;
         color: #b3b3b3 !important;
         background: none !important;
         border: none !important;
@@ -863,24 +864,28 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 24px !important;
+        font-size: 26px !important;
         color: #ffffff !important;
         background: none !important;
         border: none !important;
         cursor: pointer !important;
+        transition: transform 0.15s ease !important;
+    }
+    .player-bar.expanded .btn-ctrl:active {
+        transform: scale(0.92) !important;
     }
 
     .player-bar.expanded .btn-play {
-        width: 62px !important;
-        height: 62px !important;
-        font-size: 24px !important;
+        width: 66px !important;
+        height: 66px !important;
+        font-size: 26px !important;
         background: #ffffff !important;
         color: #000000 !important;
         border-radius: 50% !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6) !important;
         border: none !important;
         cursor: pointer !important;
         transition: transform 0.2s, background 0.2s !important;
@@ -901,9 +906,10 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
-        max-width: min(300px, 86vw) !important;
+        max-width: min(340px, 88vw) !important;
         margin-top: 0 !important;
-        padding-top: 6px !important;
+        padding-top: 0 !important;
+        margin-bottom: 4px !important;
         flex-shrink: 0 !important;
     }
 
@@ -919,6 +925,23 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 
     .player-bar.expanded .mobile-footer-btn:hover {
         color: #ffffff !important;
+    }
+
+    @media (max-height: 680px) {
+        .player-bar.expanded {
+            padding: max(12px, env(safe-area-inset-top)) 16px max(36px, calc(env(safe-area-inset-bottom) + 24px)) 16px !important;
+        }
+        .player-bar.expanded .player-thumb {
+            width: min(250px, 70vw) !important;
+            height: min(220px, 60vw) !important;
+            max-height: 27vh !important;
+        }
+        .player-bar.expanded .player-controls-wrap {
+            margin: 0 auto 16px !important;
+        }
+        .player-bar.expanded .progress-container {
+            margin-bottom: 14px !important;
+        }
     }
 }
 

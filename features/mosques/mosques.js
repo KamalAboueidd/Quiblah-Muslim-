@@ -707,8 +707,18 @@
         map.on('click', (e) => {
             if (isAddModalOpen) {
                 setPickedLocation(e.latlng.lat, e.latlng.lng);
-                if (typeof showToast === 'function') {
-                    showToast('تم تحديد مكان المسجد على الخريطة بنجاح', 1500, 'info');
+                const banner = document.getElementById('map-picker-banner');
+                if (banner && banner.style.display !== 'none') {
+                    if (typeof showToast === 'function') {
+                        showToast('تم تحديد الموقع، جاري العودة للنافذة...', 1200, 'success');
+                    }
+                    setTimeout(() => {
+                        window.returnFromMapPicker();
+                    }, 500);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast('تم تحديد مكان المسجد على الخريطة بنجاح', 1500, 'info');
+                    }
                 }
             }
         });
@@ -810,7 +820,12 @@
         const overlay = document.getElementById('add-mosque-modal-overlay');
         if (!overlay) return;
         isAddModalOpen = true;
+        overlay.style.display = 'flex';
         overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // قفل اسكرول الصفحة أثناء فتح القائمة
+
+        const banner = document.getElementById('map-picker-banner');
+        if (banner) banner.style.display = 'none';
 
         const latInput = document.getElementById('new-mosque-lat');
         const lngInput = document.getElementById('new-mosque-lng');
@@ -835,13 +850,54 @@
             return;
         }
         const overlay = document.getElementById('add-mosque-modal-overlay');
-        if (overlay) overlay.classList.remove('active');
+        if (overlay) {
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                if (!isAddModalOpen) overlay.style.display = 'none';
+            }, 250);
+        }
+        const banner = document.getElementById('map-picker-banner');
+        if (banner) banner.style.display = 'none';
+
+        document.body.style.overflow = ''; // إعادة فتح اسكرول الصفحة
         isAddModalOpen = false;
 
         if (tempPickMarker && map) {
             map.removeLayer(tempPickMarker);
             tempPickMarker = null;
         }
+    };
+
+    // تفعيل وضع تحديد الموقع على الخريطة مباشرة
+    window.activateMapPicker = function() {
+        const overlay = document.getElementById('add-mosque-modal-overlay');
+        const banner = document.getElementById('map-picker-banner');
+        if (overlay) {
+            overlay.style.display = 'none';
+            overlay.classList.remove('active');
+        }
+        if (banner) banner.style.display = 'flex';
+        document.body.style.overflow = ''; // السماح بالتصفح والتحرك في الخريطة بحرية
+
+        if (currentPos && map) {
+            map.panTo([currentPos.lat, currentPos.lng]);
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('انقر على أي مكان بالخريطة لتحديد مكان المسجد', 2500, 'info');
+        }
+    };
+
+    // العودة من وضع تحديد الخريطة إلى النافذة
+    window.returnFromMapPicker = function() {
+        const overlay = document.getElementById('add-mosque-modal-overlay');
+        const banner = document.getElementById('map-picker-banner');
+        if (banner) banner.style.display = 'none';
+        if (overlay) {
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('active'), 10);
+        }
+        document.body.style.overflow = 'hidden';
     };
 
     // استخدام الموقع الحالي كإحداثيات للمسجد
@@ -865,7 +921,7 @@
         }
     };
 
-    // تعيين الإحداثيات المختارة وتحديث حقول الإدخال
+    // تعيين الإحداثيات المختارة وتحديث حقول الإدخال والاسم
     function setPickedLocation(lat, lng) {
         const latInput = document.getElementById('new-mosque-lat');
         const lngInput = document.getElementById('new-mosque-lng');
@@ -876,6 +932,23 @@
         if (coordsText) coordsText.textContent = `${lat.toFixed(5)} ، ${lng.toFixed(5)}`;
 
         placePickMarker(lat, lng);
+
+        // جلب اسم المنطقة بالعربية لعرضها للمستخدم وتعبئتها تلقائياً إن كانت فارغة
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`)
+            .then(r => r.json())
+            .then(data => {
+                const city = data.city || data.principalSubdivision || '';
+                const locality = data.locality || '';
+                let placeName = locality ? `${city}، ${locality}` : city;
+                if (placeName && coordsText) {
+                    coordsText.textContent = `${placeName} (${lat.toFixed(4)}، ${lng.toFixed(4)})`;
+                }
+                const areaInput = document.getElementById('new-mosque-area');
+                if (areaInput && !areaInput.value.trim() && placeName) {
+                    areaInput.value = placeName;
+                }
+            })
+            .catch(() => {});
     }
 
     // وضع أو تحريك العلامة المؤقتة على الخريطة

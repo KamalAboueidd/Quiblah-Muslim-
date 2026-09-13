@@ -446,12 +446,48 @@
             if (speedLabel) speedLabel.textContent = `${newSpeed}x`;
         }
 
+        const FAV_STORAGE_KEY = 'quiblah_favorite_surahs';
+        function getLandingFavorites() {
+            try {
+                const raw = localStorage.getItem(FAV_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+        function saveLandingFavorites(favs) {
+            try { localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(favs)); } catch (e) {}
+        }
+        function updateLandingFavUI() {
+            if (!playerFavBtn) return;
+            const surahTitle = playerSurahTitle.textContent.replace('سورة ', '').trim();
+            const reciter = playerReciterTitle.textContent.trim();
+            const favs = getLandingFavorites();
+            const isFav = favs.some(f => (f.surahName === surahTitle || f.surahName === `سورة ${surahTitle}`) && f.reciterName === reciter);
+            playerFavBtn.classList.toggle('active', isFav);
+            playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
+        }
+
         function toggleFavoriteSurah(e) {
             if (e) e.stopPropagation();
-            if (playerFavBtn) {
-                playerFavBtn.classList.toggle('active');
-                const isFav = playerFavBtn.classList.contains('active');
-                playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
+            let favs = getLandingFavorites();
+            const surahTitle = playerSurahTitle.textContent.replace('سورة ', '').trim();
+            const reciter = playerReciterTitle.textContent.trim();
+            if (!reciter || reciter === '---') return;
+            const idx = favs.findIndex(f => (f.surahName === surahTitle || f.surahName === `سورة ${surahTitle}`) && f.reciterName === reciter);
+            if (idx > -1) {
+                favs.splice(idx, 1);
+                saveLandingFavorites(favs);
+                updateLandingFavUI();
+            } else {
+                favs.unshift({
+                    id: `${reciter}_${currentPlayingSurah || 1}`,
+                    surahNum: currentPlayingSurah || 1,
+                    surahName: surahTitle,
+                    reciterName: reciter,
+                    audioUrl: audio.src,
+                    addedAt: Date.now()
+                });
+                saveLandingFavorites(favs);
+                updateLandingFavUI();
             }
         }
 

@@ -61,6 +61,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         fetchReciters();
+        updateFavoritesBadges();
         
         // Mobile expand
         document.getElementById('player-bar').addEventListener('click', (e) => {
@@ -282,6 +283,7 @@
             isPlaying = true;
             updateSurahListUI();
             updatePlayPauseIcon();
+            updatePlayerFavButtonUI();
             return;
         }
 
@@ -301,6 +303,7 @@
         document.getElementById('player-surah-name').textContent = `سورة ${SURAH_NAMES[num - 1]}`;
         document.getElementById('player-reciter-name').textContent = reciterName;
         document.getElementById('player-bar').classList.add('visible');
+        updatePlayerFavButtonUI();
         
         // Reset progress
         const progressFill = document.getElementById('progress-fill');
@@ -516,15 +519,194 @@
         showToast(`سرعة التلاوة: ${newSpeed}x`, 'fa-solid fa-gauge-high');
     }
 
+    // --- Favorites Management (localStorage) ---
+    const FAV_STORAGE_KEY = 'quiblah_favorite_surahs';
+
+    function getFavorites() {
+        try {
+            const raw = localStorage.getItem(FAV_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveFavorites(favs) {
+        try {
+            localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(favs));
+        } catch (e) {}
+    }
+
+    function isCurrentSurahFavorited() {
+        if (!currentPlayingSurahNum || !currentReciterName) return false;
+        const favs = getFavorites();
+        return favs.some(f => f.surahNum === currentPlayingSurahNum && f.reciterName === currentReciterName);
+    }
+
+    function updatePlayerFavButtonUI() {
+        const favBtn = document.getElementById('player-fav-btn');
+        if (!favBtn) return;
+        const isFav = isCurrentSurahFavorited();
+        favBtn.classList.toggle('active', isFav);
+        favBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
+    }
+
+    function updateFavoritesBadges() {
+        const favs = getFavorites();
+        const count = favs.length;
+        const badges = [
+            document.getElementById('fav-count-badge'),
+            document.getElementById('fav-count-badge-rec')
+        ];
+        badges.forEach(b => {
+            if (b) {
+                b.textContent = count;
+                if (count > 0) {
+                    b.classList.remove('empty');
+                } else {
+                    b.classList.add('empty');
+                }
+            }
+        });
+        const totalCountEl = document.getElementById('fav-total-count');
+        if (totalCountEl) {
+            totalCountEl.textContent = `${count} ${count === 1 ? 'سورة' : 'سور'}`;
+        }
+    }
+
     function toggleFavoriteSurah(e) {
         if (e) e.stopPropagation();
-        const favBtn = document.getElementById('player-fav-btn');
-        if (favBtn) {
-            favBtn.classList.toggle('active');
-            const isFav = favBtn.classList.contains('active');
-            favBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
-            showToast(isFav ? 'تمت إضافة السورة للمفضلة' : 'تمت إزالة السورة من المفضلة', isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart');
+        if (!currentPlayingSurahNum || !currentReciterName) {
+            showToast('اختر سورة أولاً لإضافتها للمفضلة', 'fa-solid fa-circle-info');
+            return;
         }
+
+        let favs = getFavorites();
+        const surahTitle = SURAH_NAMES[currentPlayingSurahNum - 1] || `سورة ${currentPlayingSurahNum}`;
+        const existingIndex = favs.findIndex(f => f.surahNum === currentPlayingSurahNum && f.reciterName === currentReciterName);
+
+        if (existingIndex > -1) {
+            favs.splice(existingIndex, 1);
+            saveFavorites(favs);
+            updatePlayerFavButtonUI();
+            updateFavoritesBadges();
+            renderFavoritesList();
+            showToast(`تمت إزالة سورة ${surahTitle} من المفضلة`, 'fa-regular fa-heart');
+        } else {
+            const currentReciterObj = allReciters.find(r => r.name === currentReciterName);
+            favs.unshift({
+                id: `${currentReciterName}_${currentPlayingSurahNum}`,
+                surahNum: currentPlayingSurahNum,
+                surahName: surahTitle,
+                reciterName: currentReciterName,
+                reciterId: currentReciterObj ? currentReciterObj.id : null,
+                server: currentServer,
+                moshafName: document.getElementById('current-moshaf-name')?.textContent || 'حفص عن عاصم',
+                surahList: currentSurahList,
+                addedAt: Date.now()
+            });
+            saveFavorites(favs);
+            updatePlayerFavButtonUI();
+            updateFavoritesBadges();
+            renderFavoritesList();
+            showToast(`تمت إضافة سورة ${surahTitle} للمفضلة`, 'fa-solid fa-heart');
+        }
+    }
+
+    function toggleFavoritesDrawer(e) {
+        if (e) e.stopPropagation();
+        const overlay = document.getElementById('fav-drawer-overlay');
+        if (!overlay) return;
+        if (overlay.classList.contains('active')) {
+            closeFavoritesDrawer();
+        } else {
+            renderFavoritesList();
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeFavoritesDrawer(e) {
+        if (e) e.stopPropagation();
+        const overlay = document.getElementById('fav-drawer-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+            const playerBar = document.getElementById('player-bar');
+            if (!playerBar || !playerBar.classList.contains('expanded')) {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
+    function renderFavoritesList() {
+        const container = document.getElementById('fav-drawer-body');
+        if (!container) return;
+        const favs = getFavorites();
+        updateFavoritesBadges();
+
+        if (favs.length === 0) {
+            container.innerHTML = `
+                <div class="fav-empty-state">
+                    <div class="fav-empty-icon"><i class="fa-solid fa-heart"></i></div>
+                    <h4>لا توجد سور في المفضلة</h4>
+                    <p>اضغط على رمز القلب أثناء تشغيل أي سورة لحفظ تلاواتك المفضلة هنا والوصول إليها بسرعة في أي وقت.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = favs.map(item => `
+            <div class="fav-item" onclick="playFavoriteItem('${item.id}')">
+                <div class="fav-item-right">
+                    <div class="fav-item-play"><i class="fa-solid fa-play"></i></div>
+                    <div class="fav-item-info">
+                        <div class="fav-item-title">سورة ${item.surahName}</div>
+                        <div class="fav-item-reciter"><i class="fa-solid fa-microphone"></i> ${item.reciterName}</div>
+                    </div>
+                </div>
+                <button class="fav-item-remove" onclick="removeFavoriteItem(event, '${item.id}')" title="إزالة من المفضلة">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function playFavoriteItem(favId) {
+        const favs = getFavorites();
+        const item = favs.find(f => f.id === favId);
+        if (!item) return;
+
+        closeFavoritesDrawer();
+
+        const reciterObj = allReciters.find(r => r.name === item.reciterName);
+        if (reciterObj) {
+            currentReciterName = reciterObj.name;
+            const moshaf = reciterObj.moshaf && reciterObj.moshaf.length > 0 ? reciterObj.moshaf[0] : null;
+            if (moshaf) {
+                currentServer = moshaf.server;
+                currentSurahList = moshaf.surah_list.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+            } else if (item.server) {
+                currentServer = item.server;
+                currentSurahList = item.surahList || [item.surahNum];
+            }
+        } else {
+            currentReciterName = item.reciterName;
+            currentServer = item.server;
+            currentSurahList = item.surahList || [item.surahNum];
+        }
+
+        playSurah(item.surahNum, currentServer, item.reciterName);
+    }
+
+    function removeFavoriteItem(e, favId) {
+        if (e) e.stopPropagation();
+        let favs = getFavorites();
+        favs = favs.filter(f => f.id !== favId);
+        saveFavorites(favs);
+        updatePlayerFavButtonUI();
+        updateFavoritesBadges();
+        renderFavoritesList();
+        showToast('تمت إزالة السورة من المفضلة', 'fa-solid fa-trash-can');
     }
 
     function shareCurrentSurah(e) {
@@ -620,3 +802,23 @@
             slides[currentSlide].classList.add('active');
         }, 8000);
     }
+
+    // Export global handlers for HTML onclick attributes
+    window.toggleFavoritesDrawer = toggleFavoritesDrawer;
+    window.closeFavoritesDrawer = closeFavoritesDrawer;
+    window.toggleFavoriteSurah = toggleFavoriteSurah;
+    window.playFavoriteItem = playFavoriteItem;
+    window.removeFavoriteItem = removeFavoriteItem;
+    window.showReciters = showReciters;
+    window.playFirstSurah = playFirstSurah;
+    window.togglePlayerExpand = togglePlayerExpand;
+    window.expandPlayerMobile = expandPlayerMobile;
+    window.togglePlayPause = togglePlayPause;
+    window.playNext = playNext;
+    window.playPrev = playPrev;
+    window.toggleRepeat = toggleRepeat;
+    window.cyclePlaybackSpeed = cyclePlaybackSpeed;
+    window.shareCurrentSurah = shareCurrentSurah;
+    window.seek = seek;
+    window.seekVolume = seekVolume;
+    window.toggleMute = toggleMute;

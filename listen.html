@@ -46,27 +46,24 @@
     </div>
 
 <div class="app-container">
-    <div class="top-bar"><div class="title">قبلة المسلم</div></div>
-
-    <div class="nav-bar">
-        <a href="home.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-clock"></i> المواقيت</a>
-        <a href="reminders.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-bell"></i> التذكيرات</a>
-        <a href="quran.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-quran"></i> المصحف</a>
-        <a href="tafseer.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-open-reader"></i> التفسير</a>
-        <a href="hadith.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-book-bookmark"></i> الأحاديث</a>
-        <a href="azkar.html?m=sm" class="nav-item"><i aria-hidden="true" class="fa-solid fa-sun"></i> الصباح والمساء</a>
-        <a href="azkar.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-hands-praying"></i> الأذكار</a>
-        <a href="names.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-list-ol"></i> أسماء الله</a>
-        <a href="qibla.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-compass"></i> القبلة</a>
-        <a href="distance.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-route"></i> من بيتك للكعبة</a>
-        <a href="listen.html" class="nav-item active"><i aria-hidden="true" class="fa-solid fa-headphones"></i> الاستماع</a>
-        <a href="mosques.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-mosque"></i> أقرب مسجد</a>
-        <a href="recite.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-microphone-lines"></i> المصحح القرآني</a>
+    <div class="top-bar">
+        <a href="home.html" class="top-home-link" title="الصفحة الرئيسية"><i class="fa-solid fa-house"></i></a>
+        <div class="title">مشغل القرآن الكريم</div>
+        <div style="width: 40px;"></div>
     </div>
 
     <!-- View: Reciters List -->
     <div class="view-section active" id="view-reciters">
-        <input type="text" id="search-input" class="search-box" placeholder="ابحث عن قارئ...">
+        <div class="reciters-search-row">
+            <input type="text" id="search-input" class="search-box" placeholder="ابحث عن قارئ...">
+            <button class="fav-action-btn" onclick="toggleFavoritesDrawer()" title="السور المفضلة">
+                <div class="fav-btn-icon-wrap">
+                    <i class="fa-solid fa-heart"></i>
+                    <span class="fav-badge empty" id="fav-count-badge-rec">0</span>
+                </div>
+                <span class="fav-btn-label">المفضلة</span>
+            </button>
+        </div>
         
         <div id="loader-reciters" class="loader"><i aria-hidden="true" class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">جاري تحميل القراء...</p></div>
         
@@ -83,7 +80,19 @@
 
     <!-- View: Surahs List (Spotify Desktop Layout) -->
     <div class="view-section" id="view-surahs">
-        <button class="back-btn" onclick="showReciters()"><i aria-hidden="true" class="fa-solid fa-arrow-right"></i> عودة للقراء</button>
+        <div class="surahs-top-actions">
+            <button class="back-btn" onclick="showReciters()" title="العودة لاختيار قارئ">
+                <i aria-hidden="true" class="fa-solid fa-arrow-right"></i>
+                <span>عودة للقراء</span>
+            </button>
+            <button class="fav-action-btn" onclick="toggleFavoritesDrawer()" title="السور المفضلة">
+                <div class="fav-btn-icon-wrap">
+                    <i class="fa-solid fa-heart"></i>
+                    <span class="fav-badge empty" id="fav-count-badge">0</span>
+                </div>
+                <span class="fav-btn-label">المفضلة</span>
+            </button>
+        </div>
         
         <!-- Spotify Hero Banner -->
         <div class="spotify-hero-banner" id="spotify-hero-banner">
@@ -116,6 +125,24 @@
                     </div>
                 </div>
             </div>
+        </div>
+</div>
+
+<!-- Favorites Drawer / Bottom Sheet Modal -->
+<div class="favorites-drawer-overlay" id="fav-drawer-overlay" onclick="closeFavoritesDrawer(event)">
+    <div class="favorites-drawer" id="favorites-drawer" onclick="event.stopPropagation()">
+        <div class="fav-drawer-header">
+            <div class="fav-drawer-title-wrap">
+                <i class="fa-solid fa-heart fav-header-heart"></i>
+                <h3>السور المفضلة</h3>
+                <span class="fav-total-count" id="fav-total-count">0 سورة</span>
+            </div>
+            <button class="fav-drawer-close-btn" onclick="closeFavoritesDrawer(event)" title="إغلاق">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="fav-drawer-body" id="fav-drawer-body">
+            <!-- Dynamically populated or empty state -->
         </div>
     </div>
 </div>

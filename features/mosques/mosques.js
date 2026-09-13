@@ -485,24 +485,31 @@
 
             html += `
                 <div class="mosque-item" onclick="flyToMosque(${m.lat}, ${m.lng}, ${m.id})">
-                    <div class="mosque-item-header">
-                        <div class="mosque-item-title">
-                            <i aria-hidden="true" class="fa-solid fa-mosque"></i>
-                            <span>${m.name}</span>
+                    <div class="mosque-item-main">
+                        <!-- اليمين: اسم المسجد وتحتيه اللوكيشن -->
+                        <div class="mosque-info-side">
+                            <div class="mosque-item-title">
+                                <i aria-hidden="true" class="${m.isCommunity ? 'fa-solid fa-star' : 'fa-solid fa-mosque'}"></i>
+                                <span>${m.name}</span>
+                            </div>
+                            <div class="mosque-area-label" id="list-area-${m.id}">
+                                <i aria-hidden="true" class="fa-solid fa-location-dot"></i>
+                                <span>${m.areaName}</span>
+                            </div>
                         </div>
-                        <span class="mosque-dist-badge">
-                            <i class="fa-solid fa-person-walking"></i> ${formattedDist}
-                            <span class="mosque-dist-time">(${timeEst})</span>
-                        </span>
+
+                        <!-- الشمال: المسافة وبادج المصلين (من غير بوردر ولا خلفية) -->
+                        <div class="mosque-meta-side">
+                            <div class="mosque-dist-badge">
+                                <i class="fa-solid fa-person-walking"></i>
+                                <span>${formattedDist}</span>
+                                <span class="mosque-dist-time">(${timeEst})</span>
+                            </div>
+                            ${m.isCommunity ? `<div class="mosque-community-badge"><i class="fa-solid fa-users"></i> مضاف بواسطة المصلين</div>` : ''}
+                        </div>
                     </div>
 
-                    <div class="mosque-item-body">
-                        <span class="mosque-area-label" id="list-area-${m.id}">
-                            <i aria-hidden="true" class="fa-solid fa-map-pin"></i> ${m.areaName}
-                        </span>
-                        ${m.isCommunity ? `<span class="mosque-community-badge"><i class="fa-solid fa-users"></i> مضاف بواسطة المصلين</span>` : ''}
-                    </div>
-
+                    <!-- أسفل اليسار: الخرائط والمسافة -->
                     <div class="mosque-actions-bar" onclick="event.stopPropagation();">
                         <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" class="mosque-gmaps-btn" title="الاتجاهات عبر خرائط Google">
                             <i class="fa-solid fa-diamond-turn-right"></i> خرائط Google

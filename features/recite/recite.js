@@ -1366,10 +1366,10 @@ async function stopRecordingAndAnalyze() {
     isRecording = false;
     if (timerInterval) clearInterval(timerInterval);
 
-    // 1. Commit every single in-flight word from current session (both final and interim)
-    const currentSessionFull = (currentSessionFinalText + (currentInterimSpeechText ? ' ' + currentInterimSpeechText : '')).trim();
+    // 1. Commit every single in-flight word from current session cleanly
+    const currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
     if (currentSessionFull) {
-        committedPreviousSessionsText = (committedPreviousSessionsText ? committedPreviousSessionsText + ' ' : '') + currentSessionFull;
+        committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
         currentSessionFinalText = "";
         currentInterimSpeechText = "";
     }
@@ -1458,11 +1458,57 @@ function resetStudioRecording() {
 // 12. Web Speech API (Live Inscription & Live Highlights)
 // -----------------------------------------------------------------------------
 
-// Helper to combine speech segments cleanly without losing or dropping words
+// Smart, seamless speech segment merger that prevents duplicates on Mobile Chrome
+// while preserving 100% of spoken words across pauses and ayah transitions
+function combineSpeechSegments(prev, next) {
+    const p = (prev || '').trim();
+    const n = (next || '').trim();
+    if (!p) return n;
+    if (!n) return p;
+
+    const normP = normalizeArabicText(p);
+    const normN = normalizeArabicText(n);
+
+    // 1. If next is a cumulative extension containing prev (standard Android Chrome speech behavior)
+    // E.g. p: "بسم", n: "بسم الله" -> return "بسم الله"
+    if (normN.startsWith(normP)) {
+        return n;
+    }
+
+    // 2. If prev already ends with next or contains next completely
+    // E.g. p: "بسم الله الرحمن الرحيم", n: "بسم الله" -> return "بسم الله الرحمن الرحيم"
+    if (normP.endsWith(normN)) {
+        return p;
+    }
+
+    // 3. Check for overlapping boundary words at the seam between segments
+    // E.g. p: "بسم الله", n: "الله الرحمن الرحيم" -> return "بسم الله الرحمن الرحيم"
+    const pWords = p.split(/\s+/).filter(Boolean);
+    const nWords = n.split(/\s+/).filter(Boolean);
+    const pNorm = pWords.map(normalizeArabicText);
+    const nNorm = nWords.map(normalizeArabicText);
+
+    const maxOverlap = Math.min(pWords.length, nWords.length);
+    for (let len = maxOverlap; len >= 1; len--) {
+        let match = true;
+        for (let k = 0; k < len; k++) {
+            if (pNorm[pNorm.length - len + k] !== nNorm[k]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            // Found exact boundary overlap at the seam: stitch them without repeating the shared words
+            return pWords.concat(nWords.slice(len)).join(' ');
+        }
+    }
+
+    // 4. Consecutive non-overlapping sentences (e.g. Ayah 1 followed by Ayah 2)
+    return p + ' ' + n;
+}
+
 function mergeTwoSpeechSegments(prev, next) {
-    if (!prev) return (next || "").trim();
-    if (!next) return prev.trim();
-    return prev.trim() + ' ' + next.trim();
+    return combineSpeechSegments(prev, next);
 }
 
 // Non-destructive safe pass-through: never delete or strip recited Quranic words
@@ -1532,17 +1578,17 @@ function spawnSpeechRecognizer() {
                 if (!segment) continue;
 
                 if (res.isFinal) {
-                    sessionFinal += (sessionFinal ? ' ' : '') + segment;
+                    sessionFinal = combineSpeechSegments(sessionFinal, segment);
                 } else {
-                    sessionInterim += (sessionInterim ? ' ' : '') + segment;
+                    sessionInterim = combineSpeechSegments(sessionInterim, segment);
                 }
             }
 
             currentSessionFinalText = sessionFinal.trim();
             currentInterimSpeechText = sessionInterim.trim();
 
-            const currentSessionFull = (currentSessionFinalText + (currentInterimSpeechText ? ' ' + currentInterimSpeechText : '')).trim();
-            const fullRaw = (committedPreviousSessionsText ? committedPreviousSessionsText + ' ' : '') + currentSessionFull;
+            const currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
+            const fullRaw = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
 
             liveTranscript = fullRaw.trim();
             accumulatedSpeechText = liveTranscript;
@@ -1562,6 +1608,16 @@ function spawnSpeechRecognizer() {
             console.warn("SpeechRecognition notice:", e.error);
             // Non-fatal pause / breath silences - never abort or reset recording
             if (e.error === 'no-speech' || e.error === 'aborted') {
+                return;
+            }
+
+            if (e.error === 'audio-capture') {
+                if (isRecording) {
+                    if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+                    speechRestartTimeout = setTimeout(() => {
+                        if (isRecording) spawnSpeechRecognizer();
+                    }, 250);
+                }
                 return;
             }
 
@@ -1586,22 +1642,22 @@ function spawnSpeechRecognizer() {
         };
 
         recognizer.onend = () => {
-            // Commit all recognized words from this session (both final and interim words)
-            const currentSessionFull = (currentSessionFinalText + (currentInterimSpeechText ? ' ' + currentInterimSpeechText : '')).trim();
+            // Commit all recognized words from this session cleanly using combineSpeechSegments
+            const currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
             if (currentSessionFull) {
-                committedPreviousSessionsText = (committedPreviousSessionsText ? committedPreviousSessionsText + ' ' : '') + currentSessionFull;
+                committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
             }
 
-            // If user is still in recording mode, seamlessly restart with a fresh instance
+            // If user is still in recording mode, restart after 120ms (giving Android audio subsystem time to release mic cleanly)
             if (isRecording) {
                 if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
                 speechRestartTimeout = setTimeout(() => {
                     if (isRecording) {
                         spawnSpeechRecognizer();
                     }
-                }, 10);
+                }, 120);
             } else {
                 isRecognizing = false;
             }

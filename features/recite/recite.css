@@ -3437,3 +3437,19 @@ body.mushaf-studio-body {
     }
 }
 
+@keyframes cardAttentionPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(197, 168, 89, 0);
+    }
+    50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 20px rgba(197, 168, 89, 0.45);
+        border-color: var(--gold, #c5a859) !important;
+    }
+}
+
+.pulse-highlight {
+    animation: cardAttentionPulse 0.5s ease-in-out 2 !important;
+}
+

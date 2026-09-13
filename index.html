@@ -74,13 +74,15 @@
             <div class="player-thumb" id="player-thumb">
                 <i class="fa-solid fa-book-quran"></i>
             </div>
-            <div class="player-titles">
-                <div class="player-track-title" id="player-surah-title">سورة الفاتحة</div>
-                <div class="player-artist-title" id="player-reciter-title">مشاري العفاسي</div>
+            <div class="player-meta-wrap">
+                <div class="player-titles">
+                    <div class="player-track-title" id="player-surah-title">سورة الفاتحة</div>
+                    <div class="player-artist-title" id="player-reciter-title">مشاري العفاسي</div>
+                </div>
+                <button class="player-fav-btn" id="player-fav-btn" onclick="toggleFavoriteSurah(event)" title="إضافة للمفضلة">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
             </div>
-            <button class="player-fav-btn" id="player-fav-btn" onclick="toggleFavoriteSurah(event)" title="إضافة للمفضلة">
-                <i class="fa-regular fa-heart"></i>
-            </button>
         </div>
 
         <!-- Controls & Scrubber -->

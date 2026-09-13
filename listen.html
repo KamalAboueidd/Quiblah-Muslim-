@@ -28,7 +28,7 @@
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#C5A859">
+    <meta name="theme-color" content="#0b0d12">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
@@ -135,13 +135,15 @@
 
     <div class="player-info" onclick="expandPlayerMobile()">
         <div class="player-thumb" id="player-thumb"><i aria-hidden="true" class="fa-solid fa-book-quran"></i></div>
-        <div class="player-titles">
-            <div class="player-track" id="player-surah-name">---</div>
-            <div class="player-artist" id="player-reciter-name">---</div>
+        <div class="player-meta-wrap">
+            <div class="player-titles">
+                <div class="player-track" id="player-surah-name">---</div>
+                <div class="player-artist" id="player-reciter-name">---</div>
+            </div>
+            <button class="player-fav-btn" id="player-fav-btn" onclick="toggleFavoriteSurah(event)" title="إضافة للمفضلة">
+                <i class="fa-regular fa-heart"></i>
+            </button>
         </div>
-        <button class="player-fav-btn" id="player-fav-btn" onclick="toggleFavoriteSurah(event)" title="إضافة للمفضلة">
-            <i class="fa-regular fa-heart"></i>
-        </button>
     </div>
     
     <div class="player-controls-wrap">

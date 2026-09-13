@@ -48,14 +48,24 @@
     const audio = document.getElementById('audio-player');
     const playPauseBtn = document.getElementById('btn-play-pause');
 
+    let originalThemeColor = '#0b0d12';
+    function setMetaThemeColor(color) {
+        let meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.name = 'theme-color';
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', color);
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         fetchReciters();
         
         // Mobile expand
         document.getElementById('player-bar').addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && !e.target.closest('.btn-play') && !e.target.closest('.mobile-expand-btn') && !e.target.closest('.progress-bar')) {
-                document.getElementById('player-bar').classList.add('expanded');
-                document.body.style.overflow = 'hidden';
+            if (window.innerWidth <= 768 && !e.target.closest('.btn-play') && !e.target.closest('.mobile-expand-btn') && !e.target.closest('.progress-bar') && !e.target.closest('.mobile-footer-btn')) {
+                expandPlayerMobile();
             }
         });
 
@@ -67,7 +77,8 @@
     });
 
     function togglePlayerExpand(e) {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
+        setMetaThemeColor(originalThemeColor);
         document.getElementById('player-bar').classList.remove('expanded');
         document.body.style.overflow = '';
     }
@@ -477,6 +488,9 @@
 
     function expandPlayerMobile() {
         if (window.innerWidth <= 768) {
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) originalThemeColor = meta.getAttribute('content') || '#0b0d12';
+            setMetaThemeColor('#1c202a');
             document.getElementById('player-bar').classList.add('expanded');
             document.body.style.overflow = 'hidden';
         }

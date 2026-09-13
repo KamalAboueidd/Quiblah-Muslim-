@@ -390,22 +390,41 @@
         }
 
         // Mobile Player Expand / Collapse
+        let landingOriginalTheme = '#0b0d12';
+        function setLandingThemeColor(color) {
+            let meta = document.querySelector('meta[name="theme-color"]');
+            if (!meta) {
+                meta = document.createElement('meta');
+                meta.name = 'theme-color';
+                document.head.appendChild(meta);
+            }
+            meta.setAttribute('content', color);
+        }
+
         function expandPlayerMobile() {
             if (window.innerWidth <= 768) {
+                const meta = document.querySelector('meta[name="theme-color"]');
+                if (meta) landingOriginalTheme = meta.getAttribute('content') || '#0b0d12';
+                setLandingThemeColor('#1c202a');
                 playerBar.classList.add('expanded');
+                document.body.style.overflow = 'hidden';
             }
         }
 
         function togglePlayerExpand(e) {
             if (e) e.stopPropagation();
+            setLandingThemeColor(landingOriginalTheme);
             playerBar.classList.remove('expanded');
+            document.body.style.overflow = '';
         }
 
         function closePlayer() {
             audio.pause();
             isAudioPlaying = false;
+            setLandingThemeColor(landingOriginalTheme);
             playerBar.classList.remove('visible');
             playerBar.classList.remove('expanded');
+            document.body.style.overflow = '';
             document.body.classList.remove('player-active');
         }
 

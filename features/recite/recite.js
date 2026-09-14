@@ -217,6 +217,11 @@ let inputEngineMode, inputMakeWebhook, inputPythonUrl, inputHfToken;
 // 4. Reliable Toast Notification Helper
 // -----------------------------------------------------------------------------
 function showToast(msg, icon = "fa-solid fa-circle-exclamation") {
+    if (window.parent && window.parent !== window && typeof window.parent.showToast === 'function') {
+        window.parent.showToast(msg, icon);
+        return;
+    }
+
     let container = document.getElementById('global-toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -226,7 +231,10 @@ function showToast(msg, icon = "fa-solid fa-circle-exclamation") {
 
     // Clean up any stale toasts so multiple clicks don't stack up
     const existingToasts = container.querySelectorAll('.app-toast');
-    existingToasts.forEach(t => t.remove());
+    existingToasts.forEach(t => {
+        t.classList.remove('show');
+        setTimeout(() => { if (t.parentElement) t.remove(); }, 300);
+    });
 
     const toast = document.createElement('div');
     toast.className = 'app-toast';
@@ -1020,12 +1028,38 @@ function normalizeArabicText(text) {
         .trim();
 }
 
+// Fawatih Al-Suwar (Disjointed Letters - الحروف المقطعة) Equivalents for all 29 Surahs
+const FAWATIH_EQUIVALENTS = {
+    'الم': ['الم', 'الف لام ميم', 'ألف لام ميم', 'الف لم مم', 'إلف لام ميم'],
+    'المص': ['المص', 'الف لام ميم صاد', 'ألف لام ميم صاد', 'الف لم مم صد'],
+    'الر': ['الر', 'الف لام را', 'الف لام راء', 'ألف لام را', 'ألف لام راء', 'الف لم ر'],
+    'المر': ['المر', 'الف لام ميم را', 'الف لام ميم راء', 'ألف لام ميم را', 'ألف لام ميم راء'],
+    'كهيعص': ['كهيعص', 'كاف ها يا عين صاد', 'كاف هاء ياء عين صاد', 'كاف ها ياء عين صاد', 'كاف هاء يا عين صاد', 'كف ه ي عن صد'],
+    'طه': ['طه', 'طا ها', 'طاء هاء', 'طاها', 'طا ه'],
+    'طسم': ['طسم', 'طا سين ميم', 'طاء سين ميم', 'طاسين ميم'],
+    'طس': ['طس', 'طا سين', 'طاء سين', 'طاسين'],
+    'يس': ['يس', 'يا سين', 'ياء سين', 'ياسين'],
+    'ص': ['ص', 'صاد'],
+    'حم': ['حم', 'حا ميم', 'حاء ميم', 'حاميم'],
+    'عسق': ['عسق', 'عين سين قاف', 'عن سن قف', 'عين سن قاف'],
+    'ق': ['ق', 'قاف'],
+    'ن': ['ن', 'نون']
+};
+
 // Check Quranic word vs Speech Recognition word with variations
 function areArabicWordsMatching(expectedRaw, spokenRaw) {
     if (!expectedRaw || !spokenRaw) return false;
     const eNorm = normalizeArabicText(expectedRaw);
     const sNorm = normalizeArabicText(spokenRaw);
     if (eNorm === sNorm) return true;
+
+    // Fawatih al-Suwar (Disjointed letters) cross-matching
+    if (FAWATIH_EQUIVALENTS[eNorm] && FAWATIH_EQUIVALENTS[eNorm].some(eq => normalizeArabicText(eq) === sNorm)) {
+        return true;
+    }
+    if (FAWATIH_EQUIVALENTS[sNorm] && FAWATIH_EQUIVALENTS[sNorm].some(eq => normalizeArabicText(eq) === eNorm)) {
+        return true;
+    }
 
     // With dagger alef replaced by full 'ا' (e.g. ٱلصِّرَٰطَ -> الصراط, مَٰلِكِ -> مالك)
     const eWithAlef = normalizeArabicText(expectedRaw.replace(/\u0670/g, 'ا'));
@@ -1590,7 +1624,7 @@ function spawnSpeechRecognizer() {
             const currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
             const fullRaw = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
 
-            liveTranscript = fullRaw.trim();
+            liveTranscript = normalizeQuranicDisjointedLetters(fullRaw.trim(), currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
 
             if (liveTranscript) {
@@ -1695,12 +1729,84 @@ function stopLiveSpeechRecognition() {
 }
 
 // -----------------------------------------------------------------------------
-// 12. Intelligent Surah & Ayah Auto-Detection ("أكيد أنت عارف أنا بقرأ إيه")
+// 12. Fawatih Al-Suwar Normalization & Intelligent Surah/Ayah Detection
 // -----------------------------------------------------------------------------
+function normalizeQuranicDisjointedLetters(text, surahNum = currentSurahNumber, ayahNum = currentAyahNumber) {
+    if (!text) return '';
+    let res = text;
+
+    function replacePhrase(str, pattern, replacement) {
+        const regex = new RegExp('(?:^|\\s)(?:' + pattern + ')(?=\\s|$)', 'gi');
+        return str.replace(regex, (match) => {
+            const startsWithSpace = match.startsWith(' ');
+            return (startsWithSpace ? ' ' : '') + replacement;
+        });
+    }
+
+    // 1. Five-letter: كهيعص (سورة مريم)
+    res = replacePhrase(res, '(?:كاف|كف)\\s+(?:ها|هاء)\\s+(?:يا|ياء)\\s+(?:عين|عن)\\s+(?:صاد|صد)', 'كهيعص');
+
+    // 2. Four-letter: المص (سورة الأعراف)
+    res = replacePhrase(res, '(?:[أإا]لف)\\s+(?:لام|لم)\\s+(?:ميم|مم)\\s+(?:صاد|صد)', 'المص');
+
+    // 3. Four-letter: المر (سورة الرعد)
+    res = replacePhrase(res, '(?:[أإا]لف)\\s+(?:لام|لم)\\s+(?:ميم|مم)\\s+(?:را|راء|ر)', 'المر');
+
+    // 4. Three-letter: الم (البقرة، آل عمران، العنكبوت، الروم، لقمان، السجدة)
+    res = replacePhrase(res, '(?:[أإا]لف)\\s+(?:لام|لم)\\s+(?:ميم|مم)', 'الم');
+
+    // 5. Three-letter: الر (يونس، هود، يوسف، إبراهيم، الحجر)
+    res = replacePhrase(res, '(?:[أإا]لف)\\s+(?:لام|لم)\\s+(?:را|راء|ر)', 'الر');
+
+    // 6. Three-letter: طسم (الشعراء، القصص)
+    res = replacePhrase(res, '(?:طا|طاء)\\s+(?:سين|سن)\\s+(?:ميم|مم)', 'طسم');
+
+    // 7. Three-letter: عسق (الشورى آية 2)
+    res = replacePhrase(res, '(?:عين|عن)\\s+(?:سين|سن)\\s+(?:قاف|قف)', 'عسق');
+
+    // 8. Two-letter: طس (النمل)
+    res = replacePhrase(res, '(?:طا|طاء)\\s+(?:سين|سن)|طاسين', 'طس');
+
+    // 9. Two-letter: حم (غافر، فصلت، الشورى 1، الزخرف، الدخان، الجاثية، الأحقاف)
+    res = replacePhrase(res, '(?:حا|حاء)\\s+(?:ميم|مم)|حاميم', 'حم');
+
+    // 10. Two-letter: طه (طه)
+    res = replacePhrase(res, '(?:طا|طاء)\\s+(?:ها|هاء)|طاها', 'طه');
+
+    // 11. Two-letter: يس (يس)
+    res = replacePhrase(res, '(?:يا|ياء)\\s+(?:سين|سن)', 'يس');
+    if (surahNum === 36 || /^\s*ياسين(?:\s+|$)/.test(res)) {
+        res = replacePhrase(res, 'ياسين', 'يس');
+    }
+
+    // 12. Single-letter: ص (ص)
+    if (surahNum === 38 || /(?:^|\s)صاد\s+والقر[اآ]ن/.test(res) || /^\s*صاد\s*$/.test(res)) {
+        res = replacePhrase(res, 'صاد', 'ص');
+    }
+
+    // 13. Single-letter: ق (ق)
+    if (surahNum === 50 || /(?:^|\s)قاف\s+والقر[اآ]ن/.test(res) || /^\s*قاف\s*$/.test(res)) {
+        res = replacePhrase(res, 'قاف', 'ق');
+    }
+
+    // 14. Single-letter: ن (القلم)
+    if (surahNum === 68 || /(?:^|\s)نون\s+والقلم/.test(res) || /^\s*نون\s*$/.test(res)) {
+        res = replacePhrase(res, 'نون', 'ن');
+    }
+
+    return res.trim().replace(/\s+/g, ' ');
+}
+
 function preprocessSpokenWords(words) {
     if (!words || !words.length) return [];
+
+    // 1. Normalize disjointed letters across the sequence of spoken words
+    const joinedText = words.join(' ');
+    const normalizedText = normalizeQuranicDisjointedLetters(joinedText, currentSurahNumber, currentAyahNumber);
+    const splitWords = normalizedText.split(/\s+/).filter(Boolean);
+
     const res = [];
-    words.forEach(w => {
+    splitWords.forEach(w => {
         const norm = normalizeArabicText(w);
         if (norm === 'الحمدلله') {
             res.push('الحمد', 'لله');
@@ -1756,7 +1862,7 @@ function detectSpokenSurahAndAyah(spokenWords) {
                     matchCount++;
                 }
             }
-            if (matchCount >= 2) {
+            if (matchCount >= 2 || (a.normWords.length <= 2 && matchCount >= a.normWords.length)) {
                 return { surahNum: currentSurahNumber, ayahNum: a.numberInSurah, score: matchCount };
             }
         }
@@ -1774,13 +1880,13 @@ function detectSpokenSurahAndAyah(spokenWords) {
                 let mCount = 0;
                 const lim = Math.min(normSpk.length, rawAyahWords.length, 4);
                 for (let k = 0; k < lim; k++) {
-                    if (normalizeArabicText(rawAyahWords[k]) === normSpk[k]) {
+                    if (normalizeArabicText(rawAyahWords[k]) === normSpk[k] || areArabicWordsMatching(rawAyahWords[k], processed[k])) {
                         mCount++;
                     } else {
                         break;
                     }
                 }
-                if (mCount >= 3) {
+                if (mCount >= 3 || (rawAyahWords.length <= 2 && mCount >= rawAyahWords.length && processed.length === rawAyahWords.length)) {
                     return { surahNum: s, ayahNum: ayahObj.numberInSurah || (a + 1), score: mCount };
                 }
             }
@@ -1976,6 +2082,7 @@ function executeImmediateEvaluation(audioBlob) {
             }
         } catch (e) {}
 
+        transcribedText = normalizeQuranicDisjointedLetters(transcribedText, currentSurahNumber, currentAyahNumber);
         liveTranscript = transcribedText;
         accumulatedSpeechText = transcribedText;
 

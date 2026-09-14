@@ -266,6 +266,15 @@
         audio.addEventListener('waiting', () => {
             if (scrubberFill) scrubberFill.classList.add('buffering');
         });
+        audio.addEventListener('seeking', () => {
+            if (scrubberFill) scrubberFill.classList.add('buffering');
+        });
+        audio.addEventListener('seeked', () => {
+            if (scrubberFill) scrubberFill.classList.remove('buffering');
+            if ((wasPlayingBeforeScrub || isAudioPlaying) && audio.paused) {
+                audio.play().catch(e => console.warn("Seeked resume playback:", e));
+            }
+        });
         audio.addEventListener('playing', () => {
             if (scrubberFill) scrubberFill.classList.remove('buffering');
         });
@@ -321,48 +330,98 @@
             }
         });
 
-        // Unified Seeking helper
-        function seekElement(e, element) {
-            if (!audio.duration) return;
+        // Safe clientX retrieval for mouse and touch events
+        function getEventClientX(e) {
+            if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
+            if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
+            return (typeof e.clientX === 'number') ? e.clientX : 0;
+        }
+
+        let scrubTargetPercent = 0;
+        let wasPlayingBeforeScrub = false;
+
+        // Visual Preview update during scrubbing (Butter-smooth 60fps without choking audio stream)
+        function updateScrubVisual(e, element) {
+            if (!audio.duration || isNaN(audio.duration)) return 0;
             const rect = element.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            if (!rect.width) return 0;
+            const clientX = getEventClientX(e);
             const clickX = clientX - rect.left;
             const percent = Math.max(0, Math.min(1, clickX / rect.width));
-            audio.currentTime = percent * audio.duration;
+            scrubTargetPercent = percent;
+
             const p = percent * 100;
             if (scrubberFill) scrubberFill.style.width = `${p}%`;
             if (scrubberThumb) scrubberThumb.style.left = `${p}%`;
-            if (timeCurrent) timeCurrent.textContent = formatSeconds(audio.currentTime);
-            const remaining = Math.max(0, audio.duration - audio.currentTime);
-            const remStr = formatSeconds(remaining);
-            if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatSeconds(audio.duration);
+
+            const previewTime = percent * audio.duration;
+            if (timeCurrent) timeCurrent.textContent = formatSeconds(previewTime);
+            const remaining = Math.max(0, audio.duration - previewTime);
+            if (timeTotal) timeTotal.textContent = showRemainingTime ? formatSeconds(remaining) : formatSeconds(audio.duration);
+
+            return percent;
         }
 
-        // Seeking on center scrubber with click & drag (mouse + touch)
+        // Single clean seek commit on finger / mouse release
+        function commitAudioSeek(percent) {
+            if (!audio.duration || isNaN(audio.duration)) return;
+            const clamped = Math.max(0, Math.min(1, percent));
+            const targetTime = clamped * audio.duration;
+
+            if (scrubberFill) scrubberFill.classList.add('buffering');
+
+            try {
+                audio.currentTime = targetTime;
+            } catch (err) {
+                console.warn("Audio seek error:", err);
+            }
+
+            if (wasPlayingBeforeScrub || isAudioPlaying) {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        updatePlayPauseUI();
+                    }).catch(err => {
+                        console.warn("Auto-resume playback after seek:", err);
+                    });
+                }
+            }
+        }
+
+        // Unified Seeking on center scrubber with click & drag (mouse + touch)
         if (scrubberBar) {
             const startScrub = (e) => {
                 isScrubbing = true;
+                wasPlayingBeforeScrub = !audio.paused && !audio.ended && audio.currentTime > 0;
                 scrubberBar.classList.add('active');
-                seekElement(e, scrubberBar);
+                updateScrubVisual(e, scrubberBar);
             };
+
             const moveScrub = (e) => {
                 if (!isScrubbing) return;
-                seekElement(e, scrubberBar);
+                if (e.cancelable) e.preventDefault();
+                updateScrubVisual(e, scrubberBar);
             };
-            const endScrub = () => {
-                if (isScrubbing) {
-                    isScrubbing = false;
-                    scrubberBar.classList.remove('active');
+
+            const endScrub = (e) => {
+                if (!isScrubbing) return;
+                isScrubbing = false;
+                scrubberBar.classList.remove('active');
+                if (e) {
+                    updateScrubVisual(e, scrubberBar);
                 }
+                commitAudioSeek(scrubTargetPercent);
             };
 
             scrubberBar.addEventListener('mousedown', startScrub);
             window.addEventListener('mousemove', moveScrub);
             window.addEventListener('mouseup', endScrub);
 
-            scrubberBar.addEventListener('touchstart', startScrub, { passive: true });
-            window.addEventListener('touchmove', moveScrub, { passive: true });
-            window.addEventListener('touchend', endScrub);
+            scrubberBar.addEventListener('touchstart', startScrub, { passive: false });
+            window.addEventListener('touchmove', moveScrub, { passive: false });
+            window.addEventListener('touchend', endScrub, { passive: true });
+            window.addEventListener('touchcancel', endScrub, { passive: true });
         }
 
         // Volume Control with Drag Support
@@ -556,4 +615,8 @@
         window.togglePlayPause = togglePlayPause;
         window.closePlayer = closePlayer;
         window.toggleMute = toggleMute;
-        window.seek = (e) => seekElement(e, scrubberBar);
+        window.seek = (e) => {
+            if (e) e.stopPropagation();
+            const pct = updateScrubVisual(e, scrubberBar);
+            commitAudioSeek(pct);
+        };

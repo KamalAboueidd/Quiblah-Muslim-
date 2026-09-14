@@ -72,58 +72,113 @@ const toastCSS = `
 `;
 document.head.insertAdjacentHTML('beforeend', toastCSS);
 
-// 2. Inject Container
-const toastContainer = document.createElement('div');
-toastContainer.id = 'global-toast-container';
-document.body.appendChild(toastContainer);
+(function() {
+    // If inside an iframe, delegate to the parent shell's showToast and never run duplicate intervals
+    if (window.parent && window.parent !== window) {
+        window.showToast = function(message, iconClass = "fa-solid fa-bell", duration = 5000) {
+            try {
+                if (typeof window.parent.showToast === 'function') {
+                    window.parent.showToast(message, iconClass, duration);
+                    return;
+                }
+            } catch(e) {}
+            localShowToast(message, iconClass, duration);
+        };
+        // Child frames should NEVER run the random dhikr interval or create duplicate toast containers
+        return;
+    }
 
-// 3. Global showToast function
-window.showToast = function(message, iconClass = "fa-solid fa-bell", duration = 6000) {
-    const toast = document.createElement('div');
-    toast.className = 'app-toast';
-    toast.innerHTML = `<i class="${iconClass}"></i> <span>${message}</span>`;
-    
-    toastContainer.appendChild(toast);
-    
-    // Trigger reflow for animation
-    setTimeout(() => {
-        toast.classList.add('show');
-    }, 10);
-    
-    // Remove after duration
-    setTimeout(() => {
-        toast.classList.remove('show');
+    // 2. Inject Container in the top window
+    let toastContainer = document.getElementById('global-toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'global-toast-container';
+        document.body.appendChild(toastContainer);
+    }
+
+    let activeToastTimeout = null;
+
+    function dismissExistingToasts() {
+        if (activeToastTimeout) {
+            clearTimeout(activeToastTimeout);
+            activeToastTimeout = null;
+        }
+        if (!toastContainer) return;
+        const existing = toastContainer.querySelectorAll('.app-toast');
+        existing.forEach(t => {
+            t.classList.remove('show');
+            t.style.opacity = '0';
+            t.style.pointerEvents = 'none';
+            setTimeout(() => {
+                if (t.parentElement) t.remove();
+            }, 300);
+        });
+    }
+
+    // 3. Global showToast function (Strict single-toast queue: never overlap)
+    function localShowToast(message, iconClass = "fa-solid fa-bell", duration = 5000) {
+        if (!toastContainer) {
+            toastContainer = document.getElementById('global-toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'global-toast-container';
+                document.body.appendChild(toastContainer);
+            }
+        }
+
+        // Smoothly dismiss any currently visible toast so they never stack on top of each other
+        dismissExistingToasts();
+
+        const toast = document.createElement('div');
+        toast.className = 'app-toast';
+        toast.innerHTML = `<i class="${iconClass}"></i> <span>${message}</span>`;
+        toastContainer.appendChild(toast);
+
+        // Trigger reflow for smooth slide-in animation
         setTimeout(() => {
-            if (toast.parentElement) toast.remove();
-        }, 500);
-    }, duration);
-};
+            toast.classList.add('show');
+        }, 15);
 
-// 4. Random Azkar Logic (Every 10 minutes)
-let shortAzkarList = [];
-function fetchShortAzkar() {
-    // We use Axios if available, else fetch
-    if (typeof axios !== 'undefined') {
-        axios.get('short_azkar.json')
-            .then(res => { shortAzkarList = res.data; })
-            .catch(err => console.error("Error loading short azkar", err));
-    } else {
-        fetch('short_azkar.json')
-            .then(res => res.json())
-            .then(data => { shortAzkarList = data; })
-            .catch(err => console.error("Error loading short azkar", err));
+        // Remove after duration
+        activeToastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 400);
+        }, duration);
     }
-}
 
-function showRandomZikr() {
-    if (shortAzkarList.length > 0) {
-        const randomIndex = Math.floor(Math.random() * shortAzkarList.length);
-        const zikr = shortAzkarList[randomIndex];
-        window.showToast(zikr, "fa-solid fa-leaf", 8000); // Show for 8 seconds
+    window.showToast = localShowToast;
+
+    // 4. Random Azkar Logic (Only in top window, strictly avoids collision)
+    let shortAzkarList = [];
+    function fetchShortAzkar() {
+        if (typeof axios !== 'undefined') {
+            axios.get('short_azkar.json')
+                .then(res => { shortAzkarList = res.data; })
+                .catch(err => console.error("Error loading short azkar", err));
+        } else {
+            fetch('short_azkar.json')
+                .then(res => res.json())
+                .then(data => { shortAzkarList = data; })
+                .catch(err => console.error("Error loading short azkar", err));
+        }
     }
-}
 
-// Initialize
-fetchShortAzkar();
-// 1 minute = 60000 ms
-setInterval(showRandomZikr, 60000);
+    function showRandomZikr() {
+        // Never trigger if another toast is currently on screen
+        if (toastContainer && toastContainer.querySelector('.app-toast.show')) {
+            return;
+        }
+        if (shortAzkarList && shortAzkarList.length > 0) {
+            const randomIndex = Math.floor(Math.random() * shortAzkarList.length);
+            const zikr = shortAzkarList[randomIndex];
+            localShowToast(zikr, "fa-solid fa-leaf", 7000);
+        }
+    }
+
+    // Initialize only in top-level window
+    fetchShortAzkar();
+    // 1 minute interval for random zikr in top window
+    setInterval(showRandomZikr, 60000);
+})();

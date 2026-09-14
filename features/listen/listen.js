@@ -478,6 +478,17 @@
         const pFill = document.getElementById('progress-fill');
         if (pFill) pFill.classList.add('buffering');
     });
+    audio.addEventListener('seeking', () => {
+        const pFill = document.getElementById('progress-fill');
+        if (pFill) pFill.classList.add('buffering');
+    });
+    audio.addEventListener('seeked', () => {
+        const pFill = document.getElementById('progress-fill');
+        if (pFill) pFill.classList.remove('buffering');
+        if ((wasPlayingBeforeScrub || isPlaying) && audio.paused) {
+            audio.play().catch(e => console.warn("Seeked resume playback:", e));
+        }
+    });
     audio.addEventListener('playing', () => {
         const pFill = document.getElementById('progress-fill');
         if (pFill) pFill.classList.remove('buffering');
@@ -540,16 +551,27 @@
         }
     });
 
-    // Seeking Helper Function for center bar
-    function seekFromElement(e, barElement) {
-        if (!audio.duration) return;
+    // Safe event clientX retrieval
+    function getEventClientX(e) {
+        if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
+        if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
+        return (typeof e.clientX === 'number') ? e.clientX : 0;
+    }
+
+    let scrubTargetPercent = 0;
+    let wasPlayingBeforeScrub = false;
+
+    // Butter-smooth 60fps Visual Preview during scrubbing
+    function updateScrubVisual(e, barElement) {
+        if (!audio.duration || isNaN(audio.duration)) return 0;
         const rect = barElement.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        if (!rect.width) return 0;
+        const clientX = getEventClientX(e);
         const clickX = clientX - rect.left;
         let pct = clickX / rect.width;
         if (pct < 0) pct = 0;
         if (pct > 1) pct = 1;
-        audio.currentTime = pct * audio.duration;
+        scrubTargetPercent = pct;
         
         const p = pct * 100;
         const progressFill = document.getElementById('progress-fill');
@@ -559,16 +581,51 @@
 
         if (progressFill) progressFill.style.width = `${p}%`;
         if (progressThumb) progressThumb.style.left = `${p}%`;
-        if (timeCurrent) timeCurrent.textContent = formatTime(audio.currentTime);
+        
+        const previewTime = pct * audio.duration;
+        if (timeCurrent) timeCurrent.textContent = formatTime(previewTime);
 
-        const remaining = Math.max(0, audio.duration - audio.currentTime);
+        const remaining = Math.max(0, audio.duration - previewTime);
         const remStr = formatTime(remaining);
         if (timeTotal) timeTotal.textContent = showRemainingTime ? remStr : formatTime(audio.duration);
+
+        return pct;
+    }
+
+    // Single seek commit upon release without network flooding
+    function commitAudioSeek(percent) {
+        if (!audio.duration || isNaN(audio.duration)) return;
+        const clamped = Math.max(0, Math.min(1, percent));
+        const targetTime = clamped * audio.duration;
+
+        const pFill = document.getElementById('progress-fill');
+        if (pFill) pFill.classList.add('buffering');
+
+        try {
+            audio.currentTime = targetTime;
+        } catch (err) {
+            console.warn("Audio seek error in listen:", err);
+        }
+
+        if (wasPlayingBeforeScrub || isPlaying) {
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    updatePlayPauseIcon();
+                }).catch(err => {
+                    console.warn("Auto-resume playback after seek:", err);
+                });
+            }
+        }
     }
 
     function seek(e) {
-        seekFromElement(e, document.getElementById('progress-bar'));
+        if (e) e.stopPropagation();
+        const pct = updateScrubVisual(e, document.getElementById('progress-bar'));
+        commitAudioSeek(pct);
     }
+    window.seek = seek;
 
     function expandPlayerMobile() {
         if (window.innerWidth <= 768) {
@@ -804,27 +861,33 @@
     if (progressBar) {
         const startScrub = (e) => {
             isScrubbing = true;
+            wasPlayingBeforeScrub = !audio.paused && !audio.ended && audio.currentTime > 0;
             progressBar.classList.add('active');
-            seekFromElement(e, progressBar);
+            updateScrubVisual(e, progressBar);
         };
         const moveScrub = (e) => {
             if (!isScrubbing) return;
-            seekFromElement(e, progressBar);
+            if (e.cancelable) e.preventDefault();
+            updateScrubVisual(e, progressBar);
         };
-        const endScrub = () => {
-            if (isScrubbing) {
-                isScrubbing = false;
-                progressBar.classList.remove('active');
+        const endScrub = (e) => {
+            if (!isScrubbing) return;
+            isScrubbing = false;
+            progressBar.classList.remove('active');
+            if (e) {
+                updateScrubVisual(e, progressBar);
             }
+            commitAudioSeek(scrubTargetPercent);
         };
 
         progressBar.addEventListener('mousedown', startScrub);
         window.addEventListener('mousemove', moveScrub);
         window.addEventListener('mouseup', endScrub);
 
-        progressBar.addEventListener('touchstart', startScrub, { passive: true });
-        window.addEventListener('touchmove', moveScrub, { passive: true });
-        window.addEventListener('touchend', endScrub);
+        progressBar.addEventListener('touchstart', startScrub, { passive: false });
+        window.addEventListener('touchmove', moveScrub, { passive: false });
+        window.addEventListener('touchend', endScrub, { passive: true });
+        window.addEventListener('touchcancel', endScrub, { passive: true });
     }
 
     // --- Volume Control Logic ---

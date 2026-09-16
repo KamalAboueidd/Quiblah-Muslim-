@@ -42,7 +42,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -2;
+    z-index: -1;
 }
 
 .carousel-slide {
@@ -67,9 +67,9 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, rgba(12, 17, 23, 0.72) 0%, rgba(8, 12, 16, 0.88) 100%);
-    backdrop-filter: blur(4px);
-    z-index: -1;
+    background: rgba(0, 0, 0, 0.65); /* Dark overlay for text readability */
+    backdrop-filter: blur(3px); /* Slight blur for premium feel */
+    -webkit-backdrop-filter: blur(3px);
 }
 
 /* Canvas Confetti */

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>المسابقات والأسئلة الإسلامية - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="اختبر معلوماتك الدينية في القرآن الكريم، السيرة النبوية، الفقه، العقيدة، والتاريخ الإسلامي بتحديات تفاعلية ومستويات متعددة.">
+    <meta name="keywords" content="مسابقات إسلامية, أسئلة دينية, كويز إسلامي, القرآن, السنة, الفقه, العقيدة, قبلة المسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="المسابقات والأسئلة الإسلامية - قبلة المسلم">
+    <meta property="og:description" content="تحدي تفاعلي في العلوم الشرعية والقرآن والسنة مع سكور ومستويات صعوبة وأوسمة إنجاز.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+    <script src="core/player-bridge.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C5A859">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="stylesheet" href="features/quiz/quiz.css">
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <!-- Canvas Confetti -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- App Container (Isolated view without general top tabs) -->
+    <div class="quiz-app-container">
+
+        <!-- Top Header: Clean Transparent Back Arrow to Timings, Title, and Actions -->
+        <header class="quiz-top-header">
+            <!-- Back Arrow: Strictly no background box -->
+            <a href="home.html" class="quiz-back-btn" id="quiz-back-btn" title="العودة للمواقيت">
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                <span>العودة للمواقيت</span>
+            </a>
+
+            <!-- Center Title -->
+            <div class="quiz-center-badge">
+                <i class="fa-solid fa-award" aria-hidden="true"></i>
+                <span>المسابقات الإسلامية</span>
+            </div>
+
+            <!-- Header Tools -->
+            <div class="quiz-header-actions">
+                <button class="quiz-tool-btn" id="quiz-sound-toggle" title="كتم / تفعيل الصوت">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button class="quiz-tool-btn" id="quiz-stats-toggle" title="الإنجازات والأوسمة">
+                    <i class="fa-solid fa-medal"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ================= SCREEN 1: LOBBY / HUB ================= -->
+        <section class="quiz-screen active" id="screen-lobby">
+            
+            <!-- Hero Card & Player Status -->
+            <div class="quiz-hero-card">
+                <div class="quiz-hero-info">
+                    <div class="quiz-avatar-box">
+                        <i class="fa-solid fa-mosque"></i>
+                    </div>
+                    <div>
+                        <div class="quiz-rank-label" id="quiz-rank-label">المستوى 1 • 0 نقطة XP</div>
+                        <div class="quiz-user-title" id="quiz-user-title">باحث في المعرفة 🌱</div>
+                        <div class="quiz-xp-bar-wrap">
+                            <div class="quiz-xp-fill" id="quiz-xp-fill" style="width: 15%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-stats-strip">
+                    <div class="hero-stat-pill">
+                        <div class="hero-stat-value" id="stat-xp">0</div>
+                        <div class="hero-stat-label">نقاط الخبرة</div>
+                    </div>
+                    <div class="hero-stat-pill">
+                        <div class="hero-stat-value" id="stat-accuracy">0%</div>
+                        <div class="hero-stat-label">نسبة الدقة</div>
+                    </div>
+                    <div class="hero-stat-pill">
+                        <div class="hero-stat-value" id="stat-streak">0x</div>
+                        <div class="hero-stat-label">أعلى سلسلة 🔥</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Modes -->
+            <div class="section-heading">
+                <i class="fa-solid fa-gamepad"></i>
+                <span>اختر نمط التحدي</span>
+            </div>
+            <div class="quiz-modes-grid" id="modes-grid">
+                <div class="mode-card selected" data-mode="stages">
+                    <span class="mode-card-badge">شائع</span>
+                    <i class="fa-solid fa-chess-rook mode-icon"></i>
+                    <div class="mode-title">رحلة المراحل</div>
+                    <div class="mode-desc">مراحل تدريجية (10 أسئلة) لجمع النقاط وفتح مستويات علمية جديدة.</div>
+                </div>
+                <div class="mode-card" data-mode="quick">
+                    <span class="mode-card-badge">سريع</span>
+                    <i class="fa-solid fa-bolt mode-icon"></i>
+                    <div class="mode-title">التحدي السريع</div>
+                    <div class="mode-desc">اختبار فوري من 10 أسئلة لقياس معلوماتك بدقة وفي دقائق معدودة.</div>
+                </div>
+                <div class="mode-card" data-mode="streak">
+                    <span class="mode-card-badge">حماسي</span>
+                    <i class="fa-solid fa-fire mode-icon" style="color: #ff9800;"></i>
+                    <div class="mode-title">السلسلة الذهبية</div>
+                    <div class="mode-desc">تحدي البقاء بدون أي خطأ مع مضاعف سكور متصاعد لكل إجابة متتالية!</div>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="section-heading">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>اختر المجال الشرعي</span>
+            </div>
+            <div class="categories-grid" id="categories-grid">
+                <!-- Injected dynamically by JS -->
+            </div>
+
+            <!-- Levels -->
+            <div class="section-heading">
+                <i class="fa-solid fa-stairs"></i>
+                <span>مستوى الصعوبة</span>
+            </div>
+            <div class="levels-bar-wrap" id="levels-wrap">
+                <button class="level-btn selected" data-level="1">
+                    <i class="fa-solid fa-seedling"></i>
+                    <span>مبتدئ (ميسر)</span>
+                </button>
+                <button class="level-btn" data-level="2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>متوسط (طالب علم)</span>
+                </button>
+                <button class="level-btn" data-level="3">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>متقدم (تحدي العلماء)</span>
+                </button>
+            </div>
+
+            <!-- Big Glowing CTA Button -->
+            <button class="quiz-start-cta" id="quiz-start-cta">
+                <i class="fa-solid fa-play"></i>
+                <span>ابدأ التحدي الآن</span>
+            </button>
+
+        </section>
+
+        <!-- ================= SCREEN 2: ACTIVE GAMEPLAY ================= -->
+        <section class="quiz-screen" id="screen-game">
+            
+            <!-- Game Top Status Bar -->
+            <div class="game-top-bar">
+                <div class="game-progress-info">
+                    <div class="progress-pill">
+                        <i class="fa-solid fa-circle-question"></i>
+                        <span>السؤال <strong id="q-progress-current">1</strong> من <span id="q-progress-total">10</span></span>
+                    </div>
+                    <div class="game-progress-track">
+                        <div class="game-progress-fill" id="game-progress-fill" style="width: 10%;"></div>
+                    </div>
+                </div>
+
+                <div class="game-metrics-row">
+                    <!-- Streak Flame -->
+                    <div class="streak-flame-badge" id="streak-flame-badge">
+                        <i class="fa-solid fa-fire"></i>
+                        <span id="streak-val">0x</span>
+                    </div>
+
+                    <!-- Score -->
+                    <div class="score-display-box">
+                        <span>نقاط:</span>
+                        <span id="score-val">0</span>
+                    </div>
+
+                    <!-- Countdown Timer -->
+                    <div class="game-timer-pill" id="game-timer-pill">
+                        <i class="fa-regular fa-clock"></i>
+                        <span id="timer-val">20s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lifelines Bar -->
+            <div class="lifelines-container">
+                <button class="lifeline-btn" id="lifeline-5050" title="حذف إجابتين غير صحيحتين">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>حذف إجابتين (50:50)</span>
+                </button>
+                <button class="lifeline-btn" id="lifeline-freeze" title="إضافة 15 ثانية للمؤقت">
+                    <i class="fa-regular fa-snowflake"></i>
+                    <span>تجميد الوقت (+15s)</span>
+                </button>
+                <button class="lifeline-btn" id="lifeline-skip" title="تخطي هذا السؤال">
+                    <i class="fa-solid fa-forward-step"></i>
+                    <span>تخطي</span>
+                </button>
+            </div>
+
+            <!-- Question Card -->
+            <div class="question-card">
+                <div class="question-meta-row">
+                    <div class="question-cat-pill" id="question-cat-pill">
+                        <i class="fa-solid fa-book-quran"></i> القرآن الكريم
+                    </div>
+                    <div class="question-level-pill" id="question-level-pill">
+                        🌱 سهل
+                    </div>
+                </div>
+
+                <h2 class="question-text" id="question-text">جاري تحميل السؤال...</h2>
+
+                <!-- Choices -->
+                <div class="choices-container" id="choices-container">
+                    <!-- 4 options injected by JS -->
+                </div>
+
+                <!-- Educational Explanation Card -->
+                <div class="explanation-card" id="explanation-card">
+                    <div class="explanation-title">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <span>الفائدة والدليل الشرعي:</span>
+                    </div>
+                    <p class="explanation-text" id="explanation-text"></p>
+                    <div class="explanation-source" id="explanation-source"></div>
+                </div>
+            </div>
+
+            <!-- Next Question Row -->
+            <div class="game-bottom-action">
+                <button class="next-q-btn" id="btn-next-question" style="display: none;">
+                    <span>السؤال التالي</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- ================= SCREEN 3: SUMMARY & RESULTS ================= -->
+        <section class="quiz-screen" id="screen-summary">
+            
+            <div class="summary-container">
+                <div class="victory-trophy-icon">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="summary-title">ما شاء الله! أحسنت صنعاً</h2>
+                <p class="summary-subtitle">لقد أتممت جولة التحدي بنجاح وزادت حصيلتك المعرفية</p>
+
+                <!-- Circular Score Ring -->
+                <div class="score-circle-box">
+                    <div class="score-circle-number" id="summary-score-val">0</div>
+                    <div class="score-circle-label">مجموع النقاط</div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="summary-stats-grid">
+                    <div class="summary-stat-cell">
+                        <div class="summary-stat-val green" id="summary-correct-val">0</div>
+                        <div class="summary-stat-desc">إجابات صحيحة</div>
+                    </div>
+                    <div class="summary-stat-cell">
+                        <div class="summary-stat-val red" id="summary-wrong-val">0</div>
+                        <div class="summary-stat-desc">إجابات خاطئة</div>
+                    </div>
+                    <div class="summary-stat-cell">
+                        <div class="summary-stat-val gold" id="summary-xp-val">+0</div>
+                        <div class="summary-stat-desc">نقاط XP مكتسبة</div>
+                    </div>
+                    <div class="summary-stat-cell">
+                        <div class="summary-stat-val" id="summary-streak-val">0x</div>
+                        <div class="summary-stat-desc">أعلى سلسلة 🔥</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="summary-actions-row">
+                    <button class="summary-btn summary-btn-primary" id="btn-restart-round">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>تحدٍ جديد</span>
+                    </button>
+                    <button class="summary-btn summary-btn-secondary" id="btn-back-lobby">
+                        <i class="fa-solid fa-list"></i>
+                        <span>تغيير التصنيف والمستوى</span>
+                    </button>
+                </div>
+
+                <!-- Review Questions Collapsible -->
+                <button class="review-toggle-btn" id="btn-toggle-review">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>مراجعة الأسئلة والإجابات</span>
+                </button>
+                <div class="round-review-list" id="round-review-list">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- ================= BADGES / STATS MODAL ================= -->
+    <div class="quiz-modal-overlay" id="stats-modal">
+        <div class="quiz-modal-card">
+            <div class="modal-header-row">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-medal"></i>
+                    <span>سجل الإنجازات والأوسمة</span>
+                </div>
+                <button class="modal-close-btn" id="btn-close-stats">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p style="font-size: 13px; color: #94a3b8; margin-top: 0;">
+                واصل الإجابة الصحيحة وخوض التحديات بمختلف المستويات لفتح الأوسمة العلمية!
+            </p>
+            <div class="badges-grid" id="modal-badges-grid">
+                <!-- Badges injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="features/quiz/quiz-data.js?v=1"></script>
+    <script src="features/quiz/quiz.js?v=1"></script>
+</body>
+</html>

@@ -29,7 +29,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="features/quiz/quiz.css?v=3">
+    <link rel="stylesheet" href="features/quiz/quiz.css?v=6">
 </head>
 <body>
 
@@ -109,10 +109,42 @@
                 </div>
             </div>
 
-            <!-- Game Modes -->
+            <!-- Step 1: Categories -->
             <div class="section-heading">
+                <span class="step-num">١</span>
+                <i class="fa-solid fa-shapes"></i>
+                <span>اختر المجال الشرعي</span>
+            </div>
+            <div class="categories-grid" id="categories-grid">
+                <!-- Injected dynamically by JS -->
+            </div>
+
+            <!-- Step 2: Levels -->
+            <div class="section-heading">
+                <span class="step-num">٢</span>
+                <i class="fa-solid fa-sliders"></i>
+                <span>اختر مستوى الصعوبة</span>
+            </div>
+            <div class="levels-bar-wrap" id="levels-wrap">
+                <button class="level-btn selected" data-level="1">
+                    <i class="fa-solid fa-seedling"></i>
+                    <span>ميسر (الناشئة والبدايات)</span>
+                </button>
+                <button class="level-btn" data-level="2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>عام (معلومات المسلم اليومية)</span>
+                </button>
+                <button class="level-btn" data-level="3">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>متعمق (فوائد وتفاصيل شرعية)</span>
+                </button>
+            </div>
+
+            <!-- Step 3: Game Modes -->
+            <div class="section-heading">
+                <span class="step-num">٣</span>
                 <i class="fa-solid fa-compass"></i>
-                <span>اختر مسار الاختبار</span>
+                <span>اختر نظام التحدي</span>
             </div>
             <div class="quiz-modes-grid" id="modes-grid">
                 <div class="mode-card selected" data-mode="stages">
@@ -132,33 +164,17 @@
                 </div>
             </div>
 
-            <!-- Categories -->
-            <div class="section-heading">
-                <i class="fa-solid fa-shapes"></i>
-                <span>اختر المجال الشرعي</span>
-            </div>
-            <div class="categories-grid" id="categories-grid">
-                <!-- Injected dynamically by JS -->
-            </div>
-
-            <!-- Levels -->
-            <div class="section-heading">
-                <i class="fa-solid fa-sliders"></i>
-                <span>مستوى الأسئلة</span>
-            </div>
-            <div class="levels-bar-wrap" id="levels-wrap">
-                <button class="level-btn selected" data-level="1">
-                    <i class="fa-solid fa-seedling"></i>
-                    <span>ميسر (الناشئة والبدايات)</span>
-                </button>
-                <button class="level-btn" data-level="2">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>عام (معلومات المسلم اليومية)</span>
-                </button>
-                <button class="level-btn" data-level="3">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <span>متعمق (فوائد وتفاصيل شرعية)</span>
-                </button>
+            <!-- Live Selection Summary -->
+            <div class="quiz-ready-summary" id="quiz-ready-summary">
+                <div class="ready-summary-label">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>ملخص خياراتك للاختبار:</span>
+                </div>
+                <div class="ready-summary-pills">
+                    <span class="ready-pill" id="ready-cat-pill"><i class="fa-solid fa-layer-group"></i> كافة المجالات</span>
+                    <span class="ready-pill" id="ready-lvl-pill"><i class="fa-solid fa-seedling"></i> مستوى ميسر</span>
+                    <span class="ready-pill" id="ready-mode-pill"><i class="fa-solid fa-layer-group"></i> رحلة المراحل (10 أسئلة)</span>
+                </div>
             </div>
 
             <!-- Big Glowing CTA Button -->
@@ -206,29 +222,40 @@
             </div>
 
             <!-- Lifelines Bar -->
-            <div class="lifelines-container">
-                <button class="lifeline-btn" id="lifeline-5050" title="حذف إجابتين غير صحيحتين">
+            <div class="lifelines-wrapper">
+                <div class="lifelines-label">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>حذف إجابتين (50:50)</span>
-                </button>
-                <button class="lifeline-btn" id="lifeline-freeze" title="إضافة 15 ثانية للمؤقت">
-                    <i class="fa-regular fa-snowflake"></i>
-                    <span>تجميد الوقت (+15s)</span>
-                </button>
-                <button class="lifeline-btn" id="lifeline-skip" title="تخطي هذا السؤال">
-                    <i class="fa-solid fa-forward-step"></i>
-                    <span>تخطي</span>
-                </button>
+                    <span>وسائل المساعدة (اختيارية):</span>
+                </div>
+                <div class="lifelines-container">
+                    <button class="lifeline-btn" id="lifeline-5050" title="حذف إجابتين غير صحيحتين">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>حذف خيارين (50:50)</span>
+                    </button>
+                    <button class="lifeline-btn" id="lifeline-freeze" title="إضافة 15 ثانية للمؤقت">
+                        <i class="fa-regular fa-snowflake"></i>
+                        <span>تجميد الوقت (+15s)</span>
+                    </button>
+                    <button class="lifeline-btn" id="lifeline-skip" title="تخطي هذا السؤال">
+                        <i class="fa-solid fa-forward-step"></i>
+                        <span>تخطي السؤال</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Question Card -->
             <div class="question-card">
                 <div class="question-meta-row">
-                    <div class="question-cat-pill" id="question-cat-pill">
-                        <i class="fa-solid fa-book-quran"></i> القرآن الكريم
+                    <div class="question-meta-left">
+                        <div class="question-cat-pill" id="question-cat-pill">
+                            <i class="fa-solid fa-book-quran"></i> القرآن الكريم
+                        </div>
+                        <div class="question-level-pill" id="question-level-pill">
+                            ميسر
+                        </div>
                     </div>
-                    <div class="question-level-pill" id="question-level-pill">
-                        ميسر
+                    <div class="question-mode-pill" id="question-mode-pill">
+                        <i class="fa-solid fa-layer-group"></i> رحلة المراحل
                     </div>
                 </div>
 
@@ -349,6 +376,6 @@
 
     <!-- Scripts -->
     <script src="features/quiz/quiz-data.js?v=1"></script>
-    <script src="features/quiz/quiz.js?v=1"></script>
+    <script src="features/quiz/quiz.js?v=2"></script>
 </body>
 </html>

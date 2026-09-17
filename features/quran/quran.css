@@ -336,13 +336,24 @@
 
         .reader-area {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 30px 40px 60px;
+            padding: 20px 25px 20px;
             scroll-behavior: smooth;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
+        }
+
+        #content-container {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
         }
 
         .surah-header-card {
@@ -500,14 +511,14 @@
         .surah-picker-landing {
             max-width: 720px;
             width: 100%;
-            margin: 35px auto;
-            padding: 40px 28px;
-            background: rgba(10, 12, 16, 0.55);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(197, 168, 89, 0.35);
-            border-radius: 24px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55), 0 0 25px rgba(197, 168, 89, 0.12);
+            margin: auto;
+            padding: 24px 20px;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
             text-align: center;
             box-sizing: border-box;
             display: flex;
@@ -528,19 +539,20 @@
         }
 
         .picker-icon-box {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(197, 168, 89, 0.12);
-            border: 1.5px solid var(--gold);
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            background: transparent !important;
+            border: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
+            font-size: 52px;
             color: var(--gold);
-            margin-bottom: 20px;
-            box-shadow: 0 0 25px rgba(197, 168, 89, 0.25);
+            margin-bottom: 18px;
+            box-shadow: none !important;
             transition: transform 0.3s ease;
+            filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7));
         }
 
         .picker-icon-box:hover {
@@ -553,7 +565,7 @@
             color: #ffffff;
             margin: 0 0 14px 0;
             line-height: 1.6;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
         }
 
         .picker-main-title {
@@ -1019,14 +1031,14 @@
                 padding: 7px 14px;
             }
             .surah-picker-landing {
-                margin: 20px auto;
-                padding: 26px 16px;
-                border-radius: 18px;
+                margin: auto;
+                padding: 20px 14px;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
             }
             .picker-icon-box {
-                width: 65px;
-                height: 65px;
-                font-size: 28px;
+                font-size: 44px;
                 margin-bottom: 14px;
             }
             .picker-ayah-quote {

@@ -357,6 +357,7 @@
                 state.category = cat.id;
                 document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
+                updateReadySummary();
             });
             elements.categoriesGrid.appendChild(card);
         });
@@ -368,6 +369,7 @@
                 state.mode = card.dataset.mode;
                 document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
+                updateReadySummary();
             });
         });
 
@@ -378,8 +380,35 @@
                 state.level = Number(btn.dataset.level);
                 document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
+                updateReadySummary();
             });
         });
+
+        updateReadySummary();
+    }
+
+    function updateReadySummary() {
+        const readyCat = document.getElementById('ready-cat-pill');
+        const readyLvl = document.getElementById('ready-lvl-pill');
+        const readyMode = document.getElementById('ready-mode-pill');
+
+        if (readyCat) {
+            const catObj = QUIZ_CATEGORIES[state.category] || QUIZ_CATEGORIES.all;
+            readyCat.innerHTML = `<i class="fa-solid ${catObj.icon}"></i> ${catObj.name}`;
+        }
+        if (readyLvl) {
+            const lvlObj = QUIZ_LEVELS[state.level] || QUIZ_LEVELS[1];
+            const icon = state.level === 1 ? 'fa-seedling' : (state.level === 2 ? 'fa-book-open' : 'fa-graduation-cap');
+            readyLvl.innerHTML = `<i class="fa-solid ${icon}"></i> مستوى: ${lvlObj.badge}`;
+        }
+        if (readyMode) {
+            const modeTexts = {
+                stages: '<i class="fa-solid fa-layer-group"></i> رحلة المراحل (10 أسئلة)',
+                quick: '<i class="fa-solid fa-bolt"></i> الاختبار السريع (مؤقت 20 ثانية)',
+                streak: '<i class="fa-solid fa-fire"></i> تحدي السلسلة (دون خطأ)'
+            };
+            readyMode.innerHTML = modeTexts[state.mode] || modeTexts.stages;
+        }
     }
 
     function switchScreen(screenName) {
@@ -483,6 +512,16 @@
         const lvlInfo = QUIZ_LEVELS[q.level] || QUIZ_LEVELS[1];
         elements.levelPill.textContent = lvlInfo.badge;
 
+        const modePill = document.getElementById('question-mode-pill');
+        if (modePill) {
+            const modeLabels = {
+                stages: '<i class="fa-solid fa-layer-group"></i> رحلة المراحل',
+                quick: '<i class="fa-solid fa-bolt"></i> الاختبار السريع',
+                streak: '<i class="fa-solid fa-fire"></i> تحدي السلسلة'
+            };
+            modePill.innerHTML = modeLabels[state.mode] || modeLabels.stages;
+        }
+
         // Question Text
         elements.qText.textContent = q.question;
 
@@ -513,7 +552,14 @@
 
     function startTimer() {
         clearInterval(state.timerInterval);
-        state.timerSeconds = 20;
+        if (state.mode === 'quick') {
+            state.timerSeconds = 20;
+        } else if (state.mode === 'streak') {
+            state.timerSeconds = 25;
+        } else {
+            // رحلة المراحل: وقت كافٍ ومريح للقراءة والتفكر في الأسئلة والفوائد
+            state.timerSeconds = 35;
+        }
         elements.timerPill.classList.remove('warning');
         elements.timerVal.textContent = `${state.timerSeconds}s`;
 
@@ -555,6 +601,12 @@
 
         showExplanation();
         elements.btnNextQuestion.style.display = 'inline-flex';
+        const isLastQuestionTimeout = (state.currentIndex >= state.questions.length - 1);
+        if (isLastQuestionTimeout) {
+            elements.btnNextQuestion.innerHTML = `<span>إنهاء وعرض النتيجة</span> <i class="fa-solid fa-trophy"></i>`;
+        } else {
+            elements.btnNextQuestion.innerHTML = `<span>السؤال التالي</span> <i class="fa-solid fa-arrow-left"></i>`;
+        }
 
         if (state.mode === 'streak') {
             finishRound();
@@ -620,6 +672,18 @@
 
         showExplanation();
         elements.btnNextQuestion.style.display = 'inline-flex';
+
+        // Update button text for final question or next question
+        const isLastQuestion = (state.currentIndex >= state.questions.length - 1);
+        if (isLastQuestion && (isCorrect || state.mode !== 'streak')) {
+            elements.btnNextQuestion.innerHTML = `<span>إنهاء وعرض النتيجة</span> <i class="fa-solid fa-trophy"></i>`;
+        } else {
+            elements.btnNextQuestion.innerHTML = `<span>السؤال التالي</span> <i class="fa-solid fa-arrow-left"></i>`;
+        }
+
+        setTimeout(() => {
+            elements.btnNextQuestion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 120);
 
         // In survival streak mode, game ends on wrong answer!
         if (!isCorrect && state.mode === 'streak') {

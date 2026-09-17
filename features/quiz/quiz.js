@@ -202,11 +202,11 @@
             return data.xp;
         },
         getRank(xp) {
-            if (xp >= 3000) return { title: "الراسخون في العلم 👑", level: 5, next: 5000 };
-            if (xp >= 1800) return { title: "عالم ومحدث 📜", level: 4, next: 3000 };
-            if (xp >= 900) return { title: "فقيه الأمة ⚖️", level: 3, next: 1800 };
-            if (xp >= 350) return { title: "طالب علم مجتهد 📚", level: 2, next: 900 };
-            return { title: "باحث في المعرفة 🌱", level: 1, next: 350 };
+            if (xp >= 3000) return { title: "الراسخون في العلم", level: 5, next: 5000 };
+            if (xp >= 1800) return { title: "عالم ومحدث", level: 4, next: 3000 };
+            if (xp >= 900) return { title: "فقيه الأمة", level: 3, next: 1800 };
+            if (xp >= 350) return { title: "طالب علم مجتهد", level: 2, next: 900 };
+            return { title: "باحث في المعرفة", level: 1, next: 350 };
         }
     };
 
@@ -346,9 +346,7 @@
             card.className = `category-card ${state.category === cat.id ? 'selected' : ''}`;
             card.dataset.catId = cat.id;
             card.innerHTML = `
-                <div class="category-icon-wrap" style="background: ${cat.color};">
-                    <i class="fa-solid ${cat.icon}"></i>
-                </div>
+                <i class="fa-solid ${cat.icon} category-icon" aria-hidden="true"></i>
                 <div class="category-text-info">
                     <div class="category-name">${cat.name}</div>
                     <div class="category-sub">${cat.description}</div>
@@ -667,7 +665,9 @@
         });
 
         shuffleArray(wrongOptions);
-        wrongOptions.slice(0, 2).forEach(btn => btn.classList.add('hidden-5050'));
+        // إخفاء خيارين خاطئين فقط ليتبقى خياران بالضبط (الخيار الصحيح + خيار خاطئ واحد)
+        const countToHide = Math.min(2, Math.max(1, wrongOptions.length - 1));
+        wrongOptions.slice(0, countToHide).forEach(btn => btn.classList.add('hidden-5050'));
     }
 
     function useLifelineFreeze() {
@@ -692,8 +692,63 @@
     // --- Finish Round & Summary ---
     function finishRound() {
         clearInterval(state.timerInterval);
-        sound.play('victory');
-        confetti.burst(120);
+
+        const total = state.questions.length || 10;
+        const accuracyPct = Math.round((state.correctCount / total) * 100);
+
+        // Feedback DOM elements
+        const feedbackIcon = document.getElementById('summary-feedback-icon');
+        const summaryTitle = document.getElementById('summary-title');
+        const summarySubtitle = document.getElementById('summary-subtitle');
+
+        // تقييم واقعي ودقيق للنتيجة
+        if (state.correctCount === 0) {
+            // نتيجة صفر: لا تتويج ولا قصاصات احتفالية بل توجيه واقعي لتدارك العلم
+            if (feedbackIcon) {
+                feedbackIcon.className = 'summary-feedback-icon neutral';
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-rotate-left"></i>';
+            }
+            if (summaryTitle) summaryTitle.textContent = 'لم توفق في هذه الجولة';
+            if (summarySubtitle) {
+                summarySubtitle.textContent = 'العلم الشرعي يُنال بالمدارسة والمحاولة. راجع الفوائد والإجابات الصحيحة في الأسفل، وأعد المحاولة لتثبيت المعرفة.';
+            }
+            sound.play('wrong');
+        } else if (accuracyPct < 50) {
+            // أقل من 50%: تشجيع واقعي بدون احتفال مبالغ
+            if (feedbackIcon) {
+                feedbackIcon.className = 'summary-feedback-icon neutral';
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-book-open"></i>';
+            }
+            if (summaryTitle) summaryTitle.textContent = 'بداية طيبة ومحاولة مفيدة';
+            if (summarySubtitle) {
+                summarySubtitle.textContent = `أجبت على ${state.correctCount} من أصل ${total} أسئلة بنجاح. بمراجعة الفوائد الشرعية ستعزز حصيلتك وتصل لدرجات أعلى.`;
+            }
+            sound.play('click');
+        } else if (accuracyPct < 80) {
+            // 50% إلى 79%: أداء جيد
+            if (feedbackIcon) {
+                feedbackIcon.className = 'summary-feedback-icon good';
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-star"></i>';
+            }
+            if (summaryTitle) summaryTitle.textContent = 'أداء متميز ونتيجة طيبة';
+            if (summarySubtitle) {
+                summarySubtitle.textContent = `أحسنت! حققت نسبة دقة ${accuracyPct}%، وهي حصيلة معرفية ممتازة، واصل خوض التحديات لترسيخ الفوائد.`;
+            }
+            sound.play('correct');
+            confetti.burst(40);
+        } else {
+            // 80% فأعلى: تتويج كامل واحتفال
+            if (feedbackIcon) {
+                feedbackIcon.className = 'summary-feedback-icon trophy';
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+            }
+            if (summaryTitle) summaryTitle.textContent = 'ما شاء الله! إتقان وبراعة';
+            if (summarySubtitle) {
+                summarySubtitle.textContent = `تميز رائع بنسبة دقة ${accuracyPct}% واستحضار متقن للمعلومات والفوائد الشرعية.`;
+            }
+            sound.play('victory');
+            confetti.burst(120);
+        }
 
         // Add XP and Update Profile
         const xpEarned = state.score;
@@ -732,7 +787,7 @@
                 <div class="review-q-header">
                     <span>${i + 1}. ${ans.question}</span>
                     <span class="review-status-badge ${ans.isCorrect ? 'correct' : 'wrong'}">
-                        ${ans.isCorrect ? 'إجابة صحيحة ✓' : 'إجابة خاطئة ✗'}
+                        ${ans.isCorrect ? '<i class="fa-solid fa-check"></i> إجابة صحيحة' : '<i class="fa-solid fa-xmark"></i> إجابة خاطئة'}
                     </span>
                 </div>
                 <div class="review-answer-line">إجابتك: <strong>${ans.userChoice}</strong></div>

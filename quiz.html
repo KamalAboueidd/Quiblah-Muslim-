@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>المسابقات والأسئلة الإسلامية - قبلة المسلم</title>
+    <title>اختبار المعرفة الإسلامية - قبلة المسلم</title>
 
     <!-- SEO & Open Graph Tags -->
-    <meta name="description" content="اختبر معلوماتك الدينية في القرآن الكريم، السيرة النبوية، الفقه، العقيدة، والتاريخ الإسلامي بتحديات تفاعلية ومستويات متعددة.">
-    <meta name="keywords" content="مسابقات إسلامية, أسئلة دينية, كويز إسلامي, القرآن, السنة, الفقه, العقيدة, قبلة المسلم">
+    <meta name="description" content="اختبر معلوماتك الدينية ورسخ الفوائد الشرعية الموثقة في القرآن الكريم والسنة النبوية والفقه والعقيدة والتاريخ بتحديات تفاعلية ومستويات متعددة.">
+    <meta name="keywords" content="اختبار إسلامي, أسئلة دينية, أسئلة إسلامية, القرآن, السنة, الفقه, العقيدة, قبلة المسلم">
     <meta name="author" content="كمال أبو عيد">
-    <meta property="og:title" content="المسابقات والأسئلة الإسلامية - قبلة المسلم">
-    <meta property="og:description" content="تحدي تفاعلي في العلوم الشرعية والقرآن والسنة مع سكور ومستويات صعوبة وأوسمة إنجاز.">
-    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:title" content="اختبار المعرفة الإسلامية - قبلة المسلم">
+    <meta property="og:description" content="اختبار تفاعلي في العلوم الشرعية والقرآن والسنة مع سكور ومستويات واقعية وفوائد موثقة.">
     <link rel="preload" as="image" href="assets/bg1.jpg">
     <script src="core/player-bridge.js"></script>
 
@@ -30,7 +29,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="features/quiz/quiz.css?v=2">
+    <link rel="stylesheet" href="features/quiz/quiz.css?v=3">
 </head>
 <body>
 
@@ -45,7 +44,7 @@
     <!-- Canvas Confetti -->
     <canvas id="confetti-canvas"></canvas>
 
-    <!-- App Container (Isolated view without general top tabs) -->
+    <!-- App Container -->
     <div class="quiz-app-container">
 
         <!-- Top Header: Clean Transparent Back Arrow to Timings, Title, and Actions -->
@@ -58,8 +57,8 @@
 
             <!-- Center Title -->
             <div class="quiz-center-badge">
-                <i class="fa-solid fa-award" aria-hidden="true"></i>
-                <span>المسابقات الإسلامية</span>
+                <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i>
+                <span>اختبار المعرفة الإسلامية</span>
             </div>
 
             <!-- Header Tools -->
@@ -73,18 +72,21 @@
             </div>
         </header>
 
+        <!-- Subtitle guide banner -->
+        <div class="quiz-header-subtitle">
+            اختبر معلوماتك ورسخ الفوائد الشرعية الموثقة في القرآن الكريم، السنة النبوية، الفقه، والتاريخ الإسلامي
+        </div>
+
         <!-- ================= SCREEN 1: LOBBY / HUB ================= -->
         <section class="quiz-screen active" id="screen-lobby">
             
             <!-- Hero Card & Player Status -->
             <div class="quiz-hero-card">
                 <div class="quiz-hero-info">
-                    <div class="quiz-avatar-box">
-                        <i class="fa-solid fa-mosque"></i>
-                    </div>
+                    <i class="fa-solid fa-mosque quiz-hero-icon" aria-hidden="true"></i>
                     <div>
                         <div class="quiz-rank-label" id="quiz-rank-label">المستوى 1 • 0 نقطة XP</div>
-                        <div class="quiz-user-title" id="quiz-user-title">باحث في المعرفة 🌱</div>
+                        <div class="quiz-user-title" id="quiz-user-title">باحث في المعرفة</div>
                         <div class="quiz-xp-bar-wrap">
                             <div class="quiz-xp-fill" id="quiz-xp-fill" style="width: 15%;"></div>
                         </div>
@@ -102,40 +104,37 @@
                     </div>
                     <div class="hero-stat-pill">
                         <div class="hero-stat-value" id="stat-streak">0x</div>
-                        <div class="hero-stat-label">أعلى سلسلة 🔥</div>
+                        <div class="hero-stat-label">أعلى سلسلة</div>
                     </div>
                 </div>
             </div>
 
             <!-- Game Modes -->
             <div class="section-heading">
-                <i class="fa-solid fa-gamepad"></i>
-                <span>اختر نمط التحدي</span>
+                <i class="fa-solid fa-compass"></i>
+                <span>اختر مسار الاختبار</span>
             </div>
             <div class="quiz-modes-grid" id="modes-grid">
                 <div class="mode-card selected" data-mode="stages">
-                    <span class="mode-card-badge">شائع</span>
-                    <i class="fa-solid fa-chess-rook mode-icon"></i>
+                    <i class="fa-solid fa-layer-group mode-icon"></i>
                     <div class="mode-title">رحلة المراحل</div>
-                    <div class="mode-desc">مراحل تدريجية (10 أسئلة) لجمع النقاط وفتح مستويات علمية جديدة.</div>
+                    <div class="mode-desc">10 أسئلة متدرجة لجمع النقاط وتثبيت الفوائد المعرفية.</div>
                 </div>
                 <div class="mode-card" data-mode="quick">
-                    <span class="mode-card-badge">سريع</span>
                     <i class="fa-solid fa-bolt mode-icon"></i>
-                    <div class="mode-title">التحدي السريع</div>
-                    <div class="mode-desc">اختبار فوري من 10 أسئلة لقياس معلوماتك بدقة وفي دقائق معدودة.</div>
+                    <div class="mode-title">الاختبار السريع</div>
+                    <div class="mode-desc">10 أسئلة سريعة بمؤقت زمني لقياس استحضار معلوماتك بدقة.</div>
                 </div>
                 <div class="mode-card" data-mode="streak">
-                    <span class="mode-card-badge">حماسي</span>
-                    <i class="fa-solid fa-fire mode-icon" style="color: #ff9800;"></i>
-                    <div class="mode-title">السلسلة الذهبية</div>
-                    <div class="mode-desc">تحدي البقاء بدون أي خطأ مع مضاعف سكور متصاعد لكل إجابة متتالية!</div>
+                    <i class="fa-solid fa-fire mode-icon"></i>
+                    <div class="mode-title">السلسلة المستمرة</div>
+                    <div class="mode-desc">تحدي الإتقان المتواصل دون أي إجابة خاطئة مع مضاعفة النقاط.</div>
                 </div>
             </div>
 
             <!-- Categories -->
             <div class="section-heading">
-                <i class="fa-solid fa-layer-group"></i>
+                <i class="fa-solid fa-shapes"></i>
                 <span>اختر المجال الشرعي</span>
             </div>
             <div class="categories-grid" id="categories-grid">
@@ -144,21 +143,21 @@
 
             <!-- Levels -->
             <div class="section-heading">
-                <i class="fa-solid fa-stairs"></i>
-                <span>مستوى الصعوبة</span>
+                <i class="fa-solid fa-sliders"></i>
+                <span>مستوى الأسئلة</span>
             </div>
             <div class="levels-bar-wrap" id="levels-wrap">
                 <button class="level-btn selected" data-level="1">
                     <i class="fa-solid fa-seedling"></i>
-                    <span>مبتدئ (ميسر)</span>
+                    <span>ميسر (الناشئة والبدايات)</span>
                 </button>
                 <button class="level-btn" data-level="2">
                     <i class="fa-solid fa-book-open"></i>
-                    <span>متوسط (طالب علم)</span>
+                    <span>عام (معلومات المسلم اليومية)</span>
                 </button>
                 <button class="level-btn" data-level="3">
                     <i class="fa-solid fa-graduation-cap"></i>
-                    <span>متقدم (تحدي العلماء)</span>
+                    <span>متعمق (فوائد وتفاصيل شرعية)</span>
                 </button>
             </div>
 
@@ -229,7 +228,7 @@
                         <i class="fa-solid fa-book-quran"></i> القرآن الكريم
                     </div>
                     <div class="question-level-pill" id="question-level-pill">
-                        🌱 سهل
+                        ميسر
                     </div>
                 </div>
 
@@ -265,11 +264,11 @@
         <section class="quiz-screen" id="screen-summary">
             
             <div class="summary-container">
-                <div class="victory-trophy-icon">
+                <div class="summary-feedback-icon" id="summary-feedback-icon">
                     <i class="fa-solid fa-trophy"></i>
                 </div>
-                <h2 class="summary-title">ما شاء الله! أحسنت صنعاً</h2>
-                <p class="summary-subtitle">لقد أتممت جولة التحدي بنجاح وزادت حصيلتك المعرفية</p>
+                <h2 class="summary-title" id="summary-title">ما شاء الله! أحسنت صنعاً</h2>
+                <p class="summary-subtitle" id="summary-subtitle">لقد أتممت جولة الاختبار بنجاح وزادت حصيلتك المعرفية</p>
 
                 <!-- Circular Score Ring -->
                 <div class="score-circle-box">
@@ -277,23 +276,27 @@
                     <div class="score-circle-label">مجموع النقاط</div>
                 </div>
 
-                <!-- Stats Grid -->
+                <!-- Stats Grid (Flat Minimalist Metrics - No Card Boxes) -->
                 <div class="summary-stats-grid">
                     <div class="summary-stat-cell">
+                        <div class="summary-stat-icon-row"><i class="fa-solid fa-check"></i></div>
                         <div class="summary-stat-val green" id="summary-correct-val">0</div>
                         <div class="summary-stat-desc">إجابات صحيحة</div>
                     </div>
                     <div class="summary-stat-cell">
+                        <div class="summary-stat-icon-row"><i class="fa-solid fa-xmark"></i></div>
                         <div class="summary-stat-val red" id="summary-wrong-val">0</div>
                         <div class="summary-stat-desc">إجابات خاطئة</div>
                     </div>
                     <div class="summary-stat-cell">
+                        <div class="summary-stat-icon-row"><i class="fa-solid fa-star"></i></div>
                         <div class="summary-stat-val gold" id="summary-xp-val">+0</div>
-                        <div class="summary-stat-desc">نقاط XP مكتسبة</div>
+                        <div class="summary-stat-desc">نقاط مكتسبة</div>
                     </div>
                     <div class="summary-stat-cell">
+                        <div class="summary-stat-icon-row"><i class="fa-solid fa-fire"></i></div>
                         <div class="summary-stat-val" id="summary-streak-val">0x</div>
-                        <div class="summary-stat-desc">أعلى سلسلة 🔥</div>
+                        <div class="summary-stat-desc">أعلى سلسلة</div>
                     </div>
                 </div>
 
@@ -301,11 +304,11 @@
                 <div class="summary-actions-row">
                     <button class="summary-btn summary-btn-primary" id="btn-restart-round">
                         <i class="fa-solid fa-rotate-right"></i>
-                        <span>تحدٍ جديد</span>
+                        <span>جولة جديدة</span>
                     </button>
                     <button class="summary-btn summary-btn-secondary" id="btn-back-lobby">
                         <i class="fa-solid fa-list"></i>
-                        <span>تغيير التصنيف والمستوى</span>
+                        <span>تغيير المجال والمستوى</span>
                     </button>
                 </div>
 

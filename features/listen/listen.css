@@ -719,27 +719,27 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         min-width: 38px !important;
         min-height: 38px !important;
         border-radius: 50% !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        color: #ffffff !important;
-        font-size: 16px !important;
+        background: transparent !important;
+        border: none !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 18px !important;
         cursor: pointer !important;
         padding: 0 !important;
         outline: none !important;
         -webkit-tap-highlight-color: transparent !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     .player-bar.expanded .mobile-expand-btn:hover,
     .player-bar.expanded .mobile-expand-btn:focus-visible {
-        background: rgba(255, 255, 255, 0.18) !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
-        color: var(--gold, #dfc374) !important;
-        transform: scale(1.08) translateY(2px) !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+        background: transparent !important;
+        border: none !important;
+        color: var(--gold, #c5a859) !important;
+        transform: scale(1.12) translateY(2px) !important;
+        box-shadow: none !important;
     }
 
     .player-bar.expanded .mobile-expand-btn:active {
@@ -765,32 +765,32 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         min-width: 38px !important;
         min-height: 38px !important;
         border-radius: 50% !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        color: #e2e8f0 !important;
-        font-size: 16px !important;
+        background: transparent !important;
+        border: none !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 18px !important;
         cursor: pointer !important;
         padding: 0 !important;
         outline: none !important;
         -webkit-tap-highlight-color: transparent !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     .player-bar.expanded .mobile-close-btn:hover,
     .player-bar.expanded .mobile-close-btn:focus-visible {
-        background: rgba(239, 68, 68, 0.22) !important;
-        border-color: rgba(239, 68, 68, 0.5) !important;
-        color: #ef4444 !important;
-        transform: scale(1.08) rotate(90deg) !important;
-        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35) !important;
+        background: transparent !important;
+        border: none !important;
+        color: var(--gold, #c5a859) !important;
+        transform: scale(1.12) rotate(90deg) !important;
+        box-shadow: none !important;
     }
 
     .player-bar.expanded .mobile-close-btn:active {
         transform: scale(0.92) rotate(90deg) !important;
-        background: rgba(239, 68, 68, 0.3) !important;
+        background: transparent !important;
     }
 
     /* Center Group: Photo + Centered Titles */
@@ -977,11 +977,15 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
         align-items: center !important;
         justify-content: center !important;
         font-size: 26px !important;
-        color: #ffffff !important;
+        color: var(--gold, #c5a859) !important;
         background: none !important;
         border: none !important;
         cursor: pointer !important;
-        transition: transform 0.15s ease !important;
+        transition: transform 0.15s ease, color 0.2s ease !important;
+    }
+    .player-bar.expanded .btn-ctrl:hover {
+        color: var(--gold-light, #f5df9a) !important;
+        transform: scale(1.12) !important;
     }
     .player-bar.expanded .btn-ctrl:active {
         transform: scale(0.92) !important;
@@ -1028,15 +1032,16 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
     .player-bar.expanded .mobile-footer-btn {
         background: none !important;
         border: none !important;
-        font-size: 18px !important;
-        color: #b3b3b3 !important;
+        font-size: 19px !important;
+        color: var(--gold, #c5a859) !important;
         cursor: pointer !important;
         padding: 6px !important;
-        transition: color 0.2s !important;
+        transition: color 0.2s, transform 0.2s !important;
     }
 
     .player-bar.expanded .mobile-footer-btn:hover {
-        color: #ffffff !important;
+        color: var(--gold-light, #f5df9a) !important;
+        transform: scale(1.15) !important;
     }
 
     @media (max-height: 680px) {

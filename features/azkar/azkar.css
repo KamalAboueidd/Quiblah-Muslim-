@@ -55,53 +55,53 @@ body {
     z-index: 10;
 }
 
-/* Top Bar & Navbar */
+/* Top Bar & Back Button */
 .top-bar {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 20px 30px 10px 30px;
-    font-size: 26px;
+    padding: 18px 24px 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .top-bar .title {
     font-weight: 900;
-    font-size: 32px;
-    color: var(--white);
+    font-size: 26px;
+    color: var(--gold, #C5A859);
     text-shadow: 0 4px 15px rgba(0,0,0,0.8);
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
-.nav-bar {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    padding: 10px 20px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.nav-item {
-    display: flex;
+.back-home-btn {
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 20px;
-    border-radius: 30px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    padding: 6px 14px;
+    color: var(--gold, #C5A859);
     text-decoration: none;
-    font-weight: 800;
-    font-size: 16px;
-    transition: all 0.3s;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: transparent;
+    border: none;
 }
 
-.nav-item:hover, .nav-item.active {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    box-shadow: 0 5px 15px rgba(197, 168, 89, 0.2);
+.back-home-btn i {
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+.back-home-btn:hover {
+    color: #dfc274;
+}
+
+.back-home-btn:hover i {
+    transform: translateX(3px);
 }
 
 /* --- Main Content --- */
@@ -736,6 +736,17 @@ body {
 }
 
 @media (max-width: 768px) {
+    .top-bar {
+        padding: 14px 16px 6px !important;
+    }
+    .top-bar .title {
+        font-size: 20px !important;
+    }
+    .back-home-btn {
+        font-size: 12.5px !important;
+        padding: 5px 8px !important;
+        gap: 6px !important;
+    }
     .footer-container {
         display: flex;
         flex-direction: column;

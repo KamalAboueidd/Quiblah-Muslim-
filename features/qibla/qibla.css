@@ -1,4 +1,4 @@
-/* features/qibla/qibla.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙØ­Ø© qibla.html */
+/* features/qibla/qibla.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙ Ø­Ø© qibla.html */
 :root {
             --gold: #C5A859;
             --gold-light: #e0c97a;
@@ -46,31 +46,47 @@
 
         /* Top Bar */
         .top-bar {
-            display: flex; justify-content: center; align-items: center;
-            padding: 18px 30px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
         }
         .top-bar .title {
-            font-weight: 900; font-size: 28px;
-            color: var(--white);
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--gold, #C5A859);
             text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            letter-spacing: 0.5px;
         }
 
-        /* Navigation */
-        .nav-bar {
-            display: flex; justify-content: center;
-            gap: 10px; padding: 8px 20px; margin-bottom: 5px; flex-wrap: wrap;
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            color: var(--gold, #C5A859);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: inherit;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: transparent;
+            border: none;
         }
-        .nav-item {
-            display: flex; align-items: center; gap: 6px;
-            padding: 8px 16px; border-radius: 30px;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white; text-decoration: none;
-            font-weight: 700; font-size: 14px; transition: all 0.3s;
+        .back-home-btn i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
         }
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255,255,255,0.12);
-            border-color: var(--gold); color: var(--gold);
+        .back-home-btn:hover {
+            color: #dfc274;
+        }
+        .back-home-btn:hover i {
+            transform: translateX(3px);
         }
 
         /* Main Content */
@@ -357,6 +373,17 @@
         }
 
         @media (max-width: 768px) {
+            .top-bar {
+                padding: 14px 16px 6px !important;
+            }
+            .top-bar .title {
+                font-size: 20px !important;
+            }
+            .back-home-btn {
+                font-size: 12.5px !important;
+                padding: 5px 8px !important;
+                gap: 6px !important;
+            }
             .footer-container {
                 display: flex;
                 flex-direction: column;

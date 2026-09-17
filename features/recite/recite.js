@@ -1401,12 +1401,12 @@ async function stopRecordingAndAnalyze() {
     if (timerInterval) clearInterval(timerInterval);
 
     // 1. Commit every single in-flight word from current session cleanly
-    const sessionWordsToCommit = currentSessionFinalText 
-        ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
-        : currentInterimSpeechText;
+    let sessionWordsToCommit = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
 
     if (sessionWordsToCommit) {
-        committedPreviousSessionsText = stitchSpeechSessions(committedPreviousSessionsText, sessionWordsToCommit);
+        const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+        sessionWordsToCommit = recoverClippedSpeechWord(committedPreviousSessionsText, sessionWordsToCommit, activeAyahs);
+        committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, sessionWordsToCommit);
         currentSessionFinalText = "";
         currentInterimSpeechText = "";
     }
@@ -1495,49 +1495,55 @@ function resetStudioRecording() {
 // 12. Web Speech API (Live Inscription & Live Highlights)
 // -----------------------------------------------------------------------------
 
-// Smart, robust speech session stitcher:
-// - Preserves 100% of recited words (never drops words between ayahs or during natural breath pauses)
-// - Eliminates stutter/repetition at session restarts only if an identical word was repeated at the seam
-//   and is NOT legitimately part of the holy Quran verse (e.g. preserves "دكاً دكا" in Al-Fajr)
-function stitchSpeechSessions(committedText, activeSessionText) {
-    const prev = (committedText || '').trim();
-    const curr = (activeSessionText || '').trim();
-    if (!prev) return curr;
-    if (!curr) return prev;
+// Smart, seamless speech segment merger that prevents duplicates on Mobile Chrome
+// while preserving 100% of spoken words across pauses and ayah transitions
+function combineSpeechSegments(prev, next) {
+    const p = (prev || '').trim();
+    const n = (next || '').trim();
+    if (!p) return n;
+    if (!n) return p;
 
-    const pWords = prev.split(/\s+/).filter(Boolean);
-    const cWords = curr.split(/\s+/).filter(Boolean);
-    if (!pWords.length) return curr;
-    if (!cWords.length) return prev;
+    const normP = normalizeArabicText(p);
+    const normN = normalizeArabicText(n);
 
-    // Check ONLY the immediate boundary seam between previous session and new session
-    const maxCheck = Math.min(3, pWords.length, cWords.length);
-    let seamOverlap = 0;
+    // 1. If next is a cumulative extension containing prev (standard Android Chrome speech behavior)
+    // E.g. p: "بسم", n: "بسم الله" -> return "بسم الله"
+    if (normN.startsWith(normP)) {
+        return n;
+    }
 
-    for (let len = maxCheck; len >= 1; len--) {
+    // 2. If prev already ends with next or contains next completely
+    // E.g. p: "بسم الله الرحمن الرحيم", n: "بسم الله" -> return "بسم الله الرحمن الرحيم"
+    if (normP.endsWith(normN)) {
+        return p;
+    }
+
+    // 3. Check for overlapping boundary words at the seam between segments
+    // E.g. p: "بسم الله", n: "الله الرحمن الرحيم" -> return "بسم الله الرحمن الرحيم"
+    const pWords = p.split(/\s+/).filter(Boolean);
+    const nWords = n.split(/\s+/).filter(Boolean);
+    const pNorm = pWords.map(normalizeArabicText);
+    const nNorm = nWords.map(normalizeArabicText);
+
+    const maxOverlap = Math.min(pWords.length, nWords.length);
+    for (let len = maxOverlap; len >= 1; len--) {
         let match = true;
         for (let k = 0; k < len; k++) {
-            const pW = pWords[pWords.length - len + k];
-            const cW = cWords[k];
-            if (!areArabicWordsMatching(pW, cW)) {
+            if (pNorm[pNorm.length - len + k] !== nNorm[k]) {
                 match = false;
                 break;
             }
         }
-
         if (match) {
-            // Check if this repetition is legitimately part of the Quran text
-            const phrase = cWords.slice(0, len).map(normalizeArabicText).join(' ');
+            // Check if this repetition is legitimately part of the Quran text (e.g. "دكاً دكا" in Al-Fajr)
+            const phrase = nWords.slice(0, len).map(normalizeArabicText).join(' ');
             const repeatedPhrase = phrase + ' ' + phrase;
-
             let allowedInQuran = false;
-            // Check target verse
             if (typeof currentTargetVerseText === 'string' && currentTargetVerseText) {
                 if (normalizeArabicText(currentTargetVerseText).includes(repeatedPhrase)) {
                     allowedInQuran = true;
                 }
             }
-            // Check all verses in current surah
             if (!allowedInQuran && Array.isArray(currentSurahVerses)) {
                 for (let v of currentSurahVerses) {
                     if (v.text && normalizeArabicText(v.text).includes(repeatedPhrase)) {
@@ -1548,27 +1554,148 @@ function stitchSpeechSessions(committedText, activeSessionText) {
             }
 
             if (!allowedInQuran) {
-                seamOverlap = len;
-                break;
+                // Found exact boundary overlap at the seam: stitch them without repeating the shared words
+                return pWords.concat(nWords.slice(len)).join(' ');
             }
         }
     }
 
-    if (seamOverlap > 0) {
-        const remainingCurr = cWords.slice(seamOverlap);
-        if (!remainingCurr.length) return prev;
-        return prev + ' ' + remainingCurr.join(' ');
-    }
-
-    return prev + ' ' + curr;
+    // 4. Consecutive non-overlapping sentences (e.g. Ayah 1 followed by Ayah 2)
+    return p + ' ' + n;
 }
 
-function combineSpeechSegments(prev, next) {
-    return stitchSpeechSessions(prev, next);
+// Build flat target words from active target ayahs
+function buildTargetWordsList(targetAyahs) {
+    const list = [];
+    if (!targetAyahs || !targetAyahs.length) return list;
+    targetAyahs.forEach(ayah => {
+        const rawWords = ayah.rawWords || (ayah.text ? ayah.text.split(/\s+/).filter(Boolean) : []);
+        rawWords.forEach((w, idx) => {
+            list.push({
+                raw: w,
+                norm: normalizeArabicText(w),
+                ayahNum: ayah.numberInSurah,
+                wordIdx: idx
+            });
+        });
+    });
+    return list;
+}
+
+// Recovers a dropped/clipped opening word caused by silence/pause between Ayahs or recording startup
+function recoverClippedSpeechWord(prevCommittedText, currentSessionText, targetAyahs) {
+    const curr = (currentSessionText || '').trim();
+    if (!curr) return curr;
+
+    const targetWords = buildTargetWordsList(targetAyahs);
+    if (!targetWords.length) return curr;
+
+    const currWords = curr.split(/\s+/).filter(Boolean);
+    if (!currWords.length) return curr;
+
+    const prev = (prevCommittedText || '').trim();
+    const prevWords = prev ? prev.split(/\s+/).filter(Boolean) : [];
+
+    let nextExpectedIdx = 0;
+
+    if (prevWords.length > 0) {
+        let foundIdx = -1;
+        const lastPrevWord = prevWords[prevWords.length - 1];
+        
+        for (let i = targetWords.length - 1; i >= 0; i--) {
+            if (areArabicWordsMatching(targetWords[i].raw, lastPrevWord)) {
+                if (prevWords.length >= 2 && i >= 1) {
+                    if (areArabicWordsMatching(targetWords[i - 1].raw, prevWords[prevWords.length - 2])) {
+                        foundIdx = i;
+                        break;
+                    }
+                } else {
+                    foundIdx = i;
+                    break;
+                }
+            }
+        }
+
+        if (foundIdx === -1) {
+            return curr;
+        }
+
+        nextExpectedIdx = foundIdx + 1;
+    } else {
+        nextExpectedIdx = 0;
+    }
+
+    if (nextExpectedIdx >= targetWords.length) {
+        return curr;
+    }
+
+    const expectedOpening = targetWords[nextExpectedIdx];
+    const firstSpoken = currWords[0];
+
+    // If first spoken matches expected word, no clipping occurred
+    if (areArabicWordsMatching(expectedOpening.raw, firstSpoken)) {
+        return curr;
+    }
+
+    // Check if the first spoken word matches the word AFTER the expected opening word (nextExpectedIdx + 1)
+    if (nextExpectedIdx + 1 < targetWords.length) {
+        const expectedSecond = targetWords[nextExpectedIdx + 1];
+        if (areArabicWordsMatching(expectedSecond.raw, firstSpoken)) {
+            let confirmed = true;
+            if (currWords.length >= 2 && nextExpectedIdx + 2 < targetWords.length) {
+                const expectedThird = targetWords[nextExpectedIdx + 2];
+                if (!areArabicWordsMatching(expectedThird.raw, currWords[1])) {
+                    confirmed = false;
+                }
+            }
+
+            if (confirmed) {
+                return expectedOpening.raw + ' ' + curr;
+            }
+        }
+    }
+
+    return curr;
+}
+
+// Safety net: Ensures every Ayah boundary in the full transcript preserves its opening word
+function ensureAllAyahBoundariesIntact(transcribedText, targetAyahs) {
+    if (!transcribedText || !targetAyahs || targetAyahs.length <= 1) return transcribedText;
+    let words = transcribedText.split(/\s+/).filter(Boolean);
+    if (!words.length) return transcribedText;
+
+    for (let aIdx = 0; aIdx < targetAyahs.length - 1; aIdx++) {
+        const currAyah = targetAyahs[aIdx];
+        const nextAyah = targetAyahs[aIdx + 1];
+        if (!currAyah.rawWords || !currAyah.rawWords.length || !nextAyah.rawWords || nextAyah.rawWords.length < 2) continue;
+
+        const currLastWord = currAyah.rawWords[currAyah.rawWords.length - 1];
+        const nextFirstWord = nextAyah.rawWords[0];
+        const nextSecondWord = nextAyah.rawWords[1];
+
+        for (let i = 0; i < words.length - 1; i++) {
+            if (areArabicWordsMatching(words[i], currLastWord)) {
+                const candidateFollow = words[i + 1];
+                if (!areArabicWordsMatching(candidateFollow, nextFirstWord) && areArabicWordsMatching(candidateFollow, nextSecondWord)) {
+                    let confirmed = true;
+                    if (words.length > i + 2 && nextAyah.rawWords.length > 2) {
+                        if (!areArabicWordsMatching(words[i + 2], nextAyah.rawWords[2])) {
+                            confirmed = false;
+                        }
+                    }
+                    if (confirmed) {
+                        words.splice(i + 1, 0, nextFirstWord);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return words.join(' ');
 }
 
 function mergeTwoSpeechSegments(prev, next) {
-    return stitchSpeechSessions(prev, next);
+    return combineSpeechSegments(prev, next);
 }
 
 // Non-destructive safe pass-through: never delete or strip recited Quranic words
@@ -1629,8 +1756,8 @@ function spawnSpeechRecognizer() {
         recognizer.onresult = (event) => {
             if (!isRecording) return;
 
-            const finalSegments = [];
-            let interimSegment = '';
+            let sessionFinal = '';
+            let sessionInterim = '';
 
             for (let i = 0; i < event.results.length; ++i) {
                 const res = event.results[i];
@@ -1638,20 +1765,23 @@ function spawnSpeechRecognizer() {
                 if (!segment) continue;
 
                 if (res.isFinal) {
-                    finalSegments.push(segment);
+                    sessionFinal = combineSpeechSegments(sessionFinal, segment);
                 } else {
-                    interimSegment = segment;
+                    sessionInterim = combineSpeechSegments(sessionInterim, segment);
                 }
             }
 
-            currentSessionFinalText = finalSegments.join(' ').trim();
-            currentInterimSpeechText = interimSegment.trim();
+            currentSessionFinalText = sessionFinal.trim();
+            currentInterimSpeechText = sessionInterim.trim();
 
-            const currentSessionFull = currentSessionFinalText 
-                ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
-                : currentInterimSpeechText;
+            let currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
 
-            const fullRaw = stitchSpeechSessions(committedPreviousSessionsText, currentSessionFull);
+            if (currentSessionFull) {
+                const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
+            }
+
+            const fullRaw = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
 
             liveTranscript = normalizeQuranicDisjointedLetters(fullRaw.trim(), currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
@@ -1705,28 +1835,30 @@ function spawnSpeechRecognizer() {
         };
 
         recognizer.onend = () => {
-            // Commit all recognized words from this session cleanly without losing words
-            const sessionToCommit = currentSessionFinalText 
-                ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
-                : currentInterimSpeechText;
-
-            if (sessionToCommit) {
-                committedPreviousSessionsText = stitchSpeechSessions(committedPreviousSessionsText, sessionToCommit);
+            // Commit all recognized words from this session cleanly using combineSpeechSegments and recovery
+            let currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
+            if (currentSessionFull) {
+                const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
+                committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
                 liveTranscript = committedPreviousSessionsText.trim();
                 accumulatedSpeechText = liveTranscript;
             }
 
-            // If user is still in recording mode, restart immediately (15ms delay)
-            // to eliminate the dead-air gap between ayahs and breath pauses
+            // If user is still in recording mode, restart immediately
             if (isRecording) {
                 if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                speechRestartTimeout = setTimeout(() => {
-                    if (isRecording) {
-                        spawnSpeechRecognizer();
-                    }
-                }, 15);
+                try {
+                    recognizer.start();
+                } catch (e) {
+                    speechRestartTimeout = setTimeout(() => {
+                        if (isRecording) {
+                            spawnSpeechRecognizer();
+                        }
+                    }, 20);
+                }
             } else {
                 isRecognizing = false;
             }
@@ -2194,6 +2326,13 @@ function executeImmediateEvaluation(audioBlob) {
                 rawWords: rawW,
                 normWords: rawW.map(normalizeArabicText)
             }];
+        }
+
+        // Boundary Safety Net: recover any opening ayah words that got clipped during breath pauses
+        if (targetAyahs && targetAyahs.length > 1) {
+            transcribedText = ensureAllAyahBoundariesIntact(transcribedText, targetAyahs);
+            liveTranscript = transcribedText;
+            accumulatedSpeechText = transcribedText;
         }
 
         // 1. Render Evaluation Results immediately (diff chips, banner, clouds)

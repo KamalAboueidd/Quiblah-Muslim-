@@ -153,7 +153,8 @@ function GetPrayersTimingsOfCity(cityName) {
             currentCityTimezone = data.meta.timezone;
             
             FillTimerForPrayer("fajr-time", timings.Fajr);
-            document.getElementById("shrouq-time").innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
+            const shrouqEl = document.getElementById("shrouq-time");
+            if (shrouqEl) shrouqEl.innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
             FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
             FillTimerForPrayer("aser-time", timings.Asr);
             FillTimerForPrayer("maghreb-time", timings.Sunset);
@@ -173,9 +174,30 @@ function GetPrayersTimingsOfCity(cityName) {
         });
 }
 
+function setLocationLoading(isLoading, success = false) {
+    const btn = document.getElementById("location-detect-btn");
+    if (!btn) return;
+    if (isLoading) {
+        btn.classList.add("loading");
+        btn.disabled = true;
+        btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> <span id="location-btn-text">جاري تحديد موقعك...</span>';
+    } else {
+        btn.classList.remove("loading");
+        btn.disabled = false;
+        if (success) {
+            btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-check"></i> <span id="location-btn-text">تم تحديد موقعك بنجاح</span>';
+            setTimeout(() => {
+                btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> <span id="location-btn-text">تحديد صلاتك بناءً على موقعك</span>';
+            }, 1800);
+        } else {
+            btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> <span id="location-btn-text">تحديد صلاتك بناءً على موقعك</span>';
+        }
+    }
+}
+
 function detectLocation() {
     if ("geolocation" in navigator) {
-        document.getElementById("loader").style.display = "block";
+        setLocationLoading(true);
         navigator.geolocation.getCurrentPosition(function(position) {
             isUsingLocation = true;
             userLat = position.coords.latitude;
@@ -199,8 +221,8 @@ function detectLocation() {
                 });
         }, function(error) {
             console.error(error);
+            setLocationLoading(false);
             showToast("لم نتمكن من الوصول لموقعك. تأكد من تفعيل الموقع وإعطاء الصلاحية.", "fa-solid fa-triangle-exclamation");
-            document.getElementById("loader").style.display = "none";
         });
     } else {
         showToast("متصفحك لا يدعم تحديد الموقع.", "fa-solid fa-triangle-exclamation");
@@ -208,8 +230,6 @@ function detectLocation() {
 }
 
 function GetPrayersTimingsByCoordinates(lat, lng) {
-    document.getElementById("loader").style.display = "block";
-    
     let params = {
         latitude: lat,
         longitude: lng,
@@ -218,14 +238,15 @@ function GetPrayersTimingsByCoordinates(lat, lng) {
 
     axios.get("https://api.aladhan.com/v1/timings", { params: params })
         .then((response) => {
-            document.getElementById("loader").style.display = "none";
+            setLocationLoading(false, true);
             
             const data = response.data.data;
             const timings = data.timings;
             currentCityTimezone = data.meta.timezone;
             
             FillTimerForPrayer("fajr-time", timings.Fajr);
-            document.getElementById("shrouq-time").innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
+            const shrouqEl = document.getElementById("shrouq-time");
+            if (shrouqEl) shrouqEl.innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
             FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
             FillTimerForPrayer("aser-time", timings.Asr);
             FillTimerForPrayer("maghreb-time", timings.Sunset);
@@ -241,7 +262,8 @@ function GetPrayersTimingsByCoordinates(lat, lng) {
         })
         .catch(error => {
             console.error("Error fetching prayer times:", error);
-            document.getElementById("loader").style.display = "none";
+            setLocationLoading(false);
+            showToast("حدث خطأ أثناء جلب مواقيت الصلاة لموقعك.", "fa-solid fa-triangle-exclamation");
         });
 }
 

@@ -397,7 +397,8 @@
 
         .player-close-btn:hover { color: #b91c1c; transform: scale(1.2); }
 
-        .mobile-expand-toggle { display: none; }
+        .mobile-expand-toggle,
+        .mobile-close-btn { display: none; }
 
         .player-meta-wrap {
             display: flex;
@@ -521,40 +522,95 @@
                 align-items: center !important;
                 justify-content: space-between !important;
                 width: 100% !important;
-                max-width: min(340px, 88vw) !important;
+                max-width: min(360px, 90vw) !important;
                 margin: 0 auto !important;
+                padding: 4px 0 !important;
                 flex-shrink: 0 !important;
+                position: relative !important;
+                z-index: 10 !important;
             }
 
             .global-player-bar.expanded .mobile-expand-toggle {
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                background: none !important;
-                border: none !important;
-                font-size: 22px !important;
+                width: 38px !important;
+                height: 38px !important;
+                min-width: 38px !important;
+                min-height: 38px !important;
+                border-radius: 50% !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15) !important;
                 color: #ffffff !important;
+                font-size: 16px !important;
                 cursor: pointer !important;
-                padding: 6px !important;
+                padding: 0 !important;
+                outline: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            .global-player-bar.expanded .mobile-expand-toggle:hover,
+            .global-player-bar.expanded .mobile-expand-toggle:focus-visible {
+                background: rgba(255, 255, 255, 0.18) !important;
+                border-color: rgba(255, 255, 255, 0.3) !important;
+                color: var(--gold, #dfc374) !important;
+                transform: scale(1.08) translateY(2px) !important;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+            }
+
+            .global-player-bar.expanded .mobile-expand-toggle:active {
+                transform: scale(0.92) translateY(3px) !important;
             }
 
             .global-player-bar.expanded .mobile-header-title {
-                font-size: 13px !important;
+                font-size: 14px !important;
                 font-weight: 700 !important;
-                color: #b3b3b3 !important;
-                letter-spacing: 0.5px !important;
+                color: #e2e8f0 !important;
+                letter-spacing: 0.4px !important;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+                user-select: none !important;
             }
 
-            .global-player-bar.expanded .mobile-top-opt {
+            .global-player-bar.expanded .mobile-top-opt,
+            .global-player-bar.expanded .mobile-close-btn {
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                background: none !important;
-                border: none !important;
-                font-size: 20px !important;
-                color: #b3b3b3 !important;
+                width: 38px !important;
+                height: 38px !important;
+                min-width: 38px !important;
+                min-height: 38px !important;
+                border-radius: 50% !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                color: #e2e8f0 !important;
+                font-size: 16px !important;
                 cursor: pointer !important;
-                padding: 6px !important;
+                padding: 0 !important;
+                outline: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            .global-player-bar.expanded .mobile-close-btn:hover,
+            .global-player-bar.expanded .mobile-close-btn:focus-visible {
+                background: rgba(239, 68, 68, 0.22) !important;
+                border-color: rgba(239, 68, 68, 0.5) !important;
+                color: #ef4444 !important;
+                transform: scale(1.08) rotate(90deg) !important;
+                box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35) !important;
+            }
+
+            .global-player-bar.expanded .mobile-close-btn:active {
+                transform: scale(0.92) rotate(90deg) !important;
+                background: rgba(239, 68, 68, 0.3) !important;
             }
 
             /* Center Group: Photo + Centered Titles */

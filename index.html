@@ -36,7 +36,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/landing/landing.css">
+    <link rel="stylesheet" href="features/landing/landing.css?v=59">
 </head>
 <body>
 
@@ -60,11 +60,11 @@
     <div class="global-player-bar" id="global-player-bar">
         <!-- Mobile Top Bar (Spotify style) -->
         <div class="mobile-player-top" id="mobile-player-top">
-            <button class="mobile-expand-toggle" id="mobile-expand-toggle" onclick="togglePlayerExpand(event)" title="تصغير المشغل">
+            <button class="mobile-expand-toggle" id="mobile-expand-toggle" onclick="togglePlayerExpand(event)" title="تصغير المشغل" aria-label="تصغير المشغل">
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
             <div class="mobile-header-title">مشغل القرآن الكريم</div>
-            <button class="mobile-close-btn" id="mobile-close-btn" onclick="closePlayer(event)" title="إغلاق المشغل نهائياً">
+            <button class="mobile-close-btn" id="mobile-close-btn" onclick="closePlayer(event)" title="إغلاق المشغل نهائياً" aria-label="إغلاق المشغل نهائياً">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>

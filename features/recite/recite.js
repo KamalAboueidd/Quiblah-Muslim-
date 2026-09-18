@@ -1464,6 +1464,44 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
+    // 3. Acquire microphone stream and start MediaRecorder for continuous lossless audio capture.
+    //    getUserMedia must be INITIATED (not awaited) within the user-gesture tick for mobile compat.
+    //    MediaRecorder runs continuously from start to stop — it is NEVER restarted during recording.
+    const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        ? navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).catch(micErr => {
+            console.warn("Microphone access for MediaRecorder:", micErr);
+            return null;
+        })
+        : Promise.resolve(null);
+
+    try {
+        const stream = await micPromise;
+        if (stream && isRecording) {
+            audioStream = stream;
+
+            // Start continuous MediaRecorder — NEVER restarted during recording
+            try {
+                const preferredMime = (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
+                    ? 'audio/webm;codecs=opus'
+                    : ((typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm')) ? 'audio/webm' : '');
+                const recorderOptions = preferredMime ? { mimeType: preferredMime } : {};
+                mediaRecorder = new MediaRecorder(stream, recorderOptions);
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                };
+                mediaRecorder.start(1000); // Collect chunks every 1s for progressive buffering
+            } catch (mrErr) {
+                console.warn("MediaRecorder start notice:", mrErr);
+                mediaRecorder = null;
+            }
+
+            // Connect live waveform visualizer to the microphone stream
+            startLiveWaveform(stream);
+        }
+    } catch (streamErr) {
+        console.warn("Stream acquisition notice:", streamErr);
+    }
+
 }
 
 function triggerSilenceCountdown() {
@@ -1502,12 +1540,39 @@ async function stopRecordingAndAnalyze() {
     stopLiveSpeechRecognition();
     stopLiveWaveform();
 
+    // 2. Stop MediaRecorder and collect complete lossless audio blob
     let recordedBlob = null;
-    if (audioChunks && audioChunks.length) {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        recordedBlob = await new Promise((resolve) => {
+            const safetyTimeout = setTimeout(() => {
+                try {
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    resolve(blob.size > 0 ? blob : null);
+                } catch (e) { resolve(null); }
+            }, 3000);
+            mediaRecorder.onstop = () => {
+                clearTimeout(safetyTimeout);
+                try {
+                    const mimeType = mediaRecorder.mimeType || 'audio/webm';
+                    const blob = new Blob(audioChunks, { type: mimeType });
+                    resolve(blob.size > 0 ? blob : null);
+                } catch (e) { resolve(null); }
+            };
+            try { mediaRecorder.stop(); } catch (e) { clearTimeout(safetyTimeout); resolve(null); }
+        });
+    } else if (audioChunks && audioChunks.length) {
         try {
             recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            if (recordedBlob.size === 0) recordedBlob = null;
         } catch (e) {}
     }
+
+    // 3. Release microphone stream
+    if (audioStream) {
+        try { audioStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+        audioStream = null;
+    }
+    mediaRecorder = null;
 
     // Update UI states immediately
     if (cardReciteVoice) cardReciteVoice.classList.remove('recording');
@@ -1523,12 +1588,45 @@ async function stopRecordingAndAnalyze() {
         const dot = liveSpeechFeedbackStrip.querySelector('.pulse-rec-dot');
         if (dot) dot.style.display = 'none';
     }
-    if (speechFeedbackLabel) {
-        speechFeedbackLabel.textContent = '✓ تم تسجيل التلاوة، جاري التدقيق الفوري...';
+
+    // 4. Attempt Whisper transcription for authoritative lossless transcript
+    let whisperTranscript = null;
+    if (recordedBlob && recordedBlob.size > 1000) {
+        if (speechFeedbackLabel) {
+            speechFeedbackLabel.textContent = '🔍 جاري تحليل تلاوتك بالذكاء الاصطناعي...';
+        }
+        if (playerStatusMain) {
+            playerStatusMain.innerHTML = '<span style="color:var(--gold-light,#f5df9a); font-weight:700;"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحليل التلاوة بالذكاء الاصطناعي...</span>';
+        }
+        if (playerStatusSub) {
+            playerStatusSub.textContent = 'يتم تحليل تلاوتك بدقة عالية للتدقيق الأمثل';
+        }
+
+        try {
+            whisperTranscript = await transcribeWithWhisper(recordedBlob);
+        } catch (whisperErr) {
+            console.warn("Whisper transcription notice:", whisperErr);
+            whisperTranscript = null;
+        }
     }
 
-    // Execute evaluation immediately without blocking or waiting on external networks
-    executeImmediateEvaluation(recordedBlob);
+    // 5. Choose best available transcript and show feedback
+    const finalTranscript = (whisperTranscript && whisperTranscript.trim().length > 0)
+        ? whisperTranscript.trim()
+        : null;
+
+    if (finalTranscript) {
+        if (speechFeedbackLabel) {
+            speechFeedbackLabel.textContent = '✓ تم تحليل التلاوة بنجاح، جاري التدقيق...';
+        }
+    } else {
+        if (speechFeedbackLabel) {
+            speechFeedbackLabel.textContent = '✓ تم تسجيل التلاوة، جاري التدقيق الفوري...';
+        }
+    }
+
+    // 6. Execute evaluation with the best available transcript
+    executeImmediateEvaluation(recordedBlob, finalTranscript);
 }
 
 function resetStudioRecording() {
@@ -1536,13 +1634,19 @@ function resetStudioRecording() {
     stopLiveWaveform();
     if (isRecording) {
         stopLiveSpeechRecognition();
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            try { mediaRecorder.stop(); } catch (e) {}
+        }
+        mediaRecorder = null;
         if (audioStream) {
             try { audioStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+            audioStream = null;
         }
         isRecording = false;
         if (timerInterval) clearInterval(timerInterval);
     }
 
+    audioChunks = [];
     liveTranscript = "";
     accumulatedSpeechText = "";
     currentInterimSpeechText = "";
@@ -1623,7 +1727,24 @@ function combineSpeechSegments(prev, next) {
                 }
             }
 
-            if (!allowedInQuran) {
+            // Check cross-ayah boundary: if these words span a genuine ayah transition, they are NOT duplicates
+            let crossAyahBoundary = false;
+            if (!allowedInQuran && Array.isArray(currentSurahVerses) && currentSurahVerses.length > 1) {
+                const overlapNorm = nWords.slice(0, len).map(normalizeArabicText);
+                for (let vi = 0; vi < currentSurahVerses.length - 1; vi++) {
+                    const thisAyah = currentSurahVerses[vi];
+                    const nextAyah = currentSurahVerses[vi + 1];
+                    if (!thisAyah.rawWords || thisAyah.rawWords.length < len || !nextAyah.rawWords || nextAyah.rawWords.length < len) continue;
+                    let endMatch = true, startMatch = true;
+                    for (let k = 0; k < len; k++) {
+                        if (!areArabicWordsMatching(thisAyah.rawWords[thisAyah.rawWords.length - len + k], nWords[k])) endMatch = false;
+                        if (!areArabicWordsMatching(nextAyah.rawWords[k], nWords[k])) startMatch = false;
+                    }
+                    if (endMatch && startMatch) { crossAyahBoundary = true; break; }
+                }
+            }
+
+            if (!allowedInQuran && !crossAyahBoundary) {
                 // Stitch without repeating the shared words replayed by mobile Chrome
                 return pWords.concat(nWords.slice(len)).join(' ');
             }
@@ -1687,7 +1808,28 @@ function recoverClippedSpeechWord(prevCommittedText, currentSessionText, targetA
         }
 
         if (foundIdx === -1) {
-            return curr;
+            // Fuzzy fallback: the last word may have been mispronounced.
+            // Try anchoring on the second-to-last word to approximate position.
+            if (prevWords.length >= 2) {
+                const secondToLast = prevWords[prevWords.length - 2];
+                for (let i = targetWords.length - 1; i >= 0; i--) {
+                    if (areArabicWordsMatching(targetWords[i].raw, secondToLast)) {
+                        // Confirm with third-to-last if possible
+                        if (prevWords.length >= 3 && i >= 1) {
+                            if (areArabicWordsMatching(targetWords[i - 1].raw, prevWords[prevWords.length - 3])) {
+                                foundIdx = Math.min(i + 1, targetWords.length - 1);
+                                break;
+                            }
+                        } else {
+                            foundIdx = Math.min(i + 1, targetWords.length - 1);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (foundIdx === -1) {
+                return curr;
+            }
         }
 
         nextExpectedIdx = foundIdx + 1;
@@ -1747,6 +1889,7 @@ function ensureAllAyahBoundariesIntact(transcribedText, targetAyahs) {
             if (areArabicWordsMatching(words[i], currLastWord)) {
                 const candidateFollow = words[i + 1];
                 if (!areArabicWordsMatching(candidateFollow, nextFirstWord) && areArabicWordsMatching(candidateFollow, nextSecondWord)) {
+                    // Single-word drop: first word of next ayah was clipped
                     let confirmed = true;
                     if (words.length > i + 2 && nextAyah.rawWords.length > 2) {
                         if (!areArabicWordsMatching(words[i + 2], nextAyah.rawWords[2])) {
@@ -1755,6 +1898,22 @@ function ensureAllAyahBoundariesIntact(transcribedText, targetAyahs) {
                     }
                     if (confirmed) {
                         words.splice(i + 1, 0, nextFirstWord);
+                        break;
+                    }
+                }
+                // Two-word drop: first AND second words of next ayah were clipped
+                if (!areArabicWordsMatching(candidateFollow, nextFirstWord) && 
+                    !areArabicWordsMatching(candidateFollow, nextSecondWord) &&
+                    nextAyah.rawWords.length > 2 &&
+                    areArabicWordsMatching(candidateFollow, nextAyah.rawWords[2])) {
+                    let confirmed2 = true;
+                    if (words.length > i + 2 && nextAyah.rawWords.length > 3) {
+                        if (!areArabicWordsMatching(words[i + 2], nextAyah.rawWords[3])) {
+                            confirmed2 = false;
+                        }
+                    }
+                    if (confirmed2) {
+                        words.splice(i + 1, 0, nextFirstWord, nextSecondWord);
                         break;
                     }
                 }
@@ -2378,19 +2537,27 @@ function updateLiveSpokenHighlights(spokenText) {
 // -----------------------------------------------------------------------------
 // 13. AI Inference Pipeline & Evaluation
 // -----------------------------------------------------------------------------
-function executeImmediateEvaluation(audioBlob) {
+function executeImmediateEvaluation(audioBlob, whisperTranscript) {
     try {
-        let transcribedText = (liveTranscript || "").trim();
+        let transcribedText = "";
 
-        // Fallback: check DOM element if liveTranscript was empty
-        if (!transcribedText && speechLiveTextDisplay) {
-            const activeTextEl = speechLiveTextDisplay.querySelector('.speech-active-text');
-            if (activeTextEl && activeTextEl.textContent) {
-                transcribedText = activeTextEl.textContent.trim();
+        // Prioritize Whisper transcript (lossless continuous audio) over Web Speech API transcript
+        if (whisperTranscript && whisperTranscript.trim().length > 0) {
+            transcribedText = whisperTranscript.trim();
+        } else {
+            // Fallback: use Web Speech API accumulated transcript
+            transcribedText = (liveTranscript || "").trim();
+
+            // Fallback: check DOM element if liveTranscript was empty
+            if (!transcribedText && speechLiveTextDisplay) {
+                const activeTextEl = speechLiveTextDisplay.querySelector('.speech-active-text');
+                if (activeTextEl && activeTextEl.textContent) {
+                    transcribedText = activeTextEl.textContent.trim();
+                }
             }
-        }
-        if (!transcribedText && accumulatedSpeechText) {
-            transcribedText = accumulatedSpeechText.trim();
+            if (!transcribedText && accumulatedSpeechText) {
+                transcribedText = accumulatedSpeechText.trim();
+            }
         }
 
         // Honest evaluation: Never fake user recitation with the target verse!
@@ -2527,17 +2694,98 @@ function executeImmediateEvaluation(audioBlob) {
     }
 }
 
-async function processRecitationInference(audioBlob) {
-    executeImmediateEvaluation(audioBlob);
+async function processRecitationInference(audioBlob, whisperTranscript) {
+    executeImmediateEvaluation(audioBlob, whisperTranscript);
 }
 
 async function callMakeWebhook(blob, url) {
     const formData = new FormData();
     formData.append('file', blob, 'recitation.webm');
-    const res = await fetch(url, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(`Webhook Error: ${res.status}`);
-    const data = await res.json();
-    return data.text || data.transcription || "";
+
+    const maxRetries = 2;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        try {
+            const res = await fetch(url, { method: 'POST', body: formData, signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                return data.text || data.transcription || "";
+            }
+            if (res.status === 503 && attempt < maxRetries) {
+                // Hugging Face cold start — wait and retry
+                console.log("Whisper model loading (503), retrying in 5s...");
+                await new Promise(r => setTimeout(r, 5000));
+                continue;
+            }
+            throw new Error(`Webhook Error: ${res.status}`);
+        } catch (fetchErr) {
+            clearTimeout(timeoutId);
+            if (fetchErr.name === 'AbortError') throw new Error('Webhook timeout (30s)');
+            throw fetchErr;
+        }
+    }
+    return "";
+}
+
+async function callPythonService(blob, url) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    try {
+        const formData = new FormData();
+        formData.append('file', blob, 'recitation.webm');
+        const headers = {};
+        if (hfApiToken) headers['Authorization'] = `Bearer ${hfApiToken}`;
+        const res = await fetch(`${url}/api/transcribe-recitation`, {
+            method: 'POST',
+            body: formData,
+            headers,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`Python Service Error: ${res.status}`);
+        const data = await res.json();
+        if (data.success && data.transcription) {
+            return data.transcription;
+        }
+        throw new Error("No transcription in response");
+    } catch (e) {
+        clearTimeout(timeoutId);
+        throw e;
+    }
+}
+
+async function transcribeWithWhisper(audioBlob) {
+    // Try Make.com webhook first (if configured)
+    if (makeWebhookUrl && makeWebhookUrl.trim()) {
+        try {
+            const text = await callMakeWebhook(audioBlob, makeWebhookUrl.trim());
+            if (text && text.trim().length > 0) {
+                console.log("Whisper transcription via Make.com:", text.trim());
+                return text.trim();
+            }
+        } catch (e) {
+            console.warn("Make.com webhook failed:", e.message);
+        }
+    }
+
+    // Try Python service (if configured)
+    if (pythonServiceUrl && pythonServiceUrl.trim()) {
+        try {
+            const text = await callPythonService(audioBlob, pythonServiceUrl.trim());
+            if (text && text.trim().length > 0) {
+                console.log("Whisper transcription via Python service:", text.trim());
+                return text.trim();
+            }
+        } catch (e) {
+            console.warn("Python service failed:", e.message);
+        }
+    }
+
+    // No Whisper service available — fall back to Web Speech API transcript
+    console.log("No Whisper service configured or available. Using Web Speech API transcript.");
+    return null;
 }
 
 function renderRecitationResults(targetAyahs, transcribedText) {

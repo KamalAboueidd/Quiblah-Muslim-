@@ -1059,15 +1059,27 @@ function normalizeArabicText(text) {
     if (!text) return "";
     return text
         .replace(/^\uFEFF/, '')
-        .replace(/[\u064B-\u0652\u0653-\u065F\u06D6-\u06ED]/g, "") // Diacritics & Quranic marks
-        .replace(/[\u0671إأآٱ]/g, "ا") // All Alef variants including Wasla to bare alef
-        .replace(/[\u0670]/g, "") // Remove dagger alef for primary match
-        .replace(/[ىي\u06CC]/g, "ي") // Normalize Yeh
-        .replace(/ة/g, "ه")
+        // 1. Uthmani script Waw with dagger alef (e.g. ٱلصَّلَوٰةَ, ٱلزَّكَوٰةَ, ٱلْحَيَوٰةَ, ٱلرِّبَوٰاْ, مِشْكَوٰةٍ, بِٱلْغَدَوٰةِ, نَجَوٰةٍ) -> convert to Alef
+        .replace(/\u0648[\u0670]/g, 'ا')
+        // 2. Uthmani script Ya/Alif Maqsura with dagger alef (e.g. عَلَىٰ, إِلَىٰ, حَتَّىٰ, مُوسَىٰ) -> convert to Yeh
+        .replace(/[ىي\u06CC\u0649][\u0670]/g, 'ي')
+        // 3. Medina Mushaf standalone hamza before alef / dagger alef (e.g. ءَامَنُواْ, ءَاتَيْنَا, ءَايَاتِ, ءَادَمُ, ءَأَنتُمْ) -> Alef
+        .replace(/\u0621[\u064E\u064F\u0650]?[\u0670\u0627آ]/g, 'ا')
+        // 4. Remove all Tashkeel diacritics & Quranic pause/sajdah/stop marks
+        .replace(/[\u064B-\u0652\u0653-\u065F\u06D6-\u06ED]/g, "")
+        // 5. All Alef variants including Wasla to bare alef
+        .replace(/[\u0671إأآٱ]/g, "ا")
+        // 6. Replace remaining dagger alefs with bare alef (e.g. مَٰلِكِ -> مالك)
+        .replace(/[\u0670]/g, "ا")
+        // 6. Normalize Yeh and Alif Maqsura
+        .replace(/[ىي\u06CC\u0649]/g, "ي")
+        // 7. Normalize Teh Marbuta and Heh
+        .replace(/[ةه]/g, "ه")
         .replace(/ؤ/g, "و")
         .replace(/ئ/g, "ي")
         .replace(/[\u0640]/g, "") // Remove Tatweel
         .replace(/[^\u0621-\u064A\s]/g, "") // Keep only Arabic letters
+        .replace(/ا+/g, "ا") // Collapse double alefs caused by dagger substitutions
         .trim();
 }
 
@@ -1104,12 +1116,38 @@ function areArabicWordsMatching(expectedRaw, spokenRaw) {
         return true;
     }
 
-    // With dagger alef replaced by full 'ا' (e.g. ٱلصِّرَٰطَ -> الصراط, مَٰلِكِ -> مالك)
-    const eWithAlef = normalizeArabicText(expectedRaw.replace(/\u0670/g, 'ا'));
-    if (eWithAlef === sNorm) return true;
+    // Ta marbuta vs open ta at end of word (Quranic رسم: رحمت vs رحمة, نعمت vs نعمة, سنت vs سنة, امرات vs امراة)
+    if (eNorm.replace(/ت$/, 'ه') === sNorm.replace(/ت$/, 'ه')) return true;
 
-    // Without any alefs in both (e.g. الرحمن vs الرحمان)
+    // Alif vs Yeh at end of word (e.g. على vs علا, هدى vs هدا)
+    if (eNorm.length > 2 && sNorm.length > 2) {
+        if (eNorm.replace(/[يا]$/, '') === sNorm.replace(/[يا]$/, '')) return true;
+    }
+
+    // Without any alefs in both (e.g. الرحمن vs الرحمان, ابراهيم vs ابراهم, السموات vs السماوات)
     if (eNorm.replace(/ا/g, '') === sNorm.replace(/ا/g, '')) return true;
+
+    // Prefixed Ba differences (e.g. باسم vs بسم)
+    if (eNorm.replace(/^ب[ا]?/, 'ب') === sNorm.replace(/^ب[ا]?/, 'ب')) return true;
+
+    // Minor phonetic slip tolerance for words of length >= 4 (Levenshtein distance <= 1)
+    if (eNorm.length >= 4 && sNorm.length >= 4 && Math.abs(eNorm.length - sNorm.length) <= 1) {
+        let diff = 0;
+        let i = 0, j = 0;
+        while (i < eNorm.length && j < sNorm.length) {
+            if (eNorm[i] !== sNorm[j]) {
+                diff++;
+                if (diff > 1) break;
+                if (eNorm.length > sNorm.length) i++;
+                else if (sNorm.length > eNorm.length) j++;
+                else { i++; j++; }
+            } else {
+                i++; j++;
+            }
+        }
+        diff += (eNorm.length - i) + (sNorm.length - j);
+        if (diff <= 1) return true;
+    }
 
     return false;
 }
@@ -1444,7 +1482,10 @@ async function stopRecordingAndAnalyze() {
     if (timerInterval) clearInterval(timerInterval);
 
     // 1. Commit every single in-flight word from current session cleanly
-    let sessionWordsToCommit = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
+    let sessionWordsToCommit = currentSessionFinalText 
+        ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
+        : currentInterimSpeechText;
+    sessionWordsToCommit = (sessionWordsToCommit || '').trim();
 
     if (sessionWordsToCommit) {
         const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
@@ -1546,29 +1587,14 @@ function combineSpeechSegments(prev, next) {
     if (!p) return n;
     if (!n) return p;
 
-    const normP = normalizeArabicText(p);
-    const normN = normalizeArabicText(n);
-
-    // 1. If next is a cumulative extension containing prev (standard Android Chrome speech behavior)
-    // E.g. p: "بسم", n: "بسم الله" -> return "بسم الله"
-    if (normN.startsWith(normP)) {
-        return n;
-    }
-
-    // 2. If prev already ends with next or contains next completely
-    // E.g. p: "بسم الله الرحمن الرحيم", n: "بسم الله" -> return "بسم الله الرحمن الرحيم"
-    if (normP.endsWith(normN)) {
-        return p;
-    }
-
-    // 3. Check for overlapping boundary words at the seam between segments
-    // E.g. p: "بسم الله", n: "الله الرحمن الرحيم" -> return "بسم الله الرحمن الرحيم"
+    // Check for overlapping boundary words at the seam between segments
+    // (e.g. Android Chrome speech recognizer replaying the last 1-4 words of the previous session buffer)
     const pWords = p.split(/\s+/).filter(Boolean);
     const nWords = n.split(/\s+/).filter(Boolean);
     const pNorm = pWords.map(normalizeArabicText);
     const nNorm = nWords.map(normalizeArabicText);
 
-    const maxOverlap = Math.min(pWords.length, nWords.length);
+    const maxOverlap = Math.min(pWords.length, nWords.length, 4);
     for (let len = maxOverlap; len >= 1; len--) {
         let match = true;
         for (let k = 0; k < len; k++) {
@@ -1578,7 +1604,8 @@ function combineSpeechSegments(prev, next) {
             }
         }
         if (match) {
-            // Check if this repetition is legitimately part of the Quran text (e.g. "دكاً دكا" in Al-Fajr)
+            // Found boundary overlap at the seam
+            // Check if this repetition is legitimately part of the Quran text (e.g. "دكاً دكا" in Al-Fajr or repeated ayahs)
             const phrase = nWords.slice(0, len).map(normalizeArabicText).join(' ');
             const repeatedPhrase = phrase + ' ' + phrase;
             let allowedInQuran = false;
@@ -1597,13 +1624,13 @@ function combineSpeechSegments(prev, next) {
             }
 
             if (!allowedInQuran) {
-                // Found exact boundary overlap at the seam: stitch them without repeating the shared words
+                // Stitch without repeating the shared words replayed by mobile Chrome
                 return pWords.concat(nWords.slice(len)).join(' ');
             }
         }
     }
 
-    // 4. Consecutive non-overlapping sentences (e.g. Ayah 1 followed by Ayah 2)
+    // Consecutive non-overlapping sentences across pauses and ayahs
     return p + ' ' + n;
 }
 
@@ -1769,13 +1796,15 @@ function spawnSpeechRecognizer() {
         return;
     }
 
-    // Cleanly tear down any prior recognizer
+    // Cleanly tear down any prior recognizer without calling abort on an ended instance
     if (speechRecognizer) {
         try {
             speechRecognizer.onresult = null;
             speechRecognizer.onend = null;
             speechRecognizer.onerror = null;
-            speechRecognizer.abort();
+            if (isRecognizing) {
+                speechRecognizer.stop();
+            }
         } catch (e) {}
         speechRecognizer = null;
     }
@@ -1794,13 +1823,16 @@ function spawnSpeechRecognizer() {
         recognizer.onstart = () => {
             isRecognizing = true;
             speechRestartAttempts = 0;
+            if (speechFeedbackLabel) {
+                speechFeedbackLabel.textContent = '🎙️ نستمع لتلاوتك الكريمة الآن بوضوح...';
+            }
         };
 
         recognizer.onresult = (event) => {
             if (!isRecording) return;
 
-            let sessionFinal = '';
-            let sessionInterim = '';
+            const finalSegments = [];
+            let interimSegment = '';
 
             for (let i = 0; i < event.results.length; ++i) {
                 const res = event.results[i];
@@ -1808,16 +1840,18 @@ function spawnSpeechRecognizer() {
                 if (!segment) continue;
 
                 if (res.isFinal) {
-                    sessionFinal = combineSpeechSegments(sessionFinal, segment);
+                    finalSegments.push(segment);
                 } else {
-                    sessionInterim = combineSpeechSegments(sessionInterim, segment);
+                    interimSegment = segment;
                 }
             }
 
-            currentSessionFinalText = sessionFinal.trim();
-            currentInterimSpeechText = sessionInterim.trim();
+            currentSessionFinalText = finalSegments.join(' ').trim();
+            currentInterimSpeechText = interimSegment.trim();
 
-            let currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
+            let currentSessionFull = currentSessionFinalText 
+                ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
+                : currentInterimSpeechText;
 
             if (currentSessionFull) {
                 const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
@@ -1832,9 +1866,6 @@ function spawnSpeechRecognizer() {
             if (liveTranscript) {
                 if (speechLiveTextDisplay) {
                     speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(liveTranscript)}</span>`;
-                }
-                if (speechFeedbackLabel) {
-                    speechFeedbackLabel.textContent = '🎙️ نستمع لتلاوتك الكريمة الآن بوضوح...';
                 }
                 updateLiveSpokenHighlights(liveTranscript);
             }
@@ -1873,13 +1904,23 @@ function spawnSpeechRecognizer() {
                     showToast("متصفح Brave يمنع الاتصال بسيرفرات التعرف الصوتي. يرجى استخدام Google Chrome للتسميع.", "fa-solid fa-triangle-exclamation");
                 } else {
                     if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
+                    if (isRecording) {
+                        if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+                        speechRestartTimeout = setTimeout(() => {
+                            if (isRecording) spawnSpeechRecognizer();
+                        }, 500);
+                    }
                 }
             }
         };
 
         recognizer.onend = () => {
+            isRecognizing = false;
             // Commit all recognized words from this session cleanly using combineSpeechSegments and recovery
-            let currentSessionFull = combineSpeechSegments(currentSessionFinalText, currentInterimSpeechText);
+            let currentSessionFull = currentSessionFinalText 
+                ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
+                : currentInterimSpeechText;
+
             if (currentSessionFull) {
                 const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
                 currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
@@ -1890,20 +1931,10 @@ function spawnSpeechRecognizer() {
                 accumulatedSpeechText = liveTranscript;
             }
 
-            // If user is still in recording mode, restart immediately
+            // Zero-delay immediate respawn if recording is still active
             if (isRecording) {
                 if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                try {
-                    recognizer.start();
-                } catch (e) {
-                    speechRestartTimeout = setTimeout(() => {
-                        if (isRecording) {
-                            spawnSpeechRecognizer();
-                        }
-                    }, 20);
-                }
-            } else {
-                isRecognizing = false;
+                spawnSpeechRecognizer();
             }
         };
 
@@ -1916,7 +1947,7 @@ function spawnSpeechRecognizer() {
                 if (isRecording) {
                     spawnSpeechRecognizer();
                 }
-            }, 100);
+            }, 50);
         }
     }
 }
@@ -2015,19 +2046,83 @@ function preprocessSpokenWords(words) {
     const normalizedText = normalizeQuranicDisjointedLetters(joinedText, currentSurahNumber, currentAyahNumber);
     const splitWords = normalizedText.split(/\s+/).filter(Boolean);
 
-    const res = [];
+    // 2. Expand merged spoken words
+    const expanded = [];
     splitWords.forEach(w => {
         const norm = normalizeArabicText(w);
         if (norm === 'الحمدلله') {
-            res.push('الحمد', 'لله');
-        } else if (norm === 'ياايها' || norm === 'ياأيها') {
-            res.push('يا', 'أيها');
+            expanded.push('الحمد', 'لله');
         } else if (norm === 'يارب') {
-            res.push('يا', 'رب');
+            expanded.push('يا', 'رب');
+        } else if (norm === 'انشاءالله' || norm === 'انشاالله') {
+            expanded.push('إن', 'شاء', 'الله');
         } else {
-            res.push(w);
+            expanded.push(w);
         }
     });
+
+    // 3. Merge vocative particles with following words to match Uthmani script (e.g. يا أيها -> ياأيها)
+    const merged = [];
+    const vocativesToJoin = ['ايها', 'أيها', 'ايه', 'أيه', 'بني', 'بنى', 'ابت', 'أبت', 'اهل', 'أهل', 'ابراهيم', 'إبراهيم', 'موسى', 'عيسى', 'نوح', 'داود', 'ليتني', 'ويلتى', 'حسرة', 'حسرتي'];
+
+    for (let i = 0; i < expanded.length; i++) {
+        const curr = expanded[i];
+        const next = expanded[i + 1];
+        if (curr === 'يا' && next) {
+            const nextClean = next.replace(/^[أإآ]/, 'ا').replace(/[ى]/, 'ي');
+            const shouldJoin = vocativesToJoin.some(v => nextClean.startsWith(v.replace(/^[أإآ]/, 'ا').replace(/[ى]/, 'ي')));
+            if (shouldJoin) {
+                merged.push('يا' + next);
+                i++;
+                continue;
+            }
+        }
+        if (curr === 'ها' && next && (next === 'انتم' || next === 'أنتم')) {
+            merged.push('ها' + next);
+            i++;
+            continue;
+        }
+        merged.push(curr);
+    }
+
+    return merged;
+}
+
+// Filter out opening Isti'adhah, Basmalah (when not part of target verse), and closing Tasdiq
+function stripExtraneousRecitationWords(words, targetAyahs) {
+    if (!words || !words.length) return [];
+    let res = [...words];
+
+    // 1. Strip Ta'awwudh / Isti'adhah at the beginning ("أعوذ بالله من الشيطان الرجيم")
+    if (res.length >= 5) {
+        const norm5 = res.slice(0, 5).map(normalizeArabicText).join(' ');
+        if (norm5.startsWith('اعوذ بالله من الشيطان الرجيم')) {
+            res = res.slice(5);
+        }
+    }
+
+    // 2. Strip Basmalah at the beginning IF the first target ayah is NOT Ayah 1 of Surah 1 (Al-Fatihah)
+    const isFatihahAyah1 = targetAyahs && targetAyahs.length > 0 && targetAyahs[0].ayahNum === 1 && currentSurahNumber === 1;
+    if (!isFatihahAyah1 && res.length >= 4) {
+        const norm4 = res.slice(0, 4).map(normalizeArabicText).join(' ');
+        if (norm4 === 'بسم الله الرحمن الرحيم' || norm4 === 'باسم الله الرحمن الرحيم') {
+            res = res.slice(4);
+        }
+    }
+
+    // 3. Strip closing Tasdiq ('صدق الله العظيم' / 'صدق الله العلي العظيم')
+    if (res.length >= 4) {
+        const last4 = res.slice(-4).map(normalizeArabicText).join(' ');
+        if (last4 === 'صدق الله العلي العظيم') {
+            res = res.slice(0, -4);
+        }
+    }
+    if (res.length >= 3) {
+        const last3 = res.slice(-3).map(normalizeArabicText).join(' ');
+        if (last3 === 'صدق الله العظيم') {
+            res = res.slice(0, -3);
+        }
+    }
 
     return res;
 }
@@ -2172,19 +2267,23 @@ function alignRecitation(expectedWordsList, spokenWordsList) {
     const M = spokenWordsList.length;
     const dp = Array.from({ length: N + 1 }, () => new Int32Array(M + 1));
 
-    for (let i = 0; i <= N; i++) dp[i][0] = -i * 2;
-    for (let j = 0; j <= M; j++) dp[0][j] = -j * 2;
+    const GAP_PENALTY = 1;
+    const MISMATCH_PENALTY = 3;
+    const MATCH_SCORE = 3;
+
+    for (let i = 0; i <= N; i++) dp[i][0] = -i * GAP_PENALTY;
+    for (let j = 0; j <= M; j++) dp[0][j] = -j * GAP_PENALTY;
 
     for (let i = 1; i <= N; i++) {
         const eWord = expectedWordsList[i - 1].raw;
         for (let j = 1; j <= M; j++) {
             const sWord = spokenWordsList[j - 1];
             const isMatch = areArabicWordsMatching(eWord, sWord);
-            const matchScore = isMatch ? 3 : -1;
+            const score = isMatch ? MATCH_SCORE : -MISMATCH_PENALTY;
             dp[i][j] = Math.max(
-                dp[i - 1][j - 1] + matchScore,
-                dp[i - 1][j] - 2,
-                dp[i][j - 1] - 2
+                dp[i - 1][j - 1] + score,
+                dp[i - 1][j] - GAP_PENALTY,
+                dp[i][j - 1] - GAP_PENALTY
             );
         }
     }
@@ -2196,8 +2295,8 @@ function alignRecitation(expectedWordsList, spokenWordsList) {
             const eWord = expectedWordsList[i - 1].raw;
             const sWord = spokenWordsList[j - 1];
             const isMatch = areArabicWordsMatching(eWord, sWord);
-            const matchScore = isMatch ? 3 : -1;
-            if (dp[i][j] === dp[i - 1][j - 1] + matchScore) {
+            const score = isMatch ? MATCH_SCORE : -MISMATCH_PENALTY;
+            if (dp[i][j] === dp[i - 1][j - 1] + score) {
                 alignment.unshift({
                     type: isMatch ? 'match' : 'mismatch',
                     expectedObj: expectedWordsList[i - 1],
@@ -2207,7 +2306,7 @@ function alignRecitation(expectedWordsList, spokenWordsList) {
                 continue;
             }
         }
-        if (i > 0 && (j === 0 || dp[i][j] === dp[i - 1][j] - 2)) {
+        if (i > 0 && (j === 0 || dp[i][j] === dp[i - 1][j] - GAP_PENALTY)) {
             alignment.unshift({
                 type: 'missing',
                 expectedObj: expectedWordsList[i - 1],
@@ -2331,28 +2430,19 @@ function executeImmediateEvaluation(audioBlob) {
         const rawWords = transcribedText.split(/\s+/).filter(Boolean);
         const spokenWords = preprocessSpokenWords(rawWords);
 
-        // Smart Surah & Ayah Detection:
+        // Target Ayahs determination: respect user's scope mode first
         let targetAyahs = [];
-        const detected = detectSpokenSurahAndAyah(spokenWords);
-
-        if (detected) {
-            if (detected.surahNum === currentSurahNumber) {
-                syncDetectedSurahAndAyah(detected.surahNum, detected.ayahNum);
-                targetAyahs = getConsecutiveAyahsForSpokenWords(detected.ayahNum, spokenWords.length);
-            } else if (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[detected.surahNum] && window.QURAN_FULL_DATA[detected.surahNum].ayahs) {
-                // Instant Surah Switch from Quran Database
-                currentSurahNumber = detected.surahNum;
-                currentAyahNumber = detected.ayahNum;
-                currentSurahVerses = processVersesData(window.QURAN_FULL_DATA[detected.surahNum].ayahs, detected.surahNum);
-                const sMeta = SURAHS_DB.find(s => s.number === detected.surahNum);
-                if (selectedSurahDisplay && sMeta) selectedSurahDisplay.textContent = `سورة ${sMeta.name}`;
-                if (centerSurahTitle && sMeta) centerSurahTitle.textContent = `سورة ${sMeta.name}`;
-                if (selectedAyahDisplay) selectedAyahDisplay.textContent = `الآية ${detected.ayahNum}`;
-                if (centerAyahsRange) centerAyahsRange.textContent = `الآية ${detected.ayahNum} من ${currentSurahVerses.length}`;
-                renderMushafView();
-                targetAyahs = getConsecutiveAyahsForSpokenWords(detected.ayahNum, spokenWords.length);
-                showToast(`تم التعرف تلقائياً: سورة ${sMeta ? sMeta.name : detected.surahNum} - الآية ${detected.ayahNum} ✨`);
-            }
+        if (recitationScopeMode === 'full' || isFullSurahMode) {
+            targetAyahs = currentSurahVerses && currentSurahVerses.length ? currentSurahVerses : [];
+        } else if (recitationScopeMode === 'range') {
+            const from = Math.min(rangeFromAyah, rangeToAyah);
+            const to = Math.max(rangeFromAyah, rangeToAyah);
+            targetAyahs = (currentSurahVerses && currentSurahVerses.length)
+                ? currentSurahVerses.filter(a => a.numberInSurah >= from && a.numberInSurah <= to)
+                : [];
+        } else {
+            // Single ayah mode: check if user recited consecutively beyond the single ayah
+            targetAyahs = getConsecutiveAyahsForSpokenWords(currentAyahNumber || 1, spokenWords.length);
         }
 
         if (!targetAyahs || !targetAyahs.length) {
@@ -2463,7 +2553,10 @@ function renderRecitationResults(targetAyahs, transcribedText) {
     }
 
     const rawSpoken = transcribedText.split(/\s+/).filter(Boolean);
-    const spokenWords = preprocessSpokenWords(rawSpoken);
+    let spokenWords = preprocessSpokenWords(rawSpoken);
+
+    // Filter out opening Isti'adhah, Basmalah (when not part of target verse), and closing Tasdiq
+    spokenWords = stripExtraneousRecitationWords(spokenWords, targetAyahs);
 
     // Build complete expected words list across all target Ayahs
     const expectedWordsList = [];
@@ -2481,15 +2574,7 @@ function renderRecitationResults(targetAyahs, transcribedText) {
     let totalCorrect = 0;
     let totalMismatches = 0;
     let totalMissing = 0;
-    // If reciting from Ayah 1 of any surah (other than Al-Fatihah) and user opened with Basmalah,
-    // recognize Basmalah as the valid opening and align the recitation against the ayah's words
-    let evaluatedSpokenWords = spokenWords;
-    if (currentSurahNumber !== 1 && targetAyahs[0]?.numberInSurah === 1 && spokenWords.length >= 5) {
-        const first4Norm = spokenWords.slice(0, 4).map(normalizeArabicText).join(' ');
-        if (first4Norm === 'بسم الله الرحمن الرحيم' || first4Norm === 'باسم الله الرحمن الرحيم') {
-            evaluatedSpokenWords = spokenWords.slice(4);
-        }
-    }
+    const evaluatedSpokenWords = spokenWords;
 
     const allWordChips = [];
 

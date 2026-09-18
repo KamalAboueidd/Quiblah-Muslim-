@@ -82,11 +82,82 @@ body { font-family: 'Tajawal', sans-serif; background: #0b0d12; color: var(--whi
 
 .section-title { font-size: 18px; font-weight: 800; color: var(--gold); margin: 20px 0 15px; }
 
-.reciters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-.reciter-card { background: var(--panel-bg); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-.reciter-card:hover { background: var(--highlight); border-color: var(--gold); transform: translateY(-3px); }
-.reciter-icon { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #1c9e5b, #116035); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-.reciter-name { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.reciters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 20px 14px;
+    align-items: start;
+}
+.reciter-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 12px;
+    padding: 6px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.reciter-card:hover {
+    background: transparent;
+    border: none;
+    transform: translateY(-4px);
+}
+.reciter-icon {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1c9e5b, #116035);
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--gold);
+    border: 2px solid rgba(197, 168, 89, 0.35);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.reciter-card:hover .reciter-icon {
+    transform: scale(1.07);
+    border-color: var(--gold, #c5a859);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(197, 168, 89, 0.4);
+}
+.reciter-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gold, #c5a859);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: center;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+.reciter-card:hover .reciter-name {
+    color: var(--gold-light, #f5df9a);
+    text-shadow: 0 0 10px rgba(197, 168, 89, 0.35);
+}
+
+@media (max-width: 600px) {
+    .reciters-grid {
+        grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+        gap: 16px 10px;
+    }
+    .reciter-icon {
+        width: 72px;
+        height: 72px;
+    }
+    .reciter-name {
+        font-size: 12px;
+    }
+}
 
 #view-surahs { max-width: 1140px; }
 

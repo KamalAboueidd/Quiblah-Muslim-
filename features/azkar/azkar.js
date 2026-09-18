@@ -171,20 +171,40 @@ function updateCategoriesLoadMore() {
 // Arabic text normalization for smart, tolerant search
 function normalizeArabic(text) {
     if (!text) return '';
-    return text
-        .replace(/[\u064B-\u065F\u0670]/g, '') // Remove tashkeel/harakat
-        .replace(/[إأآا]/g, 'ا')
-        .replace(/ة/g, 'ه')
-        .replace(/ى/g, 'ي')
-        .toLowerCase()
-        .trim();
+    return String(text)
+        .replace(/^\uFEFF/, '')
+        .replace(/و\u0670/g, 'ا')
+        .replace(/\u0670/g, 'ا')
+        .replace(/[\u064B-\u065F\u06D6-\u06ED]/g, '')
+        .replace(/[\u0671إأآٱا]/g, 'ا')
+        .replace(/[ةه]/g, 'ه')
+        .replace(/[ىي\u06CC]/g, 'ي')
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        .replace(/ء/g, '')
+        .replace(/[\u0640]/g, '')
+        .replace(/[^\u0621-\u064A0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+function matchesArabic(targetText, queryText) {
+    if (!targetText || !queryText) return false;
+    const nTarget = normalizeArabic(targetText);
+    const nQuery = normalizeArabic(queryText);
+    if (!nQuery) return false;
+    if (nTarget.includes(nQuery)) return true;
+    const noAlefTarget = nTarget.replace(/ا/g, '');
+    const noAlefQuery = nQuery.replace(/ا/g, '');
+    if (noAlefQuery.length >= 2 && noAlefTarget.includes(noAlefQuery)) return true;
+    return false;
 }
 
 // Search Filter
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
         const rawQuery = e.target.value.trim();
-        const normQ = normalizeArabic(rawQuery);
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('m');
         let baseCats = Object.keys(groupedAzkar);
@@ -194,15 +214,15 @@ if (searchInput) {
             baseCats = baseCats.filter(cat => cat !== 'أذكار الصباح' && cat !== 'أذكار المساء');
         }
 
-        if (!normQ) {
+        if (!rawQuery) {
             renderCategories(baseCats, true);
             return;
         }
 
         const filtered = baseCats.filter(cat => {
-            if (normalizeArabic(cat).includes(normQ)) return true;
+            if (matchesArabic(cat, rawQuery)) return true;
             const azkarList = groupedAzkar[cat] || [];
-            return azkarList.some(z => normalizeArabic(z.zekr).includes(normQ) || normalizeArabic(z.description).includes(normQ));
+            return azkarList.some(z => matchesArabic(z.zekr, rawQuery) || matchesArabic(z.description, rawQuery));
         });
 
         renderCategories(filtered, true);

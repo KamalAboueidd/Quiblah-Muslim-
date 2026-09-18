@@ -390,10 +390,53 @@ function initSurahDropdown() {
         }
     });
 
+    function normalizeArabicSearch(text) {
+        if (!text) return "";
+        return String(text)
+            .replace(/^\uFEFF/, '')
+            .replace(/و\u0670/g, 'ا')
+            .replace(/\u0670/g, 'ا')
+            .replace(/[\u064B-\u065F\u06D6-\u06ED]/g, '')
+            .replace(/[\u0671إأآٱا]/g, 'ا')
+            .replace(/[ةه]/g, 'ه')
+            .replace(/[ىي\u06CC]/g, 'ي')
+            .replace(/ؤ/g, 'و')
+            .replace(/ئ/g, 'ي')
+            .replace(/ء/g, '')
+            .replace(/[\u0640]/g, '')
+            .replace(/[^\u0621-\u064A0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+    }
+
+    function matchesArabicSearch(targetText, queryText) {
+        if (!targetText || !queryText) return false;
+        const nTarget = normalizeArabicSearch(targetText);
+        const nQuery = normalizeArabicSearch(queryText);
+        if (!nQuery) return false;
+
+        if (nTarget.includes(nQuery)) return true;
+
+        const noAlefTarget = nTarget.replace(/ا/g, '');
+        const noAlefQuery = nQuery.replace(/ا/g, '');
+        if (noAlefQuery.length >= 2 && noAlefTarget.includes(noAlefQuery)) return true;
+
+        return false;
+    }
+
     if (surahSearchInput) {
         surahSearchInput.addEventListener('input', (e) => {
-            const q = e.target.value.trim().toLowerCase();
-            const filtered = SURAHS_DB.filter(s => s.name.includes(q) || s.number.toString() === q);
+            const rawQuery = e.target.value.trim();
+            if (!rawQuery) {
+                renderSurahList(SURAHS_DB);
+                return;
+            }
+            const normalizedDigits = rawQuery.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            const filtered = SURAHS_DB.filter(s => 
+                s.number.toString() === normalizedDigits ||
+                matchesArabicSearch(s.name, rawQuery)
+            );
             renderSurahList(filtered);
         });
     }

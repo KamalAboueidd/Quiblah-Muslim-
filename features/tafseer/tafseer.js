@@ -289,12 +289,65 @@
             });
         }
 
+        // --- Arabic Search Normalization Helper ---
+        function normalizeArabicSearch(text) {
+            if (!text) return "";
+            return String(text)
+                .replace(/^\uFEFF/, '')
+                // Replace dagger alef on waw (e.g. الصلوة -> الصلاة, الزكوة -> الزكاة)
+                .replace(/و\u0670/g, 'ا')
+                // Replace standalone dagger alef with bare alef (e.g. مَٰلِك -> مالك, ٱلسَّلَٰم -> السلام, ٱلصِّرَٰط -> الصراط)
+                .replace(/\u0670/g, 'ا')
+                // Remove all Quranic diacritics, harakat, tanween, sukun, shaddah, pause marks
+                .replace(/[\u064B-\u065F\u06D6-\u06ED]/g, '')
+                // Normalize all Alef variants (Wasla, Madda, Hamza above/below) to bare alef
+                .replace(/[\u0671إأآٱا]/g, 'ا')
+                // Normalize Taa Marbuta and Haa
+                .replace(/[ةه]/g, 'ه')
+                // Normalize Yeh and Alef Maqsoora
+                .replace(/[ىي\u06CC]/g, 'ي')
+                // Normalize Hamzas on carriers
+                .replace(/ؤ/g, 'و')
+                .replace(/ئ/g, 'ي')
+                .replace(/ء/g, '')
+                // Remove Tatweel
+                .replace(/[\u0640]/g, '')
+                // Remove punctuation and special symbols
+                .replace(/[^\u0621-\u064A0-9\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+        }
+
+        function matchesArabicSearch(targetText, queryText) {
+            if (!targetText || !queryText) return false;
+            const nTarget = normalizeArabicSearch(targetText);
+            const nQuery = normalizeArabicSearch(queryText);
+            if (!nQuery) return false;
+
+            // 1. Direct normalized substring match
+            if (nTarget.includes(nQuery)) return true;
+
+            // 2. Alef-agnostic match (catches defective/plene Uthmani alefs like الرحمن vs الرحمان, السموات vs السماوات)
+            const noAlefTarget = nTarget.replace(/ا/g, '');
+            const noAlefQuery = nQuery.replace(/ا/g, '');
+            if (noAlefQuery.length >= 2 && noAlefTarget.includes(noAlefQuery)) return true;
+
+            return false;
+        }
+
         searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim().toLowerCase();
+            const rawQuery = e.target.value.trim();
+            if (!rawQuery) {
+                renderSurahList(allSurahs);
+                return;
+            }
+            const normalizedDigits = rawQuery.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            const qLower = rawQuery.toLowerCase();
             const filtered = allSurahs.filter(s => 
-                s.name.includes(query) || 
-                s.englishName.toLowerCase().includes(query) ||
-                s.number.toString() === query
+                s.number.toString() === normalizedDigits ||
+                matchesArabicSearch(s.name, rawQuery) ||
+                (s.englishName && s.englishName.toLowerCase().includes(qLower))
             );
             renderSurahList(filtered);
         });
@@ -390,31 +443,51 @@
             }
         });
 
-        function handleAyahSearch(query) {
+        let lastAyahSearchQuery = '';
+        let lastAyahMatchIndex = -1;
+
+        function handleAyahSearch(rawQuery) {
+            const query = (rawQuery || '').trim();
             if (!query) return;
 
-            // 1. If query is a pure number (e.g. 7 or 255)
-            const num = parseInt(query);
-            if (!isNaN(num) && num.toString() === query) {
+            // 1. If query is a pure number (Western or Eastern Arabic digits)
+            const normalizedDigits = query.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            const num = parseInt(normalizedDigits);
+            if (!isNaN(num) && num.toString() === normalizedDigits) {
                 jumpToAyah(num);
                 return;
             }
 
-            if (!currentSurahData) return;
+            if (!currentSurahData || !currentSurahData.ayahs || !currentSurahData.ayahs.length) return;
 
-            // 2. Text search in verses or tafseer text
-            const q = query.toLowerCase();
-            const matchIndex = currentSurahData.ayahs.findIndex(a => 
-                a.text.includes(q) || a.tafseer.includes(q)
-            );
+            // 2. Text search in verses or tafseer text with full Arabic normalization
+            const matchingIndices = [];
+            currentSurahData.ayahs.forEach((a, idx) => {
+                if (matchesArabicSearch(a.text, query) || matchesArabicSearch(a.tafseer, query)) {
+                    matchingIndices.push(idx);
+                }
+            });
 
-            if (matchIndex !== -1) {
-                const matchedAyah = currentSurahData.ayahs[matchIndex];
+            if (matchingIndices.length > 0) {
+                let targetMatchPos = 0;
+                if (query === lastAyahSearchQuery && lastAyahMatchIndex !== -1) {
+                    const prevPos = matchingIndices.indexOf(lastAyahMatchIndex);
+                    targetMatchPos = (prevPos + 1) % matchingIndices.length;
+                }
+                const chosenIdx = matchingIndices[targetMatchPos];
+                lastAyahSearchQuery = query;
+                lastAyahMatchIndex = chosenIdx;
+
+                const matchedAyah = currentSurahData.ayahs[chosenIdx];
                 jumpToAyah(matchedAyah.numberInSurah);
+
                 if (window.showToast) {
-                    window.showToast(`تم العثور على نتيجة في الآية (${matchedAyah.numberInSurah})`, "fa-solid fa-magnifying-glass", 3000);
+                    const matchInfo = matchingIndices.length > 1 ? ` (نتيجة ${targetMatchPos + 1} من ${matchingIndices.length})` : '';
+                    window.showToast(`تم العثور على نتيجة في الآية (${matchedAyah.numberInSurah})${matchInfo}`, "fa-solid fa-magnifying-glass", 3000);
                 }
             } else {
+                lastAyahSearchQuery = '';
+                lastAyahMatchIndex = -1;
                 if (window.showToast) {
                     window.showToast(`لم يتم العثور على نتائج مطابقة لـ "${query}" في هذه السورة`, "fa-solid fa-circle-exclamation", 3500);
                 }

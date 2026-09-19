@@ -262,35 +262,6 @@ function showToast(msg, icon = "fa-solid fa-circle-exclamation") {
 }
 window.showToast = showToast;
 
-// Pre-flight check to guarantee Android WebAPK / PWA has granted native microphone permissions
-async function ensurePwaMicrophonePermission() {
-    try {
-        if (navigator.permissions && navigator.permissions.query) {
-            const perm = await navigator.permissions.query({ name: 'microphone' });
-            if (perm.state === 'granted') return true;
-        }
-    } catch(e) {}
-
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
-                         window.navigator.standalone === true;
-
-    if (isStandalone && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const oneTimeGesture = () => {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                stream.getTracks().forEach(t => t.stop());
-            }).catch(err => {
-                console.warn("PWA microphone permission check:", err);
-            });
-            window.removeEventListener('click', oneTimeGesture);
-            window.removeEventListener('touchstart', oneTimeGesture);
-        };
-        window.addEventListener('click', oneTimeGesture, { once: true });
-        window.addEventListener('touchstart', oneTimeGesture, { once: true });
-    }
-    return true;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     cacheDomElements();
     initSurahDropdown();
@@ -300,9 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default initial state: no surah/ayah selected until the user chooses one
     renderInitialEmptyState();
-
-    // Warm up microphone permission for PWA standalone mode
-    ensurePwaMicrophonePermission();
 });
 
 function cacheDomElements() {
@@ -1636,30 +1604,15 @@ async function startRecording() {
     }
 
     // 3. Coordinate MediaRecorder & microphone acquisition:
-    // On mobile devices (Android / iOS), if Whisper is NOT configured, running getUserMedia simultaneously with SpeechRecognition
-    // locks the hardware mic in the OS audio server and kills SpeechRecognition with audio-capture error.
-    // Therefore, on mobile browsers without Whisper, let SpeechRecognition capture alone cleanly.
-    // On Desktop, or in Brave, or whenever Whisper is configured, MediaRecorder runs continuously.
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isBraveBrowser = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
-    const hasWhisperService = Boolean(
-        (typeof makeWebhookUrl !== 'undefined' && makeWebhookUrl && makeWebhookUrl.trim()) ||
-        (typeof hfApiToken !== 'undefined' && hfApiToken && hfApiToken.trim()) ||
-        (typeof pythonServiceUrl !== 'undefined' && pythonServiceUrl && pythonServiceUrl.trim() && !pythonServiceUrl.includes('localhost'))
-    );
-
-    const shouldStartMediaRecorder = !isMobileDevice || hasWhisperService || isBraveBrowser;
-
-    if (shouldStartMediaRecorder) {
-        const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-            ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
-                console.warn("Microphone access for MediaRecorder:", micErr);
-                return null;
-            })
-            : Promise.resolve(null);
-
+    // Run MediaRecorder seamlessly on Desktop, Mobile (Chrome & Brave), and WebAPK
+    // to record user recitation audio for playback and live waveform animation.
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
-            const stream = await micPromise;
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
+                console.warn("Microphone access notice for MediaRecorder:", micErr);
+                return null;
+            });
+
             if (stream && isRecording) {
                 audioStream = stream;
 
@@ -2318,7 +2271,14 @@ function spawnSpeechRecognizer() {
 
             if (e.error === 'not-allowed') {
                 if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ يرجى السماح بصلاحية الميكروفون';
-                showToast("يرجى إعطاء صلاحية استخدام الميكروفون للتطبيق أو المتصفح للتعرف الصوتي.", "fa-solid fa-microphone-slash");
+                if (isRecording && speechRestartAttempts < 2) {
+                    speechRestartAttempts++;
+                    setTimeout(() => {
+                        if (isRecording) spawnSpeechRecognizer();
+                    }, 300);
+                } else {
+                    showToast("يرجى إعطاء صلاحية استخدام الميكروفون للتطبيق أو المتصفح للتعرف الصوتي.", "fa-solid fa-microphone-slash");
+                }
             } else if (e.error === 'network') {
                 if (!navigator.onLine) {
                     if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
@@ -2348,14 +2308,23 @@ function spawnSpeechRecognizer() {
                 accumulatedSpeechText = liveTranscript;
             }
 
-            // Resilient respawn with optimal debounce for mobile OS / PWA audio stack
+            // CRITICAL: Keep live spoken highlights green and visible across breath pauses
+            if (liveTranscript) {
+                updateLiveSpokenHighlights(liveTranscript);
+            }
+
+            // Resilient respawn with minimal debounce for Android Mobile & PWA
             if (isRecording) {
                 if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const restartDelay = isMobile ? 150 : 80;
                 speechRestartTimeout = setTimeout(() => {
-                    if (isRecording) spawnSpeechRecognizer();
-                }, restartDelay);
+                    if (isRecording) {
+                        try {
+                            recognizer.start();
+                        } catch (err) {
+                            spawnSpeechRecognizer();
+                        }
+                    }
+                }, 35);
             }
         };
 
@@ -2761,9 +2730,17 @@ function updateLiveSpokenHighlights(spokenText) {
     const rawWords = spokenText.split(/\s+/).filter(Boolean);
     if (!rawWords.length) return;
 
-    const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+    let targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
     let spokenWords = preprocessSpokenWords(rawWords);
     const effectiveSpokenWords = stripExtraneousRecitationWords(spokenWords, targetAyahs);
+
+    // If reciting continuously in single ayah mode, expand targetAyahs to cover subsequent ayahs smoothly
+    if (recitationScopeMode === 'single' && !isFullSurahMode && targetAyahs.length > 0) {
+        const expectedCount = targetAyahs[0]?.rawWords?.length || 0;
+        if (effectiveSpokenWords.length > expectedCount) {
+            targetAyahs = getConsecutiveAyahsForSpokenWords(currentAyahNumber || 1, effectiveSpokenWords.length);
+        }
+    }
 
     // 1. Memorization Mode: Render spoken words live in natural Quran calligraphy WITHOUT premature errors
     if (studioDisplayMode === 'memorize') {

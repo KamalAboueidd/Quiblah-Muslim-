@@ -3453,3 +3453,148 @@ body.mushaf-studio-body {
     animation: cardAttentionPulse 0.5s ease-in-out 2 !important;
 }
 
+/* ==========================================================================
+   User Recitation Audio Playback & Transcript Review Card
+   ========================================================================== */
+.eval-banner-transcript {
+    margin: 12px 0 10px 0;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(197, 168, 89, 0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: var(--white, #fff);
+    line-height: 1.6;
+    animation: fadeInSlideDown 0.3s ease;
+}
+
+.eval-banner-transcript i {
+    color: var(--gold, #c5a859);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.eb-transcript-label {
+    font-weight: 700;
+    color: var(--gold, #c5a859);
+    white-space: nowrap;
+}
+
+.eb-transcript-text {
+    font-family: 'Amiri', 'Amiri Quran', serif;
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.user-recitation-player-box {
+    margin: 10px 0 14px 0;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(20, 26, 36, 0.95), rgba(12, 16, 23, 0.95));
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    animation: fadeInSlideDown 0.3s ease;
+}
+
+.user-audio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.user-audio-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gold, #c5a859);
+}
+
+.user-audio-info i {
+    font-size: 16px;
+}
+
+.user-audio-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-user-audio-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.3);
+    border-radius: 20px;
+    color: var(--gold, #c5a859);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-user-audio-action:hover {
+    background: rgba(197, 168, 89, 0.25);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.user-recitation-player-box audio,
+.user-modal-player-box audio {
+    width: 100%;
+    outline: none;
+    border-radius: 8px;
+    filter: invert(0.85) hue-rotate(180deg);
+}
+
+/* Peaceful Animated Live Listening Indicator */
+.listening-live-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 4px;
+    width: 100%;
+}
+
+.listening-live-text {
+    font-size: 14px;
+    font-family: 'Tajawal', sans-serif;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+.listening-wave-anim {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 18px;
+}
+
+.listening-wave-anim span {
+    display: block;
+    width: 3px;
+    background: var(--gold, #c5a859);
+    border-radius: 2px;
+    animation: waveBarPulse 1s infinite ease-in-out;
+}
+
+.listening-wave-anim span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+.listening-wave-anim span:nth-child(2) { height: 14px; animation-delay: 0.2s; }
+.listening-wave-anim span:nth-child(3) { height: 18px; animation-delay: 0.3s; }
+.listening-wave-anim span:nth-child(4) { height: 10px; animation-delay: 0.4s; }
+.listening-wave-anim span:nth-child(5) { height: 5px; animation-delay: 0.5s; }
+
+@keyframes waveBarPulse {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+    50% { transform: scaleY(1); opacity: 1; }
+}
+
+

@@ -205,6 +205,8 @@ let playerStatusMain, playerStatusSub;
 // New Live Speech & Evaluation UI Elements
 let liveSpeechFeedbackStrip, speechFeedbackLabel, speechLiveTextDisplay;
 let recitationEvalBanner, evalBannerScoreText, ebCorrectCount, ebErrorsCount, ebMissingCount, btnBannerOpenModal, evalBannerWordsGrid;
+let evalBannerTranscript, ebTranscriptText, userRecitationPlayerBox, userRecitationAudio, btnDownloadUserAudio;
+let userModalPlayerBox, userModalRecitationAudio, btnDownloadModalAudio;
 
 // Modals
 let evaluationModalBackdrop, btnCloseEvaluation, scoreNumber, scoreEvaluationTitle;
@@ -370,6 +372,15 @@ function cacheDomElements() {
     ebMissingCount = document.getElementById('eb-missing-count');
     btnBannerOpenModal = document.getElementById('btn-banner-open-modal');
     evalBannerWordsGrid = document.getElementById('eval-banner-words-grid');
+
+    evalBannerTranscript = document.getElementById('eval-banner-transcript');
+    ebTranscriptText = document.getElementById('eb-transcript-text');
+    userRecitationPlayerBox = document.getElementById('user-recitation-player-box');
+    userRecitationAudio = document.getElementById('user-recitation-audio');
+    btnDownloadUserAudio = document.getElementById('btn-download-user-audio');
+    userModalPlayerBox = document.getElementById('user-modal-player-box');
+    userModalRecitationAudio = document.getElementById('user-modal-recitation-audio');
+    btnDownloadModalAudio = document.getElementById('btn-download-modal-audio');
 }
 
 // -----------------------------------------------------------------------------
@@ -1418,8 +1429,17 @@ async function startRecording() {
         liveSpeechFeedbackStrip.style.display = 'block';
         const dot = liveSpeechFeedbackStrip.querySelector('.pulse-rec-dot');
         if (dot) dot.style.display = '';
-        if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'جاري الاستماع لتلاوتك الكريمة الآن...';
-        if (speechLiveTextDisplay) speechLiveTextDisplay.innerHTML = '<span class="speech-placeholder">تحدث الآن، ستظهر كلماتك هنا فوراً أثناء القراءة...</span>';
+        if (speechFeedbackLabel) speechFeedbackLabel.textContent = '🎙️ جاري الاستماع لتلاوتك الكريمة الآن...';
+        if (speechLiveTextDisplay) {
+            speechLiveTextDisplay.innerHTML = `
+                <div class="listening-live-box">
+                    <div class="listening-wave-anim">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <span class="listening-live-text">نستمع لتلاوتك الكريمة الآن... رتّل بخشوع وتؤدة، وسيتم تدقيق وعرض كامل التلاوة فور الضغط على زر الإيقاف.</span>
+                </div>
+            `;
+        }
     }
 
     // 1. Reset state
@@ -1464,44 +1484,67 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
-    // 3. Acquire microphone stream and start MediaRecorder for continuous lossless audio capture.
-    //    getUserMedia must be INITIATED (not awaited) within the user-gesture tick for mobile compat.
-    //    MediaRecorder runs continuously from start to stop — it is NEVER restarted during recording.
-    const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-        ? navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).catch(micErr => {
-            console.warn("Microphone access for MediaRecorder:", micErr);
-            return null;
-        })
-        : Promise.resolve(null);
+    // 3. Coordinate MediaRecorder & microphone acquisition:
+    // On Android mobile, if Whisper is NOT configured, running getUserMedia simultaneously with SpeechRecognition
+    // locks the hardware mic in AudioFlinger and kills SpeechRecognition with audio-capture error.
+    // Therefore, on mobile Chrome without Whisper, let SpeechRecognition capture alone cleanly.
+    // On Desktop, or in Brave, or whenever Whisper is configured, MediaRecorder runs continuously.
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isBraveBrowser = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+    const hasWhisperService = Boolean(
+        (makeWebhookUrl && makeWebhookUrl.trim()) ||
+        (hfApiToken && hfApiToken.trim()) ||
+        (pythonServiceUrl && pythonServiceUrl.trim() && !pythonServiceUrl.includes('localhost'))
+    );
 
-    try {
-        const stream = await micPromise;
-        if (stream && isRecording) {
-            audioStream = stream;
+    const shouldStartMediaRecorder = !isMobileDevice || hasWhisperService || isBraveBrowser;
 
-            // Start continuous MediaRecorder — NEVER restarted during recording
-            try {
-                const preferredMime = (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
-                    ? 'audio/webm;codecs=opus'
-                    : ((typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm')) ? 'audio/webm' : '');
-                const recorderOptions = preferredMime ? { mimeType: preferredMime } : {};
-                mediaRecorder = new MediaRecorder(stream, recorderOptions);
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data && e.data.size > 0) audioChunks.push(e.data);
-                };
-                mediaRecorder.start(1000); // Collect chunks every 1s for progressive buffering
-            } catch (mrErr) {
-                console.warn("MediaRecorder start notice:", mrErr);
-                mediaRecorder = null;
+    if (shouldStartMediaRecorder) {
+        const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+            ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
+                console.warn("Microphone access for MediaRecorder:", micErr);
+                return null;
+            })
+            : Promise.resolve(null);
+
+        try {
+            const stream = await micPromise;
+            if (stream && isRecording) {
+                audioStream = stream;
+
+                // Start continuous MediaRecorder — NEVER restarted during recording
+                try {
+                    let preferredMime = '';
+                    if (typeof MediaRecorder !== 'undefined') {
+                        const mimes = [
+                            'audio/webm;codecs=opus',
+                            'audio/webm',
+                            'audio/mp4',
+                            'audio/ogg;codecs=opus',
+                            'audio/aac'
+                        ];
+                        for (const m of mimes) {
+                            if (MediaRecorder.isTypeSupported(m)) { preferredMime = m; break; }
+                        }
+                    }
+                    const recorderOptions = preferredMime ? { mimeType: preferredMime } : {};
+                    mediaRecorder = new MediaRecorder(stream, recorderOptions);
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    mediaRecorder.start(1000); // Collect chunks every 1s for progressive buffering
+                } catch (mrErr) {
+                    console.warn("MediaRecorder start notice:", mrErr);
+                    mediaRecorder = null;
+                }
+
+                // Connect live waveform visualizer to the microphone stream
+                startLiveWaveform(stream);
             }
-
-            // Connect live waveform visualizer to the microphone stream
-            startLiveWaveform(stream);
+        } catch (streamErr) {
+            console.warn("Stream acquisition notice:", streamErr);
         }
-    } catch (streamErr) {
-        console.warn("Stream acquisition notice:", streamErr);
     }
-
 }
 
 function triggerSilenceCountdown() {
@@ -1546,10 +1589,11 @@ async function stopRecordingAndAnalyze() {
         recordedBlob = await new Promise((resolve) => {
             const safetyTimeout = setTimeout(() => {
                 try {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const mime = mediaRecorder?.mimeType || 'audio/webm';
+                    const blob = new Blob(audioChunks, { type: mime });
                     resolve(blob.size > 0 ? blob : null);
                 } catch (e) { resolve(null); }
-            }, 3000);
+            }, 2500);
             mediaRecorder.onstop = () => {
                 clearTimeout(safetyTimeout);
                 try {
@@ -1562,9 +1606,14 @@ async function stopRecordingAndAnalyze() {
         });
     } else if (audioChunks && audioChunks.length) {
         try {
-            recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const mime = audioChunks[0]?.type || 'audio/webm';
+            recordedBlob = new Blob(audioChunks, { type: mime });
             if (recordedBlob.size === 0) recordedBlob = null;
         } catch (e) {}
+    }
+
+    if (recordedBlob) {
+        recordedAudioBlob = recordedBlob;
     }
 
     // 3. Release microphone stream
@@ -1647,11 +1696,17 @@ function resetStudioRecording() {
     }
 
     audioChunks = [];
+    recordedAudioBlob = null;
     liveTranscript = "";
     accumulatedSpeechText = "";
     currentInterimSpeechText = "";
     committedPreviousSessionsText = "";
     currentSessionFinalText = "";
+    if (userRecitationAudio) userRecitationAudio.src = '';
+    if (userModalRecitationAudio) userModalRecitationAudio.src = '';
+    if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'none';
+    if (userModalPlayerBox) userModalPlayerBox.style.display = 'none';
+    if (evalBannerTranscript) evalBannerTranscript.style.display = 'none';
     isVerseRevealed = false;
     if (liveSpeechFeedbackStrip) liveSpeechFeedbackStrip.style.display = 'none';
     if (recitationEvalBanner) recitationEvalBanner.style.display = 'none';
@@ -2022,12 +2077,9 @@ function spawnSpeechRecognizer() {
             liveTranscript = normalizeQuranicDisjointedLetters(fullRaw.trim(), currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
 
-            if (liveTranscript) {
-                if (speechLiveTextDisplay) {
-                    speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(liveTranscript)}</span>`;
-                }
-                updateLiveSpokenHighlights(liveTranscript);
-            }
+            // CRITICAL USER REQUIREMENT:
+            // Do NOT print spoken words or highlight the Mushaf live during recitation!
+            // Words are kept securely in memory and revealed only after the user stops recording.
         };
 
         recognizer.onerror = (e) => {
@@ -2038,11 +2090,14 @@ function spawnSpeechRecognizer() {
             }
 
             if (e.error === 'audio-capture') {
-                if (isRecording) {
+                speechRestartAttempts++;
+                if (speechRestartAttempts <= 2 && isRecording) {
                     if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
                     speechRestartTimeout = setTimeout(() => {
                         if (isRecording) spawnSpeechRecognizer();
-                    }, 250);
+                    }, 500);
+                } else {
+                    console.warn("Speech recognition audio-capture attempt limit reached.");
                 }
                 return;
             }
@@ -2730,14 +2785,23 @@ async function callMakeWebhook(blob, url) {
 }
 
 async function callPythonService(blob, url) {
+    if (!url || !url.trim()) return "";
+    const cleanUrl = url.trim();
+
+    // Guard: Prevent HTTPS Mixed Content blocks on Vercel
+    if (window.location.protocol === 'https:' && cleanUrl.includes('localhost')) {
+        console.log("Skipping HTTP localhost Python service on HTTPS deployment.");
+        return "";
+    }
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     try {
         const formData = new FormData();
         formData.append('file', blob, 'recitation.webm');
         const headers = {};
-        if (hfApiToken) headers['Authorization'] = `Bearer ${hfApiToken}`;
-        const res = await fetch(`${url}/api/transcribe-recitation`, {
+        if (hfApiToken) headers['Authorization'] = `Bearer ${hfApiToken.trim()}`;
+        const res = await fetch(`${cleanUrl}/api/transcribe-recitation`, {
             method: 'POST',
             body: formData,
             headers,
@@ -2749,15 +2813,55 @@ async function callPythonService(blob, url) {
         if (data.success && data.transcription) {
             return data.transcription;
         }
-        throw new Error("No transcription in response");
+        return data.text || "";
     } catch (e) {
         clearTimeout(timeoutId);
-        throw e;
+        console.warn("Python service notice:", e.message);
+        return "";
     }
 }
 
+async function callHuggingFaceRouter(blob, token) {
+    if (!token || !token.trim()) return "";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try {
+        const res = await fetch("https://router.huggingface.co/hf-inference/models/tarteel-ai/whisper-base-ar-quran", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token.trim()}`,
+                "Content-Type": blob.type || "audio/webm",
+                "x-wait-for-model": "true"
+            },
+            body: blob,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data[0]?.text) return data[0].text;
+            if (data?.text) return data.text;
+        }
+    } catch (e) {
+        clearTimeout(timeoutId);
+        console.warn("Direct Hugging Face call note:", e.message);
+    }
+    return "";
+}
+
 async function transcribeWithWhisper(audioBlob) {
-    // Try Make.com webhook first (if configured)
+    // 1. Try Direct Hugging Face Router if token is configured
+    if (hfApiToken && hfApiToken.trim()) {
+        try {
+            const text = await callHuggingFaceRouter(audioBlob, hfApiToken.trim());
+            if (text && text.trim().length > 0) {
+                console.log("Whisper transcription via Hugging Face Router:", text.trim());
+                return text.trim();
+            }
+        } catch (e) {}
+    }
+
+    // 2. Try Make.com webhook if configured
     if (makeWebhookUrl && makeWebhookUrl.trim()) {
         try {
             const text = await callMakeWebhook(audioBlob, makeWebhookUrl.trim());
@@ -2770,7 +2874,7 @@ async function transcribeWithWhisper(audioBlob) {
         }
     }
 
-    // Try Python service (if configured)
+    // 3. Try Python service (if reachable)
     if (pythonServiceUrl && pythonServiceUrl.trim()) {
         try {
             const text = await callPythonService(audioBlob, pythonServiceUrl.trim());
@@ -2783,8 +2887,7 @@ async function transcribeWithWhisper(audioBlob) {
         }
     }
 
-    // No Whisper service available — fall back to Web Speech API transcript
-    console.log("No Whisper service configured or available. Using Web Speech API transcript.");
+    // No Whisper service available — fall back gracefully to Web Speech API transcript
     return null;
 }
 
@@ -2959,6 +3062,41 @@ function renderRecitationResults(targetAyahs, transcribedText) {
 
     // In-Page Evaluation Banner (Visible in BOTH Recite & Memorize Modes!)
     if (evalBannerWordsGrid) evalBannerWordsGrid.innerHTML = bannerGridHtml;
+
+    // Display recited transcript in banner (Revealed after finishing recitation)
+    if (evalBannerTranscript && ebTranscriptText) {
+        ebTranscriptText.textContent = transcribedText;
+        evalBannerTranscript.style.display = 'flex';
+    }
+
+    // Configure user recitation audio playback if audio blob was captured
+    if (recordedAudioBlob && recordedAudioBlob.size > 0) {
+        try {
+            const audioUrl = URL.createObjectURL(recordedAudioBlob);
+            if (userRecitationAudio) userRecitationAudio.src = audioUrl;
+            if (userModalRecitationAudio) userModalRecitationAudio.src = audioUrl;
+
+            const isMp4 = recordedAudioBlob.type && recordedAudioBlob.type.includes('mp4');
+            const ext = isMp4 ? 'mp4' : 'webm';
+            const dlName = `recitation_surah_${currentSurahNumber || 1}_ayah_${currentAyahNumber || 1}.${ext}`;
+
+            if (btnDownloadUserAudio) {
+                btnDownloadUserAudio.href = audioUrl;
+                btnDownloadUserAudio.download = dlName;
+            }
+            if (btnDownloadModalAudio) {
+                btnDownloadModalAudio.href = audioUrl;
+                btnDownloadModalAudio.download = dlName;
+            }
+            if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'block';
+            if (userModalPlayerBox) userModalPlayerBox.style.display = 'block';
+        } catch (e) {
+            console.warn("User audio playback init notice:", e);
+        }
+    } else {
+        if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'none';
+        if (userModalPlayerBox) userModalPlayerBox.style.display = 'none';
+    }
 
     const totalWordsEvaluated = Math.max(totalExpected, totalCorrect + totalMismatches + totalMissing, 1);
     const accuracy = Math.max(0, Math.round((totalCorrect / totalWordsEvaluated) * 100));

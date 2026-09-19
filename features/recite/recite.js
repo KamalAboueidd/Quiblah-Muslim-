@@ -183,6 +183,17 @@ let makeWebhookUrl = localStorage.getItem("recite_make_webhook") || "";
 let pythonServiceUrl = localStorage.getItem("recite_python_url") || "http://localhost:8080";
 let hfApiToken = localStorage.getItem("recite_hf_token") || "";
 
+// Brave Browser Detection Cache
+let isBraveBrowserCached = false;
+try {
+    if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+        navigator.brave.isBrave().then(val => { if (val) isBraveBrowserCached = true; }).catch(() => {});
+    }
+    if (/Brave/i.test(navigator.userAgent)) {
+        isBraveBrowserCached = true;
+    }
+} catch (e) {}
+
 // -----------------------------------------------------------------------------
 // 3. DOM Elements Cache
 // -----------------------------------------------------------------------------
@@ -1565,6 +1576,7 @@ async function startRecording() {
     if (barRecordingIndicator) barRecordingIndicator.classList.add('recording');
     if (barRecLabel) barRecLabel.textContent = 'جاري التسميع...';
     if (barWaveformVisualizer) barWaveformVisualizer.classList.add('recording');
+    if (btnReReciteSimple) btnReReciteSimple.style.display = 'inline-flex';
 
     if (studioDisplayMode === 'memorize') {
         if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآيات من حفظك';
@@ -1825,6 +1837,7 @@ function resetStudioRecording() {
     if (barRecLabel) barRecLabel.textContent = 'جاهز للتسميع';
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('recording');
     if (barTimeDisplay) barTimeDisplay.textContent = '00:00';
+    if (btnReReciteSimple) btnReReciteSimple.style.display = 'none';
     if (playerStatusMain) playerStatusMain.textContent = 'اضغط على زر الميكروفون لبدء التسجيل';
     if (playerStatusSub) playerStatusSub.textContent = 'اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
 
@@ -2230,20 +2243,17 @@ function spawnSpeechRecognizer() {
                 return;
             }
 
-            const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+            const isBraveOrBlocked = isBraveBrowserCached || (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent) || (e.error === 'network' && navigator.onLine);
 
             if (e.error === 'not-allowed') {
-                if (isBrave) {
-                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يحجب خدمة التعرف الصوتي';
-                    showToast("متصفح Brave يحجب التعرف الصوتي (Google Speech) لحماية الخصوصية. يرجى فتح التطبيق في Google Chrome.", "fa-solid fa-triangle-exclamation");
-                } else {
-                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ يرجى تفعيل إذن الميكروفون';
-                    showToast("يرجى إعطاء صلاحية الميكروفون للمتصفح لتسميع الآيات", "fa-solid fa-microphone-slash");
-                }
+                isBraveBrowserCached = true;
+                if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يحجب التعرف الصوتي (Google Speech)';
+                showToast("متصفح Brave يحجب خدمة التعرف الصوتي افتراضياً. يمكنك تفعيلها من إعدادات Brave (درع Brave والخصوصية ⬅️ استخدام خدمات Google الصوتية) أو فتح الموقع في Google Chrome.", "fa-solid fa-triangle-exclamation");
             } else if (e.error === 'network') {
-                if (isBrave) {
-                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يمنع الاتصال بسيرفرات التعرف الصوتي';
-                    showToast("متصفح Brave يمنع الاتصال بسيرفرات التعرف الصوتي. يرجى استخدام Google Chrome للتسميع.", "fa-solid fa-triangle-exclamation");
+                if (navigator.onLine) {
+                    isBraveBrowserCached = true;
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يمنع خدمة التعرف الصوتي';
+                    showToast("متصفح Brave يمنع خدمة التعرف الصوتي. يرجى تفعيل (استخدام خدمات Google الصوتية) في إعدادات Brave أو استخدام Google Chrome.", "fa-solid fa-triangle-exclamation");
                 } else {
                     if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
                     if (isRecording) {
@@ -2753,22 +2763,55 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
 
         // Honest evaluation: Never fake user recitation with the target verse!
         if (!transcribedText || transcribedText.length === 0) {
-            const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
-            
-            if (playerStatusMain) {
-                playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط كلمات واضحة</span>`;
+            // Still configure audio playback so user can hear what was recorded!
+            const effectiveBlob = audioBlob || recordedAudioBlob;
+            if (effectiveBlob && effectiveBlob.size > 0) {
+                try {
+                    const audioUrl = URL.createObjectURL(effectiveBlob);
+                    if (userRecitationAudio) userRecitationAudio.src = audioUrl;
+                    if (userModalRecitationAudio) userModalRecitationAudio.src = audioUrl;
+                    if (btnDownloadUserAudio) btnDownloadUserAudio.href = audioUrl;
+                    if (btnDownloadModalAudio) btnDownloadModalAudio.href = audioUrl;
+                    if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'block';
+                } catch (e) {}
             }
-            if (playerStatusSub) {
-                if (isBrave) {
-                    playerStatusSub.textContent = 'متصفح Brave يحجب خدمة التعرف الصوتي (Google Speech) افتراضياً. يرجى فتح التطبيق في Google Chrome للتسميع الصوتي.';
+
+            const hasRecordedAudio = Boolean(effectiveBlob && effectiveBlob.size > 1200);
+            const isBraveOrBlocked = isBraveBrowserCached || (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent) || (hasRecordedAudio && navigator.onLine);
+
+            if (playerStatusMain) {
+                if (isBraveOrBlocked) {
+                    playerStatusMain.innerHTML = `
+                        <div class="brave-guide-banner" style="background:rgba(255,80,0,0.14); border:1.5px solid #ff5000; border-radius:12px; padding:12px 16px; text-align:right; color:#fff; max-width:620px; margin:0 auto; box-shadow: 0 4px 16px rgba(255,80,0,0.2);">
+                            <div style="font-weight:800; color:#ff7733; font-size:15px; margin-bottom:5px; display:flex; align-items:center; gap:8px;">
+                                <i class="fa-solid fa-shield-halved"></i> متصفحك (Brave) يحجب التعرف الصوتي افتراضياً
+                            </div>
+                            <div style="font-size:13px; line-height:1.6; color:rgba(255,255,255,0.92); margin-bottom:10px;">
+                                تم تسجيل تلاوتك بصوتك بنجاح 🎙️ (يمكنك الاستماع لها بالمشغل أدناه)، ولكن متصفح Brave يحجب خدمة تحويل الصوت لنصوص تلقائياً لحماية الخصوصية.
+                            </div>
+                            <div style="background:rgba(0,0,0,0.38); border-radius:8px; padding:10px 12px; font-size:12.5px; line-height:1.75; text-align:right;">
+                                <div style="color:var(--gold,#c5a859); font-weight:700; margin-bottom:4px;">حل هذه المشكلة (خلال ثوانٍ):</div>
+                                <div>1️⃣ <strong>الحل الأسرع:</strong> افتح الموقع في متصفح <strong>Google Chrome</strong> وسيعمل التسميع فوراً وبدقة تامة.</div>
+                                <div>2️⃣ <strong>أو لتشغيله في Brave:</strong> ادخل إعدادات Brave (⚙️) ⬅️ (درع Brave والخصوصية) ⬅️ فعّل <strong>(استخدام خدمات Google الصوتية / Use Google speech services)</strong>.</div>
+                            </div>
+                        </div>
+                    `;
                 } else {
-                    playerStatusSub.textContent = 'تأكد من التلاوة بصوت مسموع وواضح بالقرب من الميكروفون ثم اضغط إنهاء.';
+                    playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط كلمات واضحة</span>`;
                 }
             }
-            if (speechFeedbackLabel) {
-                speechFeedbackLabel.textContent = isBrave ? '⚠️ متصفح Brave يحجب خدمة التعرف الصوتي' : '⚠️ لم يتم سماع أي كلمات';
+            if (playerStatusSub) {
+                playerStatusSub.textContent = isBraveOrBlocked 
+                    ? 'اتبع التعليمات أعلاه لتشغيل التسميع في Brave أو افتح الرابط في Google Chrome'
+                    : 'تأكد من إعطاء صلاحية الميكروفون والتلاوة بصوت واضح بالقرب من الميكروفون ثم اضغط إنهاء.';
             }
-            showToast(isBrave ? 'متصفح Brave يحجب خدمة التعرف الصوتي. يرجى استخدام متصفح Google Chrome للتسميع' : 'لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت واضح بالقرب من الميكروفون', 'fa-solid fa-microphone-slash');
+            if (speechFeedbackLabel) {
+                speechFeedbackLabel.textContent = isBraveOrBlocked ? '⚠️ متصفح Brave يحجب التعرف الصوتي' : '⚠️ لم يتم سماع أي كلمات';
+            }
+            showToast(isBraveOrBlocked 
+                ? 'متصفح Brave يحجب خدمة التعرف الصوتي. يرجى تفعيلها من إعدادات Brave أو استخدام Chrome'
+                : 'لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت واضح بالقرب من الميكروفون', 
+                'fa-solid fa-triangle-exclamation');
             return;
         }
 

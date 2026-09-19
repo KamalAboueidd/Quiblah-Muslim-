@@ -3768,31 +3768,31 @@ body.mushaf-studio-body {
 }
 
 /* =============================================================================
-   Simple Word-Labeled Re-recite Button (زر إعادة التسميع الصريح)
+   Simple Word-Labeled Re-recite Button (زر إعادة التسميع الصريح - بدون حدود أو خلفية)
    ============================================================================= */
 .btn-re-recite-simple {
-    display: inline-flex;
+    display: none; /* Only visible while recording or evaluating */
     align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1.5px solid rgba(197, 168, 89, 0.4);
-    color: var(--gold-light, #f5df9a);
-    padding: 8px 18px;
-    border-radius: 22px;
+    gap: 6px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold, #c5a859) !important;
+    padding: 6px 10px;
     font-family: 'Tajawal', sans-serif;
     font-weight: 700;
     font-size: 13.5px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     white-space: nowrap;
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .btn-re-recite-simple:hover {
-    background: rgba(197, 168, 89, 0.2);
-    border-color: var(--gold, #c5a859);
-    color: #ffffff;
+    color: #ffffff !important;
+    background: transparent !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(197, 168, 89, 0.25);
 }
 
 .btn-re-recite-simple:active {
@@ -3807,28 +3807,30 @@ body.mushaf-studio-body {
 
 .btn-re-recite-simple:hover i {
     transform: rotate(180deg);
+    color: #ffffff;
 }
 
 .btn-banner-reset-simple {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(197, 168, 89, 0.12);
-    border: 1px solid rgba(197, 168, 89, 0.35);
-    color: var(--gold-light, #f5df9a);
-    padding: 6px 14px;
-    border-radius: 18px;
+    gap: 5px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold, #c5a859) !important;
+    padding: 4px 8px;
     font-family: 'Tajawal', sans-serif;
     font-weight: 700;
     font-size: 12.5px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .btn-banner-reset-simple:hover {
-    background: rgba(197, 168, 89, 0.24);
-    border-color: var(--gold, #c5a859);
-    color: #ffffff;
+    color: #ffffff !important;
+    background: transparent !important;
     transform: translateY(-1px);
 }
 
@@ -3840,6 +3842,7 @@ body.mushaf-studio-body {
 
 .btn-banner-reset-simple:hover i {
     transform: rotate(180deg);
+    color: #ffffff;
 }
 
 

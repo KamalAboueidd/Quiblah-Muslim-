@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=53">
+    <link rel="stylesheet" href="features/recite/recite.css?v=55">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -398,8 +398,8 @@
                                 <i class="fa-solid fa-microphone" id="bar-record-icon"></i>
                             </button>
 
-                            <!-- Simple Re-recite Button (Word-labeled, clear and simple) -->
-                            <button type="button" class="btn-re-recite-simple" id="btn-re-recite-simple" title="إعادة التسميع من البداية">
+                            <!-- Simple Re-recite Button (Word-labeled, seamless, visible when recording/evaluating) -->
+                            <button type="button" class="btn-re-recite-simple" id="btn-re-recite-simple" title="إعادة التسميع من البداية" style="display: none;">
                                 <i class="fa-solid fa-rotate-right"></i>
                                 <span>إعادة التسميع</span>
                             </button>
@@ -619,6 +619,6 @@
     <script src="core/toast.js?v=58"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js?v=64"></script>
+    <script src="features/recite/recite.js?v=66"></script>
 </body>
 </html>

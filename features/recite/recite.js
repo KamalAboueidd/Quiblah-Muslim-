@@ -1606,19 +1606,33 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
-    // 3. Acquire microphone and start continuous MediaRecorder so user voice is ALWAYS recorded for playback
-    // on BOTH Desktop and Mobile!
-    const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-        ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
-            console.warn("Microphone access for MediaRecorder:", micErr);
-            return null;
-        })
-        : Promise.resolve(null);
+    // 3. Coordinate MediaRecorder & microphone acquisition:
+    // On mobile devices (Android / iOS), if Whisper is NOT configured, running getUserMedia simultaneously with SpeechRecognition
+    // locks the hardware mic in the OS audio server and kills SpeechRecognition with audio-capture error.
+    // Therefore, on mobile browsers without Whisper, let SpeechRecognition capture alone cleanly.
+    // On Desktop, or in Brave, or whenever Whisper is configured, MediaRecorder runs continuously.
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isBraveBrowser = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+    const hasWhisperService = Boolean(
+        (typeof makeWebhookUrl !== 'undefined' && makeWebhookUrl && makeWebhookUrl.trim()) ||
+        (typeof hfApiToken !== 'undefined' && hfApiToken && hfApiToken.trim()) ||
+        (typeof pythonServiceUrl !== 'undefined' && pythonServiceUrl && pythonServiceUrl.trim() && !pythonServiceUrl.includes('localhost'))
+    );
 
-    try {
-        const stream = await micPromise;
-        if (stream && isRecording) {
-            audioStream = stream;
+    const shouldStartMediaRecorder = !isMobileDevice || hasWhisperService || isBraveBrowser;
+
+    if (shouldStartMediaRecorder) {
+        const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+            ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
+                console.warn("Microphone access for MediaRecorder:", micErr);
+                return null;
+            })
+            : Promise.resolve(null);
+
+        try {
+            const stream = await micPromise;
+            if (stream && isRecording) {
+                audioStream = stream;
 
                 // Start continuous MediaRecorder — NEVER restarted during recording
                 try {
@@ -1652,6 +1666,7 @@ async function startRecording() {
         } catch (streamErr) {
             console.warn("Stream acquisition notice:", streamErr);
         }
+    }
 }
 
 function triggerSilenceCountdown() {
@@ -2250,12 +2265,21 @@ function spawnSpeechRecognizer() {
             }
 
             if (e.error === 'audio-capture') {
+                // If microphone contention occurs on mobile, release audioStream to restore SpeechRecognition
+                if (audioStream) {
+                    try { audioStream.getTracks().forEach(t => t.stop()); } catch (err) {}
+                    audioStream = null;
+                }
+                if (mediaRecorder) {
+                    try { mediaRecorder.stop(); } catch (err) {}
+                    mediaRecorder = null;
+                }
                 speechRestartAttempts++;
-                if (speechRestartAttempts <= 2 && isRecording) {
+                if (speechRestartAttempts <= 4 && isRecording) {
                     if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
                     speechRestartTimeout = setTimeout(() => {
                         if (isRecording) spawnSpeechRecognizer();
-                    }, 500);
+                    }, 300);
                 } else {
                     console.warn("Speech recognition audio-capture attempt limit reached.");
                 }
@@ -2286,17 +2310,20 @@ function spawnSpeechRecognizer() {
                 const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
                 currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
                 committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
-                committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, currentTargetVerseText);
+                const targetTextForDedup = (activeAyahs && activeAyahs.length) ? activeAyahs.map(a => a.text).join(' ') : currentTargetVerseText;
+                committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, targetTextForDedup);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
                 liveTranscript = committedPreviousSessionsText.trim();
                 accumulatedSpeechText = liveTranscript;
             }
 
-            // Zero-delay immediate respawn if recording is still active
+            // Zero-delay immediate respawn with small debounce for mobile OS audio stack
             if (isRecording) {
                 if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                spawnSpeechRecognizer();
+                speechRestartTimeout = setTimeout(() => {
+                    if (isRecording) spawnSpeechRecognizer();
+                }, 80);
             }
         };
 
@@ -2776,6 +2803,9 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
             }
             if (!transcribedText && accumulatedSpeechText) {
                 transcribedText = accumulatedSpeechText.trim();
+            }
+            if (!transcribedText && committedPreviousSessionsText) {
+                transcribedText = committedPreviousSessionsText.trim();
             }
         }
 

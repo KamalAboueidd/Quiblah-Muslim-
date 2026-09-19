@@ -200,14 +200,38 @@
             const dropdown = document.getElementById('bookmark-hover-dropdown');
             const wrap = document.getElementById('topbar-bookmark-wrap');
 
+            // Prevent native browser tooltip from overlaying the dropdown
+            btn.removeAttribute('title');
+            btn.title = '';
+
             if (wrap && !wrap.dataset.bound) {
                 wrap.dataset.bound = 'true';
-                btn.addEventListener('click', (e) => {
-                    if (window.matchMedia('(hover: none)').matches) {
-                        e.stopPropagation();
-                        wrap.classList.toggle('is-open');
+
+                // Touch support: show on touch, immediately hide on lift ("أول لما أشيل إيدي الغي وأخفيها")
+                let touchActive = false;
+
+                btn.addEventListener('touchstart', (e) => {
+                    touchActive = true;
+                    wrap.classList.add('is-open');
+                }, { passive: true });
+
+                const closeOnRelease = () => {
+                    if (touchActive) {
+                        touchActive = false;
+                        wrap.classList.remove('is-open');
                     }
-                });
+                };
+
+                btn.addEventListener('touchend', closeOnRelease, { passive: true });
+                btn.addEventListener('touchcancel', closeOnRelease, { passive: true });
+
+                // Dismiss if tapped outside
+                document.addEventListener('touchstart', (e) => {
+                    if (!wrap.contains(e.target)) {
+                        wrap.classList.remove('is-open');
+                    }
+                }, { passive: true });
+
                 document.addEventListener('click', (e) => {
                     if (!wrap.contains(e.target)) {
                         wrap.classList.remove('is-open');
@@ -221,7 +245,6 @@
                 if (label) {
                     label.textContent = `${sNameClean} (${bm.ayahNumber})`;
                 }
-                btn.title = `الانتقال لموضع توقفك: ${bm.surahName} (الآية ${bm.ayahNumber})`;
 
                 if (dropdown) {
                     const timeAgo = formatTimeAgo(bm.timestamp);
@@ -249,7 +272,6 @@
                 if (label) {
                     label.textContent = 'علامة القراءة';
                 }
-                btn.title = 'لا توجد علامة قراءة محفوظة حالياً';
 
                 if (dropdown) {
                     dropdown.innerHTML = `
@@ -266,17 +288,14 @@
         function handleTopbarBookmarkClick() {
             const bm = getQuranBookmark();
             if (!bm) {
-                if (typeof showToast === 'function') {
-                    showToast('لم تحفظ علامة قراءة بعد. اضغط على أيقونة 🔖 بجانب أي آية لحفظ موضعك', 'fa-regular fa-bookmark');
-                }
                 return;
             }
 
+            const wrap = document.getElementById('topbar-bookmark-wrap');
+            if (wrap) wrap.classList.remove('is-open');
+
             if (currentSurahNumber === bm.surahNumber) {
                 scrollToAyah(bm.ayahNumber, true);
-                if (typeof showToast === 'function') {
-                    showToast(`الانتقال لموضع توقفك: ${bm.surahName} - آية (${bm.ayahNumber})`, 'fa-solid fa-bookmark');
-                }
             } else {
                 loadSurah(bm.surahNumber, bm.ayahNumber);
             }

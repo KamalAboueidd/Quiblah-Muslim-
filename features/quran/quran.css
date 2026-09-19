@@ -1364,7 +1364,17 @@
             height: 14px;
         }
 
-        .topbar-bookmark-wrap:hover .bookmark-hover-dropdown,
+        /* Enable hover only on devices supporting hover (desktop mouse) */
+        @media (hover: hover) and (pointer: fine) {
+            .topbar-bookmark-wrap:hover .bookmark-hover-dropdown {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+                transform: translateY(0);
+            }
+        }
+
+        /* Class-based trigger for touch devices (closes immediately when finger is lifted) */
         .topbar-bookmark-wrap.is-open .bookmark-hover-dropdown {
             opacity: 1;
             visibility: visible;

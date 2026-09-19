@@ -184,16 +184,7 @@ let makeWebhookUrl = localStorage.getItem("recite_make_webhook") || "";
 let pythonServiceUrl = localStorage.getItem("recite_python_url") || "http://localhost:8080";
 let hfApiToken = localStorage.getItem("recite_hf_token") || "";
 
-// Brave Browser Detection Cache
-let isBraveBrowserCached = false;
-try {
-    if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
-        navigator.brave.isBrave().then(val => { if (val) isBraveBrowserCached = true; }).catch(() => {});
-    }
-    if (/Brave/i.test(navigator.userAgent)) {
-        isBraveBrowserCached = true;
-    }
-} catch (e) {}
+
 
 // -----------------------------------------------------------------------------
 // 3. DOM Elements Cache
@@ -1071,7 +1062,10 @@ function processVersesData(ayahs, surahNum) {
             txt = txt.replace(/^بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '')
                      .replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*/, '');
         }
-        const rawWords = txt.split(/\s+/).filter(Boolean);
+        // Attach any floating Quranic pause/annotation symbols (ۛ ۖ ۗ ۚ ۙ ۞ ۘ ۩ ۜ) to the preceding word
+        txt = txt.replace(/\s+([\u06D6-\u06ED\u06DE\u06E9])/g, '$1');
+        // Filter out any standalone non-word symbols that have no Arabic letters
+        const rawWords = txt.split(/\s+/).filter(w => /[ء-ي\u0671\u0621-\u064A]/.test(w));
         const normWords = rawWords.map(normalizeArabicText);
         return {
             numberInSurah: a.numberInSurah || (idx + 1),
@@ -1612,13 +1606,25 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
-    // 3. Acquire microphone and start continuous MediaRecorder so user voice is ALWAYS recorded for playback
-    const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-        ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
-            console.warn("Microphone access for MediaRecorder:", micErr);
-            return null;
-        })
-        : Promise.resolve(null);
+    // 3. Coordinate MediaRecorder & microphone acquisition:
+    // On mobile devices (Android / iOS PWA / WebViews), the OS audio layer (AudioFlinger) prevents
+    // simultaneous mic capture. If getUserMedia captures the mic while SpeechRecognition is running,
+    // Android immediately kills SpeechRecognition with 'audio-capture' or 'network' error,
+    // which completely breaks live recitation on Mobile!
+    // Desktop (Windows/Mac) supports concurrent multi-client mic capture natively.
+    // Therefore, on Mobile when native SpeechRecognition is supported, SpeechRecognition has
+    // exclusive access to the mic so words appear live and evaluation runs smoothly just like Desktop.
+    const SpeechRecClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window && navigator.maxTouchPoints > 1);
+    const shouldStartMediaRecorder = !isMobileDevice || !SpeechRecClass;
+
+    if (shouldStartMediaRecorder) {
+        const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+            ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
+                console.warn("Microphone access for MediaRecorder:", micErr);
+                return null;
+            })
+            : Promise.resolve(null);
 
         try {
             const stream = await micPromise;
@@ -1657,6 +1663,7 @@ async function startRecording() {
         } catch (streamErr) {
             console.warn("Stream acquisition notice:", streamErr);
         }
+    }
 }
 
 function triggerSilenceCountdown() {
@@ -1938,7 +1945,7 @@ function buildTargetWordsList(targetAyahs) {
     const list = [];
     if (!targetAyahs || !targetAyahs.length) return list;
     targetAyahs.forEach(ayah => {
-        const rawWords = ayah.rawWords || (ayah.text ? ayah.text.split(/\s+/).filter(Boolean) : []);
+        const rawWords = ayah.rawWords || (ayah.text ? ayah.text.replace(/\s+([\u06D6-\u06ED\u06DE\u06E9])/g, '$1').split(/\s+/).filter(w => /[ء-ي\u0671\u0621-\u064A]/.test(w)) : []);
         rawWords.forEach((w, idx) => {
             list.push({
                 raw: w,
@@ -2261,25 +2268,15 @@ function spawnSpeechRecognizer() {
                 return;
             }
 
-            const isBraveOrBlocked = isBraveBrowserCached || (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent) || (e.error === 'network' && navigator.onLine);
-
             if (e.error === 'not-allowed') {
-                isBraveBrowserCached = true;
-                if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يحجب التعرف الصوتي (Google Speech)';
-                showToast("متصفح Brave يحجب خدمة التعرف الصوتي افتراضياً. يمكنك تفعيلها من إعدادات Brave (درع Brave والخصوصية ⬅️ استخدام خدمات Google الصوتية) أو فتح الموقع في Google Chrome.", "fa-solid fa-triangle-exclamation");
+                if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ يرجى السماح بصلاحية الميكروفون';
+                showToast("يرجى إعطاء صلاحية استخدام الميكروفون للتطبيق أو المتصفح للتعرف الصوتي.", "fa-solid fa-microphone-slash");
             } else if (e.error === 'network') {
-                if (navigator.onLine) {
-                    isBraveBrowserCached = true;
-                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يمنع خدمة التعرف الصوتي';
-                    showToast("متصفح Brave يمنع خدمة التعرف الصوتي. يرجى تفعيل (استخدام خدمات Google الصوتية) في إعدادات Brave أو استخدام Google Chrome.", "fa-solid fa-triangle-exclamation");
-                } else {
+                if (!navigator.onLine) {
                     if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
-                    if (isRecording) {
-                        if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                        speechRestartTimeout = setTimeout(() => {
-                            if (isRecording) spawnSpeechRecognizer();
-                        }, 500);
-                    }
+                    showToast("يرجى التحقق من اتصالك بالإنترنت لعمل خدمة التسميع الصوتي.", "fa-solid fa-wifi");
+                } else {
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ تعذر الاتصال بخدمة التعرف الصوتي';
                 }
             }
         };
@@ -2471,8 +2468,15 @@ function stripExtraneousRecitationWords(words, targetAyahs) {
         }
     }
 
-    // 2. Strip Basmalah at the beginning IF the first target ayah is NOT Ayah 1 of Surah 1 (Al-Fatihah)
-    const isFatihahAyah1 = targetAyahs && targetAyahs.length > 0 && targetAyahs[0].ayahNum === 1 && currentSurahNumber === 1;
+    // 2. Strip Basmalah at the beginning IF the target is NOT Surah 1 (Al-Fatihah) starting at Ayah 1
+    // (In Surah Al-Fatihah, the Basmalah is the FIRST Ayah itself, so it must be evaluated!)
+    let firstAyahNum = 1;
+    if (targetAyahs && targetAyahs.length > 0) {
+        firstAyahNum = targetAyahs[0].numberInSurah || targetAyahs[0].ayahNum || currentAyahNumber || 1;
+    } else {
+        firstAyahNum = currentAyahNumber || 1;
+    }
+    const isFatihahAyah1 = (currentSurahNumber === 1 && firstAyahNum === 1);
     if (!isFatihahAyah1 && res.length >= 4) {
         const norm4 = res.slice(0, 4).map(normalizeArabicText).join(' ');
         if (norm4 === 'بسم الله الرحمن الرحيم' || norm4 === 'باسم الله الرحمن الرحيم') {
@@ -2701,7 +2705,9 @@ function updateLiveSpokenHighlights(spokenText) {
     const rawWords = spokenText.split(/\s+/).filter(Boolean);
     if (!rawWords.length) return;
 
-    const spokenWords = preprocessSpokenWords(rawWords);
+    const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+    let spokenWords = preprocessSpokenWords(rawWords);
+    const effectiveSpokenWords = stripExtraneousRecitationWords(spokenWords, targetAyahs);
 
     // 1. Memorization Mode: Render spoken words live in natural Quran calligraphy WITHOUT premature errors
     if (studioDisplayMode === 'memorize') {
@@ -2717,8 +2723,7 @@ function updateLiveSpokenHighlights(spokenText) {
 
     // 2. Recitation Mode: Highlight recited words in glowing GREEN on the Mushaf text word by word!
     if (studioDisplayMode === 'recite' && mushafVersesFlow) {
-        const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
-        if (targetAyahs.length && spokenWords.length) {
+        if (targetAyahs.length && effectiveSpokenWords.length) {
             let sIdx = 0;
             let lastMatchedEl = null;
 
@@ -2728,10 +2733,10 @@ function updateLiveSpokenHighlights(spokenText) {
                     if (!wordEl) return;
                     wordEl.classList.remove('spoken-active');
 
-                    if (sIdx < spokenWords.length) {
+                    if (sIdx < effectiveSpokenWords.length) {
                         let matched = false;
-                        for (let look = 0; look <= 2 && (sIdx + look) < spokenWords.length; look++) {
-                            if (areArabicWordsMatching(expectedRaw, spokenWords[sIdx + look])) {
+                        for (let look = 0; look <= 2 && (sIdx + look) < effectiveSpokenWords.length; look++) {
+                            if (areArabicWordsMatching(expectedRaw, effectiveSpokenWords[sIdx + look])) {
                                 matched = true;
                                 sIdx += look + 1;
                                 break;
@@ -2799,42 +2804,16 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
                 } catch (e) {}
             }
 
-            const hasRecordedAudio = Boolean(effectiveBlob && effectiveBlob.size > 1200);
-            const isBraveOrBlocked = isBraveBrowserCached || (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent) || (hasRecordedAudio && navigator.onLine);
-
             if (playerStatusMain) {
-                if (isBraveOrBlocked) {
-                    playerStatusMain.innerHTML = `
-                        <div class="brave-guide-banner" style="background:rgba(255,80,0,0.14); border:1.5px solid #ff5000; border-radius:12px; padding:12px 16px; text-align:right; color:#fff; max-width:620px; margin:0 auto; box-shadow: 0 4px 16px rgba(255,80,0,0.2);">
-                            <div style="font-weight:800; color:#ff7733; font-size:15px; margin-bottom:5px; display:flex; align-items:center; gap:8px;">
-                                <i class="fa-solid fa-shield-halved"></i> متصفحك (Brave) يحجب التعرف الصوتي افتراضياً
-                            </div>
-                            <div style="font-size:13px; line-height:1.6; color:rgba(255,255,255,0.92); margin-bottom:10px;">
-                                تم تسجيل تلاوتك بصوتك بنجاح 🎙️ (يمكنك الاستماع لها بالمشغل أدناه)، ولكن متصفح Brave يحجب خدمة تحويل الصوت لنصوص تلقائياً لحماية الخصوصية.
-                            </div>
-                            <div style="background:rgba(0,0,0,0.38); border-radius:8px; padding:10px 12px; font-size:12.5px; line-height:1.75; text-align:right;">
-                                <div style="color:var(--gold,#c5a859); font-weight:700; margin-bottom:4px;">حل هذه المشكلة (خلال ثوانٍ):</div>
-                                <div>1️⃣ <strong>الحل الأسرع:</strong> افتح الموقع في متصفح <strong>Google Chrome</strong> وسيعمل التسميع فوراً وبدقة تامة.</div>
-                                <div>2️⃣ <strong>أو لتشغيله في Brave:</strong> ادخل إعدادات Brave (⚙️) ⬅️ (درع Brave والخصوصية) ⬅️ فعّل <strong>(استخدام خدمات Google الصوتية / Use Google speech services)</strong>.</div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط كلمات واضحة</span>`;
-                }
+                playerStatusMain.innerHTML = `<span style="color:#e74c3c; font-weight:700;"><i class="fa-solid fa-microphone-slash"></i> لم يتم التقاط كلمات واضحة للتلاوة</span>`;
             }
             if (playerStatusSub) {
-                playerStatusSub.textContent = isBraveOrBlocked 
-                    ? 'اتبع التعليمات أعلاه لتشغيل التسميع في Brave أو افتح الرابط في Google Chrome'
-                    : 'تأكد من إعطاء صلاحية الميكروفون والتلاوة بصوت واضح بالقرب من الميكروفون ثم اضغط إنهاء.';
+                playerStatusSub.textContent = 'تأكد من القراءة بصوت مسموع بالقرب من الميكروفون، والتأكد من وضوح النطق ثم اضغط إنهاء.';
             }
             if (speechFeedbackLabel) {
-                speechFeedbackLabel.textContent = isBraveOrBlocked ? '⚠️ متصفح Brave يحجب التعرف الصوتي' : '⚠️ لم يتم سماع أي كلمات';
+                speechFeedbackLabel.textContent = '⚠️ لم يتم سماع أي كلمات واضحة';
             }
-            showToast(isBraveOrBlocked 
-                ? 'متصفح Brave يحجب خدمة التعرف الصوتي. يرجى تفعيلها من إعدادات Brave أو استخدام Chrome'
-                : 'لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت واضح بالقرب من الميكروفون', 
-                'fa-solid fa-triangle-exclamation');
+            showToast('لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت مسموع بالقرب من الميكروفون', 'fa-solid fa-microphone-slash');
             return;
         }
 
@@ -2877,7 +2856,7 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
         // Guaranteed safety fallback
         if (!targetAyahs || !targetAyahs.length) {
             let activeAyahText = currentTargetVerseText || "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ";
-            let rawW = activeAyahText.split(/\s+/).filter(Boolean);
+            let rawW = activeAyahText.replace(/\s+([\u06D6-\u06ED\u06DE\u06E9])/g, '$1').split(/\s+/).filter(w => /[ء-ي\u0671\u0621-\u064A]/.test(w));
             targetAyahs = [{
                 numberInSurah: currentAyahNumber || 1,
                 text: activeAyahText,
@@ -3097,7 +3076,7 @@ async function transcribeWithWhisper(audioBlob) {
 function renderRecitationResults(targetAyahs, transcribedText) {
     if (!targetAyahs || !targetAyahs.length) {
         let activeAyahText = currentTargetVerseText || "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ";
-        let rawW = activeAyahText.split(/\s+/).filter(Boolean);
+        let rawW = activeAyahText.replace(/\s+([\u06D6-\u06ED\u06DE\u06E9])/g, '$1').split(/\s+/).filter(w => /[ء-ي\u0671\u0621-\u064A]/.test(w));
         targetAyahs = [{
             numberInSurah: currentAyahNumber || 1,
             text: activeAyahText,

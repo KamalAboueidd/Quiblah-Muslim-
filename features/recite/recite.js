@@ -1746,14 +1746,25 @@ function combineSpeechSegments(prev, next) {
     if (!p) return n;
     if (!n) return p;
 
+    const normP = normalizeArabicText(p);
+    const normN = normalizeArabicText(n);
+
+    // If identical, return without duplicating
+    if (normP === normN) return p;
+
+    // If new session already includes previous session from start, use the new complete one
+    if (normN.startsWith(normP)) return n;
+
+    // If previous session already ends with new session, keep previous
+    if (normP.endsWith(normN)) return p;
+
     // Check for overlapping boundary words at the seam between segments
-    // (e.g. Android Chrome speech recognizer replaying the last 1-4 words of the previous session buffer)
     const pWords = p.split(/\s+/).filter(Boolean);
     const nWords = n.split(/\s+/).filter(Boolean);
     const pNorm = pWords.map(normalizeArabicText);
     const nNorm = nWords.map(normalizeArabicText);
 
-    const maxOverlap = Math.min(pWords.length, nWords.length, 4);
+    const maxOverlap = Math.min(pWords.length, nWords.length);
     for (let len = maxOverlap; len >= 1; len--) {
         let match = true;
         for (let k = 0; k < len; k++) {
@@ -1763,44 +1774,18 @@ function combineSpeechSegments(prev, next) {
             }
         }
         if (match) {
-            // Found boundary overlap at the seam
-            // Check if this repetition is legitimately part of the Quran text (e.g. "دكاً دكا" in Al-Fajr or repeated ayahs)
             const phrase = nWords.slice(0, len).map(normalizeArabicText).join(' ');
             const repeatedPhrase = phrase + ' ' + phrase;
             let allowedInQuran = false;
-            if (typeof currentTargetVerseText === 'string' && currentTargetVerseText) {
-                if (normalizeArabicText(currentTargetVerseText).includes(repeatedPhrase)) {
-                    allowedInQuran = true;
-                }
-            }
-            if (!allowedInQuran && Array.isArray(currentSurahVerses)) {
-                for (let v of currentSurahVerses) {
-                    if (v.text && normalizeArabicText(v.text).includes(repeatedPhrase)) {
-                        allowedInQuran = true;
-                        break;
-                    }
-                }
+            const targetTextNorm = (typeof currentTargetVerseText === 'string' && currentTargetVerseText) 
+                ? normalizeArabicText(currentTargetVerseText) 
+                : '';
+            if (targetTextNorm && targetTextNorm.includes(repeatedPhrase)) {
+                allowedInQuran = true;
             }
 
-            // Check cross-ayah boundary: if these words span a genuine ayah transition, they are NOT duplicates
-            let crossAyahBoundary = false;
-            if (!allowedInQuran && Array.isArray(currentSurahVerses) && currentSurahVerses.length > 1) {
-                const overlapNorm = nWords.slice(0, len).map(normalizeArabicText);
-                for (let vi = 0; vi < currentSurahVerses.length - 1; vi++) {
-                    const thisAyah = currentSurahVerses[vi];
-                    const nextAyah = currentSurahVerses[vi + 1];
-                    if (!thisAyah.rawWords || thisAyah.rawWords.length < len || !nextAyah.rawWords || nextAyah.rawWords.length < len) continue;
-                    let endMatch = true, startMatch = true;
-                    for (let k = 0; k < len; k++) {
-                        if (!areArabicWordsMatching(thisAyah.rawWords[thisAyah.rawWords.length - len + k], nWords[k])) endMatch = false;
-                        if (!areArabicWordsMatching(nextAyah.rawWords[k], nWords[k])) startMatch = false;
-                    }
-                    if (endMatch && startMatch) { crossAyahBoundary = true; break; }
-                }
-            }
-
-            if (!allowedInQuran && !crossAyahBoundary) {
-                // Stitch without repeating the shared words replayed by mobile Chrome
+            if (!allowedInQuran) {
+                // Stitch without repeating the shared words replayed by speech recognizer
                 return pWords.concat(nWords.slice(len)).join(' ');
             }
         }
@@ -1982,9 +1967,44 @@ function mergeTwoSpeechSegments(prev, next) {
     return combineSpeechSegments(prev, next);
 }
 
-// Non-destructive safe pass-through: never delete or strip recited Quranic words
-function deduplicateSpokenPhrases(text) {
-    return text ? text.trim() : "";
+// Intelligent n-gram deduplication to eliminate Whisper hallucinations and repetitive speech loops
+function deduplicateSpokenPhrases(text, targetVerseText) {
+    if (!text) return '';
+    let words = text.split(/\s+/).filter(Boolean);
+    if (words.length <= 1) return text;
+
+    const normTarget = normalizeArabicText(targetVerseText || '');
+
+    let changed = true;
+    while (changed) {
+        changed = false;
+        const maxLen = Math.floor(words.length / 2);
+        for (let len = maxLen; len >= 1; len--) {
+            for (let i = 0; i <= words.length - 2 * len; i++) {
+                let isDup = true;
+                for (let k = 0; k < len; k++) {
+                    if (normalizeArabicText(words[i + k]) !== normalizeArabicText(words[i + len + k])) {
+                        isDup = false;
+                        break;
+                    }
+                }
+                if (isDup) {
+                    const phraseNorm = words.slice(i, i + len).map(normalizeArabicText).join(' ');
+                    const repPhrase = phraseNorm + ' ' + phraseNorm;
+                    // Keep only if legitimately repeated in the Quran target text (e.g. "دكا دكا")
+                    if (normTarget && normTarget.includes(repPhrase)) {
+                        continue;
+                    }
+                    // Remove duplicate repeated phrase
+                    words.splice(i + len, len);
+                    changed = true;
+                    break;
+                }
+            }
+            if (changed) break;
+        }
+    }
+    return words.join(' ');
 }
 
 function startLiveSpeechRecognition() {
@@ -2645,6 +2665,7 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
         } catch (e) {}
 
         transcribedText = normalizeQuranicDisjointedLetters(transcribedText, currentSurahNumber, currentAyahNumber);
+        transcribedText = deduplicateSpokenPhrases(transcribedText, targetText);
         liveTranscript = transcribedText;
         accumulatedSpeechText = transcribedText;
 

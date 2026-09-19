@@ -34,6 +34,273 @@
         const contentContainer = document.getElementById('content-container');
         const readerArea = document.getElementById('reader-area');
         const mobileTitle = document.getElementById('mobile-title');
+        // --- Bookmark Management (علامة القراءة وموضع التوقف) ---
+        const BOOKMARK_STORAGE_KEY = 'quiblah_quran_bookmark';
+
+        function escapeQuotes(str) {
+            if (!str) return '';
+            return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '';
+            const diff = Math.floor((Date.now() - timestamp) / 1000);
+            if (diff < 60) return 'منذ لحظات';
+            if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+            if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+            const days = Math.floor(diff / 86400);
+            if (days === 1) return 'أمس';
+            if (days < 30) return `منذ ${days} يوم`;
+            return 'منذ فترة';
+        }
+
+        function getQuranBookmark() {
+            try {
+                const raw = localStorage.getItem(BOOKMARK_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch(e) {
+                console.warn("Failed to read quran bookmark:", e);
+                return null;
+            }
+        }
+
+        function saveQuranBookmark(surahNumber, ayahNumber, surahName, ayahText) {
+            try {
+                const snippet = (ayahText || '').trim().replace(/\s+/g, ' ').substring(0, 140);
+                const resolvedSurahName = surahName || (allSurahs.find(s => s.number === parseInt(surahNumber))?.name || `سورة ${surahNumber}`);
+                const bookmark = {
+                    surahNumber: parseInt(surahNumber),
+                    ayahNumber: parseInt(ayahNumber),
+                    surahName: resolvedSurahName,
+                    ayahSnippet: snippet,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(bookmark));
+                updateTopbarBookmarkUI();
+                renderSurahBookmarkTags();
+                return bookmark;
+            } catch(e) {
+                console.warn("Failed to save quran bookmark:", e);
+                return null;
+            }
+        }
+
+        function clearQuranBookmark() {
+            try {
+                localStorage.removeItem(BOOKMARK_STORAGE_KEY);
+                updateTopbarBookmarkUI();
+                renderSurahBookmarkTags();
+                document.querySelectorAll('.ayah-unit.is-bookmarked').forEach(el => el.classList.remove('is-bookmarked'));
+                document.querySelectorAll('.ayah-bookmark-btn.is-bookmarked').forEach(btn => {
+                    btn.classList.remove('is-bookmarked');
+                    btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+                    btn.title = 'وضع علامة قراءة عند هذه الآية';
+                });
+                document.querySelectorAll('.bookmark-ribbon-tag').forEach(tag => tag.remove());
+                updateModalBookmarkState();
+            } catch(e) {
+                console.warn("Failed to clear quran bookmark:", e);
+            }
+        }
+
+        function isAyahBookmarked(surahNumber, ayahNumber) {
+            const bm = getQuranBookmark();
+            return bm && bm.surahNumber === parseInt(surahNumber) && bm.ayahNumber === parseInt(ayahNumber);
+        }
+
+        function toggleAyahBookmark(surahNumber, ayahNumber, surahName, ayahText, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            const surahId = parseInt(surahNumber);
+            const ayahId = parseInt(ayahNumber);
+            const currentBm = getQuranBookmark();
+
+            if (currentBm && currentBm.surahNumber === surahId && currentBm.ayahNumber === ayahId) {
+                clearQuranBookmark();
+                if (typeof showToast === 'function') {
+                    showToast('تمت إزالة علامة القراءة', 'fa-solid fa-bookmark');
+                }
+            } else {
+                if (!ayahText) {
+                    const unitEl = document.getElementById(`ayah-unit-${surahId}-${ayahId}`);
+                    if (unitEl) {
+                        const verseSpan = unitEl.querySelector('.verse');
+                        if (verseSpan) ayahText = verseSpan.innerText;
+                    }
+                }
+                const saved = saveQuranBookmark(surahId, ayahId, surahName, ayahText);
+                
+                if (currentSurahNumber === surahId) {
+                    document.querySelectorAll('.ayah-unit.is-bookmarked').forEach(el => el.classList.remove('is-bookmarked'));
+                    document.querySelectorAll('.ayah-bookmark-btn.is-bookmarked').forEach(btn => {
+                        btn.classList.remove('is-bookmarked');
+                        btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+                        btn.title = 'وضع علامة قراءة عند هذه الآية';
+                    });
+                    document.querySelectorAll('.bookmark-ribbon-tag').forEach(tag => tag.remove());
+
+                    const newUnit = document.getElementById(`ayah-unit-${surahId}-${ayahId}`);
+                    if (newUnit) {
+                        newUnit.classList.add('is-bookmarked');
+                        const btn = newUnit.querySelector('.ayah-bookmark-btn');
+                        if (btn) {
+                            btn.classList.add('is-bookmarked');
+                            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+                            btn.title = 'إزالة علامة القراءة';
+                        }
+                        const actionsWrap = newUnit.querySelector('.ayah-actions-wrap');
+                        if (actionsWrap && !actionsWrap.querySelector('.bookmark-ribbon-tag')) {
+                            const tag = document.createElement('span');
+                            tag.className = 'bookmark-ribbon-tag';
+                            tag.innerHTML = '<i class="fa-solid fa-bookmark"></i> موضع توقفك';
+                            actionsWrap.prepend(tag);
+                        }
+                    }
+                }
+
+                updateModalBookmarkState();
+                if (typeof showToast === 'function') {
+                    const sName = (saved && saved.surahName) ? saved.surahName : `سورة ${surahId}`;
+                    showToast(`تم حفظ علامة القراءة: ${sName} - آية (${ayahId})`, 'fa-solid fa-bookmark');
+                }
+            }
+        }
+
+        function scrollToAyah(ayahNumber, highlight = true) {
+            const unitEl = document.getElementById(`ayah-unit-${currentSurahNumber}-${ayahNumber}`);
+            if (unitEl) {
+                unitEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (highlight) {
+                    unitEl.classList.remove('pulse-focus');
+                    void unitEl.offsetWidth; // force reflow
+                    unitEl.classList.add('pulse-focus');
+                    setTimeout(() => {
+                        unitEl.classList.remove('pulse-focus');
+                    }, 3000);
+                }
+            }
+        }
+
+        function updateTopbarBookmarkUI() {
+            const btn = document.getElementById('topbar-bookmark-btn');
+            if (!btn) return;
+            const bm = getQuranBookmark();
+            const label = btn.querySelector('.bookmark-btn-text');
+            const dropdown = document.getElementById('bookmark-hover-dropdown');
+            const wrap = document.getElementById('topbar-bookmark-wrap');
+
+            if (wrap && !wrap.dataset.bound) {
+                wrap.dataset.bound = 'true';
+                btn.addEventListener('click', (e) => {
+                    if (window.matchMedia('(hover: none)').matches) {
+                        e.stopPropagation();
+                        wrap.classList.toggle('is-open');
+                    }
+                });
+                document.addEventListener('click', (e) => {
+                    if (!wrap.contains(e.target)) {
+                        wrap.classList.remove('is-open');
+                    }
+                });
+            }
+
+            if (bm) {
+                btn.classList.add('has-bookmark');
+                const sNameClean = bm.surahName.replace(/^سُورَةُ\s+|^سورة\s+/, '');
+                if (label) {
+                    label.textContent = `${sNameClean} (${bm.ayahNumber})`;
+                }
+                btn.title = `الانتقال لموضع توقفك: ${bm.surahName} (الآية ${bm.ayahNumber})`;
+
+                if (dropdown) {
+                    const timeAgo = formatTimeAgo(bm.timestamp);
+                    dropdown.innerHTML = `
+                        <div class="bm-dropdown-header">
+                            <span class="bm-dropdown-tag"><i class="fa-solid fa-bookmark"></i> آخر موضع قراءة محفوظ</span>
+                            <button type="button" class="bm-dropdown-del-btn" onclick="clearQuranBookmark(); event.stopPropagation();" title="حذف علامة القراءة">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div class="bm-dropdown-surah">${escapeHtml(bm.surahName)}</div>
+                        ${bm.ayahSnippet ? `<div class="bm-dropdown-ayah-text">« ${escapeHtml(bm.ayahSnippet)} »</div>` : ''}
+                        <div class="bm-dropdown-meta">
+                            <span><i class="fa-solid fa-feather-pointed"></i> الآية رقم (${bm.ayahNumber})</span>
+                            ${timeAgo ? `<span><i class="fa-regular fa-clock"></i> تم الحفظ: ${timeAgo}</span>` : ''}
+                        </div>
+                        <button type="button" class="bm-dropdown-go-btn" onclick="handleTopbarBookmarkClick(); event.stopPropagation();">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                            <span>متابعة القراءة من الآية (${bm.ayahNumber})</span>
+                        </button>
+                    `;
+                }
+            } else {
+                btn.classList.remove('has-bookmark');
+                if (label) {
+                    label.textContent = 'علامة القراءة';
+                }
+                btn.title = 'لا توجد علامة قراءة محفوظة حالياً';
+
+                if (dropdown) {
+                    dropdown.innerHTML = `
+                        <div class="bm-dropdown-empty">
+                            <i class="fa-regular fa-bookmark"></i>
+                            <div class="bm-empty-title">لا توجد علامة قراءة محفوظة</div>
+                            <div class="bm-empty-desc">اضغط على أيقونة 🔖 بجانب أي آية أثناء التلاوة لحفظ موضع توقفك.</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function handleTopbarBookmarkClick() {
+            const bm = getQuranBookmark();
+            if (!bm) {
+                if (typeof showToast === 'function') {
+                    showToast('لم تحفظ علامة قراءة بعد. اضغط على أيقونة 🔖 بجانب أي آية لحفظ موضعك', 'fa-regular fa-bookmark');
+                }
+                return;
+            }
+
+            if (currentSurahNumber === bm.surahNumber) {
+                scrollToAyah(bm.ayahNumber, true);
+                if (typeof showToast === 'function') {
+                    showToast(`الانتقال لموضع توقفك: ${bm.surahName} - آية (${bm.ayahNumber})`, 'fa-solid fa-bookmark');
+                }
+            } else {
+                loadSurah(bm.surahNumber, bm.ayahNumber);
+            }
+        }
+
+        function renderSurahBookmarkTags() {
+            const bm = getQuranBookmark();
+            document.querySelectorAll('.surah-item').forEach(item => {
+                const id = parseInt(item.getAttribute('data-id'));
+                const nameEl = item.querySelector('.surah-name');
+                if (!nameEl) return;
+                
+                const existingTag = nameEl.querySelector('.surah-bm-tag');
+                if (existingTag) existingTag.remove();
+                
+                if (bm && bm.surahNumber === id) {
+                    const tag = document.createElement('span');
+                    tag.className = 'surah-bm-tag';
+                    tag.title = `علامة قراءة عند الآية ${bm.ayahNumber}`;
+                    tag.innerHTML = `<i class="fa-solid fa-bookmark"></i> آية ${bm.ayahNumber}`;
+                    nameEl.appendChild(tag);
+                }
+            });
+        }
 
         // Fetch All Surahs (with Instant Local Cache & Multi-tier Fallback)
         function fetchSurahs() {
@@ -111,14 +378,17 @@
                 return;
             }
 
+            const bm = getQuranBookmark();
             let html = '';
             surahs.forEach(surah => {
                 const isActive = (currentSurahNumber && surah.number === currentSurahNumber) ? 'active' : '';
+                const isBookmarked = (bm && bm.surahNumber === surah.number);
+                const bookmarkBadge = isBookmarked ? `<span class="surah-bm-tag" title="علامة قراءة عند الآية ${bm.ayahNumber}"><i class="fa-solid fa-bookmark"></i> آية ${bm.ayahNumber}</span>` : '';
                 html += `
                     <div class="surah-item ${isActive}" data-id="${surah.number}">
                         <div class="surah-number">${surah.number}</div>
                         <div class="surah-details">
-                            <div class="surah-name">${surah.name}</div>
+                            <div class="surah-name">${surah.name} ${bookmarkBadge}</div>
                             <div class="surah-info">${surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'} • آياتها ${surah.numberOfAyahs}</div>
                         </div>
                     </div>
@@ -274,7 +544,7 @@
         }
 
         // Load Specific Surah Content (with instant caching & multi-tier resilience)
-        async function loadSurah(id) {
+        async function loadSurah(id, targetAyah = null) {
             currentSurahNumber = id;
             readerArea.scrollTop = 0;
 
@@ -298,13 +568,13 @@
 
             // 0. Full local Quran data (all 114 surahs, 0ms instant load, 100% offline!)
             if (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[id]) {
-                renderSurahView(window.QURAN_FULL_DATA[id]);
+                renderSurahView(window.QURAN_FULL_DATA[id], targetAyah);
                 return;
             }
 
             // 1. Built-in initial cache (e.g. Al-Fatihah, 0ms instant load!)
             if (window.SURAHS_INITIAL_CACHE && window.SURAHS_INITIAL_CACHE[id]) {
-                renderSurahView(window.SURAHS_INITIAL_CACHE[id]);
+                renderSurahView(window.SURAHS_INITIAL_CACHE[id], targetAyah);
                 return;
             }
 
@@ -313,7 +583,7 @@
             if (cachedData) {
                 try {
                     const data = JSON.parse(cachedData);
-                    renderSurahView(data);
+                    renderSurahView(data, targetAyah);
                     return;
                 } catch(e) {
                     localStorage.removeItem(cacheKey);
@@ -334,13 +604,13 @@
                 } catch(e) {
                     console.warn("Storage full", e);
                 }
-                renderSurahView(data);
+                renderSurahView(data, targetAyah);
             } catch(error) {
                 contentContainer.innerHTML = `
                     <div class="error-message" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius: 16px; padding: 25px; text-align: center; max-width: 500px; margin: 40px auto;">
                         <i class="fa-solid fa-circle-exclamation fa-2x" style="color: var(--gold); margin-bottom: 12px;"></i>
                         <p style="color: #fff; font-size: 15px; margin-bottom: 15px;">تعذر تحميل آيات السورة حالياً. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
-                        <button onclick="loadSurah(${id})" style="cursor: pointer; border: 1px solid var(--gold); color: var(--gold); background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 20px; font-family: inherit; font-size: 13.5px; font-weight: 700; transition: all 0.2s;">
+                        <button onclick="loadSurah(${id}, ${targetAyah || 'null'})" style="cursor: pointer; border: 1px solid var(--gold); color: var(--gold); background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 20px; font-family: inherit; font-size: 13.5px; font-weight: 700; transition: all 0.2s;">
                             <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة الآن
                         </button>
                     </div>
@@ -354,6 +624,7 @@
             if (mobileTitle) {
                 mobileTitle.innerHTML = `<i class="fa-solid fa-book-quran"></i> <span>القرآن الكريم</span>`;
             }
+
             contentContainer.innerHTML = `
                 <div class="surah-picker-landing">
                     <div class="picker-icon-box">
@@ -369,10 +640,12 @@
                     </button>
                 </div>
             `;
+            updateTopbarBookmarkUI();
         }
 
-        function renderSurahView(data) {
+        function renderSurahView(data, targetAyah = null) {
             mobileTitle.innerText = data.name;
+            const bm = getQuranBookmark();
             
             let html = `
                 <div class="surah-header-card">
@@ -385,7 +658,7 @@
                         <a href="tafseer.html?surah=${data.number}" class="header-action-link" title="تفسير السورة">
                             <i class="fa-solid fa-book-open-reader"></i> <span>تفسير السورة</span>
                         </a>
-                        <button onclick="playSurahGlobalAudio(${data.number}, '${data.name}')" class="header-action-link" title="استمع للسورة">
+                        <button onclick="playSurahGlobalAudio(${data.number}, '${escapeQuotes(data.name)}')" class="header-action-link" title="استمع للسورة">
                             <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
                         </button>
                     </div>
@@ -404,10 +677,20 @@
                 if (data.number !== 1 && index === 0) {
                     text = text.replace(/^[\ufeff]?بّ?ِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '');
                 }
+
+                const isBookmarked = (bm && bm.surahNumber === data.number && bm.ayahNumber === ayah.numberInSurah);
                 
                 html += `
-                    <span class="verse">${text}</span>
-                    <span class="verse-number" onclick="showQuickTafseer(${data.number}, ${ayah.numberInSurah})" title="اضغط لعرض تفسير الآية (${ayah.numberInSurah})">${ayah.numberInSurah}</span>
+                    <span class="ayah-unit ${isBookmarked ? 'is-bookmarked' : ''}" id="ayah-unit-${data.number}-${ayah.numberInSurah}" data-surah="${data.number}" data-ayah="${ayah.numberInSurah}">
+                        <span class="verse">${text}</span>
+                        <span class="ayah-actions-wrap">
+                            ${isBookmarked ? '<span class="bookmark-ribbon-tag"><i class="fa-solid fa-bookmark"></i> موضع توقفك</span>' : ''}
+                            <span class="verse-number" onclick="showQuickTafseer(${data.number}, ${ayah.numberInSurah})" title="تفسير الآية (${ayah.numberInSurah})">${ayah.numberInSurah}</span>
+                            <button type="button" class="ayah-bookmark-btn ${isBookmarked ? 'is-bookmarked' : ''}" onclick="toggleAyahBookmark(${data.number}, ${ayah.numberInSurah}, '${escapeQuotes(data.name)}', null, event)" title="${isBookmarked ? 'إزالة علامة القراءة' : 'وضع علامة قراءة عند هذه الآية'}">
+                                <i class="${isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'}"></i>
+                            </button>
+                        </span>
+                    </span>
                 `;
             });
 
@@ -431,6 +714,13 @@
             `;
 
             contentContainer.innerHTML = html;
+            updateTopbarBookmarkUI();
+
+            if (targetAyah) {
+                setTimeout(() => {
+                    scrollToAyah(targetAyah, true);
+                }, 150);
+            }
         }
 
         // --- Quick Tafseer Modal Logic & Multi-Source Support ---
@@ -469,8 +759,33 @@
                 selectEl.value = currentQuickEdition;
             }
 
+            updateModalBookmarkState();
             modalBackdrop.classList.add('show');
             loadQuickTafseerContent(surahNum, ayahNum, currentQuickEdition);
+        }
+
+        function updateModalBookmarkState() {
+            const modalBtn = document.getElementById('modal-bookmark-btn');
+            if (!modalBtn) return;
+            const isBm = isAyahBookmarked(currentQuickSurah, currentQuickAyah);
+            if (isBm) {
+                modalBtn.classList.add('is-bookmarked');
+                modalBtn.innerHTML = '<i class="fa-solid fa-bookmark"></i> <span id="modal-bookmark-text">علامة قراءة محفوظة (إلغاء)</span>';
+                modalBtn.title = 'إزالة علامة القراءة';
+            } else {
+                modalBtn.classList.remove('is-bookmarked');
+                modalBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> <span id="modal-bookmark-text">حفظ كعلامة قراءة</span>';
+                modalBtn.title = 'حفظ هذه الآية كعلامة قراءة';
+            }
+        }
+
+        function toggleBookmarkFromModal() {
+            const modalAyahText = document.getElementById('modal-ayah-text');
+            const ayahText = modalAyahText ? modalAyahText.innerText : '';
+            const surahMeta = (allSurahs && allSurahs.find(s => s.number === currentQuickSurah)) ||
+                              (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === currentQuickSurah));
+            const surahName = surahMeta ? surahMeta.name : `سورة ${currentQuickSurah}`;
+            toggleAyahBookmark(currentQuickSurah, currentQuickAyah, surahName, ayahText);
         }
 
         async function loadQuickTafseerContent(surahNum, ayahNum, edition) {
@@ -573,17 +888,25 @@
         window.loadSurah = loadSurah;
         window.toggleSidebar = toggleSidebar;
         window.renderSurahPickerLanding = renderSurahPickerLanding;
+        window.toggleAyahBookmark = toggleAyahBookmark;
+        window.handleTopbarBookmarkClick = handleTopbarBookmarkClick;
+        window.clearQuranBookmark = clearQuranBookmark;
+        window.toggleBookmarkFromModal = toggleBookmarkFromModal;
+        window.scrollToAyah = scrollToAyah;
 
         // Initialize with query params support
         const urlParams = new URLSearchParams(window.location.search);
         const urlSurah = parseInt(urlParams.get('surah'));
+        const urlAyah = parseInt(urlParams.get('ayah'));
 
         fetchSurahs();
+        updateTopbarBookmarkUI();
 
         if (urlSurah && urlSurah >= 1 && urlSurah <= 114) {
             currentSurahNumber = urlSurah;
-            loadSurah(urlSurah);
+            loadSurah(urlSurah, urlAyah || null);
         } else {
             currentSurahNumber = null;
             renderSurahPickerLanding();
         }
+

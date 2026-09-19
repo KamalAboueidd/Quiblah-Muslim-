@@ -7,6 +7,45 @@
             --player-height: 72px;
         }
 
+        /* Custom Golden Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(12, 17, 23, 0.75);
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #dfc26e 0%, #C5A859 100%);
+            border-radius: 6px;
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            box-shadow: 0 0 6px rgba(197, 168, 89, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #f3de96 0%, #dfc26e 100%);
+        }
+
+        ::-webkit-scrollbar-button {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        @supports not selector(::-webkit-scrollbar) {
+            * {
+                scrollbar-width: thin;
+                scrollbar-color: #C5A859 rgba(12, 17, 23, 0.75);
+            }
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;

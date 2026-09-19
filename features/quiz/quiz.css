@@ -25,6 +25,46 @@
     box-sizing: border-box;
 }
 
+/* Custom Golden Scrollbar (فاخر ذهبي متناسق مع هوية الموقع) */
+::-webkit-scrollbar {
+    width: 7px !important;
+    height: 7px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(12, 17, 23, 0.75) !important;
+    border-radius: 6px !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfc26e 0%, #c5a859 100%) !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(197, 168, 89, 0.3) !important;
+    box-shadow: 0 0 6px rgba(197, 168, 89, 0.35) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #f3de96 0%, #dfc26e 100%) !important;
+}
+
+::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+/* Firefox Fallback */
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #c5a859 rgba(12, 17, 23, 0.75);
+    }
+}
+
 body {
     font-family: "Tajawal", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
@@ -551,7 +591,8 @@ body {
 }
 
 .ready-summary-label i {
-    color: #4dd0e1;
+    color: var(--gold, #c5a859);
+    filter: drop-shadow(0 0 6px rgba(197, 168, 89, 0.45));
 }
 
 .ready-summary-pills {
@@ -565,8 +606,8 @@ body {
     font-size: 12px;
     font-weight: 700;
     color: var(--gold-light);
-    background: rgba(197, 168, 89, 0.1);
-    border: 1px solid rgba(197, 168, 89, 0.25);
+    background: transparent !important;
+    border: 1px solid rgba(197, 168, 89, 0.35);
     padding: 4px 10px;
     border-radius: 20px;
     display: inline-flex;
@@ -577,20 +618,22 @@ body {
 /* Primary Start Challenge CTA Button */
 .quiz-start-cta {
     width: 100%;
-    padding: 16px;
-    border-radius: var(--radius-lg);
+    max-width: 320px;
+    margin: 10px auto 0 auto;
+    padding: 12px 28px;
+    border-radius: 30px;
     background: linear-gradient(135deg, #c5a859 0%, #a88938 100%);
     border: none;
     color: #0b1117;
     font-family: "Tajawal", sans-serif;
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 15.5px;
+    font-weight: 800;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    box-shadow: 0 8px 24px rgba(197, 168, 89, 0.35);
+    gap: 10px;
+    box-shadow: 0 6px 20px rgba(197, 168, 89, 0.35);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -793,13 +836,14 @@ body {
 
 /* Main Question Card */
 .question-card {
-    background: var(--card-bg);
+    background: transparent !important;
     border: 1.5px solid var(--border-gold);
     border-radius: var(--radius-lg);
     padding: 28px;
     margin-bottom: 20px;
-    backdrop-filter: blur(16px);
-    box-shadow: var(--shadow-card);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
     position: relative;
 }
 
@@ -819,38 +863,39 @@ body {
 }
 
 .question-mode-pill {
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 700;
     padding: 4px 12px;
-    border-radius: 12px;
-    background: rgba(197, 168, 89, 0.12);
-    color: var(--gold);
-    border: 1px solid rgba(197, 168, 89, 0.25);
+    border-radius: 20px;
+    background: transparent !important;
+    color: var(--gold, #c5a859);
+    border: 1px solid rgba(197, 168, 89, 0.4);
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .question-cat-pill {
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 800;
     padding: 4px 12px;
-    border-radius: 12px;
-    background: rgba(47, 122, 120, 0.25);
-    color: #4dd0e1;
-    border: 1px solid rgba(77, 208, 225, 0.2);
+    border-radius: 20px;
+    background: transparent !important;
+    color: var(--gold, #c5a859) !important;
+    border: 1px solid rgba(197, 168, 89, 0.4);
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .question-level-pill {
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 12px;
-    background: rgba(197, 168, 89, 0.15);
-    color: var(--gold);
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: transparent !important;
+    color: var(--gold, #c5a859);
+    border: 1px solid rgba(197, 168, 89, 0.4);
 }
 
 .question-text {
@@ -921,29 +966,31 @@ body {
     transform: scale(0.97);
 }
 
-/* Correct / Incorrect Feedback States */
+/* Correct / Incorrect Feedback States (Transparent without Red/Green Background) */
 .choice-option.correct {
-    background: rgba(46, 204, 113, 0.2) !important;
+    background: transparent !important;
     border-color: var(--green-correct) !important;
-    color: #2ecc71 !important;
-    box-shadow: 0 0 20px rgba(46, 204, 113, 0.35);
+    color: var(--green-correct, #2ecc71) !important;
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.25);
 }
 
 .choice-option.correct .choice-letter {
-    background: var(--green-correct) !important;
-    color: #ffffff !important;
+    background: transparent !important;
+    border: 1.5px solid var(--green-correct) !important;
+    color: var(--green-correct) !important;
 }
 
 .choice-option.wrong {
-    background: rgba(231, 76, 60, 0.2) !important;
+    background: transparent !important;
     border-color: var(--red-wrong) !important;
-    color: #ff7675 !important;
+    color: var(--red-wrong, #e74c3c) !important;
     animation: wrongShake 0.4s ease;
 }
 
 .choice-option.wrong .choice-letter {
-    background: var(--red-wrong) !important;
-    color: #ffffff !important;
+    background: transparent !important;
+    border: 1.5px solid var(--red-wrong) !important;
+    color: var(--red-wrong) !important;
 }
 
 @keyframes wrongShake {
@@ -956,11 +1003,12 @@ body {
 .explanation-card {
     display: none;
     margin-top: 20px;
-    background: rgba(47, 122, 120, 0.18);
-    border: 1px solid rgba(47, 122, 120, 0.4);
+    background: transparent !important;
+    border: 1px dashed rgba(197, 168, 89, 0.45);
     border-radius: var(--radius-md);
     padding: 16px 20px;
     animation: fadeInSlide 0.3s ease forwards;
+    box-shadow: none !important;
 }
 
 .explanation-card.active {
@@ -968,32 +1016,42 @@ body {
 }
 
 .explanation-title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 800;
-    color: #80cbc4;
+    color: var(--gold, #c5a859) !important;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.explanation-title i {
+    color: var(--gold, #c5a859) !important;
+    filter: drop-shadow(0 0 6px rgba(197, 168, 89, 0.5));
 }
 
 .explanation-text {
-    font-size: 15px;
-    color: #e0f2f1;
-    line-height: 1.6;
+    font-size: 15.5px;
+    color: var(--gold-light, #dfc26e) !important;
+    line-height: 1.7;
     margin: 0 0 8px 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .explanation-source {
-    font-size: 12px;
-    color: var(--gold);
+    font-size: 13px;
+    color: var(--gold, #c5a859) !important;
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
+.explanation-source i {
+    color: var(--gold, #c5a859) !important;
+}
+
 .explanation-source a {
-    color: var(--gold);
+    color: var(--gold, #c5a859) !important;
     text-decoration: underline;
 }
 
@@ -1044,19 +1102,16 @@ body {
 .summary-feedback-icon {
     font-size: 56px;
     color: var(--gold);
-    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.5));
+    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.55));
     margin-bottom: 12px;
     transition: all 0.3s ease;
 }
 
-.summary-feedback-icon.neutral {
-    color: #94a3b8;
-    filter: drop-shadow(0 0 8px rgba(148, 163, 184, 0.3));
-}
-
-.summary-feedback-icon.good {
+.summary-feedback-icon.neutral,
+.summary-feedback-icon.good,
+.summary-feedback-icon.trophy {
     color: var(--gold);
-    filter: drop-shadow(0 0 14px rgba(197, 168, 89, 0.45));
+    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.55));
 }
 
 .summary-feedback-icon.trophy {
@@ -1071,7 +1126,8 @@ body {
 .summary-title {
     font-size: 25px;
     font-weight: 900;
-    color: #ffffff;
+    color: var(--gold);
+    text-shadow: 0 0 18px rgba(197, 168, 89, 0.35);
     margin: 0 0 6px 0;
 }
 
@@ -1178,22 +1234,26 @@ body {
 .summary-actions-row {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
 }
 
 .summary-btn {
-    padding: 14px 28px;
-    border-radius: var(--radius-md);
+    padding: 8px 18px;
+    border-radius: 10px;
     font-family: "Tajawal", sans-serif;
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 13.5px;
+    font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     transition: all 0.22s ease;
+}
+
+.summary-btn i {
+    font-size: 12.5px;
 }
 
 .summary-btn-primary {
@@ -1247,6 +1307,28 @@ body {
     max-height: 380px;
     overflow-y: auto;
     padding-left: 6px;
+    padding-right: 2px;
+}
+
+.round-review-list::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+.round-review-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.35) !important;
+    border-radius: 4px !important;
+}
+
+.round-review-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfc26e 0%, #c5a859 100%) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 0 5px rgba(197, 168, 89, 0.4) !important;
+}
+
+.round-review-list::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 .round-review-list.active {
@@ -1271,21 +1353,46 @@ body {
     margin-bottom: 8px;
 }
 
-.review-status-badge {
-    font-size: 12px;
+.review-status-badge,
+.review-item-card .review-status-badge,
+.review-q-header .review-status-badge {
+    font-size: 13.5px;
     font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 10px;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.review-status-badge.correct {
-    background: rgba(46, 204, 113, 0.18);
-    color: var(--green-correct);
+.review-status-badge.correct,
+.review-item-card .review-status-badge.correct {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: var(--green-correct, #2ecc71) !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.review-status-badge.wrong {
-    background: rgba(231, 76, 60, 0.18);
-    color: var(--red-wrong);
+.review-status-badge.correct i {
+    color: var(--green-correct, #2ecc71) !important;
+}
+
+.review-status-badge.wrong,
+.review-item-card .review-status-badge.wrong {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: var(--red-wrong, #e74c3c) !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.review-status-badge.wrong i {
+    color: var(--red-wrong, #e74c3c) !important;
 }
 
 .review-answer-line {
@@ -1481,4 +1588,38 @@ body {
     .quiz-back-btn span {
         font-size: 14px;
     }
+
+    .quiz-start-cta {
+        max-width: 270px;
+        padding: 10px 22px;
+        font-size: 14.5px;
+        gap: 8px;
+        margin: 6px auto 0 auto;
+    }
+
+    .ready-summary-label {
+        font-size: 12px;
+    }
+
+    .ready-pill {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+
+    .summary-actions-row {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .summary-btn {
+        padding: 7px 14px;
+        font-size: 12.5px;
+        border-radius: 8px;
+        gap: 6px;
+    }
+
+    .summary-btn i {
+        font-size: 11.5px;
+    }
 }
+

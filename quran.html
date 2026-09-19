@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/quran/quran.css?v=3">
+    <link rel="stylesheet" href="features/quran/quran.css?v=6">
 </head>
 <body>
 
@@ -96,6 +96,14 @@
                         </span>
                     </div>
                     <div class="nav-actions-cluster">
+                        <div class="topbar-bookmark-wrap" id="topbar-bookmark-wrap">
+                            <button type="button" class="topbar-bookmark-btn" id="topbar-bookmark-btn" onclick="handleTopbarBookmarkClick()" title="علامة القراءة">
+                                <i class="fa-solid fa-bookmark"></i>
+                                <span class="bookmark-btn-text">علامة القراءة</span>
+                            </button>
+                            <!-- Dropdown Popup Card on Hover -->
+                            <div class="bookmark-hover-dropdown" id="bookmark-hover-dropdown" role="region" aria-label="موضع التوقف المحفوظ"></div>
+                        </div>
                         <a href="home.html" class="back-home-btn" title="الرجوع للرئيسية">
                             <i class="fa-solid fa-arrow-right"></i>
                             <span>رجوع</span>
@@ -151,6 +159,10 @@
                 <div class="modal-tafseer-text" id="modal-tafseer-text"></div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="modal-bookmark-btn" id="modal-bookmark-btn" onclick="toggleBookmarkFromModal()">
+                    <i class="fa-regular fa-bookmark"></i>
+                    <span id="modal-bookmark-text">حفظ كعلامة قراءة</span>
+                </button>
                 <a id="modal-full-link" href="tafseer.html">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> عرض في صفحة التفسير الشاملة
                 </a>
@@ -163,7 +175,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/quran/quran.js?v=60"></script>
+    <script src="features/quran/quran.js?v=61"></script>
 </body>
 </html>
 

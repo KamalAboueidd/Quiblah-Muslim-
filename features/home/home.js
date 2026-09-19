@@ -400,3 +400,24 @@ if (sheetEl) {
         }
     }, { passive: true });
 }
+
+// Sync Quran Reading Bookmark on Home Page
+function updateHomeQuranBookmarkButton() {
+    try {
+        const btn = document.getElementById('home-quran-btn');
+        if (!btn) return;
+        const raw = localStorage.getItem('quiblah_quran_bookmark');
+        if (raw) {
+            const bm = JSON.parse(raw);
+            if (bm && bm.surahNumber) {
+                const sNameClean = bm.surahName ? bm.surahName.replace(/^سُورَةُ\s+|^سورة\s+/, '') : '';
+                btn.href = `quran.html?surah=${bm.surahNumber}&ayah=${bm.ayahNumber}`;
+                btn.innerHTML = `<i aria-hidden="true" class="fa-solid fa-bookmark" style="color: var(--gold);"></i> متابعة: ${sNameClean} (${bm.ayahNumber})`;
+                btn.title = `متابعة القراءة: ${bm.surahName} (الآية ${bm.ayahNumber})`;
+            }
+        }
+    } catch(e) {}
+}
+updateHomeQuranBookmarkButton();
+window.addEventListener('pageshow', updateHomeQuranBookmarkButton);
+

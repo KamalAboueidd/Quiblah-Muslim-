@@ -9,6 +9,46 @@
             box-sizing: border-box;
         }
 
+        /* Custom Golden Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(12, 17, 23, 0.75);
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #dfc26e 0%, #C5A859 100%);
+            border-radius: 6px;
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            box-shadow: 0 0 6px rgba(197, 168, 89, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #f3de96 0%, #dfc26e 100%);
+        }
+
+        ::-webkit-scrollbar-button {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        /* Firefox Fallback */
+        @supports not selector(::-webkit-scrollbar) {
+            * {
+                scrollbar-width: thin;
+                scrollbar-color: #C5A859 rgba(12, 17, 23, 0.75);
+            }
+        }
+
         html, body {
             margin: 0;
             padding: 0;
@@ -925,6 +965,7 @@
             .menu-btn { font-size: 13px; gap: 5px; padding: 4px 4px; }
             .header-page-title { font-size: 13px; gap: 5px; }
             .back-home-btn { font-size: 13px; gap: 5px; padding: 4px 4px; }
+            .topbar-bookmark-btn { font-size: 13px; gap: 5px; padding: 4px 4px; }
             .nav-right-cluster { gap: 8px; min-width: 0; }
             .nav-actions-cluster { gap: 6px; flex-shrink: 0; }
 
@@ -1125,3 +1166,397 @@
             .verse { font-size: 30px; }
             .verse-number { width: 26px; height: 26px; font-size: 11px; margin: 0 5px; }
         }
+
+        /* --- Quran Reading Bookmark Styles (علامة موضع القراءة) --- */
+        .ayah-unit {
+            display: inline;
+            position: relative;
+            border-radius: 6px;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .ayah-unit.is-bookmarked {
+            background: rgba(197, 168, 89, 0.14);
+            box-shadow: 0 0 0 4px rgba(197, 168, 89, 0.18);
+            border-bottom: 2px solid var(--gold);
+            padding: 2px 4px;
+        }
+
+        .ayah-unit.pulse-focus {
+            animation: ayahPulseGlow 2.5s ease-out;
+        }
+
+        @keyframes ayahPulseGlow {
+            0% {
+                background: rgba(197, 168, 89, 0.55);
+                box-shadow: 0 0 22px rgba(197, 168, 89, 0.85);
+            }
+            50% {
+                background: rgba(197, 168, 89, 0.3);
+                box-shadow: 0 0 14px rgba(197, 168, 89, 0.45);
+            }
+            100% {
+                background: rgba(197, 168, 89, 0.14);
+                box-shadow: 0 0 0 4px rgba(197, 168, 89, 0.18);
+            }
+        }
+
+        .bookmark-ribbon-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #C5A859 0%, #997b24 100%);
+            color: #111;
+            font-family: "Tajawal", sans-serif;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin: 0 4px;
+            vertical-align: middle;
+            box-shadow: 0 2px 8px rgba(197, 168, 89, 0.4);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .ayah-actions-wrap {
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 3px;
+            gap: 3px;
+        }
+
+        .ayah-bookmark-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            vertical-align: middle;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .ayah-bookmark-btn:hover {
+            background: rgba(197, 168, 89, 0.25);
+            color: var(--gold);
+            border-color: var(--gold);
+            transform: scale(1.15);
+        }
+
+        .ayah-bookmark-btn.is-bookmarked {
+            background: var(--gold);
+            color: #111;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(197, 168, 89, 0.6);
+            transform: scale(1.08);
+        }
+
+        /* Top Bar Bookmark Button (Transparent & Borderless) */
+        .topbar-bookmark-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 6px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            white-space: nowrap !important;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .topbar-bookmark-btn:hover {
+         
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .topbar-bookmark-btn i {
+            font-size: 14px;
+            color: var(--gold);
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .topbar-bookmark-btn:hover i {
+            transform: scale(1.15);
+        }
+
+        .topbar-bookmark-btn.has-bookmark {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+        }
+
+        .topbar-bookmark-btn.has-bookmark i {
+            color: var(--gold);
+            filter: drop-shadow(0 0 6px rgba(197, 168, 89, 0.75));
+        }
+
+        /* Top Bar Bookmark Wrap & Hover Dropdown Card (قائمة المعاينة الشفافة عند التمرير) */
+        .topbar-bookmark-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .bookmark-hover-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            width: 320px;
+            max-width: 360px;
+            background: rgba(14, 21, 30, 0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(197, 168, 89, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-8px);
+            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+            text-align: right;
+            direction: rtl;
+        }
+
+        /* Top triangle indicator */
+        .bookmark-hover-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 24px;
+            width: 10px;
+            height: 10px;
+            background: rgba(14, 21, 30, 0.96);
+            border-top: 1px solid rgba(197, 168, 89, 0.4);
+            border-right: 1px solid rgba(197, 168, 89, 0.4);
+            transform: rotate(-45deg);
+        }
+
+        /* Safe hover zone between button and dropdown */
+        .bookmark-hover-dropdown::after {
+            content: '';
+            position: absolute;
+            top: -14px;
+            left: 0;
+            right: 0;
+            height: 14px;
+        }
+
+        .topbar-bookmark-wrap:hover .bookmark-hover-dropdown,
+        .topbar-bookmark-wrap.is-open .bookmark-hover-dropdown {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .bm-dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .bm-dropdown-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--gold);
+            background: rgba(197, 168, 89, 0.12);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+        }
+
+        .bm-dropdown-del-btn {
+            background: transparent;
+            border: none;
+            color: rgba(239, 68, 68, 0.75);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .bm-dropdown-del-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+            transform: scale(1.1);
+        }
+
+        .bm-dropdown-surah {
+            font-family: 'Amiri Quran', 'Amiri', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 2px 0 6px 0;
+            text-shadow: 0 0 12px rgba(197, 168, 89, 0.35);
+        }
+
+        .bm-dropdown-ayah-text {
+            font-family: 'Amiri Quran', 'Amiri', serif;
+            font-size: 15.5px;
+            line-height: 1.85;
+            color: #f1f5f9;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: 1px dashed rgba(197, 168, 89, 0.3);
+            margin-bottom: 10px;
+            max-height: 110px;
+            overflow-y: auto;
+            text-align: justify;
+        }
+
+        .bm-dropdown-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--gold-light, #dfc26e);
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+
+        .bm-dropdown-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bm-dropdown-go-btn {
+            width: 100%;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #dfc26e 0%, #C5A859 100%);
+            color: #0b1117;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            box-shadow: 0 4px 14px rgba(197, 168, 89, 0.35);
+            transition: all 0.22s ease;
+        }
+
+        .bm-dropdown-go-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(197, 168, 89, 0.55);
+            filter: brightness(1.05);
+        }
+
+        .bm-dropdown-empty {
+            text-align: center;
+            padding: 12px 6px;
+        }
+
+        .bm-dropdown-empty i {
+            font-size: 24px;
+            color: var(--gold);
+            opacity: 0.65;
+            margin-bottom: 8px;
+        }
+
+        .bm-empty-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .bm-empty-desc {
+            font-size: 11.5px;
+            color: #94a3b8;
+            line-height: 1.55;
+        }
+
+        /* Hide resume reading card completely from page as requested */
+        .resume-reading-card {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .bookmark-hover-dropdown {
+                width: calc(100vw - 32px);
+                max-width: 320px;
+                left: -10px;
+            }
+            .bookmark-hover-dropdown::before {
+                left: 30px;
+            }
+        }
+
+        /* Sidebar Surah Bookmark Tag */
+        .surah-bm-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(197, 168, 89, 0.2);
+            color: var(--gold);
+            border: 1px solid rgba(197, 168, 89, 0.5);
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 10.5px;
+            font-weight: 800;
+            margin-inline-start: 6px;
+        }
+
+        /* Tafseer Modal Bookmark Button */
+        .modal-bookmark-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 16px;
+            border-radius: 20px;
+            background: rgba(197, 168, 89, 0.15);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .modal-bookmark-btn:hover {
+            background: rgba(197, 168, 89, 0.3);
+            border-color: var(--gold);
+        }
+
+        .modal-bookmark-btn.is-bookmarked {
+            background: var(--gold);
+            color: #111;
+            font-weight: 800;
+        }
+

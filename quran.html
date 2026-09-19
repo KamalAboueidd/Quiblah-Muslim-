@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/quran/quran.css?v=7">
+    <link rel="stylesheet" href="features/quran/quran.css?v=9">
 </head>
 <body>
 
@@ -132,10 +132,35 @@
             <div class="modal-body">
                 <div class="modal-ayah-text" id="modal-ayah-text"></div>
                 <div class="modal-tafseer-selector-bar">
-                    <label for="quick-tafseer-select" class="modal-tafseer-label">
+                    <div class="modal-tafseer-label">
                         <i class="fa-solid fa-book-open"></i> كتاب التفسير:
-                    </label>
-                    <select id="quick-tafseer-select" class="quick-tafseer-select">
+                    </div>
+                    <div class="custom-tafseer-dropdown" id="custom-tafseer-dropdown">
+                        <button type="button" class="custom-tafseer-trigger" id="custom-tafseer-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="selected-tafseer-name">التفسير الميسر</span>
+                            <i class="fa-solid fa-chevron-down custom-tafseer-arrow"></i>
+                        </button>
+                        <div class="custom-tafseer-menu" id="custom-tafseer-menu" role="listbox">
+                            <div class="tafseer-group-title">التفاسير الميسرة والمعاصرة</div>
+                            <div class="tafseer-option-item is-selected" data-value="ar.muyassar">التفسير الميسر</div>
+                            <div class="tafseer-option-item" data-value="ar-tafseer-al-saddi">تفسير السعدي</div>
+                            <div class="tafseer-option-item" data-value="ar-tafsir-al-mukhtasar">المختصر في التفسير</div>
+                            <div class="tafseer-option-item" data-value="ar.waseet">التفسير الوسيط (طنطاوي)</div>
+
+                            <div class="tafseer-group-title">أمهات كتب التفسير بالمأثور</div>
+                            <div class="tafseer-option-item" data-value="ar-tafsir-ibn-kathir">تفسير ابن كثير</div>
+                            <div class="tafseer-option-item" data-value="ar.baghawi">تفسير البغوي</div>
+                            <div class="tafseer-option-item" data-value="ar.qurtubi">تفسير القرطبي</div>
+                            <div class="tafseer-option-item" data-value="ar-tafsir-al-tabari">تفسير الطبري</div>
+
+                            <div class="tafseer-group-title">التفاسير التراثية والإعراب</div>
+                            <div class="tafseer-option-item" data-value="ar.jalalayn">تفسير الجلالين</div>
+                            <div class="tafseer-option-item" data-value="fath-al-qadir-al-shawkani">فتح القدير (الشوكاني)</div>
+                            <div class="tafseer-option-item" data-value="ar.miqbas">تنوير المقباس (ابن عباس)</div>
+                            <div class="tafseer-option-item" data-value="i-rab-al-quran-li-al-darwish">إعراب القرآن وبيانه (درويش)</div>
+                        </div>
+                    </div>
+                    <select id="quick-tafseer-select" class="quick-tafseer-select" style="display: none !important;">
                         <optgroup label="التفاسير الميسرة والمعاصرة">
                             <option value="ar.muyassar" selected>التفسير الميسر</option>
                             <option value="ar-tafseer-al-saddi">تفسير السعدي</option>
@@ -175,7 +200,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/quran/quran.js?v=61"></script>
+    <script src="features/quran/quran.js?v=63"></script>
 </body>
 </html>
 

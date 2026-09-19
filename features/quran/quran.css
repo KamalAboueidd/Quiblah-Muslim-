@@ -788,37 +788,117 @@
             cursor: pointer;
         }
 
-        .quick-tafseer-select {
-            background: rgba(10, 12, 16, 0.9);
-            color: var(--gold);
-            border: 1px solid rgba(197, 168, 89, 0.4);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 13.5px;
-            font-family: inherit;
-            font-weight: 600;
-            cursor: pointer;
+        .custom-tafseer-dropdown {
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-tafseer-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             outline: none;
-            transition: all 0.25s ease;
-            max-width: 250px;
-        }
-
-        .quick-tafseer-select:hover,
-        .quick-tafseer-select:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 10px rgba(197, 168, 89, 0.3);
-        }
-
-        .quick-tafseer-select optgroup {
-            background: #0d1017;
             color: var(--gold);
-            font-weight: 700;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .quick-tafseer-select option {
-            background: #161b24;
-            color: #fff;
+        .custom-tafseer-trigger:hover {
+            opacity: 0.85;
+            color: var(--gold-light, #dfc26e);
+        }
+
+        .custom-tafseer-arrow {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            color: var(--gold);
+        }
+
+        .custom-tafseer-dropdown.is-open .custom-tafseer-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Strictly opens DOWNWARDS on both mobile and desktop as requested */
+        .custom-tafseer-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: auto;
+            min-width: 250px;
+            max-width: 290px;
+            max-height: 230px;
+            overflow-y: auto;
+            background: rgba(14, 18, 25, 0.97);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 12px;
             padding: 6px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1050;
+            direction: rtl;
+        }
+
+        .custom-tafseer-dropdown.is-open .custom-tafseer-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .tafseer-group-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--gold);
+            padding: 8px 10px 4px 10px;
+            border-bottom: 1px solid rgba(197, 168, 89, 0.15);
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .tafseer-option-item {
+            padding: 8px 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #f1f5f9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tafseer-option-item:hover {
+            background: rgba(197, 168, 89, 0.18);
+            color: var(--gold-light, #f5df9a);
+        }
+
+        .tafseer-option-item.is-selected {
+            background: rgba(197, 168, 89, 0.28);
+            color: var(--gold);
+            font-weight: 800;
+        }
+
+        .tafseer-option-item.is-selected::after {
+            content: '✓';
+            font-size: 12px;
+            color: var(--gold);
+            margin-inline-start: 6px;
+        }
+
+        .quick-tafseer-select {
+            display: none !important;
         }
 
         .modal-tafseer-text {
@@ -1397,9 +1477,9 @@
             font-weight: 800;
             color: var(--gold);
             background: rgba(197, 168, 89, 0.12);
-            border: 1px solid rgba(197, 168, 89, 0.3);
+            border: none !important;
             border-radius: 12px;
-            padding: 2px 8px;
+            padding: 3px 10px;
         }
 
         .bm-dropdown-del-btn {
@@ -1487,27 +1567,38 @@
 
         .bm-dropdown-empty {
             text-align: center;
-            padding: 12px 6px;
+            padding: 14px 8px;
         }
 
-        .bm-dropdown-empty i {
-            font-size: 24px;
-            color: var(--gold);
-            opacity: 0.65;
-            margin-bottom: 8px;
+        .bm-empty-icon-box {
+            background: transparent !important;
+            box-shadow: none !important;
+            width: auto;
+            height: auto;
+            display: inline-block;
+            margin: 0 auto 8px auto;
+        }
+
+        .bm-empty-icon-box i,
+        .bm-empty-gold-icon {
+            font-size: 26px !important;
+            color: var(--gold, #c5a859) !important;
+            margin-bottom: 0 !important;
+            opacity: 1 !important;
+            filter: drop-shadow(0 2px 8px rgba(197, 168, 89, 0.45));
         }
 
         .bm-empty-title {
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .bm-empty-desc {
-            font-size: 11.5px;
+            font-size: 12px;
             color: #94a3b8;
-            line-height: 1.55;
+            line-height: 1.6;
         }
 
         /* Hide resume reading card completely from page as requested */
@@ -1546,10 +1637,11 @@
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            padding: 7px 16px;
+            padding: 8px 18px;
             border-radius: 20px;
-            background: rgba(197, 168, 89, 0.15);
-            border: 1px solid rgba(197, 168, 89, 0.4);
+            background: rgba(197, 168, 89, 0.16);
+            border: none !important;
+            box-shadow: none !important;
             color: var(--gold);
             font-family: inherit;
             font-size: 13px;
@@ -1560,13 +1652,15 @@
         }
 
         .modal-bookmark-btn:hover {
-            background: rgba(197, 168, 89, 0.3);
-            border-color: var(--gold);
+            background: rgba(197, 168, 89, 0.28);
+            border: none !important;
+            color: var(--gold-light, #dfc26e);
         }
 
         .modal-bookmark-btn.is-bookmarked {
             background: var(--gold);
             color: #111;
             font-weight: 800;
+            border: none !important;
         }
 

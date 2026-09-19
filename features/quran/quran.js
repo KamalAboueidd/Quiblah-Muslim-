@@ -276,9 +276,9 @@
                 if (dropdown) {
                     dropdown.innerHTML = `
                         <div class="bm-dropdown-empty">
-                            <i class="fa-regular fa-bookmark"></i>
+                            <i class="fa-solid fa-bookmark bm-empty-gold-icon"></i>
                             <div class="bm-empty-title">لا توجد علامة قراءة محفوظة</div>
-                            <div class="bm-empty-desc">اضغط على أيقونة 🔖 بجانب أي آية أثناء التلاوة لحفظ موضع توقفك.</div>
+                            <div class="bm-empty-desc">اضغط على أيقونة <i class="fa-solid fa-bookmark" style="color: var(--gold); font-size: 11px; margin: 0 3px;"></i> بجانب أي آية أثناء التلاوة لحفظ موضع توقفك.</div>
                         </div>
                     `;
                 }
@@ -778,6 +778,8 @@
                 selectEl.value = currentQuickEdition;
             }
 
+            syncCustomTafseerUI(currentQuickEdition);
+
             updateModalBookmarkState();
             modalBackdrop.classList.add('show');
             loadQuickTafseerContent(surahNum, ayahNum, currentQuickEdition);
@@ -873,6 +875,61 @@
             }
         }
 
+        function syncCustomTafseerUI(edition) {
+            const nameSpan = document.getElementById('selected-tafseer-name');
+            const edConfig = TAFSEER_CONFIG[edition];
+            if (nameSpan && edConfig) {
+                nameSpan.textContent = edConfig.name;
+            }
+            document.querySelectorAll('#custom-tafseer-menu .tafseer-option-item').forEach(item => {
+                if (item.getAttribute('data-value') === edition) {
+                    item.classList.add('is-selected');
+                } else {
+                    item.classList.remove('is-selected');
+                }
+            });
+        }
+
+        const customTafseerDropdown = document.getElementById('custom-tafseer-dropdown');
+        const customTafseerTrigger = document.getElementById('custom-tafseer-trigger');
+        const customTafseerMenu = document.getElementById('custom-tafseer-menu');
+
+        if (customTafseerTrigger && customTafseerDropdown) {
+            customTafseerTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = customTafseerDropdown.classList.toggle('is-open');
+                customTafseerTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!customTafseerDropdown.contains(e.target)) {
+                    customTafseerDropdown.classList.remove('is-open');
+                    customTafseerTrigger.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            if (customTafseerMenu) {
+                customTafseerMenu.querySelectorAll('.tafseer-option-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const val = item.getAttribute('data-value');
+                        if (val && TAFSEER_CONFIG[val]) {
+                            currentQuickEdition = val;
+                            try {
+                                localStorage.setItem('quiblah_selected_tafseer', currentQuickEdition);
+                            } catch(err) {}
+                            syncCustomTafseerUI(currentQuickEdition);
+                            const quickSelect = document.getElementById('quick-tafseer-select');
+                            if (quickSelect) quickSelect.value = currentQuickEdition;
+                            customTafseerDropdown.classList.remove('is-open');
+                            customTafseerTrigger.setAttribute('aria-expanded', 'false');
+                            loadQuickTafseerContent(currentQuickSurah, currentQuickAyah, currentQuickEdition);
+                        }
+                    });
+                });
+            }
+        }
+
         const quickSelectEl = document.getElementById('quick-tafseer-select');
         if (quickSelectEl) {
             quickSelectEl.addEventListener('change', (e) => {
@@ -880,6 +937,7 @@
                 try {
                     localStorage.setItem('quiblah_selected_tafseer', currentQuickEdition);
                 } catch(err) {}
+                syncCustomTafseerUI(currentQuickEdition);
                 loadQuickTafseerContent(currentQuickSurah, currentQuickAyah, currentQuickEdition);
             });
         }

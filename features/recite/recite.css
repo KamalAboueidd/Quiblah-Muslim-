@@ -3617,28 +3617,62 @@ body.mushaf-studio-body {
     50% { transform: scaleY(1); opacity: 1; }
 }
 
-/* =============================================================================
-   Luxury Custom Recitation Audio Player
-   ============================================================================= */
+.user-recitation-player-box,
+.user-modal-player-box {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 4px 0;
+}
+
 .custom-luxury-audio-bar {
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(18, 30, 26, 0.88);
+    background: rgba(18, 30, 26, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(197, 168, 89, 0.35);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border-radius: 14px;
-    padding: 10px 14px;
-    margin-top: 8px;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin-top: 6px;
     direction: ltr; /* Ensure progress bar flows intuitively */
 }
 
 [data-theme="light"] .custom-luxury-audio-bar {
-    background: rgba(245, 243, 237, 0.95);
-    border: 1px solid rgba(197, 168, 89, 0.45);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.05);
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.user-audio-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 8px;
+    padding: 0 4px;
+}
+
+.btn-user-audio-bottom {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold, #c5a859) !important;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-user-audio-bottom:hover {
+    color: #ffffff !important;
+    transform: translateY(-1px);
 }
 
 .cap-play-circle {
@@ -3844,6 +3878,70 @@ body.mushaf-studio-body {
     transform: rotate(180deg);
     color: #ffffff;
 }
+
+/* =============================================================================
+   Luxury Islamic Scrollbars for Quranic Evaluation & Details on Desktop
+   ============================================================================= */
+.evaluation-modal-card,
+.words-alignment-cloud,
+.eval-words-section,
+.eval-banner-words-grid,
+.mushaf-verses-flow,
+.eval-transcription-box,
+.ayah-grid-scrollable,
+.surah-items-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold, #c5a859) rgba(0, 0, 0, 0.22);
+}
+
+.evaluation-modal-card::-webkit-scrollbar,
+.words-alignment-cloud::-webkit-scrollbar,
+.eval-words-section::-webkit-scrollbar,
+.eval-banner-words-grid::-webkit-scrollbar,
+.mushaf-verses-flow::-webkit-scrollbar,
+.eval-transcription-box::-webkit-scrollbar,
+.ayah-grid-scrollable::-webkit-scrollbar,
+.surah-items-list::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.evaluation-modal-card::-webkit-scrollbar-track,
+.words-alignment-cloud::-webkit-scrollbar-track,
+.eval-words-section::-webkit-scrollbar-track,
+.eval-banner-words-grid::-webkit-scrollbar-track,
+.mushaf-verses-flow::-webkit-scrollbar-track,
+.eval-transcription-box::-webkit-scrollbar-track,
+.ayah-grid-scrollable::-webkit-scrollbar-track,
+.surah-items-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.evaluation-modal-card::-webkit-scrollbar-thumb,
+.words-alignment-cloud::-webkit-scrollbar-thumb,
+.eval-words-section::-webkit-scrollbar-thumb,
+.eval-banner-words-grid::-webkit-scrollbar-thumb,
+.mushaf-verses-flow::-webkit-scrollbar-thumb,
+.eval-transcription-box::-webkit-scrollbar-thumb,
+.ayah-grid-scrollable::-webkit-scrollbar-thumb,
+.surah-items-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #c5a859 0%, #8a7033 100%);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.evaluation-modal-card::-webkit-scrollbar-thumb:hover,
+.words-alignment-cloud::-webkit-scrollbar-thumb:hover,
+.eval-words-section::-webkit-scrollbar-thumb:hover,
+.eval-banner-words-grid::-webkit-scrollbar-thumb:hover,
+.mushaf-verses-flow::-webkit-scrollbar-thumb:hover,
+.eval-transcription-box::-webkit-scrollbar-thumb:hover,
+.ayah-grid-scrollable::-webkit-scrollbar-thumb:hover,
+.surah-items-list::-webkit-scrollbar-thumb:hover {
+    background: #dfc67e;
+}
+
 
 
 

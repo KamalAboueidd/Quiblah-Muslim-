@@ -163,6 +163,7 @@ let recordStartTime = null;
 let timerInterval = null;
 let silenceTimer = null;
 let recordedAudioBlob = null;
+let recordedAudioDuration = 0;
 
 // Live Speech Recognition
 let speechRecognizer = null;
@@ -438,7 +439,7 @@ function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, 
     if (!audioEl || !playBtn || !timeline || !fill || !pin) return;
 
     function formatAudioTime(sec) {
-        if (!sec || isNaN(sec) || sec < 0) return '00:00';
+        if (!sec || isNaN(sec) || !isFinite(sec) || sec < 0) return '00:00';
         const m = Math.floor(sec / 60);
         const s = Math.floor(sec % 60);
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
@@ -473,7 +474,10 @@ function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, 
 
     audioEl.addEventListener('timeupdate', () => {
         const cur = audioEl.currentTime || 0;
-        const dur = audioEl.duration || 0;
+        let dur = audioEl.duration;
+        if (!dur || isNaN(dur) || !isFinite(dur) || dur <= 0) {
+            dur = recordedAudioDuration || 0;
+        }
         if (currTimeEl) currTimeEl.textContent = formatAudioTime(cur);
         if (totalTimeEl && dur > 0) totalTimeEl.textContent = formatAudioTime(dur);
         if (dur > 0) {
@@ -484,7 +488,10 @@ function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, 
     });
 
     audioEl.addEventListener('loadedmetadata', () => {
-        const dur = audioEl.duration || 0;
+        let dur = audioEl.duration;
+        if (!dur || isNaN(dur) || !isFinite(dur) || dur <= 0) {
+            dur = recordedAudioDuration || 0;
+        }
         if (totalTimeEl && dur > 0) totalTimeEl.textContent = formatAudioTime(dur);
     });
 
@@ -492,9 +499,13 @@ function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, 
         const rect = timeline.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
         const width = rect.width;
-        if (width > 0 && audioEl.duration) {
+        let dur = audioEl.duration;
+        if (!dur || isNaN(dur) || !isFinite(dur) || dur <= 0) {
+            dur = recordedAudioDuration || 0;
+        }
+        if (width > 0 && dur > 0) {
             const pct = Math.min(1, Math.max(0, clickX / width));
-            audioEl.currentTime = pct * audioEl.duration;
+            audioEl.currentTime = pct * dur;
         }
     };
 }
@@ -1409,7 +1420,7 @@ function pauseExemplaryAudio() {
 }
 
 function formatTime(sec) {
-    if (isNaN(sec) || sec < 0) return '00:00';
+    if (!sec || isNaN(sec) || !isFinite(sec) || sec < 0) return '00:00';
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
@@ -1663,6 +1674,10 @@ async function stopRecordingAndAnalyze() {
     isRecording = false;
     if (timerInterval) clearInterval(timerInterval);
 
+    // Compute actual elapsed audio duration so player metadata is never Infinity/NaN
+    const elapsedSeconds = recordStartTime ? Math.max(1, Math.floor((Date.now() - recordStartTime) / 1000)) : 0;
+    recordedAudioDuration = elapsedSeconds;
+
     // 1. Commit every single in-flight word from current session cleanly
     let sessionWordsToCommit = currentSessionFinalText 
         ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
@@ -1798,6 +1813,7 @@ function resetStudioRecording() {
 
     audioChunks = [];
     recordedAudioBlob = null;
+    recordedAudioDuration = 0;
     liveTranscript = "";
     accumulatedSpeechText = "";
     currentInterimSpeechText = "";
@@ -1815,12 +1831,14 @@ function resetStudioRecording() {
     if (capTimelineFill) capTimelineFill.style.width = '0%';
     if (capTimelinePin) capTimelinePin.style.left = '0%';
     if (capCurrTime) capCurrTime.textContent = '00:00';
+    if (capTotalTime) capTotalTime.textContent = '00:00';
     if (customLuxuryAudioBar) customLuxuryAudioBar.classList.remove('playing');
 
     if (capModalPlayIcon) capModalPlayIcon.className = 'fa-solid fa-play';
     if (capModalTimelineFill) capModalTimelineFill.style.width = '0%';
     if (capModalTimelinePin) capModalTimelinePin.style.left = '0%';
     if (capModalCurrTime) capModalCurrTime.textContent = '00:00';
+    if (capModalTotalTime) capModalTotalTime.textContent = '00:00';
     if (customModalAudioBar) customModalAudioBar.classList.remove('playing');
 
     if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'none';
@@ -2772,6 +2790,11 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
                     if (userModalRecitationAudio) userModalRecitationAudio.src = audioUrl;
                     if (btnDownloadUserAudio) btnDownloadUserAudio.href = audioUrl;
                     if (btnDownloadModalAudio) btnDownloadModalAudio.href = audioUrl;
+                    if (recordedAudioDuration > 0) {
+                        const durStr = formatTime(recordedAudioDuration);
+                        if (capTotalTime) capTotalTime.textContent = durStr;
+                        if (capModalTotalTime) capModalTotalTime.textContent = durStr;
+                    }
                     if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'block';
                 } catch (e) {}
             }
@@ -3267,6 +3290,11 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             if (btnDownloadModalAudio) {
                 btnDownloadModalAudio.href = audioUrl;
                 btnDownloadModalAudio.download = dlName;
+            }
+            if (recordedAudioDuration > 0) {
+                const durStr = formatTime(recordedAudioDuration);
+                if (capTotalTime) capTotalTime.textContent = durStr;
+                if (capModalTotalTime) capModalTotalTime.textContent = durStr;
             }
             if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'block';
             if (userModalPlayerBox) userModalPlayerBox.style.display = 'block';

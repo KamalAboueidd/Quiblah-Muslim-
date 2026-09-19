@@ -1384,26 +1384,46 @@ body.mushaf-studio-body {
 
 /* Spoken Feedback Highlights */
 .quran-word.spoken-active {
-    color: #836724 !important;
-    background: rgba(189, 160, 80, 0.18) !important;
-    border-radius: 4px;
-    transition: background 0.2s ease;
+    color: #fbbf24 !important;
+    background: rgba(251, 191, 36, 0.25) !important;
+    border-radius: 4px !important;
+    padding: 1px 4px !important;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.45) !important;
+    animation: wordActivePulse 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes wordActivePulse {
+    from {
+        box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+    }
+    to {
+        box-shadow: 0 0 14px rgba(251, 191, 36, 0.7);
+    }
 }
 
 .quran-word.spoken-match {
-    color: #1b6b3e !important;
+    color: #2ecc71 !important; /* Vivid Emerald Green */
     font-weight: 700;
-    text-shadow: 0 0 1px rgba(27, 107, 62, 0.4);
-    background: transparent !important;
-    border-radius: 0 !important;
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.55);
+    background: rgba(46, 204, 113, 0.15) !important;
+    border-radius: 4px !important;
+    padding: 1px 4px !important;
+    transition: all 0.25s ease;
+}
+
+[data-theme="light"] .quran-word.spoken-match {
+    color: #0d7938 !important;
+    background: rgba(13, 121, 56, 0.14) !important;
+    text-shadow: none;
 }
 
 .quran-word.spoken-slip {
-    color: #c0392b !important;
+    color: #e74c3c !important;
     text-decoration: underline wavy #e74c3c 1.5px !important;
     text-underline-offset: 6px;
-    background: transparent !important;
-    border-radius: 0 !important;
+    background: rgba(231, 76, 60, 0.1) !important;
+    border-radius: 4px !important;
+    padding: 1px 4px !important;
 }
 
 /* Memorization Mode Canvas */
@@ -3596,5 +3616,231 @@ body.mushaf-studio-body {
     0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
     50% { transform: scaleY(1); opacity: 1; }
 }
+
+/* =============================================================================
+   Luxury Custom Recitation Audio Player
+   ============================================================================= */
+.custom-luxury-audio-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(18, 30, 26, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    direction: ltr; /* Ensure progress bar flows intuitively */
+}
+
+[data-theme="light"] .custom-luxury-audio-bar {
+    background: rgba(245, 243, 237, 0.95);
+    border: 1px solid rgba(197, 168, 89, 0.45);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.cap-play-circle {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c5a859 0%, #9a7d36 100%);
+    border: none;
+    color: #121c18;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    box-shadow: 0 3px 12px rgba(197, 168, 89, 0.4);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cap-play-circle:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 18px rgba(197, 168, 89, 0.6);
+    background: linear-gradient(135deg, #dfc67e 0%, #b39243 100%);
+}
+
+.cap-play-circle:active {
+    transform: scale(0.96);
+}
+
+.cap-progress-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.cap-timeline {
+    width: 100%;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    position: relative;
+    cursor: pointer;
+    overflow: visible;
+}
+
+[data-theme="light"] .cap-timeline {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.cap-timeline-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #10b981 0%, #c5a859 100%);
+    border-radius: 6px;
+    position: relative;
+    pointer-events: none;
+    transition: width 0.08s linear;
+}
+
+.cap-timeline-pin {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2.5px solid #c5a859;
+    box-shadow: 0 0 8px rgba(197, 168, 89, 0.8);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: left 0.08s linear;
+}
+
+.cap-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Tajawal', monospace, sans-serif;
+    font-size: 12px;
+    color: var(--gold-light, #f5df9a);
+    padding: 0 2px;
+}
+
+[data-theme="light"] .cap-meta-row {
+    color: #6b5a28;
+}
+
+.cap-time-val {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.cap-live-bars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 12px;
+}
+
+.cap-live-bars span {
+    display: block;
+    width: 2.5px;
+    height: 3px;
+    background: rgba(197, 168, 89, 0.4);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.custom-luxury-audio-bar.playing .cap-live-bars span {
+    background: var(--gold, #c5a859);
+    animation: barLivePlaying 0.8s infinite ease-in-out;
+}
+
+.custom-luxury-audio-bar.playing .cap-live-bars span:nth-child(1) { height: 4px; animation-delay: 0.1s; }
+.custom-luxury-audio-bar.playing .cap-live-bars span:nth-child(2) { height: 10px; animation-delay: 0.25s; }
+.custom-luxury-audio-bar.playing .cap-live-bars span:nth-child(3) { height: 12px; animation-delay: 0.4s; }
+.custom-luxury-audio-bar.playing .cap-live-bars span:nth-child(4) { height: 8px; animation-delay: 0.15s; }
+.custom-luxury-audio-bar.playing .cap-live-bars span:nth-child(5) { height: 11px; animation-delay: 0.3s; }
+.custom-luxury-audio-bar.playing .cap-live-bars span:nth-child(6) { height: 5px; animation-delay: 0.2s; }
+
+@keyframes barLivePlaying {
+    0%, 100% { transform: scaleY(0.35); opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* =============================================================================
+   Simple Word-Labeled Re-recite Button (زر إعادة التسميع الصريح)
+   ============================================================================= */
+.btn-re-recite-simple {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1.5px solid rgba(197, 168, 89, 0.4);
+    color: var(--gold-light, #f5df9a);
+    padding: 8px 18px;
+    border-radius: 22px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.btn-re-recite-simple:hover {
+    background: rgba(197, 168, 89, 0.2);
+    border-color: var(--gold, #c5a859);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(197, 168, 89, 0.25);
+}
+
+.btn-re-recite-simple:active {
+    transform: translateY(0);
+}
+
+.btn-re-recite-simple i {
+    font-size: 13px;
+    color: var(--gold, #c5a859);
+    transition: transform 0.3s ease;
+}
+
+.btn-re-recite-simple:hover i {
+    transform: rotate(180deg);
+}
+
+.btn-banner-reset-simple {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    color: var(--gold-light, #f5df9a);
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-banner-reset-simple:hover {
+    background: rgba(197, 168, 89, 0.24);
+    border-color: var(--gold, #c5a859);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-banner-reset-simple i {
+    font-size: 11px;
+    color: var(--gold, #c5a859);
+    transition: transform 0.3s ease;
+}
+
+.btn-banner-reset-simple:hover i {
+    transform: rotate(180deg);
+}
+
 
 

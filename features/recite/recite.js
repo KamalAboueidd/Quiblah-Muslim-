@@ -207,6 +207,9 @@ let liveSpeechFeedbackStrip, speechFeedbackLabel, speechLiveTextDisplay;
 let recitationEvalBanner, evalBannerScoreText, ebCorrectCount, ebErrorsCount, ebMissingCount, btnBannerOpenModal, evalBannerWordsGrid;
 let evalBannerTranscript, ebTranscriptText, userRecitationPlayerBox, userRecitationAudio, btnDownloadUserAudio;
 let userModalPlayerBox, userModalRecitationAudio, btnDownloadModalAudio;
+let btnReReciteSimple, btnBannerReset;
+let capBtnPlay, capPlayIcon, capTimeline, capTimelineFill, capTimelinePin, capCurrTime, capTotalTime, customLuxuryAudioBar;
+let capModalBtnPlay, capModalPlayIcon, capModalTimeline, capModalTimelineFill, capModalTimelinePin, capModalCurrTime, capModalTotalTime, customModalAudioBar;
 
 // Modals
 let evaluationModalBackdrop, btnCloseEvaluation, scoreNumber, scoreEvaluationTitle;
@@ -381,6 +384,108 @@ function cacheDomElements() {
     userModalPlayerBox = document.getElementById('user-modal-player-box');
     userModalRecitationAudio = document.getElementById('user-modal-recitation-audio');
     btnDownloadModalAudio = document.getElementById('btn-download-modal-audio');
+
+    btnReReciteSimple = document.getElementById('btn-re-recite-simple');
+    btnBannerReset = document.getElementById('btn-banner-reset');
+
+    capBtnPlay = document.getElementById('cap-btn-play');
+    capPlayIcon = document.getElementById('cap-play-icon');
+    capTimeline = document.getElementById('cap-timeline');
+    capTimelineFill = document.getElementById('cap-timeline-fill');
+    capTimelinePin = document.getElementById('cap-timeline-pin');
+    capCurrTime = document.getElementById('cap-curr-time');
+    capTotalTime = document.getElementById('cap-total-time');
+    customLuxuryAudioBar = document.getElementById('custom-luxury-audio-bar');
+
+    capModalBtnPlay = document.getElementById('cap-modal-btn-play');
+    capModalPlayIcon = document.getElementById('cap-modal-play-icon');
+    capModalTimeline = document.getElementById('cap-modal-timeline');
+    capModalTimelineFill = document.getElementById('cap-modal-timeline-fill');
+    capModalTimelinePin = document.getElementById('cap-modal-timeline-pin');
+    capModalCurrTime = document.getElementById('cap-modal-curr-time');
+    capModalTotalTime = document.getElementById('cap-modal-total-time');
+    customModalAudioBar = document.getElementById('custom-modal-audio-bar');
+
+    if (btnReReciteSimple) {
+        btnReReciteSimple.addEventListener('click', () => {
+            resetStudioRecording();
+            showToast('تمت إعادة الضبط - جاهز للتسميع 🎙️', 'fa-solid fa-rotate-right');
+        });
+    }
+    if (btnBannerReset) {
+        btnBannerReset.addEventListener('click', () => {
+            resetStudioRecording();
+            showToast('تمت إعادة الضبط - جاهز للتسميع 🎙️', 'fa-solid fa-rotate-right');
+        });
+    }
+
+    wireLuxuryAudioPlayer(userRecitationAudio, capBtnPlay, capPlayIcon, capTimeline, capTimelineFill, capTimelinePin, capCurrTime, capTotalTime, customLuxuryAudioBar);
+    wireLuxuryAudioPlayer(userModalRecitationAudio, capModalBtnPlay, capModalPlayIcon, capModalTimeline, capModalTimelineFill, capModalTimelinePin, capModalCurrTime, capModalTotalTime, customModalAudioBar);
+}
+
+function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, currTimeEl, totalTimeEl, barContainer) {
+    if (!audioEl || !playBtn || !timeline || !fill || !pin) return;
+
+    function formatAudioTime(sec) {
+        if (!sec || isNaN(sec) || sec < 0) return '00:00';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    playBtn.onclick = () => {
+        if (!audioEl.src) return;
+        if (audioEl.paused) {
+            audioEl.play().catch(e => console.warn("Audio play notice:", e));
+        } else {
+            audioEl.pause();
+        }
+    };
+
+    audioEl.addEventListener('play', () => {
+        if (playIcon) playIcon.className = 'fa-solid fa-pause';
+        if (barContainer) barContainer.classList.add('playing');
+    });
+
+    audioEl.addEventListener('pause', () => {
+        if (playIcon) playIcon.className = 'fa-solid fa-play';
+        if (barContainer) barContainer.classList.remove('playing');
+    });
+
+    audioEl.addEventListener('ended', () => {
+        if (playIcon) playIcon.className = 'fa-solid fa-play';
+        if (barContainer) barContainer.classList.remove('playing');
+        fill.style.width = '0%';
+        pin.style.left = '0%';
+        if (currTimeEl) currTimeEl.textContent = '00:00';
+    });
+
+    audioEl.addEventListener('timeupdate', () => {
+        const cur = audioEl.currentTime || 0;
+        const dur = audioEl.duration || 0;
+        if (currTimeEl) currTimeEl.textContent = formatAudioTime(cur);
+        if (totalTimeEl && dur > 0) totalTimeEl.textContent = formatAudioTime(dur);
+        if (dur > 0) {
+            const pct = Math.min(100, Math.max(0, (cur / dur) * 100));
+            fill.style.width = pct + '%';
+            pin.style.left = pct + '%';
+        }
+    });
+
+    audioEl.addEventListener('loadedmetadata', () => {
+        const dur = audioEl.duration || 0;
+        if (totalTimeEl && dur > 0) totalTimeEl.textContent = formatAudioTime(dur);
+    });
+
+    timeline.onclick = (e) => {
+        const rect = timeline.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        if (width > 0 && audioEl.duration) {
+            const pct = Math.min(1, Math.max(0, clickX / width));
+            audioEl.currentTime = pct * audioEl.duration;
+        }
+    };
 }
 
 // -----------------------------------------------------------------------------
@@ -1484,28 +1589,13 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
-    // 3. Coordinate MediaRecorder & microphone acquisition:
-    // On Android mobile, if Whisper is NOT configured, running getUserMedia simultaneously with SpeechRecognition
-    // locks the hardware mic in AudioFlinger and kills SpeechRecognition with audio-capture error.
-    // Therefore, on mobile Chrome without Whisper, let SpeechRecognition capture alone cleanly.
-    // On Desktop, or in Brave, or whenever Whisper is configured, MediaRecorder runs continuously.
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isBraveBrowser = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
-    const hasWhisperService = Boolean(
-        (makeWebhookUrl && makeWebhookUrl.trim()) ||
-        (hfApiToken && hfApiToken.trim()) ||
-        (pythonServiceUrl && pythonServiceUrl.trim() && !pythonServiceUrl.includes('localhost'))
-    );
-
-    const shouldStartMediaRecorder = !isMobileDevice || hasWhisperService || isBraveBrowser;
-
-    if (shouldStartMediaRecorder) {
-        const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-            ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
-                console.warn("Microphone access for MediaRecorder:", micErr);
-                return null;
-            })
-            : Promise.resolve(null);
+    // 3. Acquire microphone and start continuous MediaRecorder so user voice is ALWAYS recorded for playback
+    const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
+            console.warn("Microphone access for MediaRecorder:", micErr);
+            return null;
+        })
+        : Promise.resolve(null);
 
         try {
             const stream = await micPromise;
@@ -1544,7 +1634,6 @@ async function startRecording() {
         } catch (streamErr) {
             console.warn("Stream acquisition notice:", streamErr);
         }
-    }
 }
 
 function triggerSilenceCountdown() {
@@ -1702,8 +1791,26 @@ function resetStudioRecording() {
     currentInterimSpeechText = "";
     committedPreviousSessionsText = "";
     currentSessionFinalText = "";
-    if (userRecitationAudio) userRecitationAudio.src = '';
-    if (userModalRecitationAudio) userModalRecitationAudio.src = '';
+    if (userRecitationAudio) {
+        try { userRecitationAudio.pause(); } catch(e) {}
+        userRecitationAudio.src = '';
+    }
+    if (userModalRecitationAudio) {
+        try { userModalRecitationAudio.pause(); } catch(e) {}
+        userModalRecitationAudio.src = '';
+    }
+    if (capPlayIcon) capPlayIcon.className = 'fa-solid fa-play';
+    if (capTimelineFill) capTimelineFill.style.width = '0%';
+    if (capTimelinePin) capTimelinePin.style.left = '0%';
+    if (capCurrTime) capCurrTime.textContent = '00:00';
+    if (customLuxuryAudioBar) customLuxuryAudioBar.classList.remove('playing');
+
+    if (capModalPlayIcon) capModalPlayIcon.className = 'fa-solid fa-play';
+    if (capModalTimelineFill) capModalTimelineFill.style.width = '0%';
+    if (capModalTimelinePin) capModalTimelinePin.style.left = '0%';
+    if (capModalCurrTime) capModalCurrTime.textContent = '00:00';
+    if (customModalAudioBar) customModalAudioBar.classList.remove('playing');
+
     if (userRecitationPlayerBox) userRecitationPlayerBox.style.display = 'none';
     if (userModalPlayerBox) userModalPlayerBox.style.display = 'none';
     if (evalBannerTranscript) evalBannerTranscript.style.display = 'none';
@@ -1728,7 +1835,7 @@ function resetStudioRecording() {
     // Clear word highlights in Mushaf
     if (mushafVersesFlow) {
         mushafVersesFlow.querySelectorAll('.quran-word').forEach(w => {
-            w.classList.remove('spoken-match', 'spoken-slip');
+            w.classList.remove('spoken-match', 'spoken-slip', 'spoken-active');
             w.removeAttribute('title');
         });
     }
@@ -2097,9 +2204,10 @@ function spawnSpeechRecognizer() {
             liveTranscript = normalizeQuranicDisjointedLetters(fullRaw.trim(), currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
 
-            // CRITICAL USER REQUIREMENT:
-            // Do NOT print spoken words or highlight the Mushaf live during recitation!
-            // Words are kept securely in memory and revealed only after the user stops recording.
+            // Live Visual Feedback:
+            // 1. Recitation mode: Highlights recited words in green on the Mushaf as the user recites!
+            // 2. Memorization mode: Renders spoken words live on the canvas!
+            updateLiveSpokenHighlights(liveTranscript);
         };
 
         recognizer.onerror = (e) => {
@@ -2579,11 +2687,13 @@ function updateLiveSpokenHighlights(spokenText) {
         }
     }
 
-    // 2. Recitation Mode: Softly highlight current word being spoken (neutral active pulse, NEVER premature red errors)
+    // 2. Recitation Mode: Highlight recited words in glowing GREEN on the Mushaf text word by word!
     if (studioDisplayMode === 'recite' && mushafVersesFlow) {
-        const targetAyahs = getActiveTargetAyahs();
+        const targetAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
         if (targetAyahs.length && spokenWords.length) {
             let sIdx = 0;
+            let lastMatchedEl = null;
+
             targetAyahs.forEach(ayah => {
                 (ayah.rawWords || []).forEach((expectedRaw, wIdx) => {
                     const wordEl = document.getElementById(`word-${ayah.numberInSurah}-${wIdx}`);
@@ -2600,11 +2710,17 @@ function updateLiveSpokenHighlights(spokenText) {
                             }
                         }
                         if (matched) {
-                            wordEl.classList.add('spoken-active');
+                            wordEl.classList.add('spoken-match');
+                            lastMatchedEl = wordEl;
                         }
                     }
                 });
             });
+
+            // Luminous pulse on the very latest word recited
+            if (lastMatchedEl) {
+                lastMatchedEl.classList.add('spoken-active');
+            }
         }
     }
 }

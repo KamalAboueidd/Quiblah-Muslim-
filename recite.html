@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=52">
+    <link rel="stylesheet" href="features/recite/recite.css?v=53">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -336,6 +336,9 @@
                             <button type="button" class="btn-banner-modal" id="btn-banner-open-modal">
                                 <i class="fa-solid fa-magnifying-glass-chart"></i> <span>تقرير تفصيلي</span>
                             </button>
+                            <button type="button" class="btn-banner-reset-simple" id="btn-banner-reset" title="إعادة التسميع من البداية">
+                                <i class="fa-solid fa-rotate-right"></i> <span>إعادة التسميع</span>
+                            </button>
                         </div>
 
                         <!-- User Recited Transcript Review (Shown only AFTER finishing recitation) -->
@@ -345,11 +348,11 @@
                             <span class="eb-transcript-text" id="eb-transcript-text"></span>
                         </div>
 
-                        <!-- User Recorded Voice Audio Player -->
+                        <!-- User Recorded Voice Audio Player (Custom Luxury Design) -->
                         <div class="user-recitation-player-box" id="user-recitation-player-box" style="display: none;">
                             <div class="user-audio-header">
                                 <div class="user-audio-info">
-                                    <i class="fa-solid fa-headphones-simple"></i>
+                                    <i class="fa-solid fa-microphone-lines"></i>
                                     <span>تسجيل تلاوتك بصوتك:</span>
                                 </div>
                                 <div class="user-audio-actions">
@@ -358,7 +361,27 @@
                                     </a>
                                 </div>
                             </div>
-                            <audio id="user-recitation-audio" controls preload="metadata" style="width: 100%; height: 38px;"></audio>
+                            <!-- Hidden native audio element -->
+                            <audio id="user-recitation-audio" preload="metadata" style="display: none;"></audio>
+                            <!-- Luxury Custom Player -->
+                            <div class="custom-luxury-audio-bar" id="custom-luxury-audio-bar">
+                                <button type="button" class="cap-play-circle" id="cap-btn-play" title="تشغيل / إيقاف التلاوة">
+                                    <i class="fa-solid fa-play" id="cap-play-icon"></i>
+                                </button>
+                                <div class="cap-progress-area">
+                                    <div class="cap-timeline" id="cap-timeline">
+                                        <div class="cap-timeline-fill" id="cap-timeline-fill"></div>
+                                        <span class="cap-timeline-pin" id="cap-timeline-pin"></span>
+                                    </div>
+                                    <div class="cap-meta-row">
+                                        <span class="cap-time-val" id="cap-curr-time">00:00</span>
+                                        <div class="cap-live-bars" id="cap-live-bars">
+                                            <span></span><span></span><span></span><span></span><span></span><span></span>
+                                        </div>
+                                        <span class="cap-time-val" id="cap-total-time">00:00</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="eval-banner-divider"></div>
@@ -373,6 +396,12 @@
                             <!-- Circular Gold Record Button specifically for recording! -->
                             <button type="button" class="bar-record-circle" id="bar-btn-record" title="بدء التسجيل والتسميع بصوتك">
                                 <i class="fa-solid fa-microphone" id="bar-record-icon"></i>
+                            </button>
+
+                            <!-- Simple Re-recite Button (Word-labeled, clear and simple) -->
+                            <button type="button" class="btn-re-recite-simple" id="btn-re-recite-simple" title="إعادة التسميع من البداية">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                <span>إعادة التسميع</span>
                             </button>
 
                             <!-- Waveform Visualizer Bars (Animated with user voice recording) -->
@@ -526,12 +555,30 @@
                 <!-- Modal Audio Player -->
                 <div class="user-modal-player-box" id="user-modal-player-box" style="display: none; margin: 12px 0 6px 0;">
                     <div class="modal-audio-label" style="font-size: 13px; font-weight: 700; color: var(--gold, #c5a859); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                        <span><i class="fa-solid fa-headphones-simple"></i> الاستماع لتلاوتك المسجلة:</span>
+                        <span><i class="fa-solid fa-microphone-lines"></i> الاستماع لتلاوتك المسجلة:</span>
                         <a id="btn-download-modal-audio" class="btn-user-audio-action" download="recitation.webm" title="تحميل تسجيل التلاوة" style="color: var(--gold, #c5a859); font-size: 12px; text-decoration: none;">
                             <i class="fa-solid fa-download"></i> <span>تحميل</span>
                         </a>
                     </div>
-                    <audio id="user-modal-recitation-audio" controls preload="metadata" style="width: 100%; height: 36px;"></audio>
+                    <audio id="user-modal-recitation-audio" preload="metadata" style="display: none;"></audio>
+                    <div class="custom-luxury-audio-bar" id="custom-modal-audio-bar">
+                        <button type="button" class="cap-play-circle" id="cap-modal-btn-play" title="تشغيل / إيقاف التلاوة">
+                            <i class="fa-solid fa-play" id="cap-modal-play-icon"></i>
+                        </button>
+                        <div class="cap-progress-area">
+                            <div class="cap-timeline" id="cap-modal-timeline">
+                                <div class="cap-timeline-fill" id="cap-modal-timeline-fill"></div>
+                                <span class="cap-timeline-pin" id="cap-modal-timeline-pin"></span>
+                            </div>
+                            <div class="cap-meta-row">
+                                <span class="cap-time-val" id="cap-modal-curr-time">00:00</span>
+                                <div class="cap-live-bars" id="cap-modal-live-bars">
+                                    <span></span><span></span><span></span><span></span><span></span><span></span>
+                                </div>
+                                <span class="cap-time-val" id="cap-modal-total-time">00:00</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Actions Bottom Row -->
@@ -572,6 +619,6 @@
     <script src="core/toast.js?v=58"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js?v=63"></script>
+    <script src="features/recite/recite.js?v=64"></script>
 </body>
 </html>

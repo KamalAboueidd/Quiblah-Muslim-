@@ -1520,6 +1520,23 @@ function startLiveWaveform(stream) {
     }
 }
 
+function startSimulatedWaveform() {
+    const bars = barWaveformVisualizer ? barWaveformVisualizer.querySelectorAll('.wbar') : [];
+    if (!bars.length) return;
+    let step = 0;
+    function updateSimBars() {
+        if (!isRecording) return;
+        step += 0.15;
+        bars.forEach((bar, idx) => {
+            const wave = Math.sin(step + idx * 0.8) * 0.5 + 0.5;
+            const h = Math.max(4, Math.min(22, Math.round(4 + wave * 17)));
+            bar.style.height = `${h}px`;
+        });
+        audioAnimFrameId = requestAnimationFrame(updateSimBars);
+    }
+    updateSimBars();
+}
+
 function stopLiveWaveform() {
     if (audioAnimFrameId) {
         cancelAnimationFrame(audioAnimFrameId);
@@ -1604,9 +1621,17 @@ async function startRecording() {
     }
 
     // 3. Coordinate MediaRecorder & microphone acquisition:
-    // Run MediaRecorder seamlessly on Desktop, Mobile (Chrome & Brave), and WebAPK
-    // to record user recitation audio for playback and live waveform animation.
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // On Desktop, MediaRecorder and SpeechRecognition run concurrently without hardware conflict.
+    // On Mobile (Android / iOS), opening getUserMedia simultaneously locks the OS microphone HAL
+    // and causes Google Speech Recognition to fail with audio-capture error.
+    // Therefore, on mobile devices when SpeechRecognition is active, let it have exclusive mic access.
+    // On Desktop or when external Whisper is configured, MediaRecorder runs normally.
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const hasSpeechRec = Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+    const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+    const shouldRunMediaRecorder = !isMobile || !hasSpeechRec || isBrave || Boolean(hfApiToken || makeWebhookUrl);
+
+    if (shouldRunMediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
                 console.warn("Microphone access notice for MediaRecorder:", micErr);
@@ -1616,7 +1641,6 @@ async function startRecording() {
             if (stream && isRecording) {
                 audioStream = stream;
 
-                // Start continuous MediaRecorder — NEVER restarted during recording
                 try {
                     let preferredMime = '';
                     if (typeof MediaRecorder !== 'undefined') {
@@ -1636,18 +1660,20 @@ async function startRecording() {
                     mediaRecorder.ondataavailable = (e) => {
                         if (e.data && e.data.size > 0) audioChunks.push(e.data);
                     };
-                    mediaRecorder.start(1000); // Collect chunks every 1s for progressive buffering
+                    mediaRecorder.start(1000);
                 } catch (mrErr) {
                     console.warn("MediaRecorder start notice:", mrErr);
                     mediaRecorder = null;
                 }
 
-                // Connect live waveform visualizer to the microphone stream
                 startLiveWaveform(stream);
             }
         } catch (streamErr) {
             console.warn("Stream acquisition notice:", streamErr);
         }
+    } else if (isRecording) {
+        // Run vibrant wave animation on mobile during active speech recognition
+        startSimulatedWaveform();
     }
 }
 
@@ -2247,8 +2273,14 @@ function spawnSpeechRecognizer() {
                 return;
             }
 
+            const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
+            if (isBrave && (e.error === 'network' || e.error === 'not-allowed')) {
+                if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يحظر خدمة التعرف الصوتي';
+                showToast("متصفح Brave يحظر خدمة التعرف الصوتي لجوجل لحماية الخصوصية. يرجى فتح الموقع في متصفح Chrome للتسميع المباشر.", "fa-solid fa-triangle-exclamation");
+                return;
+            }
+
             if (e.error === 'audio-capture') {
-                // If microphone contention occurs on mobile, release audioStream to restore SpeechRecognition
                 if (audioStream) {
                     try { audioStream.getTracks().forEach(t => t.stop()); } catch (err) {}
                     audioStream = null;
@@ -2258,10 +2290,9 @@ function spawnSpeechRecognizer() {
                     mediaRecorder = null;
                 }
                 speechRestartAttempts++;
-                // Never permanently give up on mobile / PWA: use progressive backoff to re-acquire cleanly
                 if (isRecording) {
                     if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                    const retryDelay = Math.min(1000, 250 + speechRestartAttempts * 120);
+                    const retryDelay = Math.min(600, 150 + speechRestartAttempts * 100);
                     speechRestartTimeout = setTimeout(() => {
                         if (isRecording) spawnSpeechRecognizer();
                     }, retryDelay);
@@ -2313,18 +2344,22 @@ function spawnSpeechRecognizer() {
                 updateLiveSpokenHighlights(liveTranscript);
             }
 
-            // Resilient respawn with minimal debounce for Android Mobile & PWA
+            // Resilient respawn with instant restart on Android Mobile & PWA
             if (isRecording) {
-                if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                speechRestartTimeout = setTimeout(() => {
-                    if (isRecording) {
-                        try {
-                            recognizer.start();
-                        } catch (err) {
-                            spawnSpeechRecognizer();
+                try {
+                    recognizer.start();
+                } catch (err) {
+                    if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+                    speechRestartTimeout = setTimeout(() => {
+                        if (isRecording) {
+                            try {
+                                recognizer.start();
+                            } catch (e) {
+                                spawnSpeechRecognizer();
+                            }
                         }
-                    }
-                }, 35);
+                    }, 40);
+                }
             }
         };
 

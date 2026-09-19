@@ -177,6 +177,8 @@ let currentSessionFinalText = "";
 let isRecognizing = false;
 let audioCtx = null, audioAnalyser = null, audioAnimFrameId = null;
 let lastAccuracy = 100;
+let memorizePauseTimer = null;
+let feedbackStripPauseTimer = null;
 
 // AI Engine Configuration
 let aiEngineMode = localStorage.getItem("recite_engine_mode") || "smart_demo";
@@ -1717,6 +1719,18 @@ async function stopRecordingAndAnalyze() {
         accumulatedSpeechText = liveTranscript;
     }
 
+    if (memorizePauseTimer) clearTimeout(memorizePauseTimer);
+    if (feedbackStripPauseTimer) clearTimeout(feedbackStripPauseTimer);
+    if (memorizeLiveWords && liveTranscript) {
+        const rawWords = liveTranscript.split(/\s+/).filter(Boolean);
+        let finalSpoken = preprocessSpokenWords(rawWords);
+        let liveHtml = '';
+        finalSpoken.forEach(spkWord => {
+            liveHtml += `<span class="inscribed-word live-reciting">${escapeHTML(spkWord)}</span> `;
+        });
+        memorizeLiveWords.innerHTML = liveHtml;
+    }
+
     stopLiveSpeechRecognition();
     stopLiveWaveform();
 
@@ -1832,6 +1846,8 @@ function resetStudioRecording() {
         if (timerInterval) clearInterval(timerInterval);
     }
 
+    if (memorizePauseTimer) clearTimeout(memorizePauseTimer);
+    if (feedbackStripPauseTimer) clearTimeout(feedbackStripPauseTimer);
     audioChunks = [];
     recordedAudioBlob = null;
     recordedAudioDuration = 0;
@@ -2140,7 +2156,7 @@ function deduplicateSpokenPhrases(text, targetVerseText) {
     while (changed) {
         changed = false;
         const maxLen = Math.floor(words.length / 2);
-        for (let len = maxLen; len >= 1; len--) {
+        for (let len = maxLen; len >= 3; len--) {
             for (let i = 0; i <= words.length - 2 * len; i++) {
                 let isDup = true;
                 for (let k = 0; k < len; k++) {
@@ -2250,7 +2266,10 @@ function spawnSpeechRecognizer() {
                 : currentInterimSpeechText;
 
             if (currentSessionFull) {
-                const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                let activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                if (recitationScopeMode === 'single' && !isFullSurahMode && activeAyahs.length > 0) {
+                    activeAyahs = getConsecutiveAyahsForSpokenWords(currentAyahNumber || 1, 60);
+                }
                 currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
             }
 
@@ -2328,7 +2347,10 @@ function spawnSpeechRecognizer() {
                 : currentInterimSpeechText;
 
             if (currentSessionFull) {
-                const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                let activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+                if (recitationScopeMode === 'single' && !isFullSurahMode && activeAyahs.length > 0) {
+                    activeAyahs = getConsecutiveAyahsForSpokenWords(currentAyahNumber || 1, 60);
+                }
                 currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
                 committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
                 const targetTextForDedup = (activeAyahs && activeAyahs.length) ? activeAyahs.map(a => a.text).join(' ') : currentTargetVerseText;
@@ -2777,16 +2799,43 @@ function updateLiveSpokenHighlights(spokenText) {
         }
     }
 
-    // 1. Memorization Mode: Render spoken words live in natural Quran calligraphy WITHOUT premature errors
+    // 1. Memorization Mode: While speaking, display ONLY the active word currently pronounced!
+    // When the user pauses for > 2 seconds, reveal all accumulated spoken words side by side!
     if (studioDisplayMode === 'memorize') {
         if (memorizeCanvasHint) memorizeCanvasHint.classList.add('has-words');
         if (memorizeLiveWords) {
-            let liveHtml = '';
-            spokenWords.forEach(spkWord => {
-                liveHtml += `<span class="inscribed-word live-reciting">${escapeHTML(spkWord)}</span> `;
-            });
-            memorizeLiveWords.innerHTML = liveHtml;
+            const latestWord = spokenWords[spokenWords.length - 1] || "";
+            // Real-time active single word display with majestic gold pulse
+            memorizeLiveWords.innerHTML = `
+                <div class="live-active-single-word-box">
+                    <span class="live-single-word-pulse">${escapeHTML(latestWord)}</span>
+                </div>
+            `;
+
+            // Debounce for 2-second pause / breath to reveal the full accumulated verse
+            if (memorizePauseTimer) clearTimeout(memorizePauseTimer);
+            memorizePauseTimer = setTimeout(() => {
+                if (isRecording && memorizeLiveWords) {
+                    let liveHtml = '';
+                    spokenWords.forEach(spkWord => {
+                        liveHtml += `<span class="inscribed-word live-reciting">${escapeHTML(spkWord)}</span> `;
+                    });
+                    memorizeLiveWords.innerHTML = liveHtml;
+                }
+            }, 2000);
         }
+    }
+
+    // Live speech feedback strip: update active word and 2-second full text
+    if (speechLiveTextDisplay) {
+        const latestWord = spokenWords[spokenWords.length - 1] || "";
+        speechLiveTextDisplay.innerHTML = `<span class="speech-active-word-single">${escapeHTML(latestWord)}</span>`;
+        if (feedbackStripPauseTimer) clearTimeout(feedbackStripPauseTimer);
+        feedbackStripPauseTimer = setTimeout(() => {
+            if (isRecording && speechLiveTextDisplay) {
+                speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(spokenWords.join(' '))}</span>`;
+            }
+        }, 2000);
     }
 
     // 2. Recitation Mode: Highlight recited words in glowing GREEN on the Mushaf text word by word!

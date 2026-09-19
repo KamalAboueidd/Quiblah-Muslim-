@@ -3976,6 +3976,46 @@ body.mushaf-studio-body {
     background: #dfc67e;
 }
 
+/* ==========================================================================
+   21. Live Single-Word Real-Time Presentation (Word-by-Word Calligraphy)
+   ========================================================================== */
+.live-active-single-word-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+    width: 100%;
+    text-align: center;
+    animation: fadeInWordScale 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.live-single-word-pulse {
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: clamp(34px, 7.5vw, 54px);
+    font-weight: 700;
+    color: var(--gold-light, #f5df9a);
+    text-shadow: 0 0 20px rgba(197, 168, 89, 0.65), 0 0 45px rgba(197, 168, 89, 0.3);
+    letter-spacing: 0.5px;
+    display: inline-block;
+    padding: 8px 24px;
+    border-radius: 14px;
+    background: radial-gradient(circle, rgba(197, 168, 89, 0.14) 0%, transparent 72%);
+}
+
+.speech-active-word-single {
+    font-family: 'Amiri Quran', 'Amiri', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold-light, #f5df9a);
+    text-shadow: 0 0 14px rgba(197, 168, 89, 0.5);
+    animation: fadeInWordScale 0.15s ease-out;
+}
+
+@keyframes fadeInWordScale {
+    0% { transform: scale(0.9); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 
 
 

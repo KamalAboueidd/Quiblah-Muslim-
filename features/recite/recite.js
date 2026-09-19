@@ -262,9 +262,35 @@ function showToast(msg, icon = "fa-solid fa-circle-exclamation") {
 }
 window.showToast = showToast;
 
-// -----------------------------------------------------------------------------
-// 5. Initialization
-// -----------------------------------------------------------------------------
+// Pre-flight check to guarantee Android WebAPK / PWA has granted native microphone permissions
+async function ensurePwaMicrophonePermission() {
+    try {
+        if (navigator.permissions && navigator.permissions.query) {
+            const perm = await navigator.permissions.query({ name: 'microphone' });
+            if (perm.state === 'granted') return true;
+        }
+    } catch(e) {}
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+                         window.navigator.standalone === true;
+
+    if (isStandalone && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const oneTimeGesture = () => {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                stream.getTracks().forEach(t => t.stop());
+            }).catch(err => {
+                console.warn("PWA microphone permission check:", err);
+            });
+            window.removeEventListener('click', oneTimeGesture);
+            window.removeEventListener('touchstart', oneTimeGesture);
+        };
+        window.addEventListener('click', oneTimeGesture, { once: true });
+        window.addEventListener('touchstart', oneTimeGesture, { once: true });
+    }
+    return true;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     cacheDomElements();
     initSurahDropdown();
@@ -274,6 +300,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default initial state: no surah/ayah selected until the user chooses one
     renderInitialEmptyState();
+
+    // Warm up microphone permission for PWA standalone mode
+    ensurePwaMicrophonePermission();
 });
 
 function cacheDomElements() {
@@ -2217,6 +2246,7 @@ function spawnSpeechRecognizer() {
 
         recognizer.onresult = (event) => {
             if (!isRecording) return;
+            speechRestartAttempts = 0; // Reset error retry counter on every recognized word
 
             const finalSegments = [];
             let interimSegment = '';
@@ -2275,13 +2305,13 @@ function spawnSpeechRecognizer() {
                     mediaRecorder = null;
                 }
                 speechRestartAttempts++;
-                if (speechRestartAttempts <= 4 && isRecording) {
+                // Never permanently give up on mobile / PWA: use progressive backoff to re-acquire cleanly
+                if (isRecording) {
                     if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+                    const retryDelay = Math.min(1000, 250 + speechRestartAttempts * 120);
                     speechRestartTimeout = setTimeout(() => {
                         if (isRecording) spawnSpeechRecognizer();
-                    }, 300);
-                } else {
-                    console.warn("Speech recognition audio-capture attempt limit reached.");
+                    }, retryDelay);
                 }
                 return;
             }
@@ -2318,12 +2348,14 @@ function spawnSpeechRecognizer() {
                 accumulatedSpeechText = liveTranscript;
             }
 
-            // Zero-delay immediate respawn with small debounce for mobile OS audio stack
+            // Resilient respawn with optimal debounce for mobile OS / PWA audio stack
             if (isRecording) {
                 if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const restartDelay = isMobile ? 150 : 80;
                 speechRestartTimeout = setTimeout(() => {
                     if (isRecording) spawnSpeechRecognizer();
-                }, 80);
+                }, restartDelay);
             }
         };
 
@@ -2332,11 +2364,13 @@ function spawnSpeechRecognizer() {
         console.warn("Failed to start SpeechRecognition:", e);
         if (isRecording) {
             if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const retryDelay = isMobile ? 220 : 80;
             speechRestartTimeout = setTimeout(() => {
                 if (isRecording) {
                     spawnSpeechRecognizer();
                 }
-            }, 50);
+            }, retryDelay);
         }
     }
 }

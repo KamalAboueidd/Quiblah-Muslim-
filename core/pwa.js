@@ -2,17 +2,33 @@
 (function () {
     'use strict';
 
-    // 1. تسجيل الـ Service Worker
+    // 1. تسجيل الـ Service Worker وإدارة التحديث التلقائي
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker
                 .register('./service-worker.js')
                 .then((registration) => {
                     console.log('[PWA] Service Worker مسجل بنجاح بنطاق:', registration.scope);
+                    // فحص فوري للتحديثات عند فتح التطبيق
+                    registration.update();
                 })
                 .catch((error) => {
                     console.warn('[PWA] تعذر تسجيل Service Worker:', error);
                 });
+        });
+
+        // فحص التحديثات عند العودة للتطبيق من الخلفية
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                navigator.serviceWorker.getRegistration().then((reg) => {
+                    if (reg) reg.update();
+                });
+            }
+        });
+
+        // عند تفعيل سيرفس ووركر جديد
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[PWA] تم تفعيل إصدار جديد من التطبيق بنجاح');
         });
     }
 

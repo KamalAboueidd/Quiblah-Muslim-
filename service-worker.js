@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v52';
+const CACHE_NAME = 'quiblah-muslim-v53';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -186,7 +186,23 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 4. الأصول المحلية الثابتة (صور، ملفات JSON، JS، SVG): Cache-First
+    // 4. ملفات السكربت والتنسيقات الخاصة بالتطبيق (JS & CSS): Network-First لضمان أحدث كود دائماً في الـ PWA
+    if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.search.includes('v=')) {
+        event.respondWith(
+            fetch(request)
+                .then((response) => {
+                    if (response && response.status === 200) {
+                        const copy = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(request))
+        );
+        return;
+    }
+
+    // 5. الأصول المحلية الثابتة الأخرى (صور، ملفات JSON، صوتيات، SVG): Cache-First
     event.respondWith(
         caches.match(request).then((cached) => {
             if (cached) {

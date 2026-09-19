@@ -1681,6 +1681,41 @@ body.mushaf-studio-body {
     gap: 8px;
 }
 
+/* AI Live Recitation Prompt Badge */
+.ai-live-prompt-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 18px;
+    background: linear-gradient(135deg, rgba(197, 168, 89, 0.12) 0%, rgba(20, 26, 36, 0.85) 100%);
+    border: 1px solid rgba(197, 168, 89, 0.35);
+    border-radius: 20px;
+    color: var(--gold-light, #f5df9a);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 2px;
+    direction: rtl;
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+.ai-live-prompt-badge i {
+    color: var(--gold, #c5a859);
+    font-size: 14px;
+    animation: badgeSparkleGlow 2s infinite alternate ease-in-out;
+}
+
+@keyframes badgeSparkleGlow {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+    100% { transform: scale(1.18) rotate(12deg); opacity: 1; filter: drop-shadow(0 0 6px var(--gold)); }
+}
+
 .bottom-audio-bar {
     width: 100%;
     background: var(--card-bg);
@@ -3510,12 +3545,11 @@ body.mushaf-studio-body {
 }
 
 .user-recitation-player-box {
-    margin: 10px 0 14px 0;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, rgba(20, 26, 36, 0.95), rgba(12, 16, 23, 0.95));
-    border: 1px solid rgba(197, 168, 89, 0.35);
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    margin: 8px 0 10px 0;
+    padding: 4px 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     animation: fadeInSlideDown 0.3s ease;
 }
 
@@ -3629,7 +3663,7 @@ body.mushaf-studio-body {
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(18, 30, 26, 0.7);
+    background: rgba(24, 20, 12, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: none !important;
@@ -3641,7 +3675,7 @@ body.mushaf-studio-body {
 }
 
 [data-theme="light"] .custom-luxury-audio-bar {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(197, 168, 89, 0.08);
     border: none !important;
     box-shadow: none !important;
 }
@@ -3680,22 +3714,22 @@ body.mushaf-studio-body {
     height: 42px;
     flex: 0 0 42px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #c5a859 0%, #9a7d36 100%);
+    background: linear-gradient(135deg, #dfc67e 0%, #c5a859 50%, #9a7d36 100%);
     border: none;
-    color: #121c18;
+    color: #12100a;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 15px;
-    box-shadow: 0 3px 12px rgba(197, 168, 89, 0.4);
+    box-shadow: 0 3px 14px rgba(197, 168, 89, 0.45);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cap-play-circle:hover {
     transform: scale(1.06);
     box-shadow: 0 4px 18px rgba(197, 168, 89, 0.6);
-    background: linear-gradient(135deg, #dfc67e 0%, #b39243 100%);
+    background: linear-gradient(135deg, #f0dc9b 0%, #dfc67e 50%, #b39243 100%);
 }
 
 .cap-play-circle:active {
@@ -3713,7 +3747,7 @@ body.mushaf-studio-body {
 .cap-timeline {
     width: 100%;
     height: 7px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(197, 168, 89, 0.16);
     border-radius: 6px;
     position: relative;
     cursor: pointer;
@@ -3721,16 +3755,17 @@ body.mushaf-studio-body {
 }
 
 [data-theme="light"] .cap-timeline {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(197, 168, 89, 0.22);
 }
 
 .cap-timeline-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #10b981 0%, #c5a859 100%);
+    background: linear-gradient(90deg, #c5a859 0%, #dfc67e 50%, #f7e8a4 100%);
     border-radius: 6px;
     position: relative;
     pointer-events: none;
+    box-shadow: 0 0 8px rgba(197, 168, 89, 0.45);
     transition: width 0.08s linear;
 }
 
@@ -3741,9 +3776,9 @@ body.mushaf-studio-body {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #ffffff;
-    border: 2.5px solid #c5a859;
-    box-shadow: 0 0 8px rgba(197, 168, 89, 0.8);
+    background: #dfc67e;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px rgba(197, 168, 89, 0.9);
     transform: translate(-50%, -50%);
     pointer-events: none;
     transition: left 0.08s linear;
@@ -3755,7 +3790,7 @@ body.mushaf-studio-body {
     justify-content: space-between;
     font-family: 'Tajawal', monospace, sans-serif;
     font-size: 12px;
-    color: var(--gold-light, #f5df9a);
+    color: var(--gold, #c5a859);
     padding: 0 2px;
 }
 

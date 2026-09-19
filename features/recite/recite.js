@@ -1409,8 +1409,8 @@ function pauseExemplaryAudio() {
     if (btnQuickListen) btnQuickListen.classList.remove('playing');
     if (cardListenExemplary) cardListenExemplary.classList.remove('playing');
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('playing');
-    if (playerStatusMain) playerStatusMain.textContent = 'اضغط على زر الميكروفون لبدء التسجيل';
-    if (playerStatusSub) playerStatusSub.textContent = 'اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+    if (playerStatusMain) playerStatusMain.textContent = 'سمّع بصوتك وسيتم تصحيح تلاوتك وتدقيقها بالذكاء الاصطناعي';
+    if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر الميكروفون للبدء، وسيقوم الذكاء الاصطناعي بالتدقيق الفوري كلمة بكلمة';
 }
 
 function formatTime(sec) {
@@ -1584,12 +1584,12 @@ async function startRecording() {
     if (btnReReciteSimple) btnReReciteSimple.style.display = 'inline-flex';
 
     if (studioDisplayMode === 'memorize') {
-        if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... اقرأ الآيات من حفظك';
-        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ برياحتك، وعند الانتهاء اضغط زر الإيقاف للتدقيق الفوري';
+        if (playerStatusMain) playerStatusMain.textContent = 'تسميع غيبي جاري... سمّع وسيتم تصحيح تلاوتك وتدقيقها بالذكاء الاصطناعي';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ برياحتك وبدون استعجال، وعند الانتهاء اضغط زر الإيقاف للتدقيق الفوري';
         if (!isVerseRevealed && memorizeLiveWords) memorizeLiveWords.innerHTML = '';
     } else {
-        if (playerStatusMain) playerStatusMain.textContent = 'جاري الاستماع لتلاوتك الكريمة...';
-        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ برياحتك وبدون استعجال، وعند الانتهاء اضغط زر الإيقاف للتدقيق';
+        if (playerStatusMain) playerStatusMain.textContent = 'سمّع بصوتك وسيتم تصحيح تلاوتك وتدقيقها بالذكاء الاصطناعي';
+        if (playerStatusSub) playerStatusSub.textContent = 'اقرأ برياحتك وبدون استعجال، وعند الانتهاء اضغط زر الإيقاف للتدقيق الفوري';
     }
 
     if (timerInterval) clearInterval(timerInterval);
@@ -1606,30 +1606,19 @@ async function startRecording() {
         console.warn("Live speech recognition init note:", eSpeech);
     }
 
-    // 3. Coordinate MediaRecorder & microphone acquisition:
-    // On mobile devices (Android / iOS PWA / WebViews), the OS audio layer (AudioFlinger) prevents
-    // simultaneous mic capture. If getUserMedia captures the mic while SpeechRecognition is running,
-    // Android immediately kills SpeechRecognition with 'audio-capture' or 'network' error,
-    // which completely breaks live recitation on Mobile!
-    // Desktop (Windows/Mac) supports concurrent multi-client mic capture natively.
-    // Therefore, on Mobile when native SpeechRecognition is supported, SpeechRecognition has
-    // exclusive access to the mic so words appear live and evaluation runs smoothly just like Desktop.
-    const SpeechRecClass = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window && navigator.maxTouchPoints > 1);
-    const shouldStartMediaRecorder = !isMobileDevice || !SpeechRecClass;
+    // 3. Acquire microphone and start continuous MediaRecorder so user voice is ALWAYS recorded for playback
+    // on BOTH Desktop and Mobile!
+    const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
+            console.warn("Microphone access for MediaRecorder:", micErr);
+            return null;
+        })
+        : Promise.resolve(null);
 
-    if (shouldStartMediaRecorder) {
-        const micPromise = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-            ? navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
-                console.warn("Microphone access for MediaRecorder:", micErr);
-                return null;
-            })
-            : Promise.resolve(null);
-
-        try {
-            const stream = await micPromise;
-            if (stream && isRecording) {
-                audioStream = stream;
+    try {
+        const stream = await micPromise;
+        if (stream && isRecording) {
+            audioStream = stream;
 
                 // Start continuous MediaRecorder — NEVER restarted during recording
                 try {
@@ -1663,7 +1652,6 @@ async function startRecording() {
         } catch (streamErr) {
             console.warn("Stream acquisition notice:", streamErr);
         }
-    }
 }
 
 function triggerSilenceCountdown() {
@@ -1699,6 +1687,9 @@ async function stopRecordingAndAnalyze() {
         currentInterimSpeechText = "";
     }
     if (committedPreviousSessionsText) {
+        const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
+        const currentTargetVerseText = activeAyahs.map(a => a.text).join(' ');
+        committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, currentTargetVerseText);
         liveTranscript = committedPreviousSessionsText.trim();
         accumulatedSpeechText = liveTranscript;
     }
@@ -1863,8 +1854,8 @@ function resetStudioRecording() {
     if (barWaveformVisualizer) barWaveformVisualizer.classList.remove('recording');
     if (barTimeDisplay) barTimeDisplay.textContent = '00:00';
     if (btnReReciteSimple) btnReReciteSimple.style.display = 'none';
-    if (playerStatusMain) playerStatusMain.textContent = 'اضغط على زر الميكروفون لبدء التسجيل';
-    if (playerStatusSub) playerStatusSub.textContent = 'اقرأ الآية بوضوح وسيقوم الذكاء الاصطناعي بتدقيق النطق والتجويد';
+    if (playerStatusMain) playerStatusMain.textContent = 'سمّع بصوتك وسيتم تصحيح تلاوتك وتدقيقها بالذكاء الاصطناعي';
+    if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر الميكروفون لبدء التسميع، وسيقوم الذكاء الاصطناعي بالتدقيق الفوري';
 
     if (btnRevealVerse) btnRevealVerse.innerHTML = '<i class="fa-solid fa-eye"></i> <span>كشف النص للمساعدة</span>';
     if (memorizeLiveWords) memorizeLiveWords.innerHTML = '';
@@ -1931,13 +1922,15 @@ function combineSpeechSegments(prev, next) {
 
             if (!allowedInQuran) {
                 // Stitch without repeating the shared words replayed by speech recognizer
-                return pWords.concat(nWords.slice(len)).join(' ');
+                const stitched = pWords.concat(nWords.slice(len)).join(' ');
+                return deduplicateSpokenPhrases(stitched, currentTargetVerseText);
             }
         }
     }
 
     // Consecutive non-overlapping sentences across pauses and ayahs
-    return p + ' ' + n;
+    const stitched = p + ' ' + n;
+    return deduplicateSpokenPhrases(stitched, currentTargetVerseText);
 }
 
 // Build flat target words from active target ayahs
@@ -2238,8 +2231,9 @@ function spawnSpeechRecognizer() {
             }
 
             const fullRaw = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
+            const deduplicated = deduplicateSpokenPhrases(fullRaw.trim(), currentTargetVerseText);
 
-            liveTranscript = normalizeQuranicDisjointedLetters(fullRaw.trim(), currentSurahNumber, currentAyahNumber);
+            liveTranscript = normalizeQuranicDisjointedLetters(deduplicated, currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
 
             // Live Visual Feedback:
@@ -2292,6 +2286,7 @@ function spawnSpeechRecognizer() {
                 const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
                 currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
                 committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
+                committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, currentTargetVerseText);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
                 liveTranscript = committedPreviousSessionsText.trim();

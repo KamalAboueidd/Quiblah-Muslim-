@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/recite/recite.css?v=56">
+    <link rel="stylesheet" href="features/recite/recite.css?v=58">
     <script src="core/quran_data.js"></script>
     <script src="core/player-bridge.js"></script>
 </head>
@@ -393,6 +393,12 @@
 
                     <!-- Bottom Dedicated Recording Bar (Dedicated for recording voice, NOT reciter audio) -->
                     <div class="mushaf-bottom-player-wrap">
+                        <!-- Prominent AI Live Prompt Badge directly in front of the user -->
+                        <div class="ai-live-prompt-badge">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>سمّع بصوتك وسيتم تصحيح تلاوتك وتدقيقها بالذكاء الاصطناعي</span>
+                        </div>
+
                         <div class="bottom-audio-bar">
                             <!-- Circular Gold Record Button specifically for recording! -->
                             <button type="button" class="bar-record-circle" id="bar-btn-record" title="بدء التسجيل والتسميع بصوتك">
@@ -623,6 +629,6 @@
     <script src="core/toast.js?v=58"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/recite/recite.js?v=69"></script>
+    <script src="features/recite/recite.js?v=70"></script>
 </body>
 </html>

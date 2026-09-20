@@ -85,6 +85,35 @@ body.bot-body {
     bottom: 0;
 }
 
+/* --- Global Scrollbar Styling (Completely remove chunky Windows buttons, boxes & black tracks) --- */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(197, 168, 89, 0.25);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(197, 168, 89, 0.5);
+}
+
 /* --- Fullscreen Background Carousel (Matching Website Design) --- */
 .fullscreen-carousel {
     position: fixed;
@@ -378,7 +407,7 @@ body.bot-body {
     display: none !important;
 }
 
-/* Scrollable Messages Area */
+/* Scrollable Messages Area - Clean, seamless scrolling with NO visible scrollbar (ChatGPT style) */
 .chat-messages-flow {
     flex: 1;
     overflow-y: auto;
@@ -389,6 +418,14 @@ body.bot-body {
     flex-direction: column;
     gap: 18px;
     scroll-behavior: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE / Edge */
+}
+
+.chat-messages-flow::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* Suggestion Chips Base */
@@ -698,6 +735,14 @@ body.bot-body {
     max-height: 120px;
     min-height: 24px;
     padding: 4px 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.chat-textarea::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 .chat-textarea::placeholder {
@@ -917,6 +962,8 @@ body.bot-body {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(197, 168, 89, 0.25) transparent;
 }
 
 .session-item {

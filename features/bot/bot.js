@@ -873,6 +873,19 @@
         });
     }
 
+    // --- Fullscreen Background Carousel (Matching Website Design) ---
+    function initBackgroundCarousel() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        if (!slides || slides.length <= 1) return;
+        let currentSlide = 0;
+
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 8000);
+    }
+
     // --- Init DOM & Listeners ---
     function init() {
         chatMessagesFlow = document.getElementById('chat-messages-flow');
@@ -890,7 +903,8 @@
         btnClearAllChats = document.getElementById('btn-clear-all-chats');
         sessionsListContainer = document.getElementById('bot-sessions-list');
 
-        // Load sessions and start with a fresh New Chat on page load
+        // Background carousel & chat session lifecycle
+        initBackgroundCarousel();
         loadSessionsFromStorage();
         startNewChat();
         initSuggestionChips();

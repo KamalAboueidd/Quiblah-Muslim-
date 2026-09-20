@@ -957,20 +957,6 @@
         });
 
         if (chatInput) {
-            chatInput.addEventListener('focus', () => {
-                const container = document.getElementById('bot-chat-container');
-                if (container && container.classList.contains('is-empty')) {
-                    container.classList.add('input-focused');
-                }
-            });
-
-            chatInput.addEventListener('blur', () => {
-                const container = document.getElementById('bot-chat-container');
-                if (container && container.classList.contains('is-empty') && !chatInput.value.trim()) {
-                    container.classList.remove('input-focused');
-                }
-            });
-
             chatInput.addEventListener('input', () => {
                 adjustTextareaHeight(chatInput);
                 updateSendButtonState();

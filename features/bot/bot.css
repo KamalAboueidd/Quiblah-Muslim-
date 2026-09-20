@@ -295,56 +295,52 @@ body.bot-body {
     transition: justify-content 0.4s ease;
 }
 
-/* --- Empty State: Centered Hero & Centered Input (ChatGPT-Style) --- */
+/* --- Empty State: Mosque Icon + Title + Input Field Centered in Viewport --- */
 .bot-chat-container.is-empty {
-    justify-content: center;
-    align-items: center;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 22px;
 }
 
 .bot-chat-container.is-empty .chat-messages-flow {
-    flex: 0 0 auto;
-    overflow: visible;
-    padding: 0;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 20px;
+    display: none !important;
 }
 
 .bot-chat-container.is-empty .bot-welcome-card {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     align-items: center;
     text-align: center;
     padding: 0 16px;
+    margin: 0;
     opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.35s ease, transform 0.35s ease, height 0.35s ease, margin 0.35s ease;
 }
 
 .bot-chat-container.is-empty .welcome-mosque-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
 .welcome-tab-mosque-svg {
-    width: 68px;
-    height: 68px;
+    width: 72px;
+    height: 72px;
     color: var(--gold) !important;
     fill: currentColor !important;
-    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.5));
+    filter: drop-shadow(0 0 18px rgba(197, 168, 89, 0.55));
     transition: transform 0.3s ease;
 }
 
 .bot-chat-container.is-empty .welcome-title {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 800;
     color: var(--gold-light);
-    margin-bottom: 24px;
+    margin: 0;
+    letter-spacing: -0.3px;
 }
 
 .bot-chat-container.is-empty .welcome-title span {
@@ -353,58 +349,31 @@ body.bot-body {
 
 .bot-chat-container.is-empty .bot-input-area {
     width: 100%;
-    max-width: 700px;
+    max-width: 680px;
     margin: 0 auto;
     padding: 0 12px;
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bot-chat-container.is-empty .suggestion-chips-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 14px;
-    opacity: 1;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* --- When Input is Focused on Empty State: Smooth descent to bottom! --- */
-.bot-chat-container.is-empty.input-focused,
+/* --- Active Conversation State (Once messages are sent to server) --- */
 .bot-chat-container:not(.is-empty) {
     justify-content: flex-start;
+    gap: 0;
 }
 
-.bot-chat-container.is-empty.input-focused .bot-welcome-card {
-    opacity: 0;
-    transform: translateY(-24px) scale(0.95);
-    pointer-events: none;
-    height: 0;
-    margin: 0;
-    overflow: hidden;
+.bot-chat-container:not(.is-empty) .bot-welcome-card {
+    display: none !important;
 }
 
-.bot-chat-container.is-empty.input-focused .suggestion-chips-grid {
-    opacity: 0;
-    transform: translateY(10px);
-    pointer-events: none;
-    height: 0;
-    margin: 0;
-    overflow: hidden;
+.bot-chat-container:not(.is-empty) .chat-messages-flow {
+    display: flex !important;
+    flex: 1;
 }
 
-.bot-chat-container.is-empty.input-focused .bot-input-area,
 .bot-chat-container:not(.is-empty) .bot-input-area {
     margin-top: auto;
     width: 100%;
     max-width: 100%;
     padding: 8px 0 calc(10px + env(safe-area-inset-bottom, 0px));
-}
-
-/* Active chat with messages */
-.bot-chat-container:not(.is-empty) .bot-welcome-card,
-.bot-chat-container:not(.is-empty) .suggestion-chips-grid {
-    display: none !important;
 }
 
 /* Scrollable Messages Area - Clean, seamless scrolling with NO visible scrollbar (ChatGPT style) */

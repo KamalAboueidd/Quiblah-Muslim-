@@ -44,6 +44,7 @@
 - إذا سألك المستخدم عن مواضيع خارج هذا النطاق (مثل السياسة، الرياضة، الفن، أو دردشة عشوائية)، اعتذر بلطف وبيّن تخصصك.
 - استشهد دائماً بالآيات القرآنية والأحاديث الصحيحة مع ذكر المصادر.
 - عند الاستشهاد بآية قرآنية أو حديث شريف، ضعهما دائماً في سطر مستقل بين علامات تنصيص أو أقواس (مثال: «...» أو ﴿...﴾) ليتم إبرازهما بتنسيق ذهبي فاخر ومميز.
+- لا تستخدم نهائياً رمز الشباك (# أو ## أو ###) في العناوين؛ نسق العناوين بالخط العريض فقط أو بدون رمز الشباك.
 - يمنع منعاً باتاً استخدام أي رموز تعبيرية (emojis) إطلاقاً في جميع نصوص إجاباتك، واعتمد على فصاحة التعبير وجمال اللغة وعلامات الترقيم السليمة.
 - نسق إجاباتك بنقاط واضحة وفقرات منسقة مع استخدام العناوين العريضة.`;
 
@@ -83,6 +84,23 @@
             if (isStreaming && (line.match(/\*\*/g) || []).length % 2 === 1) {
                 line += '**';
             }
+
+            // Markdown Headings: #, ##, ###, #### (Eliminates raw # hashtags completely!)
+            if (/^#{1,6}\s*/.test(line)) {
+                if (inList) {
+                    html += '</ul>';
+                    inList = false;
+                }
+                let headingText = line.replace(/^#{1,6}\s*/, '').trim();
+                headingText = escapeHTML(headingText).replace(/\*\*(.*?)\*\*/g, '$1');
+                if (headingText) {
+                    html += `<h3 class="msg-section-heading">${headingText}</h3>`;
+                    continue;
+                }
+            }
+
+            // Strip any stray internal hash blocks like "### "
+            line = line.replace(/#{2,6}\s*/g, '');
 
             // Bold formatting: **text**
             line = escapeHTML(line).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -432,18 +450,56 @@
         scrollToBottom();
     }
 
+    // --- Touch & Scroll State for Smooth Mobile Streaming ---
+    let userHasScrolledUp = false;
+    let isTouchingFlow = false;
+
+    function initScrollTracking() {
+        if (!chatMessagesFlow) return;
+
+        chatMessagesFlow.addEventListener('touchstart', () => {
+            isTouchingFlow = true;
+        }, { passive: true });
+
+        chatMessagesFlow.addEventListener('touchend', () => {
+            isTouchingFlow = false;
+            checkUserScrollPosition();
+        }, { passive: true });
+
+        chatMessagesFlow.addEventListener('touchcancel', () => {
+            isTouchingFlow = false;
+        }, { passive: true });
+
+        chatMessagesFlow.addEventListener('wheel', () => {
+            checkUserScrollPosition();
+        }, { passive: true });
+
+        chatMessagesFlow.addEventListener('scroll', () => {
+            checkUserScrollPosition();
+        }, { passive: true });
+    }
+
+    function checkUserScrollPosition() {
+        if (!chatMessagesFlow) return;
+        const distanceFromBottom = chatMessagesFlow.scrollHeight - chatMessagesFlow.scrollTop - chatMessagesFlow.clientHeight;
+        // If user manually scrolled up more than 60px from bottom, honor their position
+        if (distanceFromBottom > 60) {
+            userHasScrolledUp = true;
+        } else if (distanceFromBottom <= 20) {
+            // User scrolled back near the bottom, resume auto-scrolling
+            userHasScrolledUp = false;
+        }
+    }
+
     function scrollToBottom() {
         if (!chatMessagesFlow) return;
+        userHasScrolledUp = false;
         chatMessagesFlow.scrollTop = chatMessagesFlow.scrollHeight;
     }
 
     function scrollToBottomIfNeeded() {
-        if (!chatMessagesFlow) return;
-        const threshold = 140;
-        const distanceFromBottom = chatMessagesFlow.scrollHeight - chatMessagesFlow.scrollTop - chatMessagesFlow.clientHeight;
-        if (distanceFromBottom <= threshold) {
-            chatMessagesFlow.scrollTop = chatMessagesFlow.scrollHeight;
-        }
+        if (!chatMessagesFlow || userHasScrolledUp || isTouchingFlow) return;
+        chatMessagesFlow.scrollTop = chatMessagesFlow.scrollHeight;
     }
 
     // --- Copy To Clipboard Helper ---
@@ -490,6 +546,8 @@
         if (!chatMessagesFlow) return null;
         if (welcomeCard) welcomeCard.style.display = 'none';
 
+        userHasScrolledUp = false; // Reset to follow stream by default
+
         const row = document.createElement('div');
         row.className = 'chat-msg-row bot-msg';
 
@@ -520,12 +578,13 @@
         chatMessagesFlow.appendChild(row);
         scrollToBottom();
 
-        return {
-            row,
-            bubble,
-            metaRow,
-            update(text) {
-                const formatted = formatMarkdown(text, true);
+        // Throttled rendering via requestAnimationFrame to avoid mobile layout thrashing
+        let pendingText = null;
+        let rafId = null;
+
+        function renderContent(text, isComplete) {
+            const formatted = formatMarkdown(text, !isComplete);
+            if (!isComplete) {
                 if (!formatted) {
                     bubble.innerHTML = '<span class="streaming-cursor"></span>';
                 } else {
@@ -540,10 +599,34 @@
                         bubble.innerHTML = formatted + '<span class="streaming-cursor"></span>';
                     }
                 }
-                scrollToBottomIfNeeded();
+            } else {
+                bubble.innerHTML = formatted;
+            }
+
+            scrollToBottomIfNeeded();
+        }
+
+        return {
+            row,
+            bubble,
+            metaRow,
+            update(text) {
+                pendingText = text;
+                if (!rafId) {
+                    rafId = requestAnimationFrame(() => {
+                        rafId = null;
+                        if (pendingText !== null) {
+                            renderContent(pendingText, false);
+                        }
+                    });
+                }
             },
             complete(finalText) {
-                bubble.innerHTML = formatMarkdown(finalText, false);
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+                renderContent(finalText, true);
 
                 // Add copy button
                 const btnCopy = document.createElement('button');
@@ -568,6 +651,7 @@
         if (!rawText) return;
 
         const userText = stripEmojis(rawText);
+        userHasScrolledUp = false;
         chatInput.value = '';
         adjustTextareaHeight(chatInput);
 
@@ -793,6 +877,7 @@
         loadSessionsFromStorage();
         startNewChat();
         initSuggestionChips();
+        initScrollTracking();
 
         if (btnSendMessage) {
             btnSendMessage.addEventListener('click', handleUserSend);

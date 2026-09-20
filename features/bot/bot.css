@@ -279,29 +279,33 @@ body.bot-body {
 }
 
 .bot-chat-container.is-empty .welcome-mosque-icon {
-    font-size: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.welcome-tab-mosque-svg {
+    width: 68px;
+    height: 68px;
     color: var(--gold) !important;
-    margin-bottom: 12px;
-    filter: drop-shadow(0 0 18px rgba(197, 168, 89, 0.45));
+    fill: currentColor !important;
+    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.5));
+    transition: transform 0.3s ease;
 }
 
 .bot-chat-container.is-empty .welcome-title {
     font-size: 24px;
     font-weight: 800;
     color: var(--gold-light);
-    margin-bottom: 8px;
+    margin-bottom: 24px;
 }
 
 .bot-chat-container.is-empty .welcome-title span {
     color: var(--gold);
-}
-
-.bot-chat-container.is-empty .welcome-desc {
-    font-size: 14.5px;
-    color: rgba(255, 255, 255, 0.85);
-    max-width: 520px;
-    line-height: 1.7;
-    margin-bottom: 0;
 }
 
 .bot-chat-container.is-empty .bot-input-area {
@@ -651,8 +655,10 @@ body.bot-body {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(18, 23, 33, 0.85);
-    border: 1px solid rgba(197, 168, 89, 0.25);
+    background: rgba(197, 168, 89, 0.04) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(197, 168, 89, 0.32) !important;
     border-radius: 28px;
     padding: 8px 18px 8px 14px;
     transition: all 0.25s ease;
@@ -660,8 +666,9 @@ body.bot-body {
 }
 
 .bot-input-box-wrapper:focus-within {
-    border-color: var(--gold);
-    box-shadow: 0 0 16px rgba(197, 168, 89, 0.35);
+    background: rgba(197, 168, 89, 0.08) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 18px rgba(197, 168, 89, 0.4);
 }
 
 .chat-textarea {

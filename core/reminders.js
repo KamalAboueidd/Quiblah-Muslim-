@@ -820,7 +820,7 @@
                         saveSettings({ enabled: true });
                         syncUIFromSettings();
                         if (typeof window.showToast === 'function') {
-                            window.showToast('تم تفعيل التذكيرات الإسلامية بنجاح 🤍');
+                            window.showToast('تم تفعيل التذكيرات الإسلامية بنجاح', 'fa-solid fa-circle-check');
                         }
                     } catch (err) {
                         this.checked = false;

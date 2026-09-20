@@ -129,9 +129,11 @@ document.head.insertAdjacentHTML('beforeend', toastCSS);
         // Smoothly dismiss any currently visible toast so they never stack on top of each other
         dismissExistingToasts();
 
+        const cleanMessage = String(message || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{200D}\u{FE0F}]/gu, '').trim();
+
         const toast = document.createElement('div');
         toast.className = 'app-toast';
-        toast.innerHTML = `<i class="${iconClass}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="${iconClass}"></i> <span>${cleanMessage}</span>`;
         toastContainer.appendChild(toast);
 
         // Trigger reflow for smooth slide-in animation

@@ -225,8 +225,9 @@ let inputEngineMode, inputMakeWebhook, inputPythonUrl, inputHfToken;
 // 4. Reliable Toast Notification Helper
 // -----------------------------------------------------------------------------
 function showToast(msg, icon = "fa-solid fa-circle-exclamation") {
+    const cleanMsg = String(msg || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{200D}\u{FE0F}]/gu, '').trim();
     if (window.parent && window.parent !== window && typeof window.parent.showToast === 'function') {
-        window.parent.showToast(msg, icon);
+        window.parent.showToast(cleanMsg, icon);
         return;
     }
 
@@ -246,7 +247,7 @@ function showToast(msg, icon = "fa-solid fa-circle-exclamation") {
 
     const toast = document.createElement('div');
     toast.className = 'app-toast';
-    toast.innerHTML = `<i class="${icon}"></i> <span>${msg}</span>`;
+    toast.innerHTML = `<i class="${icon}"></i> <span>${cleanMsg}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {
@@ -409,13 +410,13 @@ function cacheDomElements() {
     if (btnReReciteSimple) {
         btnReReciteSimple.addEventListener('click', () => {
             resetStudioRecording();
-            showToast('تمت إعادة الضبط - جاهز للتسميع 🎙️', 'fa-solid fa-rotate-right');
+            showToast('تمت إعادة الضبط - جاهز للتسميع', 'fa-solid fa-rotate-right');
         });
     }
     if (btnBannerReset) {
         btnBannerReset.addEventListener('click', () => {
             resetStudioRecording();
-            showToast('تمت إعادة الضبط - جاهز للتسميع 🎙️', 'fa-solid fa-rotate-right');
+            showToast('تمت إعادة الضبط - جاهز للتسميع', 'fa-solid fa-rotate-right');
         });
     }
 
@@ -436,6 +437,17 @@ function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, 
     playBtn.onclick = () => {
         if (!audioEl.src) return;
         if (audioEl.paused) {
+            // Mutual exclusion: pause the other recitation player and exemplary audio
+            if (audioEl === userRecitationAudio) {
+                if (userModalRecitationAudio && !userModalRecitationAudio.paused) {
+                    userModalRecitationAudio.pause();
+                }
+            } else if (audioEl === userModalRecitationAudio) {
+                if (userRecitationAudio && !userRecitationAudio.paused) {
+                    userRecitationAudio.pause();
+                }
+            }
+            pauseExemplaryAudio();
             audioEl.play().catch(e => console.warn("Audio play notice:", e));
         } else {
             audioEl.pause();
@@ -443,6 +455,16 @@ function wireLuxuryAudioPlayer(audioEl, playBtn, playIcon, timeline, fill, pin, 
     };
 
     audioEl.addEventListener('play', () => {
+        if (audioEl === userRecitationAudio) {
+            if (userModalRecitationAudio && !userModalRecitationAudio.paused) {
+                userModalRecitationAudio.pause();
+            }
+        } else if (audioEl === userModalRecitationAudio) {
+            if (userRecitationAudio && !userRecitationAudio.paused) {
+                userRecitationAudio.pause();
+            }
+        }
+        pauseExemplaryAudio();
         if (playIcon) playIcon.className = 'fa-solid fa-pause';
         if (barContainer) barContainer.classList.add('playing');
     });
@@ -1210,6 +1232,8 @@ function normalizeArabicText(text) {
         .replace(/[^\u0621-\u064A\s]/g, "") // Keep only Arabic letters
         .replace(/ا+/g, "ا") // Collapse double alefs caused by dagger substitutions
         .trim();
+    // Normalize "باسم" to "بسم" universally so that SpeechRecognition and Quranic Basmalah align 100%
+    return res.replace(/(?:^|\s)باسم(?=\s|$)/g, (m) => m.startsWith(' ') ? ' بسم' : 'بسم');
 }
 
 // Fawatih Al-Suwar (Disjointed Letters - الحروف المقطعة) Equivalents for all 29 Surahs
@@ -1379,6 +1403,13 @@ function playExemplaryAudio() {
 
     if (isRecording) {
         stopRecordingAndAnalyze();
+    }
+
+    if (userRecitationAudio && !userRecitationAudio.paused) {
+        userRecitationAudio.pause();
+    }
+    if (userModalRecitationAudio && !userModalRecitationAudio.paused) {
+        userModalRecitationAudio.pause();
     }
 
     audioExemplary.play().then(() => {
@@ -1558,13 +1589,15 @@ async function startRecording() {
         return;
     }
     pauseExemplaryAudio();
+    if (userRecitationAudio && !userRecitationAudio.paused) userRecitationAudio.pause();
+    if (userModalRecitationAudio && !userModalRecitationAudio.paused) userModalRecitationAudio.pause();
 
     if (recitationEvalBanner) recitationEvalBanner.style.display = 'none';
     if (liveSpeechFeedbackStrip) {
         liveSpeechFeedbackStrip.style.display = 'block';
         const dot = liveSpeechFeedbackStrip.querySelector('.pulse-rec-dot');
         if (dot) dot.style.display = '';
-        if (speechFeedbackLabel) speechFeedbackLabel.textContent = '🎙️ جاري الاستماع لتلاوتك الكريمة الآن...';
+        if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'جاري الاستماع لتلاوتك الكريمة الآن...';
         if (speechLiveTextDisplay) {
             speechLiveTextDisplay.innerHTML = `
                 <div class="listening-live-box">
@@ -1779,7 +1812,7 @@ async function stopRecordingAndAnalyze() {
     let whisperTranscript = null;
     if (recordedBlob && recordedBlob.size > 1000) {
         if (speechFeedbackLabel) {
-            speechFeedbackLabel.textContent = '🔍 جاري تحليل تلاوتك بالذكاء الاصطناعي...';
+            speechFeedbackLabel.textContent = 'جاري تحليل تلاوتك بالذكاء الاصطناعي...';
         }
         if (playerStatusMain) {
             playerStatusMain.innerHTML = '<span style="color:var(--gold-light,#f5df9a); font-weight:700;"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحليل التلاوة بالذكاء الاصطناعي...</span>';
@@ -1897,6 +1930,30 @@ function resetStudioRecording() {
 // 12. Web Speech API (Live Inscription & Live Highlights)
 // -----------------------------------------------------------------------------
 
+function areArabicPhrasesEquivalent(phraseA, phraseB) {
+    if (!phraseA && !phraseB) return true;
+    if (!phraseA || !phraseB) return false;
+    const wordsA = phraseA.trim().split(/\s+/).filter(Boolean);
+    const wordsB = phraseB.trim().split(/\s+/).filter(Boolean);
+    if (wordsA.length !== wordsB.length) return false;
+    for (let i = 0; i < wordsA.length; i++) {
+        if (!areArabicWordsMatching(wordsA[i], wordsB[i])) return false;
+    }
+    return true;
+}
+
+function doesPhraseStartWith(fullPhrase, prefixPhrase) {
+    if (!prefixPhrase) return true;
+    if (!fullPhrase) return false;
+    const fullWords = fullPhrase.trim().split(/\s+/).filter(Boolean);
+    const prefWords = prefixPhrase.trim().split(/\s+/).filter(Boolean);
+    if (prefWords.length > fullWords.length) return false;
+    for (let i = 0; i < prefWords.length; i++) {
+        if (!areArabicWordsMatching(fullWords[i], prefWords[i])) return false;
+    }
+    return true;
+}
+
 // Smart, seamless speech segment merger that prevents duplicates on Mobile Chrome
 // while preserving 100% of spoken words across pauses and ayah transitions
 function combineSpeechSegments(prev, next) {
@@ -1905,26 +1962,33 @@ function combineSpeechSegments(prev, next) {
     if (!p) return n;
     if (!n) return p;
 
+    const pWords = p.split(/\s+/).filter(Boolean);
+    const nWords = n.split(/\s+/).filter(Boolean);
+
     const normP = normalizeArabicText(p);
     const normN = normalizeArabicText(n);
 
-    // If identical, return without duplicating
-    if (normP === normN) return p;
+    // If identical or phonetically equivalent phrase, return the more complete one
+    if (normP === normN || areArabicPhrasesEquivalent(p, n)) {
+        if (nWords.length > pWords.length) return n;
+        if (pWords.length > nWords.length) return p;
+        return (pWords[0] === 'بسم' || p.startsWith('بسم')) ? p : n;
+    }
 
     // If new session already includes previous session from start, use the new complete one
-    if (normN.startsWith(normP)) return n;
+    if (normN.startsWith(normP) || doesPhraseStartWith(n, p)) {
+        if ((pWords[0] === 'بسم' || p.startsWith('بسم')) && (nWords[0] === 'باسم' || n.startsWith('باسم'))) {
+            return n.replace(/^باسم\s*/, 'بسم ');
+        }
+        return n;
+    }
 
     // Check for overlapping boundary words at the seam between segments
-    const pWords = p.split(/\s+/).filter(Boolean);
-    const nWords = n.split(/\s+/).filter(Boolean);
-    const pNorm = pWords.map(normalizeArabicText);
-    const nNorm = nWords.map(normalizeArabicText);
-
     const maxOverlap = Math.min(pWords.length, nWords.length);
     for (let len = maxOverlap; len >= 1; len--) {
         let match = true;
         for (let k = 0; k < len; k++) {
-            if (pNorm[pNorm.length - len + k] !== nNorm[k]) {
+            if (!areArabicWordsMatching(pWords[pWords.length - len + k], nWords[k])) {
                 match = false;
                 break;
             }
@@ -1934,7 +1998,7 @@ function combineSpeechSegments(prev, next) {
             let keepBoth = false;
             if (currentSurahVerses && currentSurahVerses.length) {
                 const fullSurahNorm = currentSurahVerses.map(a => a.normWords ? a.normWords.join(' ') : normalizeArabicText(a.text)).join(' ');
-                const joinedNorm = pNorm.slice(-len).join(' ') + ' ' + nNorm.slice(0, len).join(' ');
+                const joinedNorm = pWords.slice(-len).map(normalizeArabicText).join(' ') + ' ' + nWords.slice(0, len).map(normalizeArabicText).join(' ');
                 if (fullSurahNorm.includes(joinedNorm)) {
                     keepBoth = true;
                 }
@@ -2249,7 +2313,7 @@ function spawnSpeechRecognizer() {
             const gapFromEnd = window.__TASMEE_LAST_ONEND_TIME__ ? (now - window.__TASMEE_LAST_ONEND_TIME__).toFixed(1) + 'ms' : 'initial';
             logDiag('onstart', { gapFromLastOnend: gapFromEnd });
             if (speechFeedbackLabel) {
-                speechFeedbackLabel.textContent = '🎙️ نستمع لتلاوتك الكريمة الآن بوضوح...';
+                speechFeedbackLabel.textContent = 'نستمع لتلاوتك الكريمة الآن بوضوح...';
             }
         };
 
@@ -2340,7 +2404,7 @@ function spawnSpeechRecognizer() {
 
             const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
             if (isBrave && (e.error === 'network' || e.error === 'not-allowed')) {
-                if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ متصفح Brave يحظر خدمة التعرف الصوتي';
+                if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'متصفح Brave يحظر خدمة التعرف الصوتي';
                 showToast("متصفح Brave يحظر خدمة التعرف الصوتي لجوجل لحماية الخصوصية. يرجى فتح الموقع في متصفح Chrome للتسميع المباشر.", "fa-solid fa-triangle-exclamation");
                 return;
             }
@@ -2357,7 +2421,7 @@ function spawnSpeechRecognizer() {
                 speechRestartAttempts++;
                 if (isRecording) {
                     if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                    const retryDelay = Math.min(600, 150 + speechRestartAttempts * 100);
+                    const retryDelay = Math.min(300, 50 + speechRestartAttempts * 50);
                     speechRestartTimeout = setTimeout(() => {
                         if (isRecording) spawnSpeechRecognizer();
                     }, retryDelay);
@@ -2366,7 +2430,7 @@ function spawnSpeechRecognizer() {
             }
 
             if (e.error === 'not-allowed') {
-                if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ يرجى السماح بصلاحية الميكروفون';
+                if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'يرجى السماح بصلاحية الميكروفون';
                 if (isRecording && speechRestartAttempts < 2) {
                     speechRestartAttempts++;
                     setTimeout(() => {
@@ -2377,10 +2441,10 @@ function spawnSpeechRecognizer() {
                 }
             } else if (e.error === 'network') {
                 if (!navigator.onLine) {
-                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'خدمة التعرف الصوتي تحتاج لاتصال بالإنترنت';
                     showToast("يرجى التحقق من اتصالك بالإنترنت لعمل خدمة التسميع الصوتي.", "fa-solid fa-wifi");
                 } else {
-                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = '⚠️ تعذر الاتصال بخدمة التعرف الصوتي';
+                    if (speechFeedbackLabel) speechFeedbackLabel.textContent = 'تعذر الاتصال بخدمة التعرف الصوتي';
                 }
             }
         };
@@ -2460,12 +2524,28 @@ function respawnActiveSpeechRecognizer() {
         clearTimeout(speechRestartTimeout);
         speechRestartTimeout = null;
     }
-    try {
-        spawnSpeechRecognizer();
-    } catch (err) {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const delay = isMobile ? 35 : 0;
+    if (delay > 0) {
         speechRestartTimeout = setTimeout(() => {
-            if (isRecording) spawnSpeechRecognizer();
-        }, 25);
+            if (isRecording) {
+                try {
+                    spawnSpeechRecognizer();
+                } catch (err) {
+                    speechRestartTimeout = setTimeout(() => {
+                        if (isRecording) spawnSpeechRecognizer();
+                    }, 40);
+                }
+            }
+        }, delay);
+    } else {
+        try {
+            spawnSpeechRecognizer();
+        } catch (err) {
+            speechRestartTimeout = setTimeout(() => {
+                if (isRecording) spawnSpeechRecognizer();
+            }, 25);
+        }
     }
 }
 
@@ -2972,7 +3052,7 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
                 playerStatusSub.textContent = 'تأكد من القراءة بصوت مسموع بالقرب من الميكروفون، والتأكد من وضوح النطق ثم اضغط إنهاء.';
             }
             if (speechFeedbackLabel) {
-                speechFeedbackLabel.textContent = '⚠️ لم يتم سماع أي كلمات واضحة';
+                speechFeedbackLabel.textContent = 'لم يتم سماع أي كلمات واضحة';
             }
             showToast('لم يتم التقاط أي كلمات منطوقة.. يرجى التلاوة بصوت مسموع بالقرب من الميكروفون', 'fa-solid fa-microphone-slash');
             return;
@@ -3472,7 +3552,7 @@ function renderRecitationResults(targetAyahs, transcribedText) {
             scoreEvaluationTitle.textContent = "تلاوة طيبة، راجع الكلمات المحددة باللون الأحمر";
             scoreEvaluationTitle.style.color = "var(--gold)";
         } else {
-            scoreEvaluationTitle.textContent = "توجد أخطاء تم رصدها وتحديد صوابها - استمع وتدرب مجدداً 🔄";
+            scoreEvaluationTitle.textContent = "توجد أخطاء تم رصدها وتحديد صوابها - استمع وتدرب مجدداً";
             scoreEvaluationTitle.style.color = "var(--warn-orange)";
         }
     }
@@ -3568,30 +3648,54 @@ function initEventListeners() {
         });
     }
 
-    // Evaluation Modal Actions
-    if (btnCloseEvaluation && evaluationModalBackdrop) {
-        btnCloseEvaluation.addEventListener('click', () => {
+    // Evaluation Modal Actions & Audio Exclusivity
+    function closeEvaluationModal() {
+        if (evaluationModalBackdrop) {
             evaluationModalBackdrop.classList.remove('active');
+        }
+        if (userModalRecitationAudio && !userModalRecitationAudio.paused) {
+            userModalRecitationAudio.pause();
+        }
+    }
+
+    if (btnCloseEvaluation && evaluationModalBackdrop) {
+        btnCloseEvaluation.addEventListener('click', closeEvaluationModal);
+    }
+
+    if (evaluationModalBackdrop) {
+        evaluationModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === evaluationModalBackdrop) {
+                closeEvaluationModal();
+            }
         });
     }
 
     if (btnEvalRetry && evaluationModalBackdrop) {
         btnEvalRetry.addEventListener('click', () => {
-            evaluationModalBackdrop.classList.remove('active');
+            closeEvaluationModal();
             resetStudioRecording();
         });
     }
 
     if (btnEvalNext && evaluationModalBackdrop) {
         btnEvalNext.addEventListener('click', () => {
-            evaluationModalBackdrop.classList.remove('active');
+            closeEvaluationModal();
             goToAyah(currentAyahNumber + 1);
         });
     }
 
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && evaluationModalBackdrop && evaluationModalBackdrop.classList.contains('active')) {
+            closeEvaluationModal();
+        }
+    });
+
     // In-Page Evaluation Banner "التقرير المفصل"
     if (btnBannerOpenModal && evaluationModalBackdrop) {
         btnBannerOpenModal.addEventListener('click', () => {
+            if (userRecitationAudio && !userRecitationAudio.paused) {
+                userRecitationAudio.pause();
+            }
             evaluationModalBackdrop.classList.add('active');
         });
     }

@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/home/home.css?v=74">
+    <link rel="stylesheet" href="features/home/home.css?v=75">
 </head>
 <body>
 
@@ -194,7 +194,12 @@
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-container">
-                <div class="footer-side-spacer" aria-hidden="true"></div>
+                <div class="footer-pwa-action">
+                    <button type="button" class="footer-pwa-btn pwa-install-trigger" onclick="window.triggerPWAInstall()" title="تثبيت تطبيق قبلة المسلم">
+                        <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+                        <span>تثبيت التطبيق</span>
+                    </button>
+                </div>
                 <div class="footer-copyright">
                     جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
                     تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
@@ -222,6 +227,18 @@
                     <i class="fa-solid fa-compass sheet-title-icon"></i>
                     <span>استكشف قبلة المسلم</span>
                 </div>
+            </div>
+
+            <!-- Sheet PWA Install Banner -->
+            <div class="sheet-pwa-banner pwa-install-trigger" onclick="window.triggerPWAInstall()" role="button" tabindex="0" title="تثبيت تطبيق قبلة المسلم">
+                <div class="sheet-pwa-icon">
+                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+                </div>
+                <div class="sheet-pwa-info">
+                    <strong>تثبيت قبلة المسلم كـ تطبيق</strong>
+                    <span>تصفح أسرع، بدون إنترنت، وتنبيهات الأذان</span>
+                </div>
+                <span class="sheet-pwa-cta-btn">تثبيت</span>
             </div>
 
             <!-- Sheet Body: 3-Column Grid -->
@@ -306,7 +323,7 @@
     <audio id="azan-audio" src="assets/Azan/456572.mp3" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="core/toast.js"></script>
-    <script src="core/pwa.js"></script>
+    <script src="core/pwa.js?v=20"></script>
     <script src="core/reminders.js"></script>
     <script src="core/visitor-counter.js"></script>
     <script src="features/home/home.js?v=63"></script>

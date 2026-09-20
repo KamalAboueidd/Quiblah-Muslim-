@@ -1,4 +1,4 @@
-// pwa.js - إدارة تثبيت تطبيق قبلة المسلم ودعم PWA
+// core/pwa.js - إدارة تثبيت تطبيق قبلة المسلم ودعم PWA لكافة الأجهزة والمنصات
 (function () {
     'use strict';
 
@@ -9,7 +9,6 @@
                 .register('./service-worker.js')
                 .then((registration) => {
                     console.log('[PWA] Service Worker مسجل بنجاح بنطاق:', registration.scope);
-                    // فحص فوري للتحديثات عند فتح التطبيق
                     registration.update();
                 })
                 .catch((error) => {
@@ -36,40 +35,44 @@
     const isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
-        window.navigator.standalone === true;
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://');
 
     if (isStandalone) {
-        // التطبيق مثبت بالفعل ويعمل كنافذة مستقلة، لا حاجة لإظهار أي أزرار تثبيت
+        // التطبيق مثبت بالفعل ويعمل كنافذة مستقلة، لا حاجة لإظهار أزرار التثبيت
         return;
     }
 
-    // فحص بيئة iOS Safari
-    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) && !window.MSStream;
-    const isIOSSafari = isIOS && /safari/.test(window.navigator.userAgent.toLowerCase()) && !/crios|fxios|opios/.test(window.navigator.userAgent.toLowerCase());
+    // فحص بيئة ونوع جهاز المستخدم
+    const ua = (window.navigator.userAgent || '').toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua) && !window.MSStream;
+    const isAndroid = /android/.test(ua);
+    const isDesktop = !isIOS && !isAndroid;
 
     let deferredPrompt = null;
     let installBtn = null;
 
-    // 3. حقن تنسيقات زر التثبيت ونافذة إرشادات iOS
+    // 3. حقن تنسيقات أزرار التثبيت ونافذة الإرشادات الشاملة
     const pwaStyles = `
     <style id="pwa-custom-styles">
+        /* زر التثبيت في شريط العنوان أو الرأس (Desktop & Tablet) */
         .pwa-install-btn {
-            display: inline-flex;
+            display: inline-flex !important;
             align-items: center;
             gap: 8px;
             padding: 8px 18px;
             border-radius: 30px;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(197, 168, 89, 0.1) !important;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--gold, #C5A859);
+            border: 1px solid rgba(197, 168, 89, 0.4) !important;
             color: var(--white, #ffffff);
             font-family: "Tajawal", sans-serif;
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 13.5px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(197, 168, 89, 0.15);
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
             outline: none;
             text-decoration: none;
             user-select: none;
@@ -81,164 +84,180 @@
             left: 30px;
             top: 50%;
             transform: translateY(-50%);
+            z-index: 20;
         }
 
         .pwa-install-btn:hover {
-            background: rgba(197, 168, 89, 0.25);
-            border-color: #dfc374;
-            color: var(--gold, #C5A859);
-            box-shadow: 0 6px 20px rgba(197, 168, 89, 0.35);
-            transform: translateY(-50%) scale(1.03);
-        }
-
-        .pwa-install-btn:active {
-            transform: translateY(-50%) scale(0.97);
-        }
-
-        .pwa-install-btn:focus-visible {
-            outline: 2px solid var(--gold, #C5A859);
-            outline-offset: 3px;
+            background: rgba(197, 168, 89, 0.22) !important;
+            border-color: var(--gold, #C5A859) !important;
+            color: var(--gold-light, #f5e4ab);
+            box-shadow: 0 0 16px rgba(197, 168, 89, 0.4);
+            transform: translateY(-50%) scale(1.02);
         }
 
         .pwa-install-btn i {
             color: var(--gold, #C5A859);
-            font-size: 15px;
-            transition: transform 0.25s ease;
+            font-size: 14px;
+            transition: transform 0.2s ease;
         }
 
         .pwa-install-btn:hover i {
-            transform: translateY(2px);
+            transform: translateY(-1px);
         }
 
-        /* Responsive */
-        @media (max-width: 850px) {
+        /* في صفحة المساعد الذكي (bot.html) */
+        .bot-pwa-header-btn {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            background: rgba(197, 168, 89, 0.08) !important;
+            border: 1px solid rgba(197, 168, 89, 0.25) !important;
+            color: var(--gold, #C5A859);
+            padding: 7px 12px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .bot-pwa-header-btn:hover {
+            background: rgba(197, 168, 89, 0.18) !important;
+            border-color: var(--gold, #C5A859) !important;
+            color: var(--gold-light, #f5e4ab);
+            transform: translateY(-1px);
+        }
+
+        /* التجاوب للشاشات الصغيرة */
+        @media (max-width: 1024px) {
             .top-bar-install-btn {
-                left: 15px;
-                padding: 6px 14px;
-                font-size: 13px;
+                display: none !important; /* على الموبايل والتابلت يتم الاعتماد على الفوتر وشيت استكشف */
             }
         }
 
-        @media (max-width: 480px) {
-            .top-bar-install-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-                gap: 6px;
-            }
-            .pwa-btn-full-text {
-                display: none;
-            }
-            .pwa-btn-short-text {
-                display: inline;
-            }
-        }
-
-        @media (min-width: 481px) {
-            .pwa-btn-short-text {
-                display: none;
-            }
-        }
-
-        /* iOS Safari Guide Modal */
-        .pwa-ios-modal-overlay {
+        /* نافذة إرشادات التثبيت الذكية لجميع الأجهزة */
+        .pwa-guide-modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 10000;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 100000;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             direction: rtl;
         }
 
-        .pwa-ios-modal-overlay.active {
+        .pwa-guide-modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
 
-        .pwa-ios-modal-card {
-            background: #181c1c;
-            border: 1px solid var(--gold, #C5A859);
-            border-radius: 20px;
-            max-width: 420px;
+        .pwa-guide-modal-card {
+            background: rgba(14, 18, 26, 0.95);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            border-radius: 24px;
+            max-width: 440px;
             width: 100%;
-            padding: 25px 20px;
+            padding: 26px 22px;
             color: #ffffff;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 20px rgba(197, 168, 89, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(197, 168, 89, 0.2);
             text-align: center;
             font-family: "Tajawal", sans-serif;
-            transform: scale(0.9);
+            transform: scale(0.92);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .pwa-ios-modal-overlay.active .pwa-ios-modal-card {
+        .pwa-guide-modal-overlay.active .pwa-guide-modal-card {
             transform: scale(1);
         }
 
-        .pwa-ios-modal-title {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--gold, #C5A859);
-            margin-bottom: 15px;
+        .pwa-guide-modal-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
-        .pwa-ios-steps {
+        .pwa-guide-modal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(197, 168, 89, 0.12);
+            border: 1px solid var(--gold, #C5A859);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold, #C5A859);
+            font-size: 22px;
+            filter: drop-shadow(0 0 8px rgba(197, 168, 89, 0.4));
+        }
+
+        .pwa-guide-modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--gold, #C5A859);
+            margin: 0;
+        }
+
+        .pwa-guide-steps {
             text-align: right;
-            padding: 0 10px;
+            padding: 0;
             margin: 20px 0;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            font-size: 15px;
+            gap: 12px;
+            font-size: 14.5px;
             line-height: 1.6;
         }
 
-        .pwa-ios-step {
+        .pwa-guide-step {
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px 14px;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(197, 168, 89, 0.12);
+            padding: 12px 14px;
+            border-radius: 14px;
         }
 
-        .pwa-ios-step i {
+        .pwa-guide-step i {
             color: var(--gold, #C5A859);
             font-size: 18px;
             flex-shrink: 0;
-            width: 24px;
+            width: 26px;
             text-align: center;
         }
 
-        .pwa-ios-close-btn {
-            background: var(--gold, #C5A859);
-            color: #111111;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 25px;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 10px;
+        .pwa-guide-step strong {
+            color: var(--gold-light, #f5e4ab);
         }
 
-        .pwa-ios-close-btn:hover {
+        .pwa-guide-close-btn {
+            background: var(--gold, #C5A859);
+            color: #0b0e14;
+            border: none;
+            padding: 11px 36px;
+            border-radius: 25px;
+            font-family: inherit;
+            font-size: 15.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(197, 168, 89, 0.35);
+        }
+
+        .pwa-guide-close-btn:hover {
             background: #dfc374;
+            transform: scale(1.03);
         }
     </style>
     `;
@@ -247,7 +266,7 @@
         document.head.insertAdjacentHTML('beforeend', pwaStyles);
     }
 
-    // 4. إنشاء زر التثبيت
+    // 4. إنشاء زر التثبيت الأساسي
     function createInstallButton() {
         if (document.getElementById('pwa-install-btn')) {
             return document.getElementById('pwa-install-btn');
@@ -256,15 +275,12 @@
         const btn = document.createElement('button');
         btn.id = 'pwa-install-btn';
         btn.type = 'button';
-        btn.className = 'pwa-install-btn';
+        btn.className = 'pwa-install-btn pwa-install-trigger';
         btn.setAttribute('aria-label', 'تثبيت تطبيق قبلة المسلم');
-        btn.style.display = 'none';
+        btn.title = 'تثبيت التطبيق على جهازك';
         btn.innerHTML = `
-            <i class="fa-solid fa-download" aria-hidden="true"></i>
-            <span class="pwa-install-btn-text">
-                <span class="pwa-btn-full-text">تثبيت التطبيق</span>
-                <span class="pwa-btn-short-text">تثبيت</span>
-            </span>
+            <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+            <span>تثبيت التطبيق</span>
         `;
 
         btn.addEventListener('click', handleInstallClick);
@@ -275,93 +291,146 @@
     function injectInstallButton() {
         installBtn = createInstallButton();
 
-        // البحث أولاً عن .top-bar
+        // 1) إذا تواجد .top-bar (كما في الصفحة الرئيسية وغيرها على Desktop)
         const topBar = document.querySelector('.top-bar');
-        if (topBar) {
-            // التأكد من أن الـ top-bar يتيح الموضع النسبي للزر
-            topBar.style.position = 'relative';
+        if (topBar && !document.querySelector('.top-bar .top-bar-install-btn')) {
             installBtn.classList.add('top-bar-install-btn');
             topBar.appendChild(installBtn);
-            return;
         }
 
-        // في صفحة المصحف (quran.html) ذات التوزيع الخاص
-        const mobileHeader = document.querySelector('.mobile-header');
-        if (mobileHeader) {
-            installBtn.style.margin = '0 10px';
-            mobileHeader.appendChild(installBtn);
-            return;
+        // 2) إذا كانت صفحة المساعد الذكي (bot.html)
+        const botHeaderActions = document.querySelector('.bot-header-actions');
+        if (botHeaderActions && !document.getElementById('btn-bot-install-pwa')) {
+            const botBtn = document.createElement('button');
+            botBtn.id = 'btn-bot-install-pwa';
+            botBtn.type = 'button';
+            botBtn.className = 'bot-pwa-header-btn pwa-install-trigger';
+            botBtn.title = 'تثبيت التطبيق على جهازك';
+            botBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> <span>تثبيت</span>';
+            botBtn.addEventListener('click', handleInstallClick);
+            botHeaderActions.prepend(botBtn);
         }
 
-        const navBar = document.querySelector('.nav-bar');
-        if (navBar) {
-            installBtn.style.margin = '5px 10px';
-            navBar.appendChild(installBtn);
-            return;
-        }
-
-        // Fallback في نهاية الـ body
-        document.body.appendChild(installBtn);
+        // 3) ربط جميع الأزرار والروابط التي تحمل كلاس .pwa-install-trigger في الصفحة
+        document.querySelectorAll('.pwa-install-trigger').forEach((el) => {
+            el.removeEventListener('click', handleInstallClick);
+            el.addEventListener('click', handleInstallClick);
+            el.style.display = 'inline-flex';
+        });
     }
 
     // 6. التعامل مع الضغط على زر التثبيت
-    async function handleInstallClick() {
+    async function handleInstallClick(e) {
+        if (e && e.preventDefault) e.preventDefault();
+
         if (deferredPrompt) {
-            // المتصفح يدعم beforeinstallprompt (Chrome, Edge, Android)
+            // المتصفح يدعم beforeinstallprompt (Chrome / Android / Edge)
             try {
                 deferredPrompt.prompt();
                 const choiceResult = await deferredPrompt.userChoice;
-                if (choiceResult.outcome === 'accepted') {
+                if (choiceResult && choiceResult.outcome === 'accepted') {
                     console.log('[PWA] وافق المستخدم على التثبيت');
-                    if (installBtn) installBtn.style.display = 'none';
+                    hideAllInstallTriggers();
                 } else {
                     console.log('[PWA] رفض المستخدم التثبيت');
                 }
             } catch (err) {
                 console.warn('[PWA] خطأ أثناء استدعاء prompt:', err);
+                showInstallGuideModal();
             } finally {
                 deferredPrompt = null;
             }
-        } else if (isIOSSafari) {
-            // أجهزة iOS Safari: عرض نافذة الإرشادات
-            showIOSInstallModal();
+        } else {
+            // إذا لم يتوفر حدث التثبيت التلقائي (مثل بعد الحذف، على iOS، أو متصفحات سطح المكتب)
+            showInstallGuideModal();
         }
     }
 
-    // 7. نافذة إرشادات iOS Safari
-    function showIOSInstallModal() {
-        let modal = document.getElementById('pwa-ios-modal');
+    // إتاحة الدالة عالمياً
+    window.triggerPWAInstall = handleInstallClick;
+
+    // 7. نافذة إرشادات التثبيت الذكية المتوافقة مع نوع الجهاز
+    function showInstallGuideModal() {
+        let modal = document.getElementById('pwa-guide-modal');
         if (!modal) {
             modal = document.createElement('div');
-            modal.id = 'pwa-ios-modal';
-            modal.className = 'pwa-ios-modal-overlay';
+            modal.id = 'pwa-guide-modal';
+            modal.className = 'pwa-guide-modal-overlay';
+
+            let title = 'تثبيت تطبيق قبلة المسلم';
+            let iconHtml = '<i class="fa-solid fa-cloud-arrow-down"></i>';
+            let stepsHtml = '';
+
+            if (isIOS) {
+                iconHtml = '<i class="fa-brands fa-apple"></i>';
+                title = 'تثبيت التطبيق على الآيفون والآيباد';
+                stepsHtml = `
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                        <span>1. اضغط على زر المشاركة <strong>(Share)</strong> أسفل شريط متصفح Safari.</span>
+                    </div>
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-square-plus"></i>
+                        <span>2. مرر للأسفل واختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong>.</span>
+                    </div>
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-check"></i>
+                        <span>3. اضغط على <strong>"إضافة" (Add)</strong> بالأعلى لتثبيت التطبيق على جهازك.</span>
+                    </div>
+                `;
+            } else if (isAndroid) {
+                iconHtml = '<i class="fa-brands fa-android"></i>';
+                title = 'تثبيت التطبيق على الأندرويد';
+                stepsHtml = `
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                        <span>1. اضغط على زر القائمة <strong>(الثلاث نقاط ⋮)</strong> أعلى المتصفح.</span>
+                    </div>
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-download"></i>
+                        <span>2. اختر <strong>"تثبيت التطبيق" (Install app)</strong> أو <strong>"إضافة للشاشة الرئيسية"</strong>.</span>
+                    </div>
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-check"></i>
+                        <span>3. وافق على التثبيت وسيعمل التطبيق كبرنامج مستقل وسريع.</span>
+                    </div>
+                `;
+            } else {
+                // Desktop / Laptop (Chrome / Edge / Safari / Windows / Mac)
+                iconHtml = '<i class="fa-solid fa-laptop"></i>';
+                title = 'تثبيت التطبيق على جهاز الكمبيوتر';
+                stepsHtml = `
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-circle-down"></i>
+                        <span>1. اضغط على أيقونة التثبيت <strong>(Install ⊕)</strong> الموجودة في شريط العنوان أعلى المتصفح بجوار الرابط.</span>
+                    </div>
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                        <span>2. أو اضغط على قائمة المتصفح <strong>(⋮)</strong> بالأعلى واختر <strong>"تثبيت تطبيق قبلة المسلم"</strong>.</span>
+                    </div>
+                    <div class="pwa-guide-step">
+                        <i class="fa-solid fa-desktop"></i>
+                        <span>3. سيعمل التطبيق كنافذة مستقلة وفائقة السرعة على جهازك.</span>
+                    </div>
+                `;
+            }
+
             modal.innerHTML = `
-                <div class="pwa-ios-modal-card">
-                    <div class="pwa-ios-modal-title">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                        <span>تثبيت قبلة المسلم على الآيفون</span>
+                <div class="pwa-guide-modal-card">
+                    <div class="pwa-guide-modal-header">
+                        <div class="pwa-guide-modal-icon">${iconHtml}</div>
+                        <h3 class="pwa-guide-modal-title">${title}</h3>
                     </div>
-                    <div class="pwa-ios-steps">
-                        <div class="pwa-ios-step">
-                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                            <span>1. اضغط على زر المشاركة <strong>(Share)</strong> في شريط متصفح Safari.</span>
-                        </div>
-                        <div class="pwa-ios-step">
-                            <i class="fa-solid fa-square-plus"></i>
-                            <span>2. مرر للأسفل واختر <strong>"إضافة إلى الشاشة الرئيسية"</strong>.</span>
-                        </div>
-                        <div class="pwa-ios-step">
-                            <i class="fa-solid fa-check"></i>
-                            <span>3. اضغط على <strong>"إضافة" (Add)</strong> بالأعلى لتثبيت التطبيق.</span>
-                        </div>
+                    <div class="pwa-guide-steps">
+                        ${stepsHtml}
                     </div>
-                    <button type="button" class="pwa-ios-close-btn" id="pwa-ios-close-btn">فهمت</button>
+                    <button type="button" class="pwa-guide-close-btn" id="pwa-guide-close-btn">فهمت</button>
                 </div>
             `;
             document.body.appendChild(modal);
 
             modal.addEventListener('click', (e) => {
-                if (e.target === modal || e.target.id === 'pwa-ios-close-btn') {
+                if (e.target === modal || e.target.id === 'pwa-guide-close-btn') {
                     modal.classList.remove('active');
                 }
             });
@@ -369,41 +438,35 @@
         modal.classList.add('active');
     }
 
-    // 8. الاستماع لحدث beforeinstallprompt
+    // 8. إخفاء جميع عناصر التثبيت عند اكتمال التثبيت
+    function hideAllInstallTriggers() {
+        document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
+            el.style.display = 'none';
+        });
+    }
+
+    // 9. الاستماع لحدث beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
-        // منع ظهور النافذة الافتراضية المزعجة للمتصفح
+        // منع ظهور البانر الافتراضي الصامت للمتصفح للاعتماد على أزرارنا الفاخرة
         e.preventDefault();
         deferredPrompt = e;
-
-        if (!installBtn) {
-            injectInstallButton();
-        }
-        if (installBtn) {
-            installBtn.style.display = 'inline-flex';
-        }
+        injectInstallButton();
     });
 
-    // 9. الاستماع لحدث اكتمال التثبيت بنجاح
+    // 10. الاستماع لحدث اكتمال التثبيت بنجاح
     window.addEventListener('appinstalled', () => {
         console.log('[PWA] تم تثبيت التطبيق بنجاح');
-        if (installBtn) {
-            installBtn.style.display = 'none';
-        }
         deferredPrompt = null;
+        hideAllInstallTriggers();
         if (typeof window.showToast === 'function') {
             window.showToast('تم تثبيت تطبيق قبلة المسلم بنجاح', 'fa-solid fa-circle-check', 6000);
         }
     });
 
-    // 10. إظهار الزر لمستخدمي iOS Safari إن رغبوا
-    document.addEventListener('DOMContentLoaded', () => {
+    // 11. حقن أزرار التثبيت فور تحميل الـ DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectInstallButton);
+    } else {
         injectInstallButton();
-
-        if (isIOSSafari && !isStandalone) {
-            // إظهار زر التثبيت على iOS Safari
-            if (installBtn) {
-                installBtn.style.display = 'inline-flex';
-            }
-        }
-    });
+    }
 })();

@@ -361,80 +361,97 @@ body.bot-body {
     box-shadow: 0 4px 14px rgba(197, 168, 89, 0.2);
 }
 
-/* --- Message Bubbles --- */
+/* --- Message Rows (Pure Seamless Page Background, No Bubble Boxes) --- */
 .chat-msg-row {
     display: flex;
-    gap: 12px;
-    max-width: 86%;
+    gap: 14px;
+    width: 100%;
+    max-width: 100%;
     animation: messageSlideIn 0.3s ease-out;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .chat-msg-row.user-msg {
-    align-self: flex-start;
+    align-self: stretch;
     flex-direction: row;
+    padding: 10px 4px 14px;
+    border-bottom: 1px solid rgba(197, 168, 89, 0.14);
 }
 
 .chat-msg-row.bot-msg {
-    align-self: flex-end;
-    flex-direction: row-reverse;
+    align-self: stretch;
+    flex-direction: row;
+    padding: 12px 4px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .msg-avatar {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 18px;
+    font-size: 19px;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     color: var(--gold) !important;
-    padding-top: 4px;
+    padding-top: 3px;
 }
 
 .user-msg .msg-avatar {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: var(--gold) !important;
+    color: #48cfad !important;
 }
 
 .msg-bubble-wrap {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
 }
 
 .msg-bubble {
-    padding: 14px 18px;
-    border-radius: 18px;
-    font-size: 15px;
-    line-height: 1.8;
+    padding: 2px 0;
+    border-radius: 0;
+    font-size: 15.5px;
+    line-height: 1.85;
     word-break: break-word;
     position: relative;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
-/* User Bubble (Dark Teal Glass) */
+/* User Message Text (Seamless on Page Background) */
 .user-msg .msg-bubble {
-    background: rgba(47, 122, 120, 0.28);
-    border: 1px solid rgba(47, 122, 120, 0.45);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     color: #ffffff;
-    border-top-right-radius: 4px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    font-size: 16px;
+    font-weight: 600;
 }
 
-/* Assistant Bubble (Dark Luxury Charcoal & Gold Accent) */
+/* Assistant Message Text (Seamless on Page Background) */
 .bot-msg .msg-bubble {
-    background: rgba(18, 23, 33, 0.82);
-    border: 1px solid rgba(197, 168, 89, 0.24);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     color: rgba(255, 255, 255, 0.94);
-    border-top-left-radius: 4px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    font-size: 15.5px;
 }
 
 /* Markdown and Rich Formatting within Bot Responses */
@@ -544,20 +561,20 @@ body.bot-body {
 .typing-indicator-row {
     display: none;
     align-items: center;
-    gap: 12px;
-    align-self: flex-end;
+    gap: 14px;
+    width: 100%;
+    padding: 8px 4px;
     animation: fadeIn 0.3s ease-out;
 }
 
 .typing-bubble {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(18, 23, 33, 0.75);
-    border: 1px solid rgba(197, 168, 89, 0.2);
-    padding: 12px 18px;
-    border-radius: 18px;
-    border-top-left-radius: 4px;
+    gap: 8px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 0;
 }
 
 .typing-dot {
@@ -1060,12 +1077,13 @@ body.bot-body {
     }
 
     .chat-msg-row {
-        max-width: 96%;
+        max-width: 100%;
+        gap: 10px;
     }
 
     .msg-bubble {
-        padding: 11px 13px;
-        font-size: 14px;
+        padding: 2px 0;
+        font-size: 14.5px;
     }
 
     .suggestion-chips-grid {

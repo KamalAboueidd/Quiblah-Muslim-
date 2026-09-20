@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/home/home.css?v=73">
+    <link rel="stylesheet" href="features/home/home.css?v=74">
 </head>
 <body>
 
@@ -82,6 +82,7 @@
             <a href="recite.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-microphone-lines"></i> المصحح القرآني</a>
             <div class="nav-break"></div>
             <a href="quiz.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-award"></i> المسابقات</a>
+            <a href="bot.html" class="nav-item"><i aria-hidden="true" class="fa-solid fa-robot"></i> المساعد الذكي</a>
         </div>
 
         <!-- Main Content -->
@@ -281,6 +282,10 @@
                     <div class="sheet-item-icon"><i class="fa-solid fa-sun"></i></div>
                     <span class="sheet-item-label">الصباح والمساء</span>
                 </a>
+                <a href="bot.html" class="sheet-grid-item" title="المساعد الإسلامي الذكي">
+                    <div class="sheet-item-icon"><i class="fa-solid fa-robot"></i></div>
+                    <span class="sheet-item-label">المساعد الذكي</span>
+                </a>
             </div>
 
             <!-- Sheet Footer: Brand Title in center & Small Close Button on the left -->
@@ -297,6 +302,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating AI Islamic Assistant Quick Trigger -->
+    <a href="bot.html" class="floating-ai-launcher" id="floating-ai-launcher" title="اسأل المساعد الإسلامي الذكي">
+        <div class="ai-launcher-icon-wrap">
+            <i class="fa-solid fa-robot"></i>
+            <span class="ai-launcher-pulse"></span>
+        </div>
+        <span class="ai-launcher-text">اسأل المساعد الذكي</span>
+    </a>
 
     <audio id="azan-audio" src="assets/Azan/456572.mp3" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

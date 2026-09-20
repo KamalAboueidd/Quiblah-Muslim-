@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>المساعد الإسلامي الذكي - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="المساعد الإسلامي الذكي في تطبيق قبلة المسلم: إجابات شرعية موثقة في تفسير القرآن الكريم، الأحاديث النبوية، الفقه، وأذكار المسلم بالذكاء الاصطناعي.">
+    <meta name="keywords" content="مساعد إسلامي, شات بوت ديني, ذكاء اصطناعي إسلامي, تفسير قرآن, أحاديث, فقه, كمال أبو عيد, قبلة المسلم">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="المساعد الإسلامي الذكي - قبلة المسلم">
+    <meta property="og:description" content="المساعد الإسلامي الذكي للإجابة عن الأسئلة الدينية والفقهية ومميزات تطبيق قبلة المسلم.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <meta property="og:url" content="https://kamalaboueidd.github.io/Quiblah-Muslim-/">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C5A859">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <link rel="stylesheet" href="features/bot/bot.css?v=1">
+    <script src="core/player-bridge.js"></script>
+</head>
+<body class="bot-body">
+
+    <!-- Dark Luxury Islamic Backdrop with Ambient Glow -->
+    <div class="bot-backdrop">
+        <div class="backdrop-gradient-vignette"></div>
+    </div>
+
+    <div class="bot-app-layout">
+        <!-- Top Header (Clean Transparent Icons, Strictly No Box Background) -->
+        <header class="bot-top-header">
+            <!-- Right: Return to Timings (Transparent, No solid background) -->
+            <a href="home.html" class="bot-back-btn" id="btn-back-timings" title="العودة لمواقيت الصلاة">
+                <i class="fa-solid fa-arrow-right"></i>
+                <span>العودة للمواقيت</span>
+            </a>
+
+            <!-- Center: AI Brand Badge -->
+            <div class="bot-brand-badge">
+                <div class="bot-avatar-halo">
+                    <i class="fa-solid fa-robot"></i>
+                    <span class="bot-online-indicator" title="متصل وجاهز للإجابة"></span>
+                </div>
+                <div class="bot-titles-wrap">
+                    <h1 class="bot-main-title">المساعد <span class="highlight-gold">الإسلامي الذكي</span></h1>
+                    <p class="bot-sub-title">علوم الشريعة وتطبيق قبلة المسلم • كمال أبو عيد</p>
+                </div>
+            </div>
+
+            <!-- Left: Clear Conversation Action -->
+            <button type="button" class="bot-action-btn" id="btn-clear-chat" title="مسح المحادثة وبدء حوار جديد">
+                <i class="fa-regular fa-trash-can"></i>
+                <span>مسح المحادثة</span>
+            </button>
+        </header>
+
+        <!-- Main Chat Box Container -->
+        <main class="bot-chat-container">
+            
+            <!-- Messages Scroll Flow -->
+            <div class="chat-messages-flow" id="chat-messages-flow">
+                
+                <!-- Welcome Hero Card (Visible on Initial State) -->
+                <div class="bot-welcome-card" id="bot-welcome-card">
+                    <div class="welcome-mosque-icon">
+                        <i class="fa-solid fa-kaaba"></i>
+                    </div>
+                    <h2 class="welcome-title">مرحباً بك في <span>المساعد الإسلامي</span></h2>
+                    <p class="welcome-desc">
+                        أنا رفيقك الذكي في منصة قبلة المسلم للإجابة الموثقة عن استفساراتك الدينية، والقرآن الكريم، والأحاديث النبوية، والفقه، وشرح مميزات المنصة وتفاصيل مطورها المهندس كمال أبو عيد.
+                    </p>
+                    <div class="welcome-disclaimer">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>إجابات شرعية موثوقة من أمهات الكتب ومصادر أهل السنة والجماعة</span>
+                    </div>
+
+                    <!-- Suggestion Chips Grid -->
+                    <div class="suggestion-chips-grid">
+                        <button type="button" class="suggestion-chip" data-prompt="ما هو فضل قراءة سورة الكهف يوم الجمعة؟">
+                            <i class="fa-solid fa-book-quran"></i>
+                            <span>فضل سورة الكهف يوم الجمعة</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="كيف أصلي صلاة الاستخارة وما هو دعاؤها الصحيح؟">
+                            <i class="fa-solid fa-hands-praying"></i>
+                            <span>كيفية صلاة الاستخارة ودعاؤها</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="من هو المهندس كمال أبو عيد مؤسس ومطور تطبيق قبلة المسلم؟">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <span>من هو كمال أبو عيد مطور التطبيق؟</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="ما هي المميزات والخدمات التي يقدمها تطبيق قبلة المسلم؟">
+                            <i class="fa-solid fa-compass"></i>
+                            <span>ما هي مميزات تطبيق قبلة المسلم؟</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="اذكر لي أهم أذكار الصباح الصحيحة وفضلها">
+                            <i class="fa-solid fa-sun"></i>
+                            <span>أذكار الصباح الصحيحة</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="ما هي شروط وأركان الصلاة التي لا تصح إلا بها؟">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>شروط وأركان الصلاة</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Typing Indicator (Animated Gold Dots) -->
+            <div class="typing-indicator-row" id="typing-indicator-row">
+                <div class="msg-avatar">
+                    <i class="fa-solid fa-mosque"></i>
+                </div>
+                <div class="typing-bubble">
+                    <span class="typing-text-label">جاري استحضار الإجابة</span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            </div>
+
+            <!-- Bottom Input Bar Area (Transparent Icon, No Solid Background) -->
+            <div class="bot-input-area">
+                <div class="bot-input-box-wrapper">
+                    <textarea 
+                        id="chat-input" 
+                        class="chat-textarea" 
+                        placeholder="اكتب سؤالك الشرعي أو استفسارك هنا..." 
+                        rows="1"
+                        aria-label="رسالتك للمساعد الإسلامي"></textarea>
+                    
+                    <button type="button" id="btn-send-message" class="btn-send-message" title="إرسال السؤال" disabled aria-label="إرسال">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-disclaimer-note">
+                    المساعد مخصص للعلوم الشرعية وخدمات <span>قبلة المسلم</span> • تطوير <span>كمال أبو عيد</span>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bot-footer">
+            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم • تم التطوير بواسطة <strong>كمال أبو عيد</strong>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-msg" class="toast-msg"></div>
+
+    <script src="core/toast.js?v=59"></script>
+    <script src="core/pwa.js"></script>
+    <script src="features/bot/bot.js?v=1"></script>
+</body>
+</html>

@@ -927,37 +927,54 @@ body.bot-body {
 .bot-sessions-list {
     flex: 1;
     overflow-y: auto;
-    padding: 10px 14px;
+    padding: 6px 16px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0;
     scrollbar-width: thin;
     scrollbar-color: rgba(197, 168, 89, 0.25) transparent;
 }
 
+/* Session Item: Clean seamless row without card borders, separated by golden horizontal line */
 .session-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(197, 168, 89, 0.08);
+    padding: 13px 8px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid rgba(197, 168, 89, 0.18) !important;
     color: var(--text-muted);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    position: relative;
+}
+
+.session-item:last-child {
+    border-bottom: none !important;
 }
 
 .session-item:hover {
-    background: rgba(197, 168, 89, 0.09);
-    border-color: rgba(197, 168, 89, 0.25);
+    background: rgba(197, 168, 89, 0.07) !important;
     color: var(--white);
 }
 
 .session-item.active {
-    background: rgba(197, 168, 89, 0.16);
-    border-color: var(--gold);
+    background: rgba(197, 168, 89, 0.12) !important;
+    border-bottom: 1px solid rgba(197, 168, 89, 0.25) !important;
     color: var(--gold-light);
+}
+
+.session-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gold);
+    border-radius: 0 2px 2px 0;
 }
 
 .session-main-btn {
@@ -992,16 +1009,26 @@ body.bot-body {
 .session-title {
     font-size: 13.5px;
     font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.4;
 }
 
+.session-item.active .session-title {
+    color: var(--gold-light);
+    font-weight: 700;
+}
+
 .session-date {
     font-size: 11px;
     color: var(--text-dim);
     margin-top: 2px;
+}
+
+.session-item.active .session-date {
+    color: rgba(197, 168, 89, 0.75);
 }
 
 .btn-delete-session {

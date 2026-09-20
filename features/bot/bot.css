@@ -119,139 +119,81 @@ body.bot-body {
     z-index: 10;
 }
 
-/* --- Top Header: Completely Transparent Icons, No Solid Box Background --- */
+/* --- Top Header: Seamless on page, strictly NO card box, NO border, NO background --- */
 .bot-top-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    background: rgba(14, 18, 26, 0.45);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(197, 168, 89, 0.18);
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    padding: 14px 4px 18px;
+    margin-bottom: 8px;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
-/* Return Button: Strictly NO solid background */
+/* Return Button: Clean link, pure golden arrow, strictly NO solid background or border */
 .bot-back-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     color: var(--white);
     text-decoration: none;
-    font-size: 14.5px;
+    font-size: 15px;
     font-weight: 700;
-    background: transparent;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 10px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 6px 0;
     cursor: pointer;
     transition: all 0.25s ease;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .bot-back-btn i {
     color: var(--gold);
-    font-size: 15px;
+    font-size: 16px;
     transition: transform 0.25s ease;
 }
 
 .bot-back-btn:hover {
     opacity: 1;
     color: var(--gold-light);
-    background: rgba(197, 168, 89, 0.08);
 }
 
 .bot-back-btn:hover i {
-    transform: translateX(3px);
+    transform: translateX(4px);
 }
 
-/* Center Brand Badge */
+/* Center Brand Badge: Pure Robot Icon without background or border */
 .bot-brand-badge {
     display: flex;
     align-items: center;
-    gap: 12px;
-    text-align: right;
+    gap: 10px;
+    text-align: center;
 }
 
-.bot-avatar-halo {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(197, 168, 89, 0.08);
-    border: 1px solid rgba(197, 168, 89, 0.3);
+.bot-header-icon {
     color: var(--gold);
-    font-size: 20px;
-    box-shadow: 0 0 14px rgba(197, 168, 89, 0.2);
-    position: relative;
-}
-
-.bot-avatar-halo .bot-online-indicator {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 10px;
-    height: 10px;
-    background: #2ecc71;
-    border-radius: 50%;
-    border: 2px solid #090c10;
-    box-shadow: 0 0 6px rgba(46, 204, 113, 0.7);
-}
-
-.bot-titles-wrap {
-    display: flex;
-    flex-direction: column;
+    font-size: 22px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    filter: drop-shadow(0 0 8px var(--gold-glow));
 }
 
 .bot-main-title {
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--white);
-    line-height: 1.3;
+    letter-spacing: -0.2px;
+    margin: 0;
 }
 
-.bot-main-title .highlight-gold {
-    color: var(--gold);
-}
-
-.bot-sub-title {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-/* Clear Chat Action: Transparent Icon button with opacity */
-.bot-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: transparent;
-    border: 1px solid rgba(197, 168, 89, 0.2);
-    color: var(--text-muted);
-    padding: 8px 14px;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    opacity: 0.85;
-}
-
-.bot-action-btn:hover {
-    opacity: 1;
-    color: #e74c3c;
-    border-color: rgba(231, 76, 60, 0.4);
-    background: rgba(231, 76, 60, 0.08);
-}
-
-.bot-action-btn i {
-    font-size: 13px;
+.bot-header-spacer {
+    width: 90px;
 }
 
 /* --- Chat Container --- */
@@ -397,24 +339,25 @@ body.bot-body {
 }
 
 .msg-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 15px;
-    background: rgba(197, 168, 89, 0.08);
-    border: 1px solid rgba(197, 168, 89, 0.25);
-    color: var(--gold);
-    box-shadow: 0 0 10px rgba(197, 168, 89, 0.15);
+    font-size: 18px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
+    padding-top: 4px;
 }
 
 .user-msg .msg-avatar {
-    background: rgba(47, 122, 120, 0.15);
-    border-color: rgba(47, 122, 120, 0.35);
-    color: #48c9b0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
 }
 
 .msg-bubble-wrap {
@@ -434,8 +377,8 @@ body.bot-body {
 
 /* User Bubble (Dark Teal Glass) */
 .user-msg .msg-bubble {
-    background: rgba(47, 122, 120, 0.24);
-    border: 1px solid rgba(47, 122, 120, 0.4);
+    background: rgba(47, 122, 120, 0.28);
+    border: 1px solid rgba(47, 122, 120, 0.45);
     color: #ffffff;
     border-top-right-radius: 4px;
     backdrop-filter: blur(10px);
@@ -562,9 +505,9 @@ body.bot-body {
     margin-right: 4px;
 }
 
-/* --- Input Bar Area: Floating Glass with No Solid Icon Background --- */
+/* --- Input Bar Area: Sleek Glass with pure golden send icon --- */
 .bot-input-area {
-    padding: 14px 18px 16px;
+    padding: 12px 16px;
     background: rgba(12, 16, 23, 0.65);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -573,19 +516,19 @@ body.bot-body {
 
 .bot-input-box-wrapper {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 10px;
-    background: rgba(18, 23, 33, 0.75);
-    border: 1px solid rgba(197, 168, 89, 0.28);
-    border-radius: 16px;
-    padding: 8px 12px 8px 16px;
+    background: rgba(18, 23, 33, 0.85);
+    border: 1px solid rgba(197, 168, 89, 0.25);
+    border-radius: 28px;
+    padding: 8px 18px 8px 14px;
     transition: all 0.25s ease;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .bot-input-box-wrapper:focus-within {
     border-color: var(--gold);
-    box-shadow: 0 0 16px rgba(197, 168, 89, 0.3);
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.35);
 }
 
 .chat-textarea {
@@ -596,7 +539,7 @@ body.bot-body {
     color: var(--white);
     font-family: inherit;
     font-size: 15px;
-    line-height: 1.6;
+    line-height: 1.5;
     resize: none;
     max-height: 120px;
     min-height: 24px;
@@ -608,49 +551,37 @@ body.bot-body {
     font-size: 14.5px;
 }
 
-/* Send Button: Strictly NO solid background */
+/* Send Button: Pure golden icon with NO border and NO background */
 .btn-send-message {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    border: 1px solid rgba(197, 168, 89, 0.25);
-    background: rgba(197, 168, 89, 0.08);
-    color: var(--gold);
-    font-size: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
     flex-shrink: 0;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .btn-send-message:hover:not(:disabled) {
     opacity: 1;
-    background: rgba(197, 168, 89, 0.2);
-    border-color: var(--gold);
-    color: var(--gold-light);
-    transform: scale(1.05);
-    box-shadow: 0 0 12px rgba(197, 168, 89, 0.4);
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 8px var(--gold-glow));
 }
 
 .btn-send-message:disabled {
-    opacity: 0.35;
+    opacity: 0.3 !important;
     cursor: not-allowed;
-    border-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-dim);
-}
-
-.input-disclaimer-note {
-    text-align: center;
-    font-size: 11.5px;
-    color: var(--text-dim);
-    margin-top: 8px;
-}
-
-.input-disclaimer-note span {
-    color: var(--gold);
+    color: var(--text-dim) !important;
+    filter: none !important;
+    transform: none !important;
 }
 
 /* --- Footer --- */
@@ -691,38 +622,34 @@ body.bot-body {
 /* --- Responsive Breakpoints --- */
 @media (max-width: 768px) {
     .bot-app-layout {
-        padding: 10px 12px 14px;
+        padding: 8px 12px 14px;
         min-height: 100dvh;
     }
 
     .bot-top-header {
-        padding: 10px 12px;
-        border-radius: 14px;
-        margin-bottom: 8px;
+        padding: 10px 4px 12px;
+        margin-bottom: 6px;
     }
 
-    .bot-avatar-halo {
-        width: 38px;
-        height: 38px;
-        font-size: 17px;
+    .bot-header-icon {
+        font-size: 20px;
     }
 
     .bot-main-title {
-        font-size: 15px;
+        font-size: 16px;
     }
 
-    .bot-sub-title {
-        font-size: 11px;
+    .bot-back-btn span {
+        display: inline;
+        font-size: 13.5px;
     }
 
-    .bot-back-btn span,
-    .bot-action-btn span {
-        display: none;
+    .bot-back-btn {
+        padding: 4px 0;
     }
 
-    .bot-back-btn,
-    .bot-action-btn {
-        padding: 8px 10px;
+    .bot-header-spacer {
+        width: 70px;
     }
 
     .chat-messages-flow {

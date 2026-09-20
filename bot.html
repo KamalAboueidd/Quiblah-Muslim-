@@ -43,31 +43,22 @@
     </div>
 
     <div class="bot-app-layout">
-        <!-- Top Header (Clean Transparent Icons, Strictly No Box Background) -->
+        <!-- Top Header (Seamless on page, No Card Box, No Border) -->
         <header class="bot-top-header">
-            <!-- Right: Return to Timings (Transparent, No solid background) -->
+            <!-- Right: Return to Timings (Clean transparent link) -->
             <a href="home.html" class="bot-back-btn" id="btn-back-timings" title="العودة لمواقيت الصلاة">
                 <i class="fa-solid fa-arrow-right"></i>
                 <span>العودة للمواقيت</span>
             </a>
 
-            <!-- Center: AI Brand Badge -->
+            <!-- Center: AI Brand Title (Pure Icon, No Border, No Background, No Subtitle) -->
             <div class="bot-brand-badge">
-                <div class="bot-avatar-halo">
-                    <i class="fa-solid fa-robot"></i>
-                    <span class="bot-online-indicator" title="متصل وجاهز للإجابة"></span>
-                </div>
-                <div class="bot-titles-wrap">
-                    <h1 class="bot-main-title">المساعد <span class="highlight-gold">الإسلامي الذكي</span></h1>
-                    <p class="bot-sub-title">علوم الشريعة وتطبيق قبلة المسلم • كمال أبو عيد</p>
-                </div>
+                <i class="fa-solid fa-robot bot-header-icon" aria-hidden="true"></i>
+                <h1 class="bot-main-title">المساعد الإسلامي الذكي</h1>
             </div>
 
-            <!-- Left: Clear Conversation Action -->
-            <button type="button" class="bot-action-btn" id="btn-clear-chat" title="مسح المحادثة وبدء حوار جديد">
-                <i class="fa-regular fa-trash-can"></i>
-                <span>مسح المحادثة</span>
-            </button>
+            <!-- Left: Spacer for perfect centering -->
+            <div class="bot-header-spacer"></div>
         </header>
 
         <!-- Main Chat Box Container -->
@@ -76,19 +67,15 @@
             <!-- Messages Scroll Flow -->
             <div class="chat-messages-flow" id="chat-messages-flow">
                 
-                <!-- Welcome Hero Card (Visible on Initial State) -->
+                <!-- Welcome Hero Card (Clean & Simple) -->
                 <div class="bot-welcome-card" id="bot-welcome-card">
                     <div class="welcome-mosque-icon">
                         <i class="fa-solid fa-kaaba"></i>
                     </div>
                     <h2 class="welcome-title">مرحباً بك في <span>المساعد الإسلامي</span></h2>
                     <p class="welcome-desc">
-                        أنا رفيقك الذكي في منصة قبلة المسلم للإجابة الموثقة عن استفساراتك الدينية، والقرآن الكريم، والأحاديث النبوية، والفقه، وشرح مميزات المنصة وتفاصيل مطورها المهندس كمال أبو عيد.
+                        السلام عليكم ورحمة الله وبركاته.. كيف يمكنني مساعدتك اليوم في استفساراتك الشرعية والقرآنية؟
                     </p>
-                    <div class="welcome-disclaimer">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <span>إجابات شرعية موثوقة من أمهات الكتب ومصادر أهل السنة والجماعة</span>
-                    </div>
 
                     <!-- Suggestion Chips Grid -->
                     <div class="suggestion-chips-grid">
@@ -100,14 +87,6 @@
                             <i class="fa-solid fa-hands-praying"></i>
                             <span>كيفية صلاة الاستخارة ودعاؤها</span>
                         </button>
-                        <button type="button" class="suggestion-chip" data-prompt="من هو المهندس كمال أبو عيد مؤسس ومطور تطبيق قبلة المسلم؟">
-                            <i class="fa-solid fa-user-gear"></i>
-                            <span>من هو كمال أبو عيد مطور التطبيق؟</span>
-                        </button>
-                        <button type="button" class="suggestion-chip" data-prompt="ما هي المميزات والخدمات التي يقدمها تطبيق قبلة المسلم؟">
-                            <i class="fa-solid fa-compass"></i>
-                            <span>ما هي مميزات تطبيق قبلة المسلم؟</span>
-                        </button>
                         <button type="button" class="suggestion-chip" data-prompt="اذكر لي أهم أذكار الصباح الصحيحة وفضلها">
                             <i class="fa-solid fa-sun"></i>
                             <span>أذكار الصباح الصحيحة</span>
@@ -115,6 +94,14 @@
                         <button type="button" class="suggestion-chip" data-prompt="ما هي شروط وأركان الصلاة التي لا تصح إلا بها؟">
                             <i class="fa-solid fa-clock"></i>
                             <span>شروط وأركان الصلاة</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="ما هي مميزات تطبيق قبلة المسلم؟">
+                            <i class="fa-solid fa-compass"></i>
+                            <span>مميزات تطبيق قبلة المسلم</span>
+                        </button>
+                        <button type="button" class="suggestion-chip" data-prompt="من هو كمال أبو عيد مطور التطبيق؟">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <span>من هو مطور التطبيق؟</span>
                         </button>
                     </div>
                 </div>
@@ -124,7 +111,7 @@
             <!-- Typing Indicator (Animated Gold Dots) -->
             <div class="typing-indicator-row" id="typing-indicator-row">
                 <div class="msg-avatar">
-                    <i class="fa-solid fa-mosque"></i>
+                    <i class="fa-solid fa-robot"></i>
                 </div>
                 <div class="typing-bubble">
                     <span class="typing-text-label">جاري استحضار الإجابة</span>
@@ -134,7 +121,7 @@
                 </div>
             </div>
 
-            <!-- Bottom Input Bar Area (Transparent Icon, No Solid Background) -->
+            <!-- Bottom Input Bar Area (Clean & Modern, No Disclaimer) -->
             <div class="bot-input-area">
                 <div class="bot-input-box-wrapper">
                     <textarea 
@@ -148,16 +135,13 @@
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
-                <div class="input-disclaimer-note">
-                    المساعد مخصص للعلوم الشرعية وخدمات <span>قبلة المسلم</span> • تطوير <span>كمال أبو عيد</span>
-                </div>
             </div>
 
         </main>
 
         <!-- Footer -->
         <footer class="bot-footer">
-            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم • تم التطوير بواسطة <strong>كمال أبو عيد</strong>
+            جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم
         </footer>
     </div>
 

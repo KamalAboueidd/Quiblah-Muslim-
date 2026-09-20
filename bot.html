@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/bot/bot.css?v=2">
+    <link rel="stylesheet" href="features/bot/bot.css?v=3">
     <script src="core/player-bridge.js"></script>
 </head>
 <body class="bot-body">
@@ -57,8 +57,16 @@
                 <h1 class="bot-main-title">المساعد الإسلامي الذكي</h1>
             </div>
 
-            <!-- Left: Spacer for perfect centering -->
-            <div class="bot-header-spacer"></div>
+            <!-- Left: Actions (New Chat + History Drawer Toggle) -->
+            <div class="bot-header-actions">
+                <button type="button" class="bot-header-action-btn" id="btn-new-chat-top" title="محادثة جديدة">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>محادثة جديدة</span>
+                </button>
+                <button type="button" class="bot-header-action-btn" id="btn-toggle-sidebar" title="سجل المحادثات" aria-label="فتح سجل المحادثات">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+            </div>
         </header>
 
         <!-- Main Chat Box Container -->
@@ -145,11 +153,43 @@
         </footer>
     </div>
 
+    <!-- History Sidebar Drawer (ChatGPT-style for Mobile, Tablet, Desktop) -->
+    <div class="bot-sidebar-overlay" id="bot-sidebar-overlay"></div>
+    <aside class="bot-sidebar-drawer" id="bot-sidebar-drawer" aria-label="سجل المحادثات">
+        <div class="bot-sidebar-header">
+            <div class="bot-sidebar-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>المحادثات السابقة</span>
+            </div>
+            <button type="button" class="btn-close-sidebar" id="btn-close-sidebar" aria-label="إغلاق السجل">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="bot-sidebar-actions">
+            <button type="button" class="btn-new-chat-sidebar" id="btn-new-chat-sidebar">
+                <i class="fa-solid fa-plus"></i>
+                <span>محادثة جديدة</span>
+            </button>
+        </div>
+
+        <div class="bot-sessions-list" id="bot-sessions-list">
+            <!-- Dynamic session items inserted here -->
+        </div>
+
+        <div class="bot-sidebar-footer">
+            <button type="button" class="btn-clear-all-chats" id="btn-clear-all-chats">
+                <i class="fa-regular fa-trash-can"></i>
+                <span>مسح كل المحادثات</span>
+            </button>
+        </div>
+    </aside>
+
     <!-- Toast Notification -->
     <div id="toast-msg" class="toast-msg"></div>
 
     <script src="core/toast.js?v=59"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/bot/bot.js?v=2"></script>
+    <script src="features/bot/bot.js?v=3"></script>
 </body>
 </html>

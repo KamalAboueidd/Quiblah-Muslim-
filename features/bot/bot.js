@@ -46,14 +46,6 @@
 - يمنع منعاً باتاً استخدام أي رموز تعبيرية (emojis) إطلاقاً في جميع نصوص إجاباتك، واعتمد على فصاحة التعبير وجمال اللغة وعلامات الترقيم السليمة.
 - نسق إجاباتك بنقاط واضحة وفقرات منسقة مع استخدام العناوين العريضة.`;
 
-    // --- DOM Elements ---
-    let chatMessagesFlow, chatInput, btnSendMessage, btnClearChat;
-    let typingIndicator, welcomeCard;
-
-    // --- State ---
-    let conversationHistory = [];
-    let isGenerating = false;
-
     // --- Utility: Strip Emojis ---
     function stripEmojis(str) {
         return String(str || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{200D}\u{FE0F}]/gu, '').trim();
@@ -144,22 +136,212 @@
         return `${h}:${mm} ${ampm}`;
     }
 
-    // --- Storage: Load & Save ---
-    function loadChatHistory() {
+    // --- Storage Keys ---
+    const SESSIONS_STORAGE_KEY = "quiblah_ai_sessions_v2";
+    const LEGACY_STORAGE_KEY = "quiblah_ai_chat_history_v1";
+
+    // --- DOM Elements ---
+    let chatMessagesFlow, chatInput, btnSendMessage;
+    let welcomeCard;
+    let sidebarDrawer, sidebarOverlay, btnToggleSidebar, btnCloseSidebar;
+    let btnNewChatTop, btnNewChatSidebar, btnClearAllChats, sessionsListContainer;
+
+    // --- State ---
+    let allSessions = [];
+    let currentSessionId = null; // Fresh page load starts a New Chat!
+    let conversationHistory = [];
+    let isGenerating = false;
+
+    // --- Device Detection Helper ---
+    function isTouchDevice() {
+        return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
+    }
+
+    // --- Storage: Multi-Session Load & Save ---
+    function loadSessionsFromStorage() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            const raw = localStorage.getItem(SESSIONS_STORAGE_KEY);
             if (raw) {
-                conversationHistory = JSON.parse(raw);
+                allSessions = JSON.parse(raw);
+                if (!Array.isArray(allSessions)) allSessions = [];
+            } else {
+                allSessions = [];
+                // Check if legacy single chat exists and migrate it
+                const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+                if (legacyRaw) {
+                    const legacyMsgs = JSON.parse(legacyRaw);
+                    if (Array.isArray(legacyMsgs) && legacyMsgs.length > 0) {
+                        const firstUser = legacyMsgs.find(m => m.role === 'user');
+                        const title = firstUser ? firstUser.content.slice(0, 32) : 'محادثة سابقة';
+                        allSessions.push({
+                            id: 'sess_' + Date.now(),
+                            title: title,
+                            createdAt: Date.now(),
+                            updatedAt: Date.now(),
+                            messages: legacyMsgs
+                        });
+                        saveSessionsToStorage();
+                    }
+                }
             }
         } catch (e) {
-            conversationHistory = [];
+            allSessions = [];
         }
     }
 
-    function saveChatHistory() {
+    function saveSessionsToStorage() {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(conversationHistory));
+            localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allSessions));
         } catch (e) {}
+    }
+
+    function syncCurrentSession() {
+        if (!currentSessionId) return;
+        const current = allSessions.find(s => s.id === currentSessionId);
+        if (current) {
+            current.messages = [...conversationHistory];
+            current.updatedAt = Date.now();
+            saveSessionsToStorage();
+            renderSessionsList();
+        }
+    }
+
+    // --- Sidebar Drawer Controls ---
+    function openSidebar() {
+        renderSessionsList();
+        if (sidebarDrawer) sidebarDrawer.classList.add('open');
+        if (sidebarOverlay) sidebarOverlay.classList.add('open');
+    }
+
+    function closeSidebar() {
+        if (sidebarDrawer) sidebarDrawer.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+    }
+
+    // --- Start a New Chat ---
+    function startNewChat() {
+        if (isGenerating) return;
+        currentSessionId = null;
+        conversationHistory = [];
+        renderChatFlow();
+        closeSidebar();
+        renderSessionsList();
+        if (!isTouchDevice() && chatInput) {
+            chatInput.focus();
+        }
+    }
+
+    // --- Load a Previous Session ---
+    function selectSession(sessionId) {
+        if (isGenerating) return;
+        const session = allSessions.find(s => s.id === sessionId);
+        if (!session) return;
+        currentSessionId = session.id;
+        conversationHistory = session.messages ? [...session.messages] : [];
+        renderChatFlow();
+        closeSidebar();
+        renderSessionsList();
+    }
+
+    // --- Delete Individual Session ---
+    function deleteSession(sessionId, e) {
+        if (e) e.stopPropagation();
+        allSessions = allSessions.filter(s => s.id !== sessionId);
+        saveSessionsToStorage();
+        if (currentSessionId === sessionId) {
+            startNewChat();
+        } else {
+            renderSessionsList();
+        }
+        if (typeof window.showToast === 'function') {
+            window.showToast('تم حذف المحادثة', 'fa-solid fa-trash-can');
+        }
+    }
+
+    // --- Clear All Sessions ---
+    function clearAllSessions() {
+        if (!allSessions.length) return;
+        allSessions = [];
+        saveSessionsToStorage();
+        try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch(e) {}
+        startNewChat();
+        closeSidebar();
+        if (typeof window.showToast === 'function') {
+            window.showToast('تم مسح كل المحادثات السابقة', 'fa-solid fa-trash-can');
+        }
+    }
+
+    // --- Render Sessions in Sidebar ---
+    function renderSessionsList() {
+        if (!sessionsListContainer) return;
+        sessionsListContainer.innerHTML = '';
+
+        if (!allSessions.length) {
+            sessionsListContainer.innerHTML = `
+                <div class="sessions-empty-state">
+                    <i class="fa-regular fa-comments"></i>
+                    <span>لا توجد محادثات سابقة بعد</span>
+                </div>
+            `;
+            return;
+        }
+
+        allSessions.forEach(session => {
+            const item = document.createElement('div');
+            item.className = `session-item ${session.id === currentSessionId ? 'active' : ''}`;
+
+            const mainBtn = document.createElement('button');
+            mainBtn.type = 'button';
+            mainBtn.className = 'session-main-btn';
+            mainBtn.onclick = () => selectSession(session.id);
+
+            const icon = document.createElement('i');
+            icon.className = 'fa-regular fa-message';
+
+            const texts = document.createElement('div');
+            texts.className = 'session-texts';
+
+            const title = document.createElement('span');
+            title.className = 'session-title';
+            title.textContent = session.title || 'محادثة إسلامية';
+
+            const date = document.createElement('span');
+            date.className = 'session-date';
+            date.textContent = formatSessionDate(session.updatedAt || session.createdAt);
+
+            texts.appendChild(title);
+            texts.appendChild(date);
+            mainBtn.appendChild(icon);
+            mainBtn.appendChild(texts);
+
+            const btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'btn-delete-session';
+            btnDel.title = 'حذف المحادثة';
+            btnDel.setAttribute('aria-label', 'حذف المحادثة');
+            btnDel.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+            btnDel.onclick = (e) => deleteSession(session.id, e);
+
+            item.appendChild(mainBtn);
+            item.appendChild(btnDel);
+            sessionsListContainer.appendChild(item);
+        });
+    }
+
+    function formatSessionDate(ts) {
+        if (!ts) return '';
+        const d = new Date(ts);
+        const now = new Date();
+        const isToday = d.toDateString() === now.toDateString();
+        if (isToday) {
+            let h = d.getHours();
+            const m = d.getMinutes();
+            const ampm = h >= 12 ? 'م' : 'ص';
+            h = h % 12 || 12;
+            const mm = m < 10 ? '0' + m : m;
+            return `اليوم ${h}:${mm} ${ampm}`;
+        }
+        return `${d.getDate()}/${d.getMonth() + 1}`;
     }
 
     // --- Render Messages to DOM ---
@@ -377,13 +559,33 @@
         chatInput.value = '';
         adjustTextareaHeight(chatInput);
 
+        // Crucial for mobile UX: Cleanly dismiss virtual keyboard upon sending so user has full view to watch stream live
+        if (isTouchDevice() && chatInput) {
+            chatInput.blur();
+        }
+
+        // Initialize session if starting a new chat
+        if (!currentSessionId) {
+            currentSessionId = 'sess_' + Date.now();
+            const newSession = {
+                id: currentSessionId,
+                title: userText.length > 34 ? userText.slice(0, 34) + '...' : userText,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+                messages: []
+            };
+            allSessions.unshift(newSession);
+            saveSessionsToStorage();
+            renderSessionsList();
+        }
+
         const userTimeStr = getMessageTimestamp();
         conversationHistory.push({
             role: 'user',
             content: userText,
             time: userTimeStr
         });
-        saveChatHistory();
+        syncCurrentSession();
         appendMessageToDOM('user', userText, userTimeStr, true);
 
         isGenerating = true;
@@ -411,7 +613,7 @@
                 content: cleanResponse,
                 time: botTimeStr
             });
-            saveChatHistory();
+            syncCurrentSession();
         } catch (err) {
             console.error("Groq Chat Streaming Error:", err);
             const errorMsg = "عذراً، تعذر استكمال الرد في الوقت الحالي. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.";
@@ -422,11 +624,14 @@
                 content: errorMsg,
                 time: botTimeStr
             });
-            saveChatHistory();
+            syncCurrentSession();
         } finally {
             isGenerating = false;
             updateSendButtonState();
-            if (chatInput) chatInput.focus();
+            // Crucial: Only auto-refocus on Desktop keyboard devices. NEVER on mobile/touch to prevent keyboard abruptly jumping
+            if (!isTouchDevice() && chatInput) {
+                chatInput.focus();
+            }
         }
     }
 
@@ -542,18 +747,6 @@
         el.style.height = Math.min(el.scrollHeight, 120) + 'px';
     }
 
-    // --- Clear Conversation ---
-    function clearChat() {
-        conversationHistory = [];
-        try {
-            localStorage.removeItem(STORAGE_KEY);
-        } catch(e) {}
-        renderChatFlow();
-        if (typeof window.showToast === 'function') {
-            window.showToast('تم مسح المحادثة بنجاح', 'fa-solid fa-trash-can');
-        }
-    }
-
     // --- Quick Prompt Suggestion Click Handler ---
     function initSuggestionChips() {
         document.querySelectorAll('.suggestion-chip').forEach(chip => {
@@ -572,21 +765,61 @@
         chatMessagesFlow = document.getElementById('chat-messages-flow');
         chatInput = document.getElementById('chat-input');
         btnSendMessage = document.getElementById('btn-send-message');
-        btnClearChat = document.getElementById('btn-clear-chat');
-        typingIndicator = document.getElementById('typing-indicator-row');
         welcomeCard = document.getElementById('bot-welcome-card');
 
-        loadChatHistory();
-        renderChatFlow();
+        // Sidebar elements
+        sidebarDrawer = document.getElementById('bot-sidebar-drawer');
+        sidebarOverlay = document.getElementById('bot-sidebar-overlay');
+        btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+        btnCloseSidebar = document.getElementById('btn-close-sidebar');
+        btnNewChatTop = document.getElementById('btn-new-chat-top');
+        btnNewChatSidebar = document.getElementById('btn-new-chat-sidebar');
+        btnClearAllChats = document.getElementById('btn-clear-all-chats');
+        sessionsListContainer = document.getElementById('bot-sessions-list');
+
+        // Load sessions and start with a fresh New Chat on page load
+        loadSessionsFromStorage();
+        startNewChat();
         initSuggestionChips();
 
         if (btnSendMessage) {
             btnSendMessage.addEventListener('click', handleUserSend);
+            // Prevent mobile tap focus flickering
+            btnSendMessage.addEventListener('pointerdown', (e) => {
+                if (isTouchDevice() && chatInput) {
+                    chatInput.blur();
+                }
+            });
         }
 
-        if (btnClearChat) {
-            btnClearChat.addEventListener('click', clearChat);
+        if (btnToggleSidebar) {
+            btnToggleSidebar.addEventListener('click', openSidebar);
         }
+
+        if (btnCloseSidebar) {
+            btnCloseSidebar.addEventListener('click', closeSidebar);
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        }
+
+        if (btnNewChatTop) {
+            btnNewChatTop.addEventListener('click', startNewChat);
+        }
+
+        if (btnNewChatSidebar) {
+            btnNewChatSidebar.addEventListener('click', startNewChat);
+        }
+
+        if (btnClearAllChats) {
+            btnClearAllChats.addEventListener('click', clearAllSessions);
+        }
+
+        // Close sidebar on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSidebar();
+        });
 
         if (chatInput) {
             chatInput.addEventListener('input', () => {

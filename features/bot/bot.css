@@ -449,15 +449,47 @@ body.bot-body {
     margin-bottom: 6px;
 }
 
-.bot-msg .msg-bubble blockquote, .bot-msg .msg-bubble .quran-quote {
-    background: rgba(197, 168, 89, 0.08);
-    border-right: 3px solid var(--gold);
-    padding: 8px 14px;
-    margin: 10px 0;
-    border-radius: 0 8px 8px 0;
+.bot-msg .msg-bubble blockquote, 
+.bot-msg .msg-bubble .quran-quote {
+    background: rgba(197, 168, 89, 0.07);
+    border: 1px solid rgba(197, 168, 89, 0.16) !important;
+    padding: 14px 22px;
+    margin: 14px 0;
+    border-radius: 16px;
     color: var(--gold-light);
     font-family: 'Amiri', serif;
-    font-size: 16.5px;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 2.1;
+    text-align: center;
+    position: relative;
+    box-shadow: inset 0 0 18px rgba(197, 168, 89, 0.05);
+}
+
+.bot-msg .msg-bubble blockquote::before,
+.bot-msg .msg-bubble .quran-quote::before {
+    content: "“";
+    font-family: 'Amiri', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-left: 8px;
+    line-height: 0;
+    vertical-align: -4px;
+    filter: drop-shadow(0 0 6px var(--gold-glow));
+}
+
+.bot-msg .msg-bubble blockquote::after,
+.bot-msg .msg-bubble .quran-quote::after {
+    content: "”";
+    font-family: 'Amiri', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-right: 8px;
+    line-height: 0;
+    vertical-align: -4px;
+    filter: drop-shadow(0 0 6px var(--gold-glow));
 }
 
 /* Message Meta & Action bar */
@@ -671,9 +703,9 @@ body.bot-body {
 .bot-sidebar-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 999;
     opacity: 0;
     pointer-events: none;
@@ -694,11 +726,11 @@ body.bot-body {
     height: 100%;
     height: 100dvh;
     z-index: 1000;
-    background: rgba(12, 16, 24, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-left: 1px solid rgba(197, 168, 89, 0.22);
-    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.65);
+    background: rgba(10, 14, 22, 0.55) !important;
+    backdrop-filter: blur(28px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    border-left: 1px solid rgba(197, 168, 89, 0.18);
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
@@ -729,12 +761,13 @@ body.bot-body {
 
 .bot-sidebar-title i {
     color: var(--gold);
+    filter: drop-shadow(0 0 6px var(--gold-glow));
 }
 
 .btn-close-sidebar {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
+    background: transparent !important;
+    border: none !important;
+    color: var(--gold) !important;
     font-size: 18px;
     cursor: pointer;
     padding: 6px;
@@ -746,8 +779,9 @@ body.bot-body {
 }
 
 .btn-close-sidebar:hover {
-    color: var(--white);
-    background: rgba(255, 255, 255, 0.08);
+    color: var(--gold-light) !important;
+    filter: drop-shadow(0 0 8px var(--gold-glow));
+    transform: scale(1.15);
 }
 
 .bot-sidebar-actions {
@@ -762,8 +796,8 @@ body.bot-body {
     gap: 10px;
     padding: 11px 16px;
     border-radius: 12px;
-    background: rgba(197, 168, 89, 0.12);
-    border: 1px solid rgba(197, 168, 89, 0.3);
+    background: rgba(197, 168, 89, 0.1);
+    border: 1px solid rgba(197, 168, 89, 0.28);
     color: var(--gold-light);
     font-family: inherit;
     font-size: 14px;
@@ -772,10 +806,15 @@ body.bot-body {
     transition: all 0.25s ease;
 }
 
+.btn-new-chat-sidebar i {
+    color: var(--gold);
+    filter: drop-shadow(0 0 6px var(--gold-glow));
+}
+
 .btn-new-chat-sidebar:hover {
-    background: rgba(197, 168, 89, 0.22);
+    background: rgba(197, 168, 89, 0.2);
     border-color: var(--gold);
-    box-shadow: 0 0 14px rgba(197, 168, 89, 0.25);
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.3);
     transform: translateY(-1px);
 }
 
@@ -832,6 +871,7 @@ body.bot-body {
     font-size: 14px;
     color: var(--gold);
     flex-shrink: 0;
+    filter: drop-shadow(0 0 4px var(--gold-glow));
 }
 
 .session-texts {
@@ -857,22 +897,24 @@ body.bot-body {
 }
 
 .btn-delete-session {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
+    background: transparent !important;
+    border: none !important;
+    color: var(--gold) !important;
     cursor: pointer;
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 13px;
-    opacity: 0.6;
+    opacity: 0.65;
     transition: all 0.2s ease;
     flex-shrink: 0;
 }
 
 .btn-delete-session:hover {
     opacity: 1;
-    color: #e74c3c;
-    background: rgba(231, 76, 60, 0.12);
+    color: var(--gold-light) !important;
+    background: rgba(197, 168, 89, 0.12) !important;
+    filter: drop-shadow(0 0 8px var(--gold-glow));
+    transform: scale(1.2);
 }
 
 .sessions-empty-state {
@@ -889,7 +931,9 @@ body.bot-body {
 
 .sessions-empty-state i {
     font-size: 28px;
-    color: rgba(197, 168, 89, 0.3);
+    color: var(--gold);
+    opacity: 0.4;
+    filter: drop-shadow(0 0 8px var(--gold-glow));
 }
 
 .bot-sidebar-footer {
@@ -903,24 +947,38 @@ body.bot-body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 9px 12px;
-    border-radius: 8px;
-    background: transparent;
-    border: 1px solid rgba(231, 76, 60, 0.25);
-    color: #e74c3c;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: transparent !important;
+    border: none !important;
+    color: var(--gold) !important;
     font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 13.5px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
     opacity: 0.85;
+}
+
+.btn-clear-all-chats i {
+    color: var(--gold) !important;
+    font-size: 14px;
+    transition: transform 0.25s ease, filter 0.25s ease;
 }
 
 .btn-clear-all-chats:hover {
     opacity: 1;
-    background: rgba(231, 76, 60, 0.1);
-    border-color: #e74c3c;
+    color: var(--gold-light) !important;
+    background: rgba(197, 168, 89, 0.1) !important;
+    filter: drop-shadow(0 0 10px var(--gold-glow));
+    transform: translateY(-1px);
 }
+
+.btn-clear-all-chats:hover i {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 8px var(--gold-glow));
+}
+
 
 /* --- Responsive Breakpoints --- */
 @media (max-width: 768px) {

@@ -43,6 +43,7 @@
 - تخصصك محصور في العلوم الشرعية والقرآنية واستفسارات تطبيق قبلة المسلم.
 - إذا سألك المستخدم عن مواضيع خارج هذا النطاق (مثل السياسة، الرياضة، الفن، أو دردشة عشوائية)، اعتذر بلطف وبيّن تخصصك.
 - استشهد دائماً بالآيات القرآنية والأحاديث الصحيحة مع ذكر المصادر.
+- عند الاستشهاد بآية قرآنية أو حديث شريف، ضعهما دائماً في سطر مستقل بين علامات تنصيص أو أقواس (مثال: «...» أو ﴿...﴾) ليتم إبرازهما بتنسيق ذهبي فاخر ومميز.
 - يمنع منعاً باتاً استخدام أي رموز تعبيرية (emojis) إطلاقاً في جميع نصوص إجاباتك، واعتمد على فصاحة التعبير وجمال اللغة وعلامات الترقيم السليمة.
 - نسق إجاباتك بنقاط واضحة وفقرات منسقة مع استخدام العناوين العريضة.`;
 
@@ -86,13 +87,24 @@
             // Bold formatting: **text**
             line = escapeHTML(line).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-            // Quranic quotation lines: ﴿...﴾ or «...»
-            if (line.startsWith('﴿') || line.startsWith('«') || line.includes('﴾') || line.includes('»')) {
+            // Quranic quotation & Hadith lines: ﴿...﴾, «...», “...”, > blockquotes
+            const isQuoteLine = line.startsWith('﴿') || line.startsWith('«') || line.startsWith('“') || 
+                                line.startsWith('&gt;') || line.startsWith('>') || 
+                                line.includes('﴾') || line.includes('»');
+            if (isQuoteLine) {
                 if (inList) {
                     html += '</ul>';
                     inList = false;
                 }
-                html += `<div class="quran-quote">${line}</div>`;
+                let cleanQuote = line.replace(/^[&gt;>\s]+/, '').trim();
+                // Strip outer wrapping brackets or quotes so the CSS pseudo-element double-quotes frame it cleanly
+                if ((cleanQuote.startsWith('«') && cleanQuote.endsWith('»')) ||
+                    (cleanQuote.startsWith('“') && cleanQuote.endsWith('”')) ||
+                    (cleanQuote.startsWith('﴿') && cleanQuote.endsWith('﴾')) ||
+                    (cleanQuote.startsWith('&quot;') && cleanQuote.endsWith('&quot;'))) {
+                    cleanQuote = cleanQuote.replace(/^[«“﴿&quot;]+|[»”﴾&quot;]+$/g, '').trim();
+                }
+                html += `<div class="quran-quote">${cleanQuote}</div>`;
                 continue;
             }
 

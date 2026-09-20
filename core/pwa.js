@@ -174,7 +174,7 @@
             background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            z-index: 100000;
+            z-index: 10000000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -376,6 +376,11 @@
     // 6. التعامل مع الضغط على زر التثبيت
     async function handleInstallClick(e) {
         if (e && e.preventDefault) e.preventDefault();
+
+        // إغلاق قائمة الصفحات السفلية إن كانت مفتوحة
+        if (typeof window.closePagesSheet === 'function') {
+            window.closePagesSheet();
+        }
 
         if (deferredPrompt) {
             // المتصفح يدعم beforeinstallprompt (Chrome / Android / Edge)

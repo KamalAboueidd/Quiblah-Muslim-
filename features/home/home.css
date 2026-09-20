@@ -1315,24 +1315,24 @@
             text-align: center;
         }
 
-        /* Sheet PWA Banner - Transparent Background as requested */
+        /* Sheet PWA Banner - Transparent Background & No Border */
         .sheet-pwa-banner {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin: 0 16px 14px;
-            padding: 10px 14px;
-            border-radius: 16px;
+            margin: 0 6px 14px;
+            padding: 8px 10px;
+            border-radius: 14px;
             background: transparent !important;
-            border: 1px solid rgba(197, 168, 89, 0.25);
+            border: none !important;
             cursor: pointer;
             transition: all 0.25s ease;
         }
 
         .sheet-pwa-banner:hover {
-            background: rgba(197, 168, 89, 0.08) !important;
-            border-color: var(--gold);
+            background: rgba(197, 168, 89, 0.06) !important;
+            border: none !important;
             transform: scale(1.01);
         }
 

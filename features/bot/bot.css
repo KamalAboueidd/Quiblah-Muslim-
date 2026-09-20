@@ -276,18 +276,18 @@ body.bot-body {
 }
 
 .welcome-mosque-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
+    width: auto;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(197, 168, 89, 0.08);
-    border: 1px solid rgba(197, 168, 89, 0.35);
-    color: var(--gold);
-    font-size: 28px;
-    box-shadow: 0 0 25px rgba(197, 168, 89, 0.25);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
+    font-size: 52px;
     margin-bottom: 16px;
+    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.4));
 }
 
 .welcome-title {
@@ -1042,33 +1042,69 @@ body.bot-body {
     }
 
     .bot-top-header {
-        padding: 4px 0 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 2px 8px;
         margin-bottom: 2px;
+        gap: 8px;
     }
 
-    .bot-header-icon {
-        font-size: 19px;
+    /* Right: Back button with arrow and label */
+    .bot-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+        flex-shrink: 0;
     }
 
-    .bot-main-title {
+    .bot-back-btn i {
         font-size: 15px;
     }
 
     .bot-back-btn span {
-        display: none;
+        display: inline !important;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 700;
     }
 
-    .bot-back-btn {
-        padding: 4px 6px;
+    /* Left Group: AI Brand Title pushed to the left side right next to actions */
+    .bot-brand-badge {
+        margin-right: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .bot-header-icon {
+        font-size: 16px;
+    }
+
+    .bot-main-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Left: Action buttons (New Chat + History) */
+    .bot-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
+    }
+
+    .bot-header-action-btn {
+        padding: 5px 8px;
+        font-size: 13px;
+        border-radius: 10px;
     }
 
     .bot-header-action-btn span {
         display: none;
-    }
-
-    .bot-header-action-btn {
-        padding: 5px 9px;
-        font-size: 13px;
     }
 
     .chat-messages-flow {

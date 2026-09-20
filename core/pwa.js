@@ -35,11 +35,24 @@
     const isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+        window.matchMedia('(display-mode: minimal-ui)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
         window.navigator.standalone === true ||
         document.referrer.includes('android-app://');
 
     if (isStandalone) {
-        // التطبيق مثبت بالفعل ويعمل كنافذة مستقلة، لا حاجة لإظهار أزرار التثبيت
+        // التطبيق مثبت بالفعل ويعمل كنافذة مستقلة - إخفاء جميع عناصر التثبيت فوراً
+        document.documentElement.classList.add('is-standalone');
+        const hideTriggers = () => {
+            document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hideTriggers);
+        } else {
+            hideTriggers();
+        }
         return;
     }
 
@@ -55,6 +68,23 @@
     // 3. حقن تنسيقات أزرار التثبيت ونافذة الإرشادات الشاملة
     const pwaStyles = `
     <style id="pwa-custom-styles">
+        /* إخفاء عناصر التثبيت داخل التطبيق المثبت */
+        @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui), (display-mode: window-controls-overlay) {
+            .pwa-install-trigger,
+            .pwa-install-btn,
+            .sheet-pwa-banner,
+            .footer-pwa-action,
+            #btn-bot-install-pwa {
+                display: none !important;
+            }
+        }
+        html.is-standalone .pwa-install-trigger,
+        html.is-standalone .pwa-install-btn,
+        html.is-standalone .sheet-pwa-banner,
+        html.is-standalone .footer-pwa-action,
+        html.is-standalone #btn-bot-install-pwa {
+            display: none !important;
+        }
         /* زر التثبيت في شريط العنوان أو الرأس (Desktop & Tablet) */
         .pwa-install-btn {
             display: inline-flex !important;
@@ -467,9 +497,19 @@
 
     // 8. إخفاء جميع عناصر التثبيت عند اكتمال التثبيت
     function hideAllInstallTriggers() {
+        document.documentElement.classList.add('is-standalone');
         document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
-            el.style.display = 'none';
+            el.style.setProperty('display', 'none', 'important');
         });
+    }
+
+    // فحص تطبيقات PWA المثبتة عبر المتصفح إن دعم ذلك
+    if ('getInstalledRelatedApps' in navigator) {
+        navigator.getInstalledRelatedApps().then((apps) => {
+            if (apps && apps.length > 0) {
+                hideAllInstallTriggers();
+            }
+        }).catch(() => {});
     }
 
     // 9. الاستماع لحدث beforeinstallprompt

@@ -64,6 +64,7 @@
 
     let deferredPrompt = null;
     let installBtn = null;
+    let isDownloadingApp = false;
 
     // 3. حقن تنسيقات أزرار التثبيت ونافذة الإرشادات الشاملة
     const pwaStyles = `
@@ -389,8 +390,9 @@
                 const choiceResult = await deferredPrompt.userChoice;
                 if (choiceResult && choiceResult.outcome === 'accepted') {
                     console.log('[PWA] وافق المستخدم على التثبيت');
+                    isDownloadingApp = true;
                     if (typeof window.showToast === 'function') {
-                        window.showToast('جاري التنزيل...', 'fa-solid fa-spinner fa-spin', 4000);
+                        window.showToast('جاري التنزيل...', 'fa-solid fa-spinner fa-spin', 6000);
                     }
                     hideAllInstallTriggers();
                 } else {
@@ -530,9 +532,15 @@
         console.log('[PWA] تم تثبيت التطبيق بنجاح');
         deferredPrompt = null;
         hideAllInstallTriggers();
-        if (typeof window.showToast === 'function') {
-            window.showToast('تم التنزيل بنجاح', 'fa-solid fa-circle-check', 6000);
-        }
+
+        // عند موافقة المستخدم يبدأ المتصفح التنزيل الفعلي أولاً، فنمنحه وقتاً كافياً لإكمال التنزيل قبل إظهار "تم التنزيل بنجاح"
+        const waitMs = isDownloadingApp ? 6500 : 1500;
+        setTimeout(() => {
+            if (typeof window.showToast === 'function') {
+                window.showToast('تم التنزيل بنجاح', 'fa-solid fa-circle-check', 6000);
+            }
+            isDownloadingApp = false;
+        }, waitMs);
     });
 
     // 11. حقن أزرار التثبيت فور تحميل الـ DOM

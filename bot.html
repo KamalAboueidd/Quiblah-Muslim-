@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/bot/bot.css?v=7">
+    <link rel="stylesheet" href="features/bot/bot.css?v=8">
     <script src="core/player-bridge.js"></script>
 </head>
 <body class="bot-body">
@@ -70,7 +70,7 @@
         </header>
 
         <!-- Main Chat Box Container -->
-        <main class="bot-chat-container">
+        <main class="bot-chat-container is-empty" id="bot-chat-container">
             
             <!-- Messages Scroll Flow -->
             <div class="chat-messages-flow" id="chat-messages-flow">
@@ -84,34 +84,6 @@
                     <p class="welcome-desc">
                         إجابات شرعية وفقهية موثقة بالقرآن الكريم وصحيح السنة النبوية الشريفة
                     </p>
-
-                    <!-- Suggestion Chips Grid -->
-                    <div class="suggestion-chips-grid">
-                        <button type="button" class="suggestion-chip" data-prompt="ما هو فضل قراءة سورة الكهف يوم الجمعة؟">
-                            <i class="fa-solid fa-book-quran"></i>
-                            <span>فضل سورة الكهف يوم الجمعة</span>
-                        </button>
-                        <button type="button" class="suggestion-chip" data-prompt="كيف أصلي صلاة الاستخارة وما هو دعاؤها الصحيح؟">
-                            <i class="fa-solid fa-hands-praying"></i>
-                            <span>كيفية صلاة الاستخارة ودعاؤها</span>
-                        </button>
-                        <button type="button" class="suggestion-chip" data-prompt="اذكر لي أهم أذكار الصباح الصحيحة وفضلها">
-                            <i class="fa-solid fa-sun"></i>
-                            <span>أذكار الصباح الصحيحة</span>
-                        </button>
-                        <button type="button" class="suggestion-chip" data-prompt="ما هي شروط وأركان الصلاة التي لا تصح إلا بها؟">
-                            <i class="fa-solid fa-clock"></i>
-                            <span>شروط وأركان الصلاة</span>
-                        </button>
-                        <button type="button" class="suggestion-chip" data-prompt="ما هي مميزات تطبيق قبلة المسلم؟">
-                            <i class="fa-solid fa-compass"></i>
-                            <span>مميزات تطبيق قبلة المسلم</span>
-                        </button>
-                        <button type="button" class="suggestion-chip" data-prompt="من هو كمال أبو عيد مطور التطبيق؟">
-                            <i class="fa-solid fa-user-gear"></i>
-                            <span>من هو مطور التطبيق؟</span>
-                        </button>
-                    </div>
                 </div>
 
             </div>
@@ -130,7 +102,7 @@
             </div>
 
             <!-- Bottom Input Bar Area (Clean & Modern, No Disclaimer) -->
-            <div class="bot-input-area">
+            <div class="bot-input-area" id="bot-input-area">
                 <div class="bot-input-box-wrapper">
                     <textarea 
                         id="chat-input" 
@@ -141,6 +113,34 @@
                     
                     <button type="button" id="btn-send-message" class="btn-send-message" title="إرسال السؤال" disabled aria-label="إرسال">
                         <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                <!-- Suggestion Chips Grid (Centered under input in empty state) -->
+                <div class="suggestion-chips-grid" id="suggestion-chips-grid">
+                    <button type="button" class="suggestion-chip" data-prompt="ما هو فضل قراءة سورة الكهف يوم الجمعة؟">
+                        <i class="fa-solid fa-book-quran"></i>
+                        <span>فضل سورة الكهف يوم الجمعة</span>
+                    </button>
+                    <button type="button" class="suggestion-chip" data-prompt="كيف أصلي صلاة الاستخارة وما هو دعاؤها الصحيح؟">
+                        <i class="fa-solid fa-hands-praying"></i>
+                        <span>كيفية صلاة الاستخارة ودعاؤها</span>
+                    </button>
+                    <button type="button" class="suggestion-chip" data-prompt="اذكر لي أهم أذكار الصباح الصحيحة وفضلها">
+                        <i class="fa-solid fa-sun"></i>
+                        <span>أذكار الصباح الصحيحة</span>
+                    </button>
+                    <button type="button" class="suggestion-chip" data-prompt="ما هي شروط وأركان الصلاة التي لا تصح إلا بها؟">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>شروط وأركان الصلاة</span>
+                    </button>
+                    <button type="button" class="suggestion-chip" data-prompt="ما هي مميزات تطبيق قبلة المسلم؟">
+                        <i class="fa-solid fa-compass"></i>
+                        <span>مميزات تطبيق قبلة المسلم</span>
+                    </button>
+                    <button type="button" class="suggestion-chip" data-prompt="من هو كمال أبو عيد مطور التطبيق؟">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>من هو مطور التطبيق؟</span>
                     </button>
                 </div>
             </div>
@@ -190,6 +190,6 @@
 
     <script src="core/toast.js?v=59"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/bot/bot.js?v=7"></script>
+    <script src="features/bot/bot.js?v=8"></script>
 </body>
 </html>

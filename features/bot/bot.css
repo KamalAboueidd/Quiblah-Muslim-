@@ -249,6 +249,115 @@ body.bot-body {
     overflow: hidden;
     position: relative;
     min-height: 0;
+    transition: justify-content 0.4s ease;
+}
+
+/* --- Empty State: Centered Hero & Centered Input (ChatGPT-Style) --- */
+.bot-chat-container.is-empty {
+    justify-content: center;
+    align-items: center;
+}
+
+.bot-chat-container.is-empty .chat-messages-flow {
+    flex: 0 0 auto;
+    overflow: visible;
+    padding: 0;
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 20px;
+}
+
+.bot-chat-container.is-empty .bot-welcome-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 16px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.35s ease, transform 0.35s ease, height 0.35s ease, margin 0.35s ease;
+}
+
+.bot-chat-container.is-empty .welcome-mosque-icon {
+    font-size: 54px;
+    color: var(--gold) !important;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 18px rgba(197, 168, 89, 0.45));
+}
+
+.bot-chat-container.is-empty .welcome-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+}
+
+.bot-chat-container.is-empty .welcome-title span {
+    color: var(--gold);
+}
+
+.bot-chat-container.is-empty .welcome-desc {
+    font-size: 14.5px;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 0;
+}
+
+.bot-chat-container.is-empty .bot-input-area {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 12px;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bot-chat-container.is-empty .suggestion-chips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* --- When Input is Focused on Empty State: Smooth descent to bottom! --- */
+.bot-chat-container.is-empty.input-focused,
+.bot-chat-container:not(.is-empty) {
+    justify-content: flex-start;
+}
+
+.bot-chat-container.is-empty.input-focused .bot-welcome-card {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.95);
+    pointer-events: none;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.bot-chat-container.is-empty.input-focused .suggestion-chips-grid {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.bot-chat-container.is-empty.input-focused .bot-input-area,
+.bot-chat-container:not(.is-empty) .bot-input-area {
+    margin-top: auto;
+    width: 100%;
+    max-width: 100%;
+    padding: 8px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Active chat with messages */
+.bot-chat-container:not(.is-empty) .bot-welcome-card,
+.bot-chat-container:not(.is-empty) .suggestion-chips-grid {
+    display: none !important;
 }
 
 /* Scrollable Messages Area */
@@ -264,73 +373,7 @@ body.bot-body {
     scroll-behavior: auto;
 }
 
-/* --- Welcome Hero Card (Shown when chat is empty) --- */
-.bot-welcome-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 30px 20px 20px;
-    margin: auto 0;
-    animation: fadeIn 0.5s ease-out;
-}
-
-.welcome-mosque-icon {
-    width: auto;
-    height: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    color: var(--gold) !important;
-    font-size: 52px;
-    margin-bottom: 16px;
-    filter: drop-shadow(0 0 16px rgba(197, 168, 89, 0.4));
-}
-
-.welcome-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--white);
-    margin-bottom: 8px;
-}
-
-.welcome-title span {
-    color: var(--gold);
-}
-
-.welcome-desc {
-    font-size: 14.5px;
-    color: var(--text-muted);
-    max-width: 580px;
-    line-height: 1.7;
-    margin-bottom: 20px;
-}
-
-.welcome-disclaimer {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    color: var(--gold-light);
-    background: rgba(197, 168, 89, 0.08);
-    padding: 6px 16px;
-    border-radius: 30px;
-    border: 1px solid rgba(197, 168, 89, 0.2);
-    margin-bottom: 24px;
-}
-
-/* Suggestion Chips Grid */
-.suggestion-chips-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    max-width: 680px;
-}
-
+/* Suggestion Chips Base */
 .suggestion-chip {
     display: inline-flex;
     align-items: center;
@@ -338,9 +381,9 @@ body.bot-body {
     background: rgba(197, 168, 89, 0.06);
     border: 1px solid rgba(197, 168, 89, 0.2);
     color: var(--white);
-    padding: 9px 16px;
+    padding: 8px 14px;
     border-radius: 20px;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -361,30 +404,36 @@ body.bot-body {
     box-shadow: 0 4px 14px rgba(197, 168, 89, 0.2);
 }
 
-/* --- Message Rows (Pure Seamless Page Background, No Bubble Boxes) --- */
+/* --- Message Rows (Pure Seamless Page Background, User on RIGHT, Bot on LEFT) --- */
 .chat-msg-row {
     display: flex;
-    gap: 14px;
-    width: 100%;
-    max-width: 100%;
+    gap: 12px;
+    width: auto;
+    max-width: 84%;
     animation: messageSlideIn 0.3s ease-out;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
+/* User Message: Strictly Aligned on the RIGHT (يمين) */
 .chat-msg-row.user-msg {
-    align-self: stretch;
+    align-self: flex-start;
     flex-direction: row;
-    padding: 10px 4px 14px;
-    border-bottom: 1px solid rgba(197, 168, 89, 0.14);
+    margin-right: 0;
+    margin-left: auto;
+    padding: 6px 0;
+    text-align: right;
 }
 
+/* Assistant Message: Strictly Aligned on the LEFT (شمال) */
 .chat-msg-row.bot-msg {
-    align-self: stretch;
-    flex-direction: row;
-    padding: 12px 4px 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    align-self: flex-end;
+    flex-direction: row-reverse;
+    margin-left: 0;
+    margin-right: auto;
+    padding: 8px 0 14px;
+    text-align: right;
 }
 
 .msg-avatar {
@@ -477,47 +526,41 @@ body.bot-body {
     margin-bottom: 6px;
 }
 
-.bot-msg .msg-bubble blockquote, 
+/* Quranic verses and Hadiths styling: Pure text color, absolutely NO background box, NO borders, NO double quotes */
+.quran-text-highlight,
 .bot-msg .msg-bubble .quran-quote {
-    background: rgba(197, 168, 89, 0.07);
-    border: 1px solid rgba(197, 168, 89, 0.16) !important;
-    padding: 14px 22px;
-    margin: 14px 0;
-    border-radius: 16px;
-    color: var(--gold-light);
-    font-family: 'Amiri', serif;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 2.1;
-    text-align: center;
-    position: relative;
-    box-shadow: inset 0 0 18px rgba(197, 168, 89, 0.05);
+    color: var(--gold-light) !important;
+    font-family: 'Amiri', serif !important;
+    font-size: 1.15em !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline !important;
 }
 
-.bot-msg .msg-bubble blockquote::before,
-.bot-msg .msg-bubble .quran-quote::before {
-    content: "“";
-    font-family: 'Amiri', serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--gold);
-    margin-left: 8px;
-    line-height: 0;
-    vertical-align: -4px;
-    filter: drop-shadow(0 0 6px var(--gold-glow));
+.hadith-text-highlight {
+    color: #f1d78a !important;
+    font-family: 'Amiri', serif !important;
+    font-size: 1.08em !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline !important;
 }
 
-.bot-msg .msg-bubble blockquote::after,
-.bot-msg .msg-bubble .quran-quote::after {
-    content: "”";
-    font-family: 'Amiri', serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--gold);
-    margin-right: 8px;
-    line-height: 0;
-    vertical-align: -4px;
-    filter: drop-shadow(0 0 6px var(--gold-glow));
+.bot-msg .msg-bubble blockquote {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 0 !important;
+    margin: 4px 0 !important;
+    color: rgba(255, 255, 255, 0.94) !important;
 }
 
 /* Message Meta & Action bar */
@@ -1113,7 +1156,7 @@ body.bot-body {
     }
 
     .chat-msg-row {
-        max-width: 100%;
+        max-width: 88%;
         gap: 10px;
     }
 

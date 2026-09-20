@@ -119,26 +119,12 @@
             // Bold formatting: **text**
             line = escapeHTML(line).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-            // Quranic quotation & Hadith lines: ﴿...﴾, «...», “...”, > blockquotes
-            const isQuoteLine = line.startsWith('﴿') || line.startsWith('«') || line.startsWith('“') || 
-                                line.startsWith('&gt;') || line.startsWith('>') || 
-                                line.includes('﴾') || line.includes('»');
-            if (isQuoteLine) {
-                if (inList) {
-                    html += '</ul>';
-                    inList = false;
-                }
-                let cleanQuote = line.replace(/^[&gt;>\s]+/, '').trim();
-                // Strip outer wrapping brackets or quotes so the CSS pseudo-element double-quotes frame it cleanly
-                if ((cleanQuote.startsWith('«') && cleanQuote.endsWith('»')) ||
-                    (cleanQuote.startsWith('“') && cleanQuote.endsWith('”')) ||
-                    (cleanQuote.startsWith('﴿') && cleanQuote.endsWith('﴾')) ||
-                    (cleanQuote.startsWith('&quot;') && cleanQuote.endsWith('&quot;'))) {
-                    cleanQuote = cleanQuote.replace(/^[«“﴿&quot;]+|[»”﴾&quot;]+$/g, '').trim();
-                }
-                html += `<div class="quran-quote">${cleanQuote}</div>`;
-                continue;
-            }
+            // Clean up any leading blockquote markers (> or &gt;) without making a special box
+            line = line.replace(/^[&gt;>\s]+/, '');
+
+            // Highlight actual Quranic verses ﴿...﴾ and Hadiths «...» ONLY by text color (no background, no box)
+            line = line.replace(/﴿([^﴾]+)﴾/g, '<span class="quran-text-highlight">﴿$1﴾</span>');
+            line = line.replace(/«([^»]+)»/g, '<span class="hadith-text-highlight">«$1»</span>');
 
             // Bullet points: - or *
             if (/^[-*•]\s+/.test(line)) {
@@ -394,11 +380,21 @@
 
         chatMessagesFlow.innerHTML = '';
 
+        const chatContainer = document.getElementById('bot-chat-container');
+
         if (!conversationHistory.length) {
+            if (chatContainer) {
+                chatContainer.classList.add('is-empty');
+                chatContainer.classList.remove('input-focused');
+            }
             if (welcomeCard) welcomeCard.style.display = 'flex';
             return;
         }
 
+        if (chatContainer) {
+            chatContainer.classList.remove('is-empty');
+            chatContainer.classList.remove('input-focused');
+        }
         if (welcomeCard) welcomeCard.style.display = 'none';
 
         conversationHistory.forEach((msg, idx) => {
@@ -669,6 +665,12 @@
         chatInput.value = '';
         adjustTextareaHeight(chatInput);
         updateSendButtonState();
+
+        const chatContainer = document.getElementById('bot-chat-container');
+        if (chatContainer) {
+            chatContainer.classList.remove('is-empty');
+            chatContainer.classList.remove('input-focused');
+        }
 
         // Crucial for mobile UX: Cleanly dismiss virtual keyboard upon sending so user has full view to watch stream live
         if (isTouchDevice() && chatInput) {
@@ -941,6 +943,20 @@
         });
 
         if (chatInput) {
+            chatInput.addEventListener('focus', () => {
+                const container = document.getElementById('bot-chat-container');
+                if (container && container.classList.contains('is-empty')) {
+                    container.classList.add('input-focused');
+                }
+            });
+
+            chatInput.addEventListener('blur', () => {
+                const container = document.getElementById('bot-chat-container');
+                if (container && container.classList.contains('is-empty') && !chatInput.value.trim()) {
+                    container.classList.remove('input-focused');
+                }
+            });
+
             chatInput.addEventListener('input', () => {
                 adjustTextareaHeight(chatInput);
                 updateSendButtonState();

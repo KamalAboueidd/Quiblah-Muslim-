@@ -141,9 +141,9 @@
         .pwa-guide-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 100000;
             display: flex;
             align-items: center;
@@ -161,15 +161,18 @@
         }
 
         .pwa-guide-modal-card {
-            background: rgba(14, 18, 26, 0.95);
-            border: 1px solid rgba(197, 168, 89, 0.4);
+            background: rgba(12, 12, 12, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(197, 168, 89, 0.3);
             border-radius: 24px;
             max-width: 440px;
             width: 100%;
             padding: 26px 22px;
             color: #ffffff;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(197, 168, 89, 0.2);
-            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(197, 168, 89, 0.15);
+            text-align: right;
+            direction: rtl;
             font-family: "Tajawal", sans-serif;
             transform: scale(0.92);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -182,36 +185,42 @@
         .pwa-guide-modal-header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
+            direction: rtl;
         }
 
         .pwa-guide-modal-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(197, 168, 89, 0.12);
-            border: 1px solid var(--gold, #C5A859);
-            display: flex;
+            width: auto;
+            height: auto;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            filter: none !important;
+            border-radius: 0;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             color: var(--gold, #C5A859);
-            font-size: 22px;
-            filter: drop-shadow(0 0 8px rgba(197, 168, 89, 0.4));
+            font-size: 26px;
+            padding: 0;
+            flex-shrink: 0;
         }
 
         .pwa-guide-modal-title {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 800;
             color: var(--gold, #C5A859);
             margin: 0;
+            text-align: right;
         }
 
         .pwa-guide-steps {
             text-align: right;
+            direction: rtl;
             padding: 0;
-            margin: 20px 0;
+            margin: 18px 0 22px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -222,6 +231,9 @@
         .pwa-guide-step {
             display: flex;
             align-items: center;
+            justify-content: flex-start;
+            text-align: right;
+            direction: rtl;
             gap: 12px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(197, 168, 89, 0.12);
@@ -233,8 +245,14 @@
             color: var(--gold, #C5A859);
             font-size: 18px;
             flex-shrink: 0;
-            width: 26px;
+            width: 24px;
             text-align: center;
+        }
+
+        .pwa-guide-step span {
+            text-align: right;
+            flex: 1;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .pwa-guide-step strong {
@@ -242,22 +260,28 @@
         }
 
         .pwa-guide-close-btn {
-            background: var(--gold, #C5A859);
-            color: #0b0e14;
-            border: none;
-            padding: 11px 36px;
-            border-radius: 25px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold, #C5A859);
+            padding: 8px 24px;
+            border-radius: 20px;
             font-family: inherit;
-            font-size: 15.5px;
+            font-size: 16px;
             font-weight: 800;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(197, 168, 89, 0.35);
+            display: block;
+            margin: 10px auto 0;
+            text-align: center;
+            outline: none;
         }
 
         .pwa-guide-close-btn:hover {
-            background: #dfc374;
-            transform: scale(1.03);
+            color: var(--gold-light, #f5e4ab);
+            background: transparent !important;
+            transform: scale(1.08);
+            text-shadow: 0 0 10px rgba(197, 168, 89, 0.5);
         }
     </style>
     `;
@@ -330,6 +354,9 @@
                 const choiceResult = await deferredPrompt.userChoice;
                 if (choiceResult && choiceResult.outcome === 'accepted') {
                     console.log('[PWA] وافق المستخدم على التثبيت');
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('جاري التنزيل...', 'fa-solid fa-spinner fa-spin', 4000);
+                    }
                     hideAllInstallTriggers();
                 } else {
                     console.log('[PWA] رفض المستخدم التثبيت');
@@ -459,7 +486,7 @@
         deferredPrompt = null;
         hideAllInstallTriggers();
         if (typeof window.showToast === 'function') {
-            window.showToast('تم تثبيت تطبيق قبلة المسلم بنجاح', 'fa-solid fa-circle-check', 6000);
+            window.showToast('تم التنزيل بنجاح', 'fa-solid fa-circle-check', 6000);
         }
     });
 

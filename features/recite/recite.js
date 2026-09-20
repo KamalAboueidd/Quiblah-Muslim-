@@ -1703,16 +1703,16 @@ async function stopRecordingAndAnalyze() {
     sessionWordsToCommit = (sessionWordsToCommit || '').trim();
 
     if (sessionWordsToCommit) {
-        const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
-        sessionWordsToCommit = recoverClippedSpeechWord(committedPreviousSessionsText, sessionWordsToCommit, activeAyahs);
+        const targetScopeAyahs = (currentSurahVerses && currentSurahVerses.length) ? currentSurahVerses : ((typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : []);
+        sessionWordsToCommit = recoverClippedSpeechWord(committedPreviousSessionsText, sessionWordsToCommit, targetScopeAyahs);
         committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, sessionWordsToCommit);
         currentSessionFinalText = "";
         currentInterimSpeechText = "";
     }
     if (committedPreviousSessionsText) {
-        const activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
-        const currentTargetVerseText = activeAyahs.map(a => a.text).join(' ');
-        committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, currentTargetVerseText);
+        const targetScopeAyahs = (currentSurahVerses && currentSurahVerses.length) ? currentSurahVerses : ((typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : []);
+        const targetScopeText = targetScopeAyahs.map(a => a.text).join(' ');
+        committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, targetScopeText);
         liveTranscript = committedPreviousSessionsText.trim();
         accumulatedSpeechText = liveTranscript;
     }
@@ -1914,9 +1914,6 @@ function combineSpeechSegments(prev, next) {
     // If new session already includes previous session from start, use the new complete one
     if (normN.startsWith(normP)) return n;
 
-    // If previous session already ends with new session, keep previous
-    if (normP.endsWith(normN)) return p;
-
     // Check for overlapping boundary words at the seam between segments
     const pWords = p.split(/\s+/).filter(Boolean);
     const nWords = n.split(/\s+/).filter(Boolean);
@@ -1933,27 +1930,25 @@ function combineSpeechSegments(prev, next) {
             }
         }
         if (match) {
-            const phrase = nWords.slice(0, len).map(normalizeArabicText).join(' ');
-            const repeatedPhrase = phrase + ' ' + phrase;
-            let allowedInQuran = false;
-            const targetTextNorm = (typeof currentTargetVerseText === 'string' && currentTargetVerseText) 
-                ? normalizeArabicText(currentTargetVerseText) 
-                : '';
-            if (targetTextNorm && targetTextNorm.includes(repeatedPhrase)) {
-                allowedInQuran = true;
+            // Check if this overlap is a legitimate continuation in the Quran text
+            let keepBoth = false;
+            if (currentSurahVerses && currentSurahVerses.length) {
+                const fullSurahNorm = currentSurahVerses.map(a => a.normWords ? a.normWords.join(' ') : normalizeArabicText(a.text)).join(' ');
+                const joinedNorm = pNorm.slice(-len).join(' ') + ' ' + nNorm.slice(0, len).join(' ');
+                if (fullSurahNorm.includes(joinedNorm)) {
+                    keepBoth = true;
+                }
             }
 
-            if (!allowedInQuran) {
-                // Stitch without repeating the shared words replayed by speech recognizer
-                const stitched = pWords.concat(nWords.slice(len)).join(' ');
-                return deduplicateSpokenPhrases(stitched, currentTargetVerseText);
+            if (!keepBoth) {
+                // Stitch without repeating the shared buffer echo replayed by speech recognizer
+                return pWords.concat(nWords.slice(len)).join(' ');
             }
         }
     }
 
     // Consecutive non-overlapping sentences across pauses and ayahs
-    const stitched = p + ' ' + n;
-    return deduplicateSpokenPhrases(stitched, currentTargetVerseText);
+    return p + ' ' + n;
 }
 
 // Build flat target words from active target ayahs
@@ -1991,49 +1986,43 @@ function recoverClippedSpeechWord(prevCommittedText, currentSessionText, targetA
     let nextExpectedIdx = 0;
 
     if (prevWords.length > 0) {
-        let foundIdx = -1;
-        const lastPrevWord = prevWords[prevWords.length - 1];
-        
-        for (let i = targetWords.length - 1; i >= 0; i--) {
-            if (areArabicWordsMatching(targetWords[i].raw, lastPrevWord)) {
-                if (prevWords.length >= 2 && i >= 1) {
-                    if (areArabicWordsMatching(targetWords[i - 1].raw, prevWords[prevWords.length - 2])) {
-                        foundIdx = i;
+        let bestIdx = -1;
+        let bestMatchLen = 0;
+
+        for (let i = 0; i < targetWords.length; i++) {
+            if (areArabicWordsMatching(targetWords[i].raw, prevWords[prevWords.length - 1])) {
+                let matchLen = 1;
+                while (matchLen < prevWords.length && (i - matchLen) >= 0) {
+                    if (areArabicWordsMatching(targetWords[i - matchLen].raw, prevWords[prevWords.length - 1 - matchLen])) {
+                        matchLen++;
+                    } else {
                         break;
                     }
-                } else {
-                    foundIdx = i;
-                    break;
+                }
+                if (matchLen > bestMatchLen) {
+                    bestMatchLen = matchLen;
+                    bestIdx = i;
                 }
             }
         }
 
-        if (foundIdx === -1) {
-            // Fuzzy fallback: the last word may have been mispronounced.
-            // Try anchoring on the second-to-last word to approximate position.
+        if (bestIdx === -1) {
+            // Fuzzy fallback: try anchoring on second-to-last word if last word had minor slip
             if (prevWords.length >= 2) {
                 const secondToLast = prevWords[prevWords.length - 2];
-                for (let i = targetWords.length - 1; i >= 0; i--) {
+                for (let i = 0; i < targetWords.length; i++) {
                     if (areArabicWordsMatching(targetWords[i].raw, secondToLast)) {
-                        // Confirm with third-to-last if possible
-                        if (prevWords.length >= 3 && i >= 1) {
-                            if (areArabicWordsMatching(targetWords[i - 1].raw, prevWords[prevWords.length - 3])) {
-                                foundIdx = Math.min(i + 1, targetWords.length - 1);
-                                break;
-                            }
-                        } else {
-                            foundIdx = Math.min(i + 1, targetWords.length - 1);
-                            break;
-                        }
+                        bestIdx = Math.min(i + 1, targetWords.length - 1);
+                        break;
                     }
                 }
             }
-            if (foundIdx === -1) {
+            if (bestIdx === -1) {
                 return curr;
             }
         }
 
-        nextExpectedIdx = foundIdx + 1;
+        nextExpectedIdx = bestIdx + 1;
     } else {
         nextExpectedIdx = 0;
     }
@@ -2050,7 +2039,30 @@ function recoverClippedSpeechWord(prevCommittedText, currentSessionText, targetA
         return curr;
     }
 
-    // Check if the first spoken word matches the word AFTER the expected opening word (nextExpectedIdx + 1)
+    // Check Case 1: Partial syllable/prefix clipping where the opening word had its initial sound clipped
+    // e.g. "الحمد" -> recognized as "...مد" or "حمد" or "لمد" (suffix/stem match)
+    const normOpening = normalizeArabicText(expectedOpening.raw);
+    const normSpoken = normalizeArabicText(firstSpoken);
+    const isOpeningSuffix = (normSpoken.length >= 2 && normOpening.length > normSpoken.length && normOpening.endsWith(normSpoken));
+
+    if (isOpeningSuffix) {
+        let confirmedPartial = false;
+        if (currWords.length >= 2 && nextExpectedIdx + 1 < targetWords.length) {
+            const expectedSecond = targetWords[nextExpectedIdx + 1];
+            if (areArabicWordsMatching(expectedSecond.raw, currWords[1])) {
+                confirmedPartial = true;
+            }
+        } else if (normSpoken.length >= 3) {
+            confirmedPartial = true;
+        }
+
+        if (confirmedPartial) {
+            currWords[0] = expectedOpening.raw;
+            return currWords.join(' ');
+        }
+    }
+
+    // Check Case 2: Complete opening word drop caused by microphone startup delay
     if (nextExpectedIdx + 1 < targetWords.length) {
         const expectedSecond = targetWords[nextExpectedIdx + 1];
         if (areArabicWordsMatching(expectedSecond.raw, firstSpoken)) {
@@ -2204,6 +2216,20 @@ function spawnSpeechRecognizer() {
         speechRecognizer = null;
     }
 
+    let sessionInstanceId = (window.__TASMEE_INSTANCE_COUNTER__ = (window.__TASMEE_INSTANCE_COUNTER__ || 0) + 1);
+    if (!window.__TASMEE_DIAGNOSTICS__) window.__TASMEE_DIAGNOSTICS__ = [];
+    const logDiag = (type, data) => {
+        const entry = {
+            time: performance.now(),
+            iso: new Date().toISOString(),
+            instanceId: sessionInstanceId,
+            type,
+            ...data
+        };
+        window.__TASMEE_DIAGNOSTICS__.push(entry);
+        console.log(`[TASMEE_DIAG] [${type}] (Inst #${sessionInstanceId}):`, data);
+    };
+
     try {
         const recognizer = new SpeechRec();
         speechRecognizer = recognizer;
@@ -2218,50 +2244,85 @@ function spawnSpeechRecognizer() {
         recognizer.onstart = () => {
             isRecognizing = true;
             speechRestartAttempts = 0;
+            const now = performance.now();
+            window.__TASMEE_LAST_ONSTART_TIME__ = now;
+            const gapFromEnd = window.__TASMEE_LAST_ONEND_TIME__ ? (now - window.__TASMEE_LAST_ONEND_TIME__).toFixed(1) + 'ms' : 'initial';
+            logDiag('onstart', { gapFromLastOnend: gapFromEnd });
             if (speechFeedbackLabel) {
                 speechFeedbackLabel.textContent = '🎙️ نستمع لتلاوتك الكريمة الآن بوضوح...';
             }
         };
 
+        let isFirstResultInSession = true;
         recognizer.onresult = (event) => {
             if (!isRecording) return;
             speechRestartAttempts = 0; // Reset error retry counter on every recognized word
 
+            const now = performance.now();
+            const gapFromStart = window.__TASMEE_LAST_ONSTART_TIME__ ? (now - window.__TASMEE_LAST_ONSTART_TIME__).toFixed(1) + 'ms' : 'unknown';
+            const gapFromEnd = window.__TASMEE_LAST_ONEND_TIME__ ? (now - window.__TASMEE_LAST_ONEND_TIME__).toFixed(1) + 'ms' : 'none';
+
+            const rawResultsList = [];
             const finalSegments = [];
-            let interimSegment = '';
+            const interimSegments = [];
 
             for (let i = 0; i < event.results.length; ++i) {
                 const res = event.results[i];
                 const segment = (res[0]?.transcript || '').trim();
+                const isFinal = Boolean(res.isFinal);
+                rawResultsList.push({ index: i, transcript: segment, isFinal, confidence: res[0]?.confidence });
                 if (!segment) continue;
 
-                if (res.isFinal) {
+                if (isFinal) {
                     finalSegments.push(segment);
                 } else {
-                    interimSegment = segment;
+                    interimSegments.push(segment);
                 }
             }
 
             currentSessionFinalText = finalSegments.join(' ').trim();
-            currentInterimSpeechText = interimSegment.trim();
+            currentInterimSpeechText = interimSegments.join(' ').trim();
 
             let currentSessionFull = currentSessionFinalText 
                 ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
                 : currentInterimSpeechText;
 
+            let recoveredSegment = currentSessionFull;
             if (currentSessionFull) {
-                let activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
-                if (recitationScopeMode === 'single' && !isFullSurahMode && activeAyahs.length > 0) {
-                    activeAyahs = getConsecutiveAyahsForSpokenWords(currentAyahNumber || 1, 60);
-                }
-                currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
+                const targetScopeAyahs = (currentSurahVerses && currentSurahVerses.length) ? currentSurahVerses : ((typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : []);
+                recoveredSegment = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, targetScopeAyahs);
+                currentSessionFull = recoveredSegment;
             }
 
             const fullRaw = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
-            const deduplicated = deduplicateSpokenPhrases(fullRaw.trim(), currentTargetVerseText);
+            const targetScopeAyahs = (currentSurahVerses && currentSurahVerses.length) ? currentSurahVerses : ((typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : []);
+            const targetScopeText = targetScopeAyahs.map(a => a.text).join(' ');
+            const deduplicated = deduplicateSpokenPhrases(fullRaw.trim(), targetScopeText);
 
             liveTranscript = normalizeQuranicDisjointedLetters(deduplicated, currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
+
+            if (speechLiveTextDisplay && liveTranscript) {
+                speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(liveTranscript)}</span>`;
+            }
+
+            logDiag('onresult', {
+                isFirstInSession: isFirstResultInSession,
+                resultIndex: event.resultIndex,
+                resultsLength: event.results.length,
+                rawResultsList,
+                currentSessionFinalText,
+                currentInterimSpeechText,
+                currentSessionFull,
+                committedPreviousSessionsText,
+                recoveredSegment,
+                fullRawAfterCombine: fullRaw,
+                deduplicated,
+                liveTranscriptFinal: liveTranscript,
+                gapFromLastOnend: gapFromEnd,
+                gapFromOnstart: gapFromStart
+            });
+            isFirstResultInSession = false;
 
             // Live Visual Feedback:
             // 1. Recitation mode: Highlights recited words in green on the Mushaf as the user recites!
@@ -2270,6 +2331,7 @@ function spawnSpeechRecognizer() {
         };
 
         recognizer.onerror = (e) => {
+            logDiag('onerror', { error: e.error, message: e.message });
             console.warn("SpeechRecognition notice:", e.error);
             // Non-fatal pause / breath silences - never abort or reset recording
             if (e.error === 'no-speech' || e.error === 'aborted') {
@@ -2324,21 +2386,35 @@ function spawnSpeechRecognizer() {
         };
 
         recognizer.onend = () => {
+            const onendTime = performance.now();
+            window.__TASMEE_LAST_ONEND_TIME__ = onendTime;
             isRecognizing = false;
+
+            try {
+                recognizer.onresult = null;
+                recognizer.onend = null;
+                recognizer.onerror = null;
+                recognizer.onstart = null;
+            } catch (e) {}
+
+            logDiag('onend', {
+                timestamp: onendTime,
+                sessionFinalToCommit: currentSessionFinalText,
+                interimToCommit: currentInterimSpeechText,
+                committedBefore: committedPreviousSessionsText
+            });
+
             // Commit all recognized words from this session cleanly using combineSpeechSegments and recovery
             let currentSessionFull = currentSessionFinalText 
                 ? (currentInterimSpeechText ? currentSessionFinalText + ' ' + currentInterimSpeechText : currentSessionFinalText)
                 : currentInterimSpeechText;
 
             if (currentSessionFull) {
-                let activeAyahs = (typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : [];
-                if (recitationScopeMode === 'single' && !isFullSurahMode && activeAyahs.length > 0) {
-                    activeAyahs = getConsecutiveAyahsForSpokenWords(currentAyahNumber || 1, 60);
-                }
-                currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, activeAyahs);
+                const targetScopeAyahs = (currentSurahVerses && currentSurahVerses.length) ? currentSurahVerses : ((typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : []);
+                currentSessionFull = recoverClippedSpeechWord(committedPreviousSessionsText, currentSessionFull, targetScopeAyahs);
                 committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
-                const targetTextForDedup = (activeAyahs && activeAyahs.length) ? activeAyahs.map(a => a.text).join(' ') : currentTargetVerseText;
-                committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, targetTextForDedup);
+                const targetScopeText = targetScopeAyahs.map(a => a.text).join(' ');
+                committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, targetScopeText);
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
                 liveTranscript = committedPreviousSessionsText.trim();
@@ -2347,30 +2423,23 @@ function spawnSpeechRecognizer() {
 
             // CRITICAL: Keep live spoken highlights green and visible across breath pauses
             if (liveTranscript) {
+                if (speechLiveTextDisplay) {
+                    speechLiveTextDisplay.innerHTML = `<span class="speech-active-text">${escapeHTML(liveTranscript)}</span>`;
+                }
                 updateLiveSpokenHighlights(liveTranscript);
             }
 
-            // Resilient respawn with instant restart on Android Mobile & PWA
+            // Resilient zero-latency respawn on Android Mobile & PWA
             if (isRecording) {
-                try {
-                    recognizer.start();
-                } catch (err) {
-                    if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
-                    speechRestartTimeout = setTimeout(() => {
-                        if (isRecording) {
-                            try {
-                                recognizer.start();
-                            } catch (e) {
-                                spawnSpeechRecognizer();
-                            }
-                        }
-                    }, 40);
-                }
+                respawnActiveSpeechRecognizer();
             }
         };
 
+        const tStart = performance.now();
         recognizer.start();
+        logDiag('initial_recognizer_start_called', { durationMs: (performance.now() - tStart).toFixed(1) });
     } catch (e) {
+        logDiag('spawn_exception', { errName: e.name, errMsg: e.message });
         console.warn("Failed to start SpeechRecognition:", e);
         if (isRecording) {
             if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
@@ -2382,6 +2451,21 @@ function spawnSpeechRecognizer() {
                 }
             }, retryDelay);
         }
+    }
+}
+
+function respawnActiveSpeechRecognizer() {
+    if (!isRecording) return;
+    if (speechRestartTimeout) {
+        clearTimeout(speechRestartTimeout);
+        speechRestartTimeout = null;
+    }
+    try {
+        spawnSpeechRecognizer();
+    } catch (err) {
+        speechRestartTimeout = setTimeout(() => {
+            if (isRecording) spawnSpeechRecognizer();
+        }, 25);
     }
 }
 

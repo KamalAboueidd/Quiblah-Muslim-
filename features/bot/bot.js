@@ -70,7 +70,7 @@
     }
 
     // --- Markdown to Clean HTML Formatter ---
-    function formatMarkdown(rawText) {
+    function formatMarkdown(rawText, isStreaming = false) {
         const clean = stripEmojis(rawText);
         const lines = clean.split('\n');
         let html = '';
@@ -84,6 +84,11 @@
                     inList = false;
                 }
                 continue;
+            }
+
+            // In streaming mode, if line has an unmatched ** pair, close it for smooth realtime render
+            if (isStreaming && (line.match(/\*\*/g) || []).length % 2 === 1) {
+                line += '**';
             }
 
             // Bold formatting: **text**
@@ -238,6 +243,15 @@
         chatMessagesFlow.scrollTop = chatMessagesFlow.scrollHeight;
     }
 
+    function scrollToBottomIfNeeded() {
+        if (!chatMessagesFlow) return;
+        const threshold = 140;
+        const distanceFromBottom = chatMessagesFlow.scrollHeight - chatMessagesFlow.scrollTop - chatMessagesFlow.clientHeight;
+        if (distanceFromBottom <= threshold) {
+            chatMessagesFlow.scrollTop = chatMessagesFlow.scrollHeight;
+        }
+    }
+
     // --- Copy To Clipboard Helper ---
     function copyToClipboard(text, btnElement) {
         const clean = stripEmojis(text);
@@ -277,14 +291,83 @@
         }, 1800);
     }
 
-    // --- Typing Indicator ---
-    function setTyping(visible) {
-        if (!typingIndicator) return;
-        typingIndicator.style.display = visible ? 'inline-flex' : 'none';
-        if (visible) scrollToBottom();
+    // --- Create Streaming Assistant Message in DOM ---
+    function createStreamingMessage(timeStr) {
+        if (!chatMessagesFlow) return null;
+        if (welcomeCard) welcomeCard.style.display = 'none';
+
+        const row = document.createElement('div');
+        row.className = 'chat-msg-row bot-msg';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'msg-avatar';
+        avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
+
+        const bubbleWrap = document.createElement('div');
+        bubbleWrap.className = 'msg-bubble-wrap';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        bubble.innerHTML = '<span class="streaming-cursor"></span>';
+
+        const metaRow = document.createElement('div');
+        metaRow.className = 'msg-meta-row';
+
+        const timeSpan = document.createElement('span');
+        timeSpan.textContent = timeStr || getMessageTimestamp();
+        metaRow.appendChild(timeSpan);
+
+        bubbleWrap.appendChild(bubble);
+        bubbleWrap.appendChild(metaRow);
+
+        row.appendChild(avatar);
+        row.appendChild(bubbleWrap);
+
+        chatMessagesFlow.appendChild(row);
+        scrollToBottom();
+
+        return {
+            row,
+            bubble,
+            metaRow,
+            update(text) {
+                const formatted = formatMarkdown(text, true);
+                if (!formatted) {
+                    bubble.innerHTML = '<span class="streaming-cursor"></span>';
+                } else {
+                    const lastP = formatted.lastIndexOf('</p>');
+                    const lastLi = formatted.lastIndexOf('</li>');
+                    const lastDiv = formatted.lastIndexOf('</div>');
+                    const maxIdx = Math.max(lastP, lastLi, lastDiv);
+
+                    if (maxIdx !== -1) {
+                        bubble.innerHTML = formatted.slice(0, maxIdx) + '<span class="streaming-cursor"></span>' + formatted.slice(maxIdx);
+                    } else {
+                        bubble.innerHTML = formatted + '<span class="streaming-cursor"></span>';
+                    }
+                }
+                scrollToBottomIfNeeded();
+            },
+            complete(finalText) {
+                bubble.innerHTML = formatMarkdown(finalText, false);
+
+                // Add copy button
+                const btnCopy = document.createElement('button');
+                btnCopy.type = 'button';
+                btnCopy.className = 'btn-copy-msg';
+                btnCopy.title = 'نسخ الرد';
+                btnCopy.innerHTML = '<i class="fa-regular fa-copy"></i> <span>نسخ</span>';
+                btnCopy.onclick = (e) => {
+                    e.stopPropagation();
+                    copyToClipboard(finalText, btnCopy);
+                };
+                metaRow.appendChild(btnCopy);
+                scrollToBottomIfNeeded();
+            }
+        };
     }
 
-    // --- Send Message Flow ---
+    // --- Send Message Flow with Real-time Progressive Streaming ---
     async function handleUserSend() {
         if (isGenerating || !chatInput) return;
         const rawText = chatInput.value.trim();
@@ -294,51 +377,61 @@
         chatInput.value = '';
         adjustTextareaHeight(chatInput);
 
-        const timeStr = getMessageTimestamp();
+        const userTimeStr = getMessageTimestamp();
         conversationHistory.push({
             role: 'user',
             content: userText,
-            time: timeStr
+            time: userTimeStr
         });
         saveChatHistory();
-        appendMessageToDOM('user', userText, timeStr, true);
+        appendMessageToDOM('user', userText, userTimeStr, true);
 
         isGenerating = true;
-        setTyping(true);
         updateSendButtonState();
 
+        const botTimeStr = getMessageTimestamp();
+        const streamingMsg = createStreamingMessage(botTimeStr);
+
         try {
-            const responseText = await callGroqChatAPI(userText);
-            const botTimeStr = getMessageTimestamp();
+            let receivedAnyChunk = false;
+            const responseText = await callGroqChatAPIStreaming((accumulated) => {
+                receivedAnyChunk = true;
+                if (streamingMsg) streamingMsg.update(accumulated);
+            });
+
+            if (!responseText && !receivedAnyChunk) {
+                throw new Error("Empty response from AI service.");
+            }
+
+            const cleanResponse = stripEmojis(responseText);
+            if (streamingMsg) streamingMsg.complete(cleanResponse);
+
             conversationHistory.push({
                 role: 'assistant',
-                content: responseText,
+                content: cleanResponse,
                 time: botTimeStr
             });
             saveChatHistory();
-            appendMessageToDOM('assistant', responseText, botTimeStr, true);
         } catch (err) {
-            console.error("Groq Chat Error:", err);
-            const errorMsg = "عذراً، تعذر الاتصال بالخادم الذكي في الوقت الحالي. يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.";
-            const botTimeStr = getMessageTimestamp();
+            console.error("Groq Chat Streaming Error:", err);
+            const errorMsg = "عذراً، تعذر استكمال الرد في الوقت الحالي. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.";
+            if (streamingMsg) streamingMsg.complete(errorMsg);
+
             conversationHistory.push({
                 role: 'assistant',
                 content: errorMsg,
                 time: botTimeStr
             });
             saveChatHistory();
-            appendMessageToDOM('assistant', errorMsg, botTimeStr, true);
         } finally {
-            setTyping(false);
             isGenerating = false;
             updateSendButtonState();
             if (chatInput) chatInput.focus();
         }
     }
 
-    // --- Groq Chat API Call with Fallback ---
-    async function callGroqChatAPI(userLatestMessage) {
-        // Build message payload: System prompt + last 8 conversational turns
+    // --- Groq Chat API Call with Streaming & Fallback ---
+    async function callGroqChatAPIStreaming(onChunk) {
         const recentMessages = conversationHistory.slice(-8).map(m => ({
             role: m.role,
             content: m.content
@@ -349,16 +442,16 @@
             ...recentMessages
         ];
 
-        // Try primary model first, then fallback
         try {
-            return await requestGroqCompletion(PRIMARY_MODEL, payloadMessages);
+            return await requestGroqStream(PRIMARY_MODEL, payloadMessages, onChunk);
         } catch (primaryErr) {
-            console.warn(`Primary model ${PRIMARY_MODEL} failed, attempting fallback to ${FALLBACK_MODEL}:`, primaryErr);
-            return await requestGroqCompletion(FALLBACK_MODEL, payloadMessages);
+            console.warn(`Primary model ${PRIMARY_MODEL} streaming failed, attempting fallback to ${FALLBACK_MODEL}:`, primaryErr);
+            return await requestGroqStream(FALLBACK_MODEL, payloadMessages, onChunk);
         }
     }
 
-    async function requestGroqCompletion(modelName, messages) {
+    // --- Core SSE Stream Consumer ---
+    async function requestGroqStream(modelName, messages, onChunk) {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -369,8 +462,9 @@
                 model: modelName,
                 messages: messages,
                 temperature: 0.65,
-                max_tokens: 800,
-                top_p: 0.95
+                max_tokens: 1200,
+                top_p: 0.95,
+                stream: true
             })
         });
 
@@ -379,12 +473,61 @@
             throw new Error(`Groq API responded with status ${response.status}: ${errData}`);
         }
 
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content;
-        if (!content) {
-            throw new Error("Empty response from language model.");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let accumulatedText = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Retain trailing incomplete line
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || !trimmed.startsWith('data:')) continue;
+                const dataStr = trimmed.replace(/^data:\s*/, '');
+                if (dataStr === '[DONE]') continue;
+
+                try {
+                    const parsed = JSON.parse(dataStr);
+                    const delta = parsed.choices?.[0]?.delta?.content;
+                    if (delta) {
+                        accumulatedText += delta;
+                        if (typeof onChunk === 'function') {
+                            onChunk(accumulatedText);
+                        }
+                    }
+                } catch (e) {
+                    // Ignore transient chunk JSON parse errors
+                }
+            }
         }
-        return stripEmojis(content.trim());
+
+        // Flush remaining buffer
+        if (buffer.trim()) {
+            const trimmed = buffer.trim();
+            if (trimmed.startsWith('data:')) {
+                const dataStr = trimmed.replace(/^data:\s*/, '');
+                if (dataStr !== '[DONE]') {
+                    try {
+                        const parsed = JSON.parse(dataStr);
+                        const delta = parsed.choices?.[0]?.delta?.content;
+                        if (delta) {
+                            accumulatedText += delta;
+                            if (typeof onChunk === 'function') {
+                                onChunk(accumulatedText);
+                            }
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
+
+        return stripEmojis(accumulatedText.trim());
     }
 
     function updateSendButtonState() {

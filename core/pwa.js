@@ -65,6 +65,7 @@
     let deferredPrompt = null;
     let installBtn = null;
     let isDownloadingApp = false;
+    let hasAnnouncedInstallSuccess = false;
 
     // 3. حقن تنسيقات أزرار التثبيت ونافذة الإرشادات الشاملة
     const pwaStyles = `
@@ -133,31 +134,6 @@
         }
 
         .pwa-install-btn:hover i {
-            transform: translateY(-1px);
-        }
-
-        /* في صفحة المساعد الذكي (bot.html) */
-        .bot-pwa-header-btn {
-            display: inline-flex !important;
-            align-items: center;
-            gap: 6px;
-            background: rgba(197, 168, 89, 0.08) !important;
-            border: 1px solid rgba(197, 168, 89, 0.25) !important;
-            color: var(--gold, #C5A859);
-            padding: 7px 12px;
-            border-radius: 12px;
-            font-family: inherit;
-            font-size: 13.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            white-space: nowrap;
-        }
-
-        .bot-pwa-header-btn:hover {
-            background: rgba(197, 168, 89, 0.18) !important;
-            border-color: var(--gold, #C5A859) !important;
-            color: var(--gold-light, #f5e4ab);
             transform: translateY(-1px);
         }
 
@@ -353,20 +329,7 @@
             topBar.appendChild(installBtn);
         }
 
-        // 2) إذا كانت صفحة المساعد الذكي (bot.html)
-        const botHeaderActions = document.querySelector('.bot-header-actions');
-        if (botHeaderActions && !document.getElementById('btn-bot-install-pwa')) {
-            const botBtn = document.createElement('button');
-            botBtn.id = 'btn-bot-install-pwa';
-            botBtn.type = 'button';
-            botBtn.className = 'bot-pwa-header-btn pwa-install-trigger';
-            botBtn.title = 'تثبيت التطبيق على جهازك';
-            botBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> <span>تثبيت</span>';
-            botBtn.addEventListener('click', handleInstallClick);
-            botHeaderActions.prepend(botBtn);
-        }
-
-        // 3) ربط جميع الأزرار والروابط التي تحمل كلاس .pwa-install-trigger في الصفحة
+        // 2) ربط جميع الأزرار والروابط التي تحمل كلاس .pwa-install-trigger في الصفحة
         document.querySelectorAll('.pwa-install-trigger').forEach((el) => {
             el.removeEventListener('click', handleInstallClick);
             el.addEventListener('click', handleInstallClick);
@@ -533,10 +496,13 @@
         deferredPrompt = null;
         hideAllInstallTriggers();
 
-        // عند موافقة المستخدم يبدأ المتصفح التنزيل الفعلي أولاً، فنمنحه وقتاً كافياً لإكمال التنزيل قبل إظهار "تم التنزيل بنجاح"
-        const waitMs = isDownloadingApp ? 6500 : 1500;
+        if (hasAnnouncedInstallSuccess) return;
+
+        // عند موافقة المستخدم يبدأ المتصفح التنزيل الفعلي أولاً، فنمنحه وقتاً كافياً لإكمال التنزيل قبل إظهار "تم التنزيل بنجاح" مرة واحدة فقط
+        const waitMs = isDownloadingApp ? 7000 : 1500;
         setTimeout(() => {
-            if (typeof window.showToast === 'function') {
+            if (!hasAnnouncedInstallSuccess && typeof window.showToast === 'function') {
+                hasAnnouncedInstallSuccess = true;
                 window.showToast('تم التنزيل بنجاح', 'fa-solid fa-circle-check', 6000);
             }
             isDownloadingApp = false;

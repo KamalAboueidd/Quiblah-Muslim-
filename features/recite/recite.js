@@ -1662,14 +1662,10 @@ async function startRecording() {
     // On Desktop, MediaRecorder and SpeechRecognition run concurrently without hardware conflict.
     // On Mobile (Android / iOS), opening getUserMedia simultaneously locks the OS microphone HAL
     // and causes Google Speech Recognition to fail with audio-capture error.
-    // Therefore, on mobile devices when SpeechRecognition is active, let it have exclusive mic access.
-    // On Desktop or when external Whisper is configured, MediaRecorder runs normally.
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const hasSpeechRec = Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
-    const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || /Brave/i.test(navigator.userAgent);
-    const shouldRunMediaRecorder = !isMobile || !hasSpeechRec || isBrave || Boolean(hfApiToken || makeWebhookUrl);
+    // 3. Run MediaRecorder on both Desktop and Mobile so the recorded audio player and download appear universally!
+    const shouldRunMediaRecorder = Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 
-    if (shouldRunMediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (shouldRunMediaRecorder) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(micErr => {
                 console.warn("Microphone access notice for MediaRecorder:", micErr);

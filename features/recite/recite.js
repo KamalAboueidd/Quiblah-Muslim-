@@ -1208,7 +1208,7 @@ function toArabicEasternDigits(num) {
 // -----------------------------------------------------------------------------
 function normalizeArabicText(text) {
     if (!text) return "";
-    return text
+    let res = text
         .replace(/^\uFEFF/, '')
         // 1. Uthmani script Waw with dagger alef (e.g. ٱلصَّلَوٰةَ, ٱلزَّكَوٰةَ, ٱلْحَيَوٰةَ, ٱلرِّبَوٰاْ, مِشْكَوٰةٍ, بِٱلْغَدَوٰةِ, نَجَوٰةٍ) -> convert to Alef
         .replace(/\u0648[\u0670]/g, 'ا')
@@ -1260,6 +1260,11 @@ function areArabicWordsMatching(expectedRaw, spokenRaw) {
     const eNorm = normalizeArabicText(expectedRaw);
     const sNorm = normalizeArabicText(spokenRaw);
     if (eNorm === sNorm) return true;
+
+    // Critical: Prevent false match between "الله" and "لله" (causes boundary alignment collisions)
+    if ((eNorm === 'الله' && sNorm === 'لله') || (eNorm === 'لله' && sNorm === 'الله')) {
+        return false;
+    }
 
     // Fawatih al-Suwar (Disjointed letters) cross-matching
     if (FAWATIH_EQUIVALENTS[eNorm] && FAWATIH_EQUIVALENTS[eNorm].some(eq => normalizeArabicText(eq) === sNorm)) {
@@ -1983,6 +1988,41 @@ function combineSpeechSegments(prev, next) {
         return n;
     }
 
+    // CRITICAL: Prevent mobile speech recognition echo repetition
+    // If previous session ALREADY starts with new session (e.g. p = "بسم الله الرحمن الرحيم", n = "بسم" or "بسم الله")
+    if (normP.startsWith(normN) || doesPhraseStartWith(p, n)) {
+        return p;
+    }
+
+    // Prevent mobile speech recognition echo if 'n' is already entirely contained as a sub-phrase within 'p'
+    if (pWords.length >= nWords.length && normP.includes(normN)) {
+        const pNormWords = pWords.map(normalizeArabicText);
+        const nNormWords = nWords.map(normalizeArabicText);
+        for (let i = 0; i <= pNormWords.length - nNormWords.length; i++) {
+            let match = true;
+            for (let k = 0; k < nNormWords.length; k++) {
+                if (pNormWords[i + k] !== nNormWords[k]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                // Keep if legitimate Quranic repetition
+                let keepDup = false;
+                if (currentSurahVerses && currentSurahVerses.length) {
+                    const fullSurahNorm = currentSurahVerses.map(a => a.normWords ? a.normWords.join(' ') : normalizeArabicText(a.text)).join(' ');
+                    const repPhrase = normN + ' ' + normN;
+                    if (fullSurahNorm.includes(repPhrase)) {
+                        keepDup = true;
+                    }
+                }
+                if (!keepDup) {
+                    return p;
+                }
+            }
+        }
+    }
+
     // Check for overlapping boundary words at the seam between segments
     const maxOverlap = Math.min(pWords.length, nWords.length);
     for (let len = maxOverlap; len >= 1; len--) {
@@ -2216,7 +2256,7 @@ function deduplicateSpokenPhrases(text, targetVerseText) {
     while (changed) {
         changed = false;
         const maxLen = Math.floor(words.length / 2);
-        for (let len = maxLen; len >= 3; len--) {
+        for (let len = maxLen; len >= 1; len--) {
             for (let i = 0; i <= words.length - 2 * len; i++) {
                 let isDup = true;
                 for (let k = 0; k < len; k++) {
@@ -2361,7 +2401,10 @@ function spawnSpeechRecognizer() {
             const fullRaw = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
             const targetScopeAyahs = (currentSurahVerses && currentSurahVerses.length) ? currentSurahVerses : ((typeof getActiveTargetAyahs === 'function') ? getActiveTargetAyahs() : []);
             const targetScopeText = targetScopeAyahs.map(a => a.text).join(' ');
-            const deduplicated = deduplicateSpokenPhrases(fullRaw.trim(), targetScopeText);
+            let deduplicated = deduplicateSpokenPhrases(fullRaw.trim(), targetScopeText);
+            if (targetScopeAyahs && targetScopeAyahs.length > 1) {
+                deduplicated = ensureAllAyahBoundariesIntact(deduplicated, targetScopeAyahs);
+            }
 
             liveTranscript = normalizeQuranicDisjointedLetters(deduplicated, currentSurahNumber, currentAyahNumber);
             accumulatedSpeechText = liveTranscript;
@@ -2479,6 +2522,9 @@ function spawnSpeechRecognizer() {
                 committedPreviousSessionsText = combineSpeechSegments(committedPreviousSessionsText, currentSessionFull);
                 const targetScopeText = targetScopeAyahs.map(a => a.text).join(' ');
                 committedPreviousSessionsText = deduplicateSpokenPhrases(committedPreviousSessionsText, targetScopeText);
+                if (targetScopeAyahs && targetScopeAyahs.length > 1) {
+                    committedPreviousSessionsText = ensureAllAyahBoundariesIntact(committedPreviousSessionsText, targetScopeAyahs);
+                }
                 currentSessionFinalText = "";
                 currentInterimSpeechText = "";
                 liveTranscript = committedPreviousSessionsText.trim();
@@ -2508,7 +2554,7 @@ function spawnSpeechRecognizer() {
         if (isRecording) {
             if (speechRestartTimeout) clearTimeout(speechRestartTimeout);
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const retryDelay = isMobile ? 220 : 80;
+            const retryDelay = isMobile ? 120 : 60;
             speechRestartTimeout = setTimeout(() => {
                 if (isRecording) {
                     spawnSpeechRecognizer();
@@ -2524,28 +2570,15 @@ function respawnActiveSpeechRecognizer() {
         clearTimeout(speechRestartTimeout);
         speechRestartTimeout = null;
     }
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const delay = isMobile ? 35 : 0;
-    if (delay > 0) {
+    // Zero-latency respawn minimizes microphone drop gap between verses and breath pauses
+    try {
+        spawnSpeechRecognizer();
+    } catch (err) {
         speechRestartTimeout = setTimeout(() => {
             if (isRecording) {
-                try {
-                    spawnSpeechRecognizer();
-                } catch (err) {
-                    speechRestartTimeout = setTimeout(() => {
-                        if (isRecording) spawnSpeechRecognizer();
-                    }, 40);
-                }
+                try { spawnSpeechRecognizer(); } catch (e) {}
             }
-        }, delay);
-    } else {
-        try {
-            spawnSpeechRecognizer();
-        } catch (err) {
-            speechRestartTimeout = setTimeout(() => {
-                if (isRecording) spawnSpeechRecognizer();
-            }, 25);
-        }
+        }, 20);
     }
 }
 

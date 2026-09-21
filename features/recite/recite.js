@@ -2338,7 +2338,9 @@ function spawnSpeechRecognizer() {
         const recognizer = new SpeechRec();
         speechRecognizer = recognizer;
         recognizer.lang = 'ar-SA';
-        recognizer.continuous = true;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        // On Mobile (Android/iOS), continuous must be false so the native Google Speech intent can process utterances reliably
+        recognizer.continuous = !isMobile;
         recognizer.interimResults = true;
         recognizer.maxAlternatives = 1;
 
@@ -2440,8 +2442,11 @@ function spawnSpeechRecognizer() {
         recognizer.onerror = (e) => {
             logDiag('onerror', { error: e.error, message: e.message });
             console.warn("SpeechRecognition notice:", e.error);
-            // Non-fatal pause / breath silences - never abort or reset recording
+            // Non-fatal pause / breath silences - resume listening on mobile
             if (e.error === 'no-speech' || e.error === 'aborted') {
+                if (isRecording && e.error === 'no-speech') {
+                    respawnActiveSpeechRecognizer();
+                }
                 return;
             }
 
@@ -2570,16 +2575,21 @@ function respawnActiveSpeechRecognizer() {
         clearTimeout(speechRestartTimeout);
         speechRestartTimeout = null;
     }
-    // Zero-latency respawn minimizes microphone drop gap between verses and breath pauses
-    try {
-        spawnSpeechRecognizer();
-    } catch (err) {
-        speechRestartTimeout = setTimeout(() => {
-            if (isRecording) {
-                try { spawnSpeechRecognizer(); } catch (e) {}
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const delay = isMobile ? 40 : 0;
+    speechRestartTimeout = setTimeout(() => {
+        if (isRecording) {
+            try {
+                spawnSpeechRecognizer();
+            } catch (err) {
+                speechRestartTimeout = setTimeout(() => {
+                    if (isRecording) {
+                        try { spawnSpeechRecognizer(); } catch (e) {}
+                    }
+                }, 80);
             }
-        }, 20);
-    }
+        }
+    }, delay);
 }
 
 function stopLiveSpeechRecognition() {
@@ -3174,22 +3184,13 @@ function executeImmediateEvaluation(audioBlob, whisperTranscript) {
             speechFeedbackLabel.textContent = `✓ تم التدقيق بنجاح: نسبة الإتقان ${accuracy}%`;
         }
 
-        // 3. Make in-page evaluation banner visible and scroll to it smoothly
+        // 3. Make in-page evaluation banner visible on screen and scroll to it smoothly
         if (recitationEvalBanner) {
             recitationEvalBanner.style.display = 'block';
             setTimeout(() => {
                 recitationEvalBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 80);
         }
-
-        // 4. Auto-open evaluation modal smoothly
-        setTimeout(() => {
-            if (evaluationModalBackdrop) {
-                evaluationModalBackdrop.classList.add('active');
-                const modalCard = document.getElementById('evaluation-modal-card');
-                if (modalCard) modalCard.scrollTop = 0;
-            }
-        }, 500);
 
         showToast(`اكتمل تدقيق التلاوة! نسبة الإتقان: ${accuracy}% ✨`, 'fa-solid fa-award');
 

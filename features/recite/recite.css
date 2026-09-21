@@ -2082,16 +2082,16 @@ body.mushaf-studio-body {
 }
 
 .evaluation-modal-card {
-    background: rgba(12, 16, 23, 0.55) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(197, 168, 89, 0.35) !important;
+    background: rgba(12, 16, 23, 0.75) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 20px;
     max-width: 580px;
     width: 100%;
     padding: 24px;
     position: relative;
-    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(197, 168, 89, 0.1);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7) !important;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -3259,13 +3259,14 @@ body.mushaf-studio-body {
     width: 100%;
     max-width: 780px;
     margin: 14px auto 16px auto;
-    background: rgba(12, 16, 23, 0.65);
-    border: 1px solid rgba(197, 168, 89, 0.2);
-    border-radius: 14px;
-    padding: 14px 18px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: transparent !important;
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     animation: fadeInSlideDown 0.35s ease;
 }
 
@@ -3548,8 +3549,10 @@ body.mushaf-studio-body {
 .eval-banner-transcript {
     margin: 12px 0 10px 0;
     padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(197, 168, 89, 0.25);
+    background: transparent !important;
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -3697,10 +3700,11 @@ body.mushaf-studio-body {
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(24, 20, 12, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: none !important;
     border-radius: 12px;
     padding: 8px 12px;
@@ -3709,8 +3713,8 @@ body.mushaf-studio-body {
 }
 
 [data-theme="light"] .custom-luxury-audio-bar {
-    background: rgba(197, 168, 89, 0.08);
-    border: none !important;
+    background: transparent !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: none !important;
 }
 

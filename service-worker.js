@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v64';
+const CACHE_NAME = 'quiblah-muslim-v65';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -119,6 +119,19 @@ self.addEventListener('fetch', (event) => {
     // تجاهل أي بروتوكول غير HTTP/HTTPS أو أي طريقة غير GET
     if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
         return;
+    }
+
+    // استثناء تدفق الصوت وملفات الـ MP3 وطلبات Range من السيرفس ووركر
+    // ليعمل مشغل الصوت عبر محرك المتصفح المباشر فوراً (Streaming فائق السرعة - Spotify speed) بدون تعليق
+    if (
+        request.headers.has('range') ||
+        request.destination === 'audio' ||
+        url.pathname.endsWith('.mp3') ||
+        url.hostname.includes('mp3quran.net') ||
+        url.hostname.includes('everyayah.com') ||
+        url.hostname.includes('qurancdn.com')
+    ) {
+        return; // ترك الطلب للمتصفح مباشرة دون اعتراض ليعمل البث الصوتي التدفقي بلحظة
     }
 
     // 1. طلبات التنقل في صفحات HTML: استراتيجية Network-First مع الرجوع للكاش أوفلاين

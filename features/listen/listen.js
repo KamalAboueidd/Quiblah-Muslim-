@@ -320,7 +320,8 @@
 
     function playSurah(num, server, reciterName) {
         const numStr = String(num).padStart(3, '0');
-        const serverUrl = server.endsWith('/') ? server : server + '/';
+        let serverUrl = server.endsWith('/') ? server : server + '/';
+        serverUrl = serverUrl.replace(/^http:\/\//i, 'https://');
         const url = `${serverUrl}${numStr}.mp3`;
         
         const currentReciterObj = allReciters.find(r => r.name === reciterName);
@@ -335,8 +336,8 @@
         if (sidePanelArt) sidePanelArt.style.backgroundImage = `url('${imgUrl}')`;
 
         // Forward to persistent parent shell if present
-        if (window.parent && window.parent !== window && typeof window.parent.playGlobalQuran === 'function') {
-            window.parent.playGlobalQuran({
+        if (typeof window.playGlobalQuran === 'function' && window.parent && window.parent !== window) {
+            window.playGlobalQuran({
                 surahNum: num,
                 surahName: `سورة ${SURAH_NAMES[num - 1]}`,
                 reciterName: reciterName,
@@ -399,7 +400,9 @@
             document.body.style.overflow = 'hidden';
         }
         
+        audio.preload = 'auto';
         audio.src = url;
+        audio.load();
         
         // Optimistic UI update: instantly show pause icon while buffering
         isPlaying = true;

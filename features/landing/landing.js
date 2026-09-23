@@ -159,8 +159,11 @@
             if (timeCurrent) timeCurrent.textContent = '0:00';
             if (timeTotal) timeTotal.textContent = '0:00';
 
-            // Set audio source & play
-            audio.src = audioSrc;
+            // Set audio source & play (enforce HTTPS and trigger progressive streaming)
+            const cleanAudioSrc = audioSrc.replace(/^http:\/\//i, 'https://');
+            audio.preload = 'auto';
+            audio.src = cleanAudioSrc;
+            audio.load();
             audio.play().then(() => {
                 isAudioPlaying = true;
                 updatePlayPauseState();

@@ -3,6 +3,44 @@
 // 1. Inject CSS
 const toastCSS = `
 <style>
+    /* --- Luxury Golden Islamic Scrollbar (Global) --- */
+    html, body, * {
+        scrollbar-width: thin;
+        scrollbar-color: #C5A859 rgba(12, 16, 23, 0.75);
+    }
+
+    ::-webkit-scrollbar {
+        width: 7px;
+        height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(12, 16, 23, 0.65);
+        border-radius: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #dfc26e 0%, #C5A859 50%, #9a7d30 100%);
+        border-radius: 8px;
+        border: 1.5px solid rgba(12, 16, 23, 0.7);
+        box-shadow: 0 0 6px rgba(197, 168, 89, 0.35);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #f3de96 0%, #dfc26e 50%, #C5A859 100%);
+        box-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
+    }
+
+    ::-webkit-scrollbar-button {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    ::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
     #global-toast-container {
         position: fixed;
         top: 25px;
@@ -10,31 +48,32 @@ const toastCSS = `
         z-index: 9999;
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         pointer-events: none;
         align-items: flex-end;
     }
 
     .app-toast {
         background: rgba(15, 15, 15, 0.95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--gold, #C5A859);
         color: var(--white, #fff);
-        padding: 15px 30px;
-        border-radius: 12px;
+        padding: 9px 22px;
+        border-radius: 10px;
         font-family: "Tajawal", sans-serif;
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 700;
+        line-height: 1.4;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(197, 168, 89, 0.2);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 12px rgba(197, 168, 89, 0.2);
         opacity: 0;
         transform: translateX(30px);
-        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         pointer-events: auto;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         direction: rtl;
         max-width: 90vw;
         width: max-content;
@@ -49,13 +88,13 @@ const toastCSS = `
         }
         .app-toast {
             font-size: 13px;
-            padding: 8px 12px;
+            padding: 8px 14px;
             gap: 8px;
             width: max-content;
             max-width: 100%;
         }
         .app-toast i {
-            font-size: 16px;
+            font-size: 15px;
         }
     }
 
@@ -66,7 +105,7 @@ const toastCSS = `
     
     .app-toast i {
         color: var(--gold, #C5A859);
-        font-size: 24px;
+        font-size: 18px;
     }
 </style>
 `;

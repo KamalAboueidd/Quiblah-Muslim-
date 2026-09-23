@@ -66,10 +66,25 @@
                     <i aria-hidden="true" class="fa-solid fa-location-crosshairs"></i> موقعي
                 </button>
 
-                <!-- Add Mosque Button -->
-                <button type="button" class="btn-add-mosque" id="btn-add-mosque" onclick="openAddMosqueModal()" title="أضف مسجداً غير موجود على الخريطة">
-                    <i class="fa-solid fa-plus"></i> إضافة مسجد
-                </button>
+                <!-- Add Mosque Button with Hover Guidance Card -->
+                <div class="add-mosque-wrapper">
+                    <button type="button" class="btn-add-mosque" id="btn-add-mosque" onclick="openAddMosqueModal()" aria-haspopup="dialog" aria-label="إضافة مسجد غير مسجل على الخريطة">
+                        <i class="fa-solid fa-plus"></i> إضافة مسجد
+                    </button>
+                    <div class="add-mosque-dropdown" id="add-mosque-dropdown" onclick="openAddMosqueModal()">
+                        <div class="add-mosque-dropdown-header">
+                            <i class="fa-solid fa-mosque dropdown-icon"></i>
+                            <span class="dropdown-title">لم تجد مسجداً قريباً؟</span>
+                        </div>
+                        <p class="dropdown-desc">
+                            ليس بالضرورة أن تكون كل المساجد القريبة منك مسجلة بالخريطة، فقد لا يدعمها مزود الخرائط بعد. يمكنك إضافته بنفسك ليظهر لجميع المسلمين وتشارك في الأجر 🤍
+                        </p>
+                        <div class="dropdown-action">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                            <span>اضغط هنا لإضافة المسجد الآن</span>
+                        </div>
+                    </div>
+                </div>
                 <span id="loader-text" style="display: none; color: var(--gold); font-weight: 700; font-size: 13px; align-items: center; gap: 6px;">
                     <i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> جاري...
                 </span>

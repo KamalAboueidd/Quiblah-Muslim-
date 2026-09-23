@@ -1,5 +1,44 @@
 /* features/mosques/mosques.css - Ø£Ù†Ù…Ø§Ø· ÙˆØªÙ†Ø³ÙŠÙ‚Ø§Øª ØµÙØ­Ø© mosques.html */
 :root { --gold: #C5A859; --white: #fff; --green: #1c9e5b; }
+
+/* --- Luxury Golden Islamic Scrollbar --- */
+html, body, * {
+    scrollbar-width: thin;
+    scrollbar-color: #C5A859 rgba(12, 16, 23, 0.75);
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(12, 16, 23, 0.65);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfc26e 0%, #C5A859 50%, #9a7d30 100%);
+    border-radius: 8px;
+    border: 1.5px solid rgba(12, 16, 23, 0.7);
+    box-shadow: 0 0 6px rgba(197, 168, 89, 0.35);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #f3de96 0%, #dfc26e 50%, #C5A859 100%);
+    box-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
+}
+
+::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Tajawal', sans-serif; background: #000; color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
@@ -77,6 +116,13 @@
             background: var(--gold); color: #000; box-shadow: 0 0 10px rgba(197,168,89,0.4);
         }
 
+        /* Add Mosque Button & Dropdown Tooltip / Card */
+        .add-mosque-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
         .btn-add-mosque {
             background: transparent !important;
             border: none !important;
@@ -93,6 +139,7 @@
             gap: 6px;
             white-space: nowrap;
             text-decoration: none;
+            outline: none;
         }
         .btn-add-mosque:hover {
             background: transparent !important;
@@ -100,6 +147,115 @@
             box-shadow: none !important;
             color: #ffffff;
             transform: translateY(-1px);
+        }
+
+        .add-mosque-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 290px;
+            background: rgba(14, 16, 20, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.45);
+            border-radius: 16px;
+            padding: 15px 16px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(197, 168, 89, 0.18);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px) scale(0.97);
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            pointer-events: none;
+            direction: rtl;
+            text-align: right;
+            cursor: pointer;
+        }
+
+        .add-mosque-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 28px;
+            width: 12px;
+            height: 12px;
+            background: rgba(14, 16, 20, 0.95);
+            border-top: 1px solid rgba(197, 168, 89, 0.45);
+            border-right: 1px solid rgba(197, 168, 89, 0.45);
+            transform: rotate(-45deg);
+        }
+
+        .add-mosque-wrapper:hover .add-mosque-dropdown,
+        .add-mosque-wrapper:focus-within .add-mosque-dropdown,
+        .add-mosque-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .add-mosque-dropdown-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .dropdown-icon {
+            color: var(--gold, #C5A859);
+            font-size: 16px;
+        }
+
+        .dropdown-title {
+            color: var(--gold, #C5A859);
+            font-size: 14.5px;
+            font-weight: 800;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .dropdown-desc {
+            font-size: 12.5px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.88);
+            margin: 0 0 10px 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .dropdown-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold-light, #f5e4ab);
+            background: rgba(197, 168, 89, 0.12);
+            border: 1px solid rgba(197, 168, 89, 0.25);
+            border-radius: 8px;
+            padding: 6px 10px;
+            transition: all 0.2s ease;
+        }
+
+        .add-mosque-dropdown:hover .dropdown-action {
+            background: rgba(197, 168, 89, 0.22);
+            border-color: var(--gold, #C5A859);
+            color: #ffffff;
+        }
+
+        @media (max-width: 600px) {
+            .add-mosque-dropdown {
+                right: auto;
+                left: 50%;
+                transform: translateX(-50%) translateY(8px);
+                width: 260px;
+            }
+            .add-mosque-dropdown::before {
+                right: 50%;
+                margin-right: -6px;
+            }
+            .add-mosque-wrapper:hover .add-mosque-dropdown,
+            .add-mosque-dropdown.show {
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         .search-btn {

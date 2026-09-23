@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v63';
+const CACHE_NAME = 'quiblah-muslim-v64';
 
 // الأصول الأساسية لتشغيل التطبيق (App Shell)
 const STATIC_ASSETS = [
@@ -141,10 +141,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 2. استدعاءات الـ APIs الخارجية (Aladhan, Alquran Cloud, BigDataCloud, إلخ): Network-First
+    // 2. استدعاءات الـ APIs الخارجية ومصادر البيانات (Aladhan, Alquran Cloud, Quran.com, jsDelivr, BigDataCloud, إلخ): Network-First
     if (
         url.hostname.includes('api.aladhan.com') ||
         url.hostname.includes('api.alquran.cloud') ||
+        url.hostname.includes('api.quran.com') ||
+        url.hostname.includes('cdn.jsdelivr.net') ||
         url.hostname.includes('raw.githubusercontent.com') ||
         url.hostname.includes('api.bigdatacloud.net')
     ) {

@@ -619,8 +619,12 @@
                 let combinedData = null;
 
                 if (editionConfig.source === 'spa5k') {
-                    // 1. Get Quran Uthmani text (from cache or API)
+                    // 1. Get Quran Uthmani text (from local full Quran, cache, or API)
                     let quranEdition = quranTextCache[surahNumber];
+                    if (!quranEdition && window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[surahNumber]) {
+                        quranEdition = window.QURAN_FULL_DATA[surahNumber];
+                        quranTextCache[surahNumber] = quranEdition;
+                    }
                     if (!quranEdition) {
                         const qRes = await fetchWithTimeout(`https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani`, 8000);
                         quranEdition = (Array.isArray(qRes.data) ? qRes.data[0] : qRes.data);
@@ -660,10 +664,13 @@
                     };
                 } else {
                     // source: alquran.cloud
+                    let quranEdition = quranTextCache[surahNumber] || (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[surahNumber]);
                     const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,${editionConfig.identifier}`;
                     const response = await fetchWithTimeout(url, 8000);
                     const editionsData = response.data;
-                    const quranEdition = editionsData.find(e => e.edition.identifier === 'quran-uthmani') || editionsData[0];
+                    if (!quranEdition) {
+                        quranEdition = editionsData.find(e => e.edition.identifier === 'quran-uthmani') || editionsData[0];
+                    }
                     const tafseerEdition = editionsData.find(e => e.edition.identifier === editionConfig.identifier) || editionsData[1];
 
                     // Cache quranEdition for instant switching
@@ -700,6 +707,27 @@
                 initSurahDisplay(combinedData, targetAyahNumber);
             } catch(error) {
                 console.error("Error fetching tafseer:", error);
+                const localQuran = (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[surahNumber]) || quranTextCache[surahNumber];
+                if (localQuran && localQuran.ayahs) {
+                    const fallbackData = {
+                        number: localQuran.number,
+                        name: localQuran.name,
+                        englishName: localQuran.englishName,
+                        revelationType: localQuran.revelationType,
+                        numberOfAyahs: localQuran.numberOfAyahs,
+                        tafseerName: `${editionConfig.name} (وضع عدم الاتصال)`,
+                        ayahs: localQuran.ayahs.map(ayah => ({
+                            number: ayah.number || ayah.numberInSurah,
+                            numberInSurah: ayah.numberInSurah,
+                            text: ayah.text,
+                            juz: ayah.juz,
+                            page: ayah.page,
+                            tafseer: 'يتطلب تحميل هذا التفسير الاتصال بالإنترنت لأول مرة ليتم حفظه تلقائياً بدون إنترنت.'
+                        }))
+                    };
+                    initSurahDisplay(fallbackData, targetAyahNumber);
+                    return;
+                }
                 contentContainer.innerHTML = `
                     <div class="error-message" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(197,168,89,0.3); border-radius: 16px; padding: 25px; text-align: center; max-width: 500px; margin: 40px auto;">
                         <i class="fa-solid fa-triangle-exclamation fa-2x" style="color: var(--gold); margin-bottom: 12px;"></i>

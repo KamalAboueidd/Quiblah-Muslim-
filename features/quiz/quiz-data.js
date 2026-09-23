@@ -2037,8 +2037,11 @@ const BUILTIN_QUESTIONS = [
 }
 ];
 
-// دالة لجلب أسئلة موسعة إضافية من API المسابقات الإسلامية (Dorar.net) عند توفر الاتصال مع ضمان 4 خيارات
+// دالة لجلب أسئلة موسعة إضافية من API المسابقات الإسلامية عند توفر الاتصال مع ضمان 4 خيارات
 async function fetchOnlineQuestions(categorySlug = "hadith", level = 1) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        return null;
+    }
     try {
         const catMap = {
             quran: "tafseer",
@@ -2050,7 +2053,7 @@ async function fetchOnlineQuestions(categorySlug = "hadith", level = 1) {
         };
         const mappedCat = catMap[categorySlug] || "hadith";
         const indexUrl = `https://raw.githubusercontent.com/rn0x/IslamicQuizAPI/main/database/${mappedCat}.json`;
-        const res = await fetch(indexUrl);
+        const res = await fetch(indexUrl, { signal: AbortSignal.timeout(1800) });
         if (!res.ok) return null;
         const catData = await res.json();
         if (!catData.DataArray || catData.DataArray.length === 0) return null;
@@ -2060,7 +2063,7 @@ async function fetchOnlineQuestions(categorySlug = "hadith", level = 1) {
         if (!targetFile) return null;
 
         const fileUrl = `https://raw.githubusercontent.com/rn0x/IslamicQuizAPI/main${targetFile.path}`;
-        const questionsRes = await fetch(fileUrl);
+        const questionsRes = await fetch(fileUrl, { signal: AbortSignal.timeout(1800) });
         if (!questionsRes.ok) return null;
         const rawQuestions = await questionsRes.json();
 

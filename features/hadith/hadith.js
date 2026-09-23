@@ -281,11 +281,12 @@ async function loadCollection(collectionId) {
 // Fetch helper with cache and fallback
 async function fetchHadithData(collectionId) {
     const cacheKey = `hadith_collection_${collectionId}`;
-    const cached = sessionStorage.getItem(cacheKey);
+    const cached = localStorage.getItem(cacheKey) || sessionStorage.getItem(cacheKey);
     if (cached) {
         try {
             return JSON.parse(cached);
         } catch (e) {
+            localStorage.removeItem(cacheKey);
             sessionStorage.removeItem(cacheKey);
         }
     }
@@ -309,9 +310,9 @@ async function fetchHadithData(collectionId) {
             if (res.ok) {
                 const data = await res.json();
                 try {
-                    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
                 } catch (storageErr) {
-                    // Ignore quota exceeded
+                    try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) {}
                 }
                 return data;
             }

@@ -136,8 +136,48 @@ function FillTimerForPrayer(id, timeStr24) {
     document.getElementById(id).innerHTML = format12Hour(cleanTime24);
 }
 
+function renderPrayerData(data) {
+    if (!data || !data.timings) return;
+    const timings = data.timings;
+    currentCityTimezone = data.meta ? data.meta.timezone : "Africa/Cairo";
+    
+    FillTimerForPrayer("fajr-time", timings.Fajr);
+    const shrouqEl = document.getElementById("shrouq-time");
+    if (shrouqEl) shrouqEl.innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
+    FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
+    FillTimerForPrayer("aser-time", timings.Asr);
+    FillTimerForPrayer("maghreb-time", timings.Sunset);
+    FillTimerForPrayer("isha-time", timings.Isha);
+
+    if (data.date) {
+        if (data.date.hijri) {
+            const hijriDate = `${data.date.hijri.day} ${data.date.hijri.month.ar} ${data.date.hijri.year} هـ`;
+            document.getElementById("hijri-date").innerHTML = hijriDate;
+        }
+        if (data.date.gregorian) {
+            const weekday = data.date.hijri ? data.date.hijri.weekday.ar : '';
+            const gregDate = `${weekday}، ${data.date.gregorian.day} ${data.date.gregorian.month.en} ${data.date.gregorian.year}`;
+            document.getElementById("greg-date").innerHTML = gregDate;
+        }
+    }
+
+    setupNextPrayerCountdown(timings, currentCityTimezone);
+}
+
 function GetPrayersTimingsOfCity(cityName) {
-    document.getElementById("loader").style.display = "block";
+    // محاولة الاسترجاع الفوري من الكاش المحلي أوفلاين
+    let hasLoadedFromCache = false;
+    const cachedCityData = localStorage.getItem("quiblah_timings_" + cityName) || localStorage.getItem("quiblah_last_timings");
+    if (cachedCityData) {
+        try {
+            renderPrayerData(JSON.parse(cachedCityData));
+            hasLoadedFromCache = true;
+        } catch(e) {}
+    }
+
+    if (!hasLoadedFromCache) {
+        document.getElementById("loader").style.display = "block";
+    }
     
     let params = {
         country: "EG",
@@ -147,30 +187,24 @@ function GetPrayersTimingsOfCity(cityName) {
     axios.get("https://api.aladhan.com/v1/timingsByCity", { params: params })
         .then((response) => {
             document.getElementById("loader").style.display = "none";
-            
             const data = response.data.data;
-            const timings = data.timings;
-            currentCityTimezone = data.meta.timezone;
-            
-            FillTimerForPrayer("fajr-time", timings.Fajr);
-            const shrouqEl = document.getElementById("shrouq-time");
-            if (shrouqEl) shrouqEl.innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
-            FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
-            FillTimerForPrayer("aser-time", timings.Asr);
-            FillTimerForPrayer("maghreb-time", timings.Sunset);
-            FillTimerForPrayer("isha-time", timings.Isha);
-
-            const hijriDate = `${data.date.hijri.day} ${data.date.hijri.month.ar} ${data.date.hijri.year} هـ`;
-            const gregDate = `${data.date.hijri.weekday.ar}، ${data.date.gregorian.day} ${data.date.gregorian.month.en} ${data.date.gregorian.year}`;
-            
-            document.getElementById("hijri-date").innerHTML = hijriDate;
-            document.getElementById("greg-date").innerHTML = gregDate;
-
-            setupNextPrayerCountdown(timings, currentCityTimezone);
+            try {
+                localStorage.setItem("quiblah_timings_" + cityName, JSON.stringify(data));
+                localStorage.setItem("quiblah_last_timings", JSON.stringify(data));
+            } catch(e) {}
+            renderPrayerData(data);
         })
         .catch(error => {
             console.error("Error fetching prayer times:", error);
             document.getElementById("loader").style.display = "none";
+            if (!hasLoadedFromCache) {
+                const anyCached = localStorage.getItem("quiblah_last_timings");
+                if (anyCached) {
+                    try {
+                        renderPrayerData(JSON.parse(anyCached));
+                    } catch(e) {}
+                }
+            }
         });
 }
 
@@ -239,30 +273,22 @@ function GetPrayersTimingsByCoordinates(lat, lng) {
     axios.get("https://api.aladhan.com/v1/timings", { params: params })
         .then((response) => {
             setLocationLoading(false, true);
-            
             const data = response.data.data;
-            const timings = data.timings;
-            currentCityTimezone = data.meta.timezone;
-            
-            FillTimerForPrayer("fajr-time", timings.Fajr);
-            const shrouqEl = document.getElementById("shrouq-time");
-            if (shrouqEl) shrouqEl.innerHTML = format12Hour(timings.Sunrise.split(" ")[0]);
-            FillTimerForPrayer("dhuhr-time", timings.Dhuhr);
-            FillTimerForPrayer("aser-time", timings.Asr);
-            FillTimerForPrayer("maghreb-time", timings.Sunset);
-            FillTimerForPrayer("isha-time", timings.Isha);
-
-            const hijriDate = `${data.date.hijri.day} ${data.date.hijri.month.ar} ${data.date.hijri.year} هـ`;
-            const gregDate = `${data.date.hijri.weekday.ar}، ${data.date.gregorian.day} ${data.date.gregorian.month.en} ${data.date.gregorian.year}`;
-            
-            document.getElementById("hijri-date").innerHTML = hijriDate;
-            document.getElementById("greg-date").innerHTML = gregDate;
-
-            setupNextPrayerCountdown(timings, currentCityTimezone);
+            try {
+                localStorage.setItem("quiblah_last_timings", JSON.stringify(data));
+            } catch(e) {}
+            renderPrayerData(data);
         })
         .catch(error => {
             console.error("Error fetching prayer times:", error);
             setLocationLoading(false);
+            const cached = localStorage.getItem("quiblah_last_timings");
+            if (cached) {
+                try {
+                    renderPrayerData(JSON.parse(cached));
+                    return;
+                } catch(e) {}
+            }
             showToast("حدث خطأ أثناء جلب مواقيت الصلاة لموقعك.", "fa-solid fa-triangle-exclamation");
         });
 }

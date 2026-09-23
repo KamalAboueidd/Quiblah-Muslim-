@@ -318,13 +318,45 @@
         return btn;
     }
 
+    // فحص هل الصفحة الحالية هي صفحة المواقيت الأولى (home.html أو index.html)
+    function isFirstPageOrPrayerTimings() {
+        if (document.getElementById('countdown-timer') || document.querySelector('.circle-countdown') || document.getElementById('custom-city-select')) {
+            return true;
+        }
+        const path = (window.location.pathname || '').toLowerCase();
+        if (
+            path.endsWith('/home.html') ||
+            path.endsWith('/index.html') ||
+            path.endsWith('/quiblah-muslim-/') ||
+            path.endsWith('/quiblah-muslim-/home.html') ||
+            path.endsWith('/quiblah-muslim-/index.html') ||
+            path.endsWith('/') ||
+            path === '' ||
+            !path.includes('.html')
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     // 5. موضع الزر داخل الواجهة
     function injectInstallButton() {
+        const isTimingsPage = isFirstPageOrPrayerTimings();
+
+        // زر التثبيت العلوي في الديسكتوب يظهر حصراً في صفحة المواقيت الأولى
+        const existingTopBtn = document.querySelector('.top-bar-install-btn, .top-bar #pwa-install-btn');
+        if (!isTimingsPage) {
+            if (existingTopBtn) {
+                existingTopBtn.remove();
+            }
+            return;
+        }
+
         installBtn = createInstallButton();
 
-        // 1) إذا تواجد .top-bar (كما في الصفحة الرئيسية وغيرها على Desktop)
+        // 1) إذا تواجد .top-bar (فقط في صفحة المواقيت الأولى على Desktop)
         const topBar = document.querySelector('.top-bar');
-        if (topBar && !document.querySelector('.top-bar .top-bar-install-btn')) {
+        if (topBar && !topBar.querySelector('.top-bar-install-btn')) {
             installBtn.classList.add('top-bar-install-btn');
             topBar.appendChild(installBtn);
         }

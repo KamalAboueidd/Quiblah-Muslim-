@@ -822,18 +822,32 @@
             modalFullLink.href = `tafseer.html?surah=${surahNum}&ayah=${ayahNum}&tafseer=${edition}`;
 
             try {
+                // محاولة جلب نص الآية واسم السورة فوراً من المصحف المخزن محلياً أوفلاين
+                const localSurah = window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[surahNum];
+                if (localSurah) {
+                    const localAyah = localSurah.ayahs && localSurah.ayahs.find(a => (a.numberInSurah === ayahNum || a.number === ayahNum));
+                    if (localAyah) {
+                        modalAyahText.innerText = localAyah.text;
+                        modalAyahText.setAttribute('data-loaded-text', localAyah.text);
+                        modalAyahText.setAttribute('data-ayah-id', `${surahNum}:${ayahNum}`);
+                        modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${localSurah.name} - آية (${ayahNum})`;
+                    }
+                }
+
                 if (editionConfig.source === 'spa5k') {
                     // 1. Get Ayah text if not already loaded
                     let ayahText = modalAyahText.getAttribute('data-loaded-text');
                     if (!ayahText || modalAyahText.getAttribute('data-ayah-id') !== `${surahNum}:${ayahNum}`) {
-                        modalAyahText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-                        const qRes = await fetchWithTimeout(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani`, 6000);
-                        const qData = (qRes.data && qRes.data[0]) ? qRes.data[0] : qRes.data;
-                        ayahText = qData.text;
-                        modalAyahText.innerText = ayahText;
-                        modalAyahText.setAttribute('data-loaded-text', ayahText);
-                        modalAyahText.setAttribute('data-ayah-id', `${surahNum}:${ayahNum}`);
-                        modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${qData.surah ? qData.surah.name : ''} - آية (${ayahNum})`;
+                        try {
+                            modalAyahText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+                            const qRes = await fetchWithTimeout(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-uthmani`, 4000);
+                            const qData = (qRes.data && qRes.data[0]) ? qRes.data[0] : qRes.data;
+                            ayahText = qData.text;
+                            modalAyahText.innerText = ayahText;
+                            modalAyahText.setAttribute('data-loaded-text', ayahText);
+                            modalAyahText.setAttribute('data-ayah-id', `${surahNum}:${ayahNum}`);
+                            modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${qData.surah ? qData.surah.name : ''} - آية (${ayahNum})`;
+                        } catch(e) {}
                     }
 
                     // 2. Fetch Tafsir array (cached per surah)
@@ -856,7 +870,7 @@
                     const quranAyah = editions.find(e => e.edition.identifier === 'quran-uthmani') || editions[0];
                     const tafseerAyah = editions.find(e => e.edition.identifier === editionConfig.identifier) || editions[1];
 
-                    modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${quranAyah.surah.name} - آية (${ayahNum})`;
+                    modalTitle.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> ${quranAyah.surah ? quranAyah.surah.name : (localSurah ? localSurah.name : '')} - آية (${ayahNum})`;
                     modalAyahText.innerText = quranAyah.text;
                     modalAyahText.setAttribute('data-loaded-text', quranAyah.text);
                     modalAyahText.setAttribute('data-ayah-id', `${surahNum}:${ayahNum}`);

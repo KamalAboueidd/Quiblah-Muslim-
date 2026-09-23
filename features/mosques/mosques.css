@@ -813,9 +813,9 @@ html, body, * {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 10000;
             display: flex;
             align-items: center;
@@ -833,13 +833,15 @@ html, body, * {
         }
 
         .add-mosque-modal {
-            background: rgba(18, 22, 28, 0.97);
+            background: rgba(14, 18, 25, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(197, 168, 89, 0.35);
             border-radius: 16px;
             max-width: 480px;
             width: 100%;
             padding: 24px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(197, 168, 89, 0.12);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(197, 168, 89, 0.15);
             transform: translateY(20px) scale(0.96);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             direction: rtl;

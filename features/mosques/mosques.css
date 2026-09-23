@@ -813,7 +813,7 @@ html, body, * {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.55);
+            background: transparent !important;
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             z-index: 10000;
@@ -912,7 +912,6 @@ html, body, * {
 
         .modal-close-btn:hover {
             color: var(--gold);
-            background: rgba(197, 168, 89, 0.15);
         }
 
         .modal-form {

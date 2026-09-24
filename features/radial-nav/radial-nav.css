@@ -1,0 +1,312 @@
+/**
+ * features/radial-nav/radial-nav.css
+ * قائمة التنقل الدائرية السريعة المتمحورة حول حافة الشاشة
+ * تطبيق قبلة المسلم - طور بواسطة كمال أبو عيد
+ */
+
+/* الحاوية الرئيسية للقائمة الدائرية العائمة */
+.radial-nav-container {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 99990;
+    pointer-events: none; /* تسمح بالنقر من خلالها عند الإغلاق */
+    user-select: none;
+    direction: rtl;
+    font-family: 'Tajawal', sans-serif;
+}
+
+/* خلفية تظليل وضباب خفيف عند الفتح للتركيز وسهولة التفاعل */
+.radial-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25) 70%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    z-index: -1;
+}
+
+.radial-nav-container.is-open .radial-nav-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* زر المحور الجانبي (The Hub Trigger) - يبرز من حافة الشاشة */
+.radial-nav-hub {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 74px;
+    border-radius: 36px 0 0 36px;
+    background: linear-gradient(135deg, rgba(28, 24, 16, 0.95), rgba(14, 18, 16, 0.95));
+    border: 1.5px solid rgba(197, 168, 89, 0.45);
+    border-right: none;
+    box-shadow: -4px 0 25px rgba(0, 0, 0, 0.55), -1px 0 10px rgba(197, 168, 89, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--gold, #C5A859);
+    pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    outline: none;
+    padding-left: 4px;
+}
+
+.radial-nav-hub:hover,
+.radial-nav-container.is-open .radial-nav-hub {
+    width: 54px;
+    border-color: var(--gold-light, #dfc274);
+    box-shadow: -6px 0 30px rgba(197, 168, 89, 0.45), -2px 0 12px rgba(0, 0, 0, 0.7);
+    color: #fff;
+    background: linear-gradient(135deg, rgba(40, 32, 20, 0.98), rgba(18, 24, 20, 0.98));
+}
+
+/* أيقونة المحور مع حركة الدوران */
+.radial-hub-icon {
+    font-size: 19px;
+    color: var(--gold, #C5A859);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+    filter: drop-shadow(0 0 6px rgba(197, 168, 89, 0.4));
+}
+
+.radial-nav-hub:hover .radial-hub-icon,
+.radial-nav-container.is-open .radial-hub-icon {
+    transform: rotate(135deg) scale(1.1);
+    color: var(--gold-light, #dfc274);
+}
+
+/* النص الرأسي الصغير تحت الأيقونة */
+.radial-hub-text {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--gold-light, #dfc274);
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
+}
+
+/* موجة النبض الرقيقة حول المحور للفت الانتباه بلباقة */
+.radial-hub-ripple {
+    position: absolute;
+    inset: -3px 0 -3px -3px;
+    border-radius: 40px 0 0 40px;
+    border: 1px solid rgba(197, 168, 89, 0.6);
+    pointer-events: none;
+    opacity: 0;
+    animation: hubPulse 3.5s infinite ease-out;
+}
+
+.radial-nav-container.is-open .radial-hub-ripple {
+    animation: none;
+    opacity: 0;
+}
+
+@keyframes hubPulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.18);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.18);
+        opacity: 0;
+    }
+}
+
+/* طبق الأقواس والمسارات المدارية (Orbital Arcs) */
+.radial-nav-plate {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* حلقات المدارات الفلكية المنحنية */
+.radial-orbit-arc {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(50%, -50%) scale(0.85);
+    border-radius: 50%;
+    border: 1px dashed rgba(197, 168, 89, 0.22);
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.radial-orbit-arc.arc-inner {
+    width: calc(var(--orbit-r1, 130px) * 2);
+    height: calc(var(--orbit-r1, 130px) * 2);
+    border-color: rgba(197, 168, 89, 0.28);
+}
+
+.radial-orbit-arc.arc-outer {
+    width: calc(var(--orbit-r2, 220px) * 2);
+    height: calc(var(--orbit-r2, 220px) * 2);
+    border-color: rgba(197, 168, 89, 0.18);
+}
+
+.radial-nav-container.is-open .radial-orbit-arc {
+    opacity: 1;
+    transform: translate(50%, -50%) scale(1);
+}
+
+/* حاوية العناصر الدائرية */
+.radial-items-wrap {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* العنصر الفردي في القائمة الدائرية */
+.radial-item {
+    position: absolute;
+    right: 22px;
+    top: 0;
+    margin-top: -21px; /* نصف ارتفاع الدائرة */
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(0, 0) scale(0.15);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.28s ease,
+                filter 0.25s ease;
+    white-space: nowrap;
+    will-change: transform, opacity;
+}
+
+/* عند فتح القائمة، تتفتح العناصر إلى إحداثياتها المدارية بانسيابية مذهلة */
+.radial-nav-container.is-open .radial-item {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(var(--tx, 0), var(--ty, 0)) scale(1);
+    transition-delay: var(--delay, 0s);
+}
+
+/* زر الدائرة الفردية للأيقونة */
+.radial-item-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(26, 24, 18, 0.94), rgba(12, 16, 14, 0.94));
+    border: 1.5px solid rgba(197, 168, 89, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55), 0 0 10px rgba(197, 168, 89, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold, #C5A859);
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+
+/* شارة اسم الصفحة (Label Badge) */
+.radial-item-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f7f1e3;
+    background: rgba(14, 16, 14, 0.88);
+    border: 1px solid rgba(197, 168, 89, 0.28);
+    border-radius: 12px;
+    padding: 3px 9px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.22s ease;
+    user-select: none;
+    letter-spacing: 0.2px;
+}
+
+/* تأثير الـ Hover على العنصر الدائري */
+.radial-item:hover {
+    filter: drop-shadow(0 0 12px rgba(197, 168, 89, 0.6));
+    z-index: 10;
+}
+
+.radial-item:hover .radial-item-circle {
+    transform: scale(1.16);
+    background: linear-gradient(135deg, rgba(46, 38, 22, 0.98), rgba(18, 24, 20, 0.98));
+    border-color: var(--gold-light, #dfc274);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(197, 168, 89, 0.65), 0 6px 20px rgba(0, 0, 0, 0.7);
+}
+
+.radial-item:hover .radial-item-label {
+    background: rgba(28, 24, 16, 0.95);
+    border-color: var(--gold, #C5A859);
+    color: var(--gold-light, #dfc274);
+    transform: translateX(-3px);
+    box-shadow: 0 4px 14px rgba(197, 168, 89, 0.35);
+}
+
+/* شارة تمييز الصفحة النشطة الحالية (إن وجدت) */
+.radial-item.is-current .radial-item-circle {
+    border-color: #2ecc71;
+    color: #2ecc71;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.45);
+}
+
+/* ================= التوافق مع شاشات الموبايل (Responsive Mobile Layout) ================= */
+@media (max-width: 768px) {
+    .radial-nav-container {
+        top: 54%;
+    }
+
+    .radial-nav-hub {
+        width: 44px;
+        height: 66px;
+        border-radius: 30px 0 0 30px;
+    }
+
+    .radial-hub-icon {
+        font-size: 17px;
+    }
+
+    .radial-hub-text {
+        font-size: 9px;
+    }
+
+    .radial-item-circle {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
+
+    .radial-item-label {
+        font-size: 10.5px;
+        padding: 2px 7px;
+        border-radius: 10px;
+    }
+
+    .radial-item {
+        margin-top: -18px;
+        gap: 5px;
+    }
+}

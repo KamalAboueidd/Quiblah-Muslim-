@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/tracker/tracker.css?v=13">
+    <link rel="stylesheet" href="features/tracker/tracker.css?v=15">
 </head>
 <body>
 
@@ -419,7 +419,7 @@
 
                 <div class="section-collapsible-body">
                     <div class="habits-checklist-grid">
-                        <!-- Special Quran Card with Stepper -->
+                        <!-- Special Quran Card with Stepper & Mark as Done -->
                         <div class="quran-worship-card">
                             <div class="quran-info-wrap">
                                 <i class="fa-solid fa-book-open habit-icon" aria-hidden="true"></i>
@@ -441,11 +441,17 @@
                                         </button>
                                     </div>
                                 </div>
-                                <a href="quran.html" class="quran-read-link" title="الذهاب إلى المصحف للقراءة">
-                                    <i class="fa-solid fa-book-quran"></i>
-                                    <span>الذهاب إلى المصحف للقراءة</span>
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </a>
+                                <div class="quran-actions-wrap">
+                                    <a href="quran.html" class="quran-read-link" title="الذهاب إلى المصحف للقراءة">
+                                        <i class="fa-solid fa-book-quran"></i>
+                                        <span>الذهاب إلى المصحف للقراءة</span>
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                    </a>
+                                    <button type="button" class="quran-mark-done-btn" id="btn-quran-done" title="تعليم الورد كمكتمل">
+                                        <i class="fa-regular fa-circle-check"></i>
+                                        <span>أتممت القراءة</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -456,6 +462,12 @@
                                 <div class="habit-texts">
                                     <span class="habit-title">أذكار الصباح</span>
                                     <span class="habit-reward">حصن المسلم وبركة في بداية اليوم</span>
+                                    <div class="habit-links-row">
+                                        <a href="azkar.html?cat=أذكار الصباح" class="habit-word-link" title="الذهاب إلى أذكار الصباح في صفحة الأذكار">
+                                            <span>الذهاب إلى الذكر</span>
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
@@ -468,6 +480,12 @@
                                 <div class="habit-texts">
                                     <span class="habit-title">أذكار المساء</span>
                                     <span class="habit-reward">حفظ وأمان وسكينة في ليلتك</span>
+                                    <div class="habit-links-row">
+                                        <a href="azkar.html?cat=أذكار المساء" class="habit-word-link" title="الذهاب إلى أذكار المساء في صفحة الأذكار">
+                                            <span>الذهاب إلى الذكر</span>
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
@@ -480,6 +498,17 @@
                                 <div class="habit-texts">
                                     <span class="habit-title">أذكار النوم وسورة الملك</span>
                                     <span class="habit-reward">المنجية من عذاب القبر والحفظ حتى تصبح</span>
+                                    <div class="habit-links-row">
+                                        <a href="azkar.html?cat=أذكار النوم" class="habit-word-link" title="الذهاب إلى أذكار النوم في صفحة الأذكار">
+                                            <span>الذهاب إلى الذكر</span>
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                        </a>
+                                        <span class="habit-links-sep">•</span>
+                                        <a href="quran.html?surah=67" class="habit-word-link habit-surah-link" title="قراءة سورة الملك من المصحف الشريف">
+                                            <span>سورة الملك</span>
+                                            <i class="fa-solid fa-book-quran"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
@@ -492,6 +521,12 @@
                                 <div class="habit-texts">
                                     <span class="habit-title">الصلاة على النبي ﷺ (100 مرة)</span>
                                     <span class="habit-reward">يكفى همك ويغفر ذنبك وتصلي عليك الملائكة</span>
+                                    <div class="habit-links-row">
+                                        <a href="azkar.html?cat=فضل الصلاة على النبي صلى الله عليه و سلم" class="habit-word-link" title="الذهاب إلى أذكار الصلاة على النبي في صفحة الأذكار">
+                                            <span>الذهاب إلى الذكر</span>
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
@@ -504,6 +539,12 @@
                                 <div class="habit-texts">
                                     <span class="habit-title">الاستغفار والتسبيح (100 مرة)</span>
                                     <span class="habit-reward">مغفرة للذنوب وتفريج للكرب ومفاتيح للرزق</span>
+                                    <div class="habit-links-row">
+                                        <a href="azkar.html?cat=الاستغفار و التوبة" class="habit-word-link" title="الذهاب إلى أذكار الاستغفار والتوبة في صفحة الأذكار">
+                                            <span>الذهاب إلى الذكر</span>
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
@@ -618,6 +659,6 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/tracker/tracker.js?v=12"></script>
+    <script src="features/tracker/tracker.js?v=15"></script>
 </body>
 </html>

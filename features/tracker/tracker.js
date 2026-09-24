@@ -699,11 +699,24 @@
             }
         });
 
-        // 5. تحديث عداد صفحات القرآن
+        // 5. تحديث عداد صفحات القرآن وزر إتمام القراءة
         const quranPages = dayData.quran_pages || 0;
+        const isQuranDone = Boolean((dayData.habits && dayData.habits['quran_done']) || quranPages > 0);
         const quranValueElem = document.getElementById('quran-pages-count');
         if (quranValueElem) {
             quranValueElem.textContent = `${quranPages} ${quranPages === 1 ? 'صفحة' : (quranPages === 2 ? 'صفحتان' : (quranPages <= 10 && quranPages >= 3 ? 'صفحات' : 'صفحة'))}`;
+        }
+        const quranDoneBtn = document.getElementById('btn-quran-done');
+        if (quranDoneBtn) {
+            if (isQuranDone) {
+                quranDoneBtn.classList.add('completed');
+                quranDoneBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>أتممت القراءة</span>`;
+                quranDoneBtn.setAttribute('title', 'تم إنجاز الورد بنجاح (انقر للإلغاء)');
+            } else {
+                quranDoneBtn.classList.remove('completed');
+                quranDoneBtn.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>أتممت القراءة</span>`;
+                quranDoneBtn.setAttribute('title', 'انقر لتعليم الورد كمكتمل');
+            }
         }
 
         // 6. حساب النسبة والمؤشرات بدقة
@@ -792,7 +805,17 @@
     // ================= إعداد مستمعي السنن والعبادات =================
     function setupHabitListeners() {
         document.querySelectorAll('.habit-check-card').forEach(card => {
+            // منع النقر على روابط "الذهاب إلى الذكر" و "سورة الملك" من تبديل حالة الكارد
+            card.querySelectorAll('.habit-word-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            });
+
             card.addEventListener('click', (e) => {
+                if (e.target.closest('.habit-word-link') || e.target.closest('a')) {
+                    return;
+                }
                 e.stopPropagation();
 
                 // قفل التعديل إذا كان اليوم ماضياً
@@ -827,10 +850,11 @@
         });
     }
 
-    // ================= إعداد عداد صفحات القرآن =================
+    // ================= إعداد عداد صفحات القرآن وزر التعليم كمكتمل =================
     function setupQuranStepper() {
         const minusBtn = document.getElementById('btn-quran-minus');
         const plusBtn = document.getElementById('btn-quran-plus');
+        const doneBtn = document.getElementById('btn-quran-done');
 
         if (minusBtn) {
             minusBtn.addEventListener('click', (e) => {
@@ -848,6 +872,9 @@
                 const dayData = getDayData(currentDateKey);
                 if ((dayData.quran_pages || 0) > 0) {
                     dayData.quran_pages = (dayData.quran_pages || 0) - 1;
+                    if (dayData.quran_pages === 0 && dayData.habits) {
+                        dayData.habits['quran_done'] = false;
+                    }
                     triggerHaptic();
                     saveAllTrackerData(trackerStore);
                     renderDayView(currentDateKey);
@@ -870,6 +897,47 @@
 
                 const dayData = getDayData(currentDateKey);
                 dayData.quran_pages = (dayData.quran_pages || 0) + 1;
+                if (!dayData.habits) dayData.habits = {};
+                dayData.habits['quran_done'] = true;
+                triggerHaptic();
+                saveAllTrackerData(trackerStore);
+                renderDayView(currentDateKey);
+            });
+        }
+
+        if (doneBtn) {
+            doneBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                if (currentDateKey < getTodayDateKey()) {
+                    if (window.showToast) {
+                        window.showToast("لا يمكن تعديل عبادات يوم مضى وانتهى", "fa-solid fa-lock", 3000);
+                    }
+                    triggerHaptic();
+                    return;
+                }
+
+                const dayData = getDayData(currentDateKey);
+                if (!dayData.habits) dayData.habits = {};
+
+                const currentDone = Boolean(dayData.habits['quran_done'] || (dayData.quran_pages || 0) > 0);
+                const newState = !currentDone;
+                dayData.habits['quran_done'] = newState;
+
+                if (newState) {
+                    if ((dayData.quran_pages || 0) === 0) {
+                        dayData.quran_pages = 1;
+                    }
+                    if (window.showToast) {
+                        window.showToast("تقبل الله.. تم تسجيل إتمام قراءة الورد اليومي", "fa-solid fa-circle-check", 2800);
+                    }
+                } else {
+                    dayData.quran_pages = 0;
+                    if (window.showToast) {
+                        window.showToast("تم إلغاء تحديد إتمام الورد", "fa-solid fa-rotate-left", 2200);
+                    }
+                }
+
                 triggerHaptic();
                 saveAllTrackerData(trackerStore);
                 renderDayView(currentDateKey);
@@ -919,7 +987,7 @@
         ['azkar_morning', 'azkar_evening', 'azkar_sleep', 'salawat', 'istighfar'].forEach(a => {
             if (dayData.habits && dayData.habits[a]) adhkarDone++;
         });
-        if ((dayData.quran_pages || 0) > 0) adhkarDone++;
+        if ((dayData.quran_pages || 0) > 0 || (dayData.habits && dayData.habits['quran_done'])) adhkarDone++;
 
         let deedsDone = 0;
         ['sadaqah', 'birr_walidayn', 'siyam_nafl', 'husn_khuluq'].forEach(d => {
@@ -1064,7 +1132,7 @@
         ['azkar_morning', 'azkar_evening', 'azkar_sleep', 'salawat', 'istighfar'].forEach(a => {
             if (dayData.habits && dayData.habits[a]) adhkarDone++;
         });
-        if ((dayData.quran_pages || 0) > 0) adhkarDone++;
+        if ((dayData.quran_pages || 0) > 0 || (dayData.habits && dayData.habits['quran_done'])) adhkarDone++;
         let deedsDone = 0;
         ['sadaqah', 'birr_walidayn', 'siyam_nafl', 'husn_khuluq'].forEach(d => {
             if (dayData.habits && dayData.habits[d]) deedsDone++;

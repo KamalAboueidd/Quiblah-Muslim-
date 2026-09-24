@@ -41,6 +41,7 @@ function fetchAzkar() {
             
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('m');
+            const targetCat = urlParams.get('cat');
             
             let categoriesToShow = Object.keys(groupedAzkar);
             if (mode === 'sm') {
@@ -55,6 +56,23 @@ function fetchAzkar() {
                 if (navAz) navAz.classList.add('active');
             }
             
+            if (targetCat) {
+                const decodedCat = decodeURIComponent(targetCat).trim();
+                const matchedKey = Object.keys(groupedAzkar).find(k => 
+                    k === decodedCat || 
+                    matchesArabic(k, decodedCat) || 
+                    matchesArabic(decodedCat, k)
+                );
+                if (matchedKey) {
+                    if ((matchedKey.includes('الصباح') || matchedKey.includes('المساء')) && mode !== 'sm') {
+                        categoriesToShow = Object.keys(groupedAzkar);
+                    }
+                    renderCategories(categoriesToShow, true);
+                    openCategory(matchedKey);
+                    return;
+                }
+            }
+
             renderCategories(categoriesToShow, true);
         })
         .catch(error => {

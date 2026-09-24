@@ -52,6 +52,9 @@
 
         // رسم واجهة اليوم
         renderDayView(currentDateKey);
+
+        // تحديث أوقات الصلوات والوقت المتبقي دورياً
+        setInterval(updateAllPrayerCountdowns, 30000);
     });
 
     // دالة الفتح والطي للقوائم
@@ -520,20 +523,170 @@
         return trackerStore[dateKey];
     }
 
+    // ================= مواقيت الصلوات والوقت المتبقي =================
+    const PRAYER_TIMING_KEYS = {
+        fajr: 'Fajr',
+        dhuhr: 'Dhuhr',
+        asr: 'Asr',
+        maghrib: 'Sunset',
+        isha: 'Isha'
+    };
+
+    let cachedPrayerTimings = null;
+
+    function getPrayerTimings() {
+        if (cachedPrayerTimings) return cachedPrayerTimings;
+        try {
+            const lastData = localStorage.getItem("quiblah_last_timings");
+            if (lastData) {
+                const parsed = JSON.parse(lastData);
+                if (parsed && parsed.timings) {
+                    cachedPrayerTimings = parsed.timings;
+                    return cachedPrayerTimings;
+                }
+            }
+        } catch (e) {}
+
+        // إذا لم تكن موجودة، محاولة جلبها من API وتخزينها
+        fetchPrayerTimingsFromAPI();
+
+        // مواقيت احتياطية مدروسة لمصر والعالم العربي
+        return {
+            Fajr: "04:35",
+            Dhuhr: "11:58",
+            Asr: "15:23",
+            Sunset: "17:55",
+            Maghrib: "17:55",
+            Isha: "19:12"
+        };
+    }
+
+    function fetchPrayerTimingsFromAPI() {
+        const city = localStorage.getItem("quiblah_city") || "Cairo";
+        fetch(`https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(city)}&country=EG`)
+            .then(res => res.json())
+            .then(res => {
+                if (res && res.data && res.data.timings) {
+                    cachedPrayerTimings = res.data.timings;
+                    try {
+                        localStorage.setItem("quiblah_last_timings", JSON.stringify(res.data));
+                    } catch(e) {}
+                    updateAllPrayerCountdowns();
+                }
+            })
+            .catch(() => {});
+    }
+
+    // تحديث الوقت المتبقي لكل صلاة مفروضة (فاضل كام س وكام د بلاش ثواني)
+    function updateAllPrayerCountdowns() {
+        const todayKey = getTodayDateKey();
+        const isToday = (currentDateKey === todayKey);
+        const dayData = getDayData(currentDateKey);
+        const timings = getPrayerTimings();
+        const now = new Date();
+
+        PRAYER_KEYS.forEach(prayer => {
+            const countdownElem = document.getElementById(`countdown-${prayer}`);
+            if (!countdownElem) return;
+
+            // إذا لم يكن اليوم الحالي، نخفي العداد التنازلي لأن اليوم انتهى
+            if (!isToday) {
+                countdownElem.classList.remove('show', 'entered');
+                countdownElem.textContent = '';
+                return;
+            }
+
+            const prayerStatus = (dayData.prayers && dayData.prayers[prayer]) ? dayData.prayers[prayer] : 0;
+
+            // إذا أدى الصلاة بالفعل (في المسجد، البيت، أو قضاء)، لا نعرض العداد ويبقى التركيز على الحالة
+            if (prayerStatus > 0) {
+                countdownElem.classList.remove('show', 'entered');
+                countdownElem.textContent = '';
+                return;
+            }
+
+            // استخراج وقت الأذان
+            const timingKey = PRAYER_TIMING_KEYS[prayer];
+            const rawTime = (timings[timingKey] || timings['Maghrib'] || '12:00').split(' ')[0];
+            const timeParts = rawTime.split(':').map(Number);
+            const pHours = timeParts[0];
+            const pMins = timeParts[1];
+
+            const prayerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), pHours, pMins, 0);
+
+            if (prayerDate > now) {
+                // الصلاة قادمة (حساب الساعات والدقائق المتبقية)
+                const diffMs = prayerDate - now;
+                const totalMins = Math.round(diffMs / 60000);
+                const h = Math.floor(totalMins / 60);
+                const m = totalMins % 60;
+
+                let text = '';
+                if (h > 0) {
+                    text = `فاضل ${h} س و ${m} د`;
+                } else {
+                    text = `فاضل ${m} دقيقة`;
+                }
+
+                countdownElem.textContent = text;
+                countdownElem.classList.remove('entered');
+                countdownElem.classList.add('show');
+            } else {
+                // دخل وقت الصلاة
+                const diffMs = now - prayerDate;
+                const totalMins = Math.round(diffMs / 60000);
+                const h = Math.floor(totalMins / 60);
+                const m = totalMins % 60;
+
+                let text = '';
+                if (totalMins < 3) {
+                    text = 'حان وقتها الآن';
+                } else if (h > 0) {
+                    text = `دخل وقتها منذ ${h} س و ${m} د`;
+                } else {
+                    text = `دخل وقتها منذ ${m} د`;
+                }
+
+                countdownElem.textContent = text;
+                countdownElem.classList.add('show', 'entered');
+            }
+        });
+    }
+
     // ================= رسم واجهة اليوم المحدد =================
+    let lastViewedDateKey = null;
+
     function renderDayView(dateKey) {
+        const todayKey = getTodayDateKey();
+        const isPastDay = (dateKey < todayKey);
         const dayData = getDayData(dateKey);
 
-        // 1. تحديث شريط التاريخ والتنقل
+        // 1. إدارة وضع اليوم السابق (للقراءة فقط - اليوم انتهى)
+        const lockedBanner = document.getElementById('past-day-locked-banner');
+        if (isPastDay) {
+            document.body.classList.add('is-past-day');
+            if (lockedBanner) lockedBanner.style.display = 'flex';
+            if (lastViewedDateKey !== dateKey) {
+                if (window.showToast) {
+                    window.showToast("سجل يوم سابق (للقراءة فقط - اليوم انتهى)", "fa-solid fa-clock-rotate-left", 3500);
+                }
+            }
+        } else {
+            document.body.classList.remove('is-past-day');
+            if (lockedBanner) lockedBanner.style.display = 'none';
+        }
+        lastViewedDateKey = dateKey;
+
+        // 2. تحديث شريط التاريخ والتنقل
         updateDateNavigatorUI(dateKey);
 
-        // 2. تحديث الصلوات المفروضة الخمس
+        // 3. تحديث الصلوات المفروضة الخمس
         PRAYER_KEYS.forEach(p => {
             const status = (dayData.prayers && dayData.prayers[p]) ? dayData.prayers[p] : 0;
             updatePrayerItemUI(p, status);
         });
 
-        // 3. تحديث مربعات السنن والعبادات
+        // 4. تحديث مربعات السنن والعبادات
         document.querySelectorAll('.habit-check-card').forEach(card => {
             const key = card.getAttribute('data-habit');
             if (key) {
@@ -546,15 +699,18 @@
             }
         });
 
-        // 4. تحديث عداد صفحات القرآن
+        // 5. تحديث عداد صفحات القرآن
         const quranPages = dayData.quran_pages || 0;
         const quranValueElem = document.getElementById('quran-pages-count');
         if (quranValueElem) {
             quranValueElem.textContent = `${quranPages} ${quranPages === 1 ? 'صفحة' : (quranPages === 2 ? 'صفحتان' : (quranPages <= 10 && quranPages >= 3 ? 'صفحات' : 'صفحة'))}`;
         }
 
-        // 5. حساب النسبة والمؤشرات بدقة
+        // 6. حساب النسبة والمؤشرات بدقة
         calculateAndRenderStats(dayData);
+
+        // 7. تحديث عداد الوقت المتبقي للصلوات
+        updateAllPrayerCountdowns();
     }
 
     // ================= إعداد مستمعي الصلوات (في المسجد / في البيت / قضاء) =================
@@ -562,6 +718,16 @@
         document.querySelectorAll('.prayer-choice-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
+
+                // قفل التعديل إذا كان اليوم ماضياً
+                if (currentDateKey < getTodayDateKey()) {
+                    if (window.showToast) {
+                        window.showToast("لا يمكن تعديل عبادات يوم مضى وانتهى", "fa-solid fa-lock", 3000);
+                    }
+                    triggerHaptic();
+                    return;
+                }
+
                 const prayer = btn.getAttribute('data-prayer');
                 const choiceType = btn.getAttribute('data-choice'); // "mosque", "home", "qadaa"
                 let choiceVal = 1;
@@ -583,6 +749,7 @@
                 saveAllTrackerData(trackerStore);
                 updatePrayerItemUI(prayer, dayData.prayers[prayer]);
                 calculateAndRenderStats(dayData);
+                updateAllPrayerCountdowns();
 
                 // التحقق من إتمام الصلوات الخمس
                 checkAllPrayersCompleted(dayData);
@@ -627,6 +794,16 @@
         document.querySelectorAll('.habit-check-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 e.stopPropagation();
+
+                // قفل التعديل إذا كان اليوم ماضياً
+                if (currentDateKey < getTodayDateKey()) {
+                    if (window.showToast) {
+                        window.showToast("لا يمكن تعديل عبادات يوم مضى وانتهى", "fa-solid fa-lock", 3000);
+                    }
+                    triggerHaptic();
+                    return;
+                }
+
                 const key = card.getAttribute('data-habit');
                 if (!key) return;
 
@@ -658,6 +835,16 @@
         if (minusBtn) {
             minusBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+
+                // قفل التعديل إذا كان اليوم ماضياً
+                if (currentDateKey < getTodayDateKey()) {
+                    if (window.showToast) {
+                        window.showToast("لا يمكن تعديل عبادات يوم مضى وانتهى", "fa-solid fa-lock", 3000);
+                    }
+                    triggerHaptic();
+                    return;
+                }
+
                 const dayData = getDayData(currentDateKey);
                 if ((dayData.quran_pages || 0) > 0) {
                     dayData.quran_pages = (dayData.quran_pages || 0) - 1;
@@ -671,6 +858,16 @@
         if (plusBtn) {
             plusBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+
+                // قفل التعديل إذا كان اليوم ماضياً
+                if (currentDateKey < getTodayDateKey()) {
+                    if (window.showToast) {
+                        window.showToast("لا يمكن تعديل عبادات يوم مضى وانتهى", "fa-solid fa-lock", 3000);
+                    }
+                    triggerHaptic();
+                    return;
+                }
+
                 const dayData = getDayData(currentDateKey);
                 dayData.quran_pages = (dayData.quran_pages || 0) + 1;
                 triggerHaptic();
@@ -834,6 +1031,12 @@
         const resetBtn = document.getElementById('btn-reset-tracker');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
+                if (currentDateKey < getTodayDateKey()) {
+                    if (window.showToast) {
+                        window.showToast("لا يمكن إعادة ضبط يوم مضى وانتهى", "fa-solid fa-lock", 3000);
+                    }
+                    return;
+                }
                 const isConfirmed = confirm("هل أنت متأكد من رغبتك في إعادة ضبط إنجاز هذا اليوم؟");
                 if (isConfirmed) {
                     triggerHaptic();

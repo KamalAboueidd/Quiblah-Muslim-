@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/tracker/tracker.css?v=11">
+    <link rel="stylesheet" href="features/tracker/tracker.css?v=12">
 </head>
 <body>
 
@@ -116,6 +116,12 @@
             تابع صلوات الفريضة الخمس بدقة، وتصفح السنن والنوافل والأوراد بسهولة
         </div>
 
+        <!-- تنبيه يوم سابق للقراءة فقط (يظهر فقط عند تصفح يوم مضى) -->
+        <div class="past-day-locked-banner" id="past-day-locked-banner" style="display: none;">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span>سجل محفوظ ليوم مضى (للاطلاع فقط - انتهى وقت العبادات لهذا اليوم)</span>
+        </div>
+
         <!-- ================= HERO SUMMARY CARD (عداد دقيق لصلوات الفريضة الخمس) ================= -->
         <section class="tracker-hero-card">
             <!-- Progress Ring (5 Prayers) -->
@@ -185,7 +191,10 @@
                     <div class="prayer-worship-item" id="prayer-item-fajr">
                         <div class="prayer-item-top">
                             <span class="prayer-item-name"><i class="fa-solid fa-cloud-moon"></i> الفجر</span>
-                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            <div class="prayer-top-meta">
+                                <span class="prayer-time-countdown" id="countdown-fajr"></span>
+                                <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            </div>
                         </div>
                         <div class="prayer-choice-group">
                             <button type="button" class="prayer-choice-btn" data-prayer="fajr" data-choice="mosque" title="صليتها في المسجد جماعة">
@@ -207,7 +216,10 @@
                     <div class="prayer-worship-item" id="prayer-item-dhuhr">
                         <div class="prayer-item-top">
                             <span class="prayer-item-name"><i class="fa-regular fa-sun"></i> الظهر</span>
-                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            <div class="prayer-top-meta">
+                                <span class="prayer-time-countdown" id="countdown-dhuhr"></span>
+                                <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            </div>
                         </div>
                         <div class="prayer-choice-group">
                             <button type="button" class="prayer-choice-btn" data-prayer="dhuhr" data-choice="mosque" title="صليتها في المسجد جماعة">
@@ -229,7 +241,10 @@
                     <div class="prayer-worship-item" id="prayer-item-asr">
                         <div class="prayer-item-top">
                             <span class="prayer-item-name"><i class="fa-solid fa-cloud-sun"></i> العصر</span>
-                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            <div class="prayer-top-meta">
+                                <span class="prayer-time-countdown" id="countdown-asr"></span>
+                                <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            </div>
                         </div>
                         <div class="prayer-choice-group">
                             <button type="button" class="prayer-choice-btn" data-prayer="asr" data-choice="mosque" title="صليتها في المسجد جماعة">
@@ -251,7 +266,10 @@
                     <div class="prayer-worship-item" id="prayer-item-maghrib">
                         <div class="prayer-item-top">
                             <span class="prayer-item-name"><i class="fa-solid fa-moon"></i> المغرب</span>
-                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            <div class="prayer-top-meta">
+                                <span class="prayer-time-countdown" id="countdown-maghrib"></span>
+                                <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            </div>
                         </div>
                         <div class="prayer-choice-group">
                             <button type="button" class="prayer-choice-btn" data-prayer="maghrib" data-choice="mosque" title="صليتها في المسجد جماعة">
@@ -273,7 +291,10 @@
                     <div class="prayer-worship-item" id="prayer-item-isha">
                         <div class="prayer-item-top">
                             <span class="prayer-item-name"><i class="fa-solid fa-star-and-crescent"></i> العشاء</span>
-                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            <div class="prayer-top-meta">
+                                <span class="prayer-time-countdown" id="countdown-isha"></span>
+                                <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                            </div>
                         </div>
                         <div class="prayer-choice-group">
                             <button type="button" class="prayer-choice-btn" data-prayer="isha" data-choice="mosque" title="صليتها في المسجد جماعة">
@@ -417,19 +438,23 @@
                                     <span class="habit-reward">سجل عدد الصفحات التي قرأتها اليوم</span>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                <div class="quran-pages-stepper">
-                                    <button type="button" class="stepper-btn" id="btn-quran-minus" title="إنقاص صفحة">
-                                        <i class="fa-solid fa-minus"></i>
-                                    </button>
-                                    <span class="stepper-value" id="quran-pages-count">0 صفحة</span>
-                                    <button type="button" class="stepper-btn" id="btn-quran-plus" title="زيادة صفحة">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
+                            <div class="quran-controls-row">
+                                <div class="quran-stepper-wrap">
+                                    <span class="quran-stepper-label">حدد وردك:</span>
+                                    <div class="quran-pages-stepper">
+                                        <button type="button" class="stepper-btn" id="btn-quran-minus" title="إنقاص صفحة">
+                                            <i class="fa-solid fa-minus"></i>
+                                        </button>
+                                        <span class="stepper-value" id="quran-pages-count">0 صفحة</span>
+                                        <button type="button" class="stepper-btn" id="btn-quran-plus" title="زيادة صفحة">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <a href="quran.html" class="btn-open-quran" title="فتح المصحف الشريف للقراءة">
+                                <a href="quran.html" class="quran-read-link" title="الذهاب إلى المصحف للقراءة">
                                     <i class="fa-solid fa-book-quran"></i>
-                                    <span>المصحف</span>
+                                    <span>الذهاب إلى المصحف للقراءة</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
                                 </a>
                             </div>
                         </div>
@@ -603,6 +628,6 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/tracker/tracker.js?v=11"></script>
+    <script src="features/tracker/tracker.js?v=12"></script>
 </body>
 </html>

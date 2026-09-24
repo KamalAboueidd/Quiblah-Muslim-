@@ -2486,12 +2486,13 @@ body.mushaf-studio-body {
 .visitor-counter-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(197, 168, 89, 0.25);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    gap: 8px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 0;
+    font-size: 13px;
+    user-select: none;
 }
 
 .visitor-icon { color: var(--gold); }

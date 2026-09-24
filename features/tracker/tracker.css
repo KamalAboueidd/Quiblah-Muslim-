@@ -516,15 +516,23 @@ body.calendar-open .tracker-center-badge {
 }
 
 .cal-day-cell.is-today {
-    border: 1px solid var(--gold);
-    color: var(--gold-light);
+    border: 1.5px solid var(--gold) !important;
+    color: var(--gold-light) !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 8px rgba(197, 168, 89, 0.4), inset 0 0 5px rgba(197, 168, 89, 0.15);
 }
 
 .cal-day-cell.is-selected {
     background: var(--gold) !important;
     color: #0b0d11 !important;
     font-weight: 900 !important;
-    box-shadow: 0 0 10px rgba(197, 168, 89, 0.4);
+    box-shadow: 0 0 12px rgba(197, 168, 89, 0.5);
+}
+
+.cal-day-cell.is-today.is-selected {
+    background: var(--gold) !important;
+    color: #0b0d11 !important;
+    border-color: #ffffff !important;
 }
 
 .cal-day-cell.is-future {
@@ -591,6 +599,53 @@ body.calendar-open .tracker-center-badge {
     color: var(--text-muted);
     margin: -4px 0 22px 0;
     line-height: 1.6;
+}
+
+/* Past Day Locked Banner (للقراءة فقط - اليوم انتهى) */
+.past-day-locked-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: rgba(211, 84, 0, 0.12);
+    border: 1px solid rgba(211, 84, 0, 0.35);
+    border-radius: 12px;
+    padding: 8px 16px;
+    color: #f39c12;
+    font-size: 13px;
+    font-weight: 700;
+    margin: -8px auto 20px auto;
+    max-width: 600px;
+    animation: fadeInQuick 0.25s ease;
+}
+
+.past-day-locked-banner i {
+    font-size: 13px;
+    color: #e67e22;
+}
+
+/* Past Day Locked State: Disable modifying records */
+body.is-past-day .prayer-choice-btn:not(.active-mosque):not(.active-home):not(.active-qadaa) {
+    opacity: 0.35;
+}
+
+body.is-past-day .prayer-choice-btn {
+    cursor: not-allowed;
+}
+
+body.is-past-day .habit-check-card {
+    cursor: not-allowed;
+}
+
+body.is-past-day .stepper-btn {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+body.is-past-day .btn-reset-tracker {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* ================= HERO SUMMARY CARD (شفافة، تظهر الكاروسيل، دقيقة للصلوات) ================= */
@@ -974,15 +1029,49 @@ body.calendar-open .tracker-center-badge {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
+}
+
+.prayer-top-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.prayer-time-countdown {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-light);
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.28);
+    padding: 2px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+    display: none;
+    font-family: 'Tajawal', sans-serif;
+    letter-spacing: 0.2px;
+}
+
+.prayer-time-countdown.show {
+    display: inline-flex;
+    align-items: center;
+}
+
+.prayer-time-countdown.entered {
+    color: #f39c12;
+    background: rgba(211, 84, 0, 0.12);
+    border-color: rgba(230, 126, 34, 0.35);
 }
 
 .prayer-item-name {
-    font-size: 14.5px;
+    font-size: 14px;
     font-weight: 800;
     color: #fff;
     display: flex;
     align-items: center;
     gap: 7px;
+    white-space: nowrap;
 }
 
 .prayer-item-name i {
@@ -1245,31 +1334,61 @@ body.calendar-open .tracker-center-badge {
     font-variant-numeric: tabular-nums;
 }
 
-.btn-open-quran {
-    background: rgba(197, 168, 89, 0.1);
-    border: 1px solid var(--gold-border);
+.quran-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.quran-stepper-wrap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.quran-stepper-label {
+    font-size: 13px;
+    font-weight: 700;
     color: var(--gold-light);
-    border-radius: 8px;
-    padding: 7px 13px;
-    font-size: 12.5px;
+    white-space: nowrap;
+}
+
+.quran-read-link {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: var(--gold);
+    font-size: 13px;
     font-weight: 700;
     font-family: 'Tajawal', sans-serif;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
+    gap: 7px;
+    padding: 6px 8px;
+    transition: all 0.22s ease;
+    cursor: pointer;
+    border-radius: 8px;
+    white-space: nowrap;
 }
 
-.btn-open-quran:hover {
-    background: var(--gold);
-    color: #0b0d11;
-    border-color: var(--gold);
+.quran-read-link:hover {
+    color: var(--gold-light);
+    gap: 10px;
+    background: rgba(197, 168, 89, 0.08) !important;
 }
 
-.btn-open-quran i {
+.quran-read-link i {
+    font-size: 13px;
     background: none !important;
     border: none !important;
+    transition: transform 0.22s ease;
+}
+
+.quran-read-link:hover i.fa-arrow-left {
+    transform: translateX(-4px);
 }
 
 /* ================= BOTTOM ACTIONS ================= */
@@ -1364,15 +1483,16 @@ body.calendar-open .tracker-center-badge {
 }
 
 .visitor-counter-badge {
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--gold-border);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 12px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 0;
+    font-size: 13px;
     color: var(--gold-light);
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
+    user-select: none;
 }
 
 .visitor-counter-badge i {

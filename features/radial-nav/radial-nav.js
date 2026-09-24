@@ -127,27 +127,27 @@
         const isSmallMobile = width <= 480;
         const isMobile = width <= 768;
 
-        // تقليل المسافة (Radius) لجعل القوائم أقرب بكثير للزر الجانبي خصوصاً على الموبايل
-        const R = isSmallMobile ? 100 : (isMobile ? 112 : 165);
-
-        const container = document.getElementById('radial-nav-container');
-        if (container) {
-            container.style.setProperty('--orbit-radius', `${R}px`);
-        }
-
         // إجمالي العناصر = الصفحات + زر التبديل
         const totalItems = pages.length + 1;
+        const midIndex = (totalItems - 1) / 2;
 
-        // زوايا القوس (توزع بانسيابية كافية لمنع أي تداخل رأسي)
-        const startAngle = isMobile ? -68 : -64;
-        const endAngle = isMobile ? 68 : 64;
-        const step = (endAngle - startAngle) / (totalItems - 1);
+        // تباعد رأسي واسع ومريح يمنع التصاق القوائم ببعضها نهائياً
+        const itemSpacing = isSmallMobile ? 42 : (isMobile ? 44 : 50);
+
+        // المسافة الأفقية من الشريط الجانبي (قريبة بدون الفراغ القديم)
+        const baseDist = isSmallMobile ? 36 : (isMobile ? 40 : 50);
+        const arcBulge = isSmallMobile ? 22 : (isMobile ? 28 : 38);
+
+        function calcPos(i) {
+            const u = midIndex === 0 ? 0 : (i - midIndex) / midIndex;
+            const ty = Math.round((i - midIndex) * itemSpacing);
+            const curve = Math.cos(u * (Math.PI / 2.3));
+            const tx = -Math.round(baseDist + (arcBulge * curve));
+            return { tx, ty };
+        }
 
         pages.forEach((page, i) => {
-            const angle = startAngle + (i * step);
-            const rad = (angle * Math.PI) / 180;
-            const tx = -Math.round(R * Math.cos(rad));
-            const ty = Math.round(R * Math.sin(rad));
+            const { tx, ty } = calcPos(i);
             const delay = (i * 0.032).toFixed(3);
 
             const a = document.createElement('a');
@@ -174,10 +174,8 @@
         });
 
         // زر التبديل بين القائمة الأساسية وباقي الخدمات في آخر القوس
-        const toggleAngle = endAngle;
-        const toggleRad = (toggleAngle * Math.PI) / 180;
-        const ttx = -Math.round(R * Math.cos(toggleRad));
-        const tty = Math.round(R * Math.sin(toggleRad));
+        const toggleIdx = pages.length;
+        const { tx: ttx, ty: tty } = calcPos(toggleIdx);
         const tDelay = (pages.length * 0.032).toFixed(3);
 
         const toggleBtn = document.createElement('button');

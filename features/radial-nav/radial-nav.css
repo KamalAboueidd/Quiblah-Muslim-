@@ -256,8 +256,8 @@
     }
 
     .radial-nav-container.is-open .radial-nav-plate {
-        width: 220px;
-        height: 480px;
-        border-radius: 480px 0 0 480px;
+        width: 250px;
+        height: 500px;
+        border-radius: 500px 0 0 500px;
     }
 }

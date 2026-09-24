@@ -123,8 +123,12 @@
         if (!wrap) return;
         wrap.innerHTML = '';
 
-        const isMobile = window.innerWidth <= 768;
-        const R = isMobile ? 150 : 215;
+        const width = window.innerWidth;
+        const isSmallMobile = width <= 480;
+        const isMobile = width <= 768;
+
+        // تقليل المسافة (Radius) لجعل القوائم أقرب بكثير للزر الجانبي خصوصاً على الموبايل
+        const R = isSmallMobile ? 100 : (isMobile ? 112 : 165);
 
         const container = document.getElementById('radial-nav-container');
         if (container) {
@@ -134,9 +138,9 @@
         // إجمالي العناصر = الصفحات + زر التبديل
         const totalItems = pages.length + 1;
 
-        // زوايا القوس (توزع بانسيابية من -64 إلى +64 درجة)
-        const startAngle = -64;
-        const endAngle = 64;
+        // زوايا القوس (توزع بانسيابية كافية لمنع أي تداخل رأسي)
+        const startAngle = isMobile ? -68 : -64;
+        const endAngle = isMobile ? 68 : 64;
         const step = (endAngle - startAngle) / (totalItems - 1);
 
         pages.forEach((page, i) => {

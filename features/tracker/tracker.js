@@ -1016,16 +1016,96 @@
         if (badgeDeeds) badgeDeeds.textContent = `${deedsDone} / 4`;
 
         // تحديث رسالة التحفيز بناء على صلوات الفريضة
-        updatePrayerMotivation(prayersDone);
+        updatePrayerMotivation(prayersDone, dayData);
 
         // تحديث سلسلة الصلوات المتتالية
         updateStreakDisplay();
     }
 
-    function updatePrayerMotivation(prayersDone) {
+    // استنتاج سياق الصلوات الخمس عند إتمامها لتوليد رسائل وتوستات ذكية ومخصصة
+    function getPrayerCompletionContext(dayData) {
+        if (!dayData || !dayData.prayers) return null;
+        const allDone = PRAYER_KEYS.every(p => dayData.prayers && dayData.prayers[p] > 0);
+        if (!allDone) return null;
+
+        let mosqueCount = 0;
+        let homeCount = 0;
+        let qadaaCount = 0;
+
+        PRAYER_KEYS.forEach(p => {
+            const val = dayData.prayers[p];
+            if (val === 2) mosqueCount++;
+            else if (val === 1) homeCount++;
+            else if (val === 3) qadaaCount++;
+        });
+
+        // 1. الخمس صلوات كلها في المسجد جماعة
+        if (mosqueCount === 5) {
+            return {
+                type: 'mosque_all',
+                icon: 'fa-solid fa-mosque',
+                toast: "ما شاء الله تبارك الله! أتممت صلوات اليوم الخمس كلها في المسجد جماعة.. هنيئاً لك هذا الأجر العظيم وثبّتك الله.",
+                quoteTitle: "نور على نور.. أتممت صلوات اليوم كلها في المسجد جماعة",
+                quoteSub: "طوبى لك خطواتك إلى بيوت الله.. جعلها الله في ميزان حسناتك ونوراً لك يوم القيامة."
+            };
+        }
+
+        // 2. الخمس صلوات كلها قضاءً
+        if (qadaaCount === 5) {
+            return {
+                type: 'qadaa_all',
+                icon: 'fa-solid fa-clock-rotate-left',
+                toast: "الحمد لله أنك قضيت ما فاتك وأبرأت ذمتك.. استعن بالله وجاهد نفسك لتؤدي صلوات الغد في أوقاتها، فالصلاة على وقتها أحب الأعمال إلى الله.",
+                quoteTitle: "الحمد لله على قضاء ما فاتك وإبراء الذمة",
+                quoteSub: "أحسنت باستدراك ما فاتك.. واستعن بالله لتكون صلواتك غداً في مواقيتها لتنال عظيم الأجر."
+            };
+        }
+
+        // 3. تحتوي على صلوات قضاء وأخرى في وقتها
+        if (qadaaCount > 0) {
+            return {
+                type: 'qadaa_mixed',
+                icon: 'fa-solid fa-hands-praying',
+                toast: "تقبل الله منك وقضى عنك.. الحمد لله على استدراك ما فاتك من صلوات، واحرص غداً على المبادرة فور سماع الأذان لتنال أجر الوقت كاملاً.",
+                quoteTitle: "تقبل الله طاعتك وقضاء ما فاتك من فرائض اليوم",
+                quoteSub: "الحمد لله على إتمام الفرائض واستدراك ما فات.. واجعل همك غداً أداء كل صلاة في وقتها."
+            };
+        }
+
+        // 4. الخمس صلوات أُديت في وقتها ولكن كلها في البيت
+        if (homeCount === 5) {
+            return {
+                type: 'home_all',
+                icon: 'fa-solid fa-house-chimney-user',
+                toast: "مبارك إتمامك لصلوات اليوم في وقتها ما شاء الله.. لكن حاول أن تصلي في المسجد، فصلاة الجماعة تفضل صلاة الفرد بسبع وعشرين درجة.",
+                quoteTitle: "مبارك إتمام صلوات اليوم الخمس في أوقاتها",
+                quoteSub: "تقبل الله طاعتك.. واحرص على السعي إلى المسجد لتنال أجر الجماعة المضاعف بإذن الله."
+            };
+        }
+
+        // 5. الخمس صلوات أُديت في وقتها بين المسجد والبيت (واحدة أو أكثر في البيت وأخرى في المسجد بدون قضاء)
+        return {
+            type: 'mosque_home_mixed',
+            icon: 'fa-solid fa-kaaba',
+            toast: "مبارك إتمامك لصلوات اليوم.. تقبل الله طاعتك، واحرص غداً على الاستزادة من صلاة الجماعة في المسجد ففيها عظيم الأجر والفضل.",
+            quoteTitle: "مبارك.. أتممت صلوات اليوم بين المسجد والبيت",
+            quoteSub: "تقبل الله منك.. واجعل همك غداً شهود سائر الصلوات في المسجد لتضاعف أجورك ونورك."
+        };
+    }
+
+    function updatePrayerMotivation(prayersDone, dayData) {
         const quoteElem = document.getElementById('tracker-quote-text');
         const subquoteElem = document.getElementById('tracker-subquote-text');
         if (!quoteElem || !subquoteElem) return;
+
+        if (prayersDone === 5 && dayData) {
+            const ctx = getPrayerCompletionContext(dayData);
+            if (ctx) {
+                quoteElem.textContent = ctx.quoteTitle;
+                subquoteElem.textContent = ctx.quoteSub;
+                return;
+            }
+        }
 
         const msg = PRAYER_MESSAGES.find(m => prayersDone >= m.min) || PRAYER_MESSAGES[PRAYER_MESSAGES.length - 1];
         quoteElem.textContent = msg.title;
@@ -1076,13 +1156,27 @@
         }
     }
 
-    // ================= فحص إتمام الصلوات الخمس =================
+    // ================= فحص إتمام الصلوات الخمس والتنبيه الذكي المخصص =================
     function checkAllPrayersCompleted(dayData) {
         const allDone = PRAYER_KEYS.every(p => dayData.prayers && dayData.prayers[p] > 0);
-        if (allDone && !dayData._prayersCongratulated) {
+        if (!allDone) {
+            // إذا نقصت الصلوات عن 5، نعيد إتاحة التنبيه عند إتمامها مجدداً
+            dayData._prayersCompletedSignature = null;
+            return;
+        }
+
+        // تكوين بصمة الصلوات الخمس الحالية (قيم الحالات 1 أو 2 أو 3)
+        const currentSignature = PRAYER_KEYS.map(p => dayData.prayers[p]).join('-');
+
+        if (dayData._prayersCompletedSignature !== currentSignature) {
+            dayData._prayersCompletedSignature = currentSignature;
             dayData._prayersCongratulated = true;
             saveAllTrackerData(trackerStore);
-            showAppToast("مبارك.. أتممت صلوات الفريضة الخمس كاملة لهذا اليوم! تقبل الله طاعتك.", "success");
+
+            const ctx = getPrayerCompletionContext(dayData);
+            if (ctx) {
+                showAppToast(ctx.toast, ctx.icon, 5500);
+            }
         }
     }
 
@@ -1193,11 +1287,17 @@
         }
     }
 
-    function showAppToast(msg, type = "info") {
+    function showAppToast(msg, iconOrType = "info", duration = 4500) {
+        let iconClass = iconOrType;
+        if (iconOrType === "success") iconClass = "fa-solid fa-circle-check";
+        else if (iconOrType === "warning") iconClass = "fa-solid fa-triangle-exclamation";
+        else if (iconOrType === "info") iconClass = "fa-solid fa-circle-info";
+        else if (iconOrType === "error") iconClass = "fa-solid fa-circle-xmark";
+
         if (typeof window.showToast === 'function') {
-            window.showToast(msg, type);
+            window.showToast(msg, iconClass, duration);
         } else {
-            console.log(`[Toast ${type}]:`, msg);
+            console.log(`[Toast ${iconClass}]:`, msg);
         }
     }
 

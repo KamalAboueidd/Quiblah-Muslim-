@@ -1331,9 +1331,16 @@ function getGlobalAyahNumber(surahNum, ayahNum) {
 // -----------------------------------------------------------------------------
 // 9. Exemplary Reciter Player ("استمع للتلاوة النموذجية")
 // -----------------------------------------------------------------------------
+let currentExemplaryAyahNum = 1;
+
+function getExemplaryAudioUrl(surahNum, ayahNum) {
+    const sPadded = String(surahNum).padStart(3, '0');
+    const aPadded = String(ayahNum).padStart(3, '0');
+    return `https://everyayah.com/data/Alafasy_128kbps/${sPadded}${aPadded}.mp3`;
+}
+
 function prepareExemplaryAudio(surahNum, ayahNum) {
     if (!audioExemplary || !surahNum) return;
-    pauseExemplaryAudio();
 
     let targetNum = ayahNum;
     if (recitationScopeMode === 'full') {
@@ -1341,39 +1348,19 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
     } else if (recitationScopeMode === 'range') {
         const from = Math.min(rangeFromAyah, rangeToAyah);
         targetNum = ayahNum || from;
+    } else {
+        targetNum = ayahNum || currentAyahNumber || 1;
     }
 
-    const sPadded = String(surahNum).padStart(3, '0');
-    const aPadded = String(targetNum).padStart(3, '0');
-    const audioUrl = `https://everyayah.com/data/Alafasy_128kbps/${sPadded}${aPadded}.mp3`;
-
-    audioExemplary.src = audioUrl;
+    currentExemplaryAyahNum = targetNum;
+    audioExemplary.src = getExemplaryAudioUrl(surahNum, targetNum);
 
     audioExemplary.onended = () => {
-        if (recitationScopeMode === 'full') {
-            // Advance to next ayah in full surah mode
-            const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
-            if (targetNum < surahMeta.ayat) {
-                prepareExemplaryAudio(currentSurahNumber, targetNum + 1);
-                playExemplaryAudio();
-                return;
-            }
-        } else if (recitationScopeMode === 'range') {
-            const to = Math.max(rangeFromAyah, rangeToAyah);
-            if (targetNum < to) {
-                prepareExemplaryAudio(currentSurahNumber, targetNum + 1);
-                playExemplaryAudio();
-                return;
-            }
-        }
-        pauseExemplaryAudio();
-        if (playerStatusMain) playerStatusMain.textContent = 'أحسنت الاستماع! الآن اقرأ الآية بصوتك';
-        if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر التسجيل بالأسفل لبدء التسميع وتدقيق التلاوة';
-        showToast('أحسنت الاستماع! اضغط الآن على زر الميكروفون وابدأ التسميع بصوتك.');
+        handleExemplaryAyahEnded();
     };
 
     audioExemplary.onerror = () => {
-        const globalNum = getGlobalAyahNumber(surahNum, targetNum);
+        const globalNum = getGlobalAyahNumber(surahNum, currentExemplaryAyahNum);
         const fallbackUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
         if (audioExemplary.src !== fallbackUrl) {
             audioExemplary.src = fallbackUrl;
@@ -1382,6 +1369,53 @@ function prepareExemplaryAudio(surahNum, ayahNum) {
             }
         }
     };
+}
+
+function handleExemplaryAyahEnded() {
+    if (!isExemplaryPlaying) return;
+
+    // 1. نطاق مخصص من آية إلى آية: وصل التلاوة حتى نهاية النطاق
+    if (recitationScopeMode === 'range') {
+        const to = Math.max(rangeFromAyah, rangeToAyah);
+        if (currentExemplaryAyahNum < to) {
+            currentExemplaryAyahNum++;
+            audioExemplary.src = getExemplaryAudioUrl(currentSurahNumber, currentExemplaryAyahNum);
+            const p = audioExemplary.play();
+            if (p !== undefined) {
+                p.catch(err => {
+                    const globalNum = getGlobalAyahNumber(currentSurahNumber, currentExemplaryAyahNum);
+                    audioExemplary.src = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
+                    audioExemplary.play().catch(() => pauseExemplaryAudio());
+                });
+            }
+            if (playerStatusMain) playerStatusMain.textContent = `جاري تلاوة الآية (${currentExemplaryAyahNum}) - الشيخ مشاري العفاسي`;
+            return;
+        }
+    } 
+    // 2. تلاوة كامل السورة: وصل التلاوة حتى آخر آية
+    else if (recitationScopeMode === 'full') {
+        const surahMeta = SURAHS_DB.find(s => s.number === currentSurahNumber) || SURAHS_DB[0];
+        if (currentExemplaryAyahNum < surahMeta.ayat) {
+            currentExemplaryAyahNum++;
+            audioExemplary.src = getExemplaryAudioUrl(currentSurahNumber, currentExemplaryAyahNum);
+            const p = audioExemplary.play();
+            if (p !== undefined) {
+                p.catch(err => {
+                    const globalNum = getGlobalAyahNumber(currentSurahNumber, currentExemplaryAyahNum);
+                    audioExemplary.src = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
+                    audioExemplary.play().catch(() => pauseExemplaryAudio());
+                });
+            }
+            if (playerStatusMain) playerStatusMain.textContent = `جاري تلاوة الآية (${currentExemplaryAyahNum}) - الشيخ مشاري العفاسي`;
+            return;
+        }
+    }
+
+    // 3. إذا كان المختار آية واحدة فقط (single) أو اكتملت جميع آيات النطاق/السورة: هنا فقط يقف!
+    pauseExemplaryAudio();
+    if (playerStatusMain) playerStatusMain.textContent = 'أحسنت الاستماع! الآن اقرأ الآيات بصوتك';
+    if (playerStatusSub) playerStatusSub.textContent = 'اضغط على زر التسجيل بالأسفل لبدء التسميع وتدقيق التلاوة';
+    showToast('أحسنت الاستماع! اضغط الآن على زر الميكروفون وابدأ التسميع بصوتك.', 'fa-solid fa-microphone');
 }
 
 function toggleExemplaryAudio() {
@@ -1404,7 +1438,7 @@ function playExemplaryAudio() {
         openSurahFlyout();
         return;
     }
-    if (!audioExemplary || !audioExemplary.src) return;
+    if (!audioExemplary) return;
 
     if (isRecording) {
         stopRecordingAndAnalyze();
@@ -1417,19 +1451,29 @@ function playExemplaryAudio() {
         userModalRecitationAudio.pause();
     }
 
-    audioExemplary.play().then(() => {
-        isExemplaryPlaying = true;
-        if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-pause';
-        if (quickListenIcon) quickListenIcon.className = 'fa-solid fa-pause';
-        if (quickListenText) quickListenText.textContent = 'إيقاف التلاوة';
-        if (btnQuickListen) btnQuickListen.classList.add('playing');
-        if (cardListenExemplary) cardListenExemplary.classList.add('playing');
-        if (barWaveformVisualizer) barWaveformVisualizer.classList.add('playing');
-        if (playerStatusMain) playerStatusMain.textContent = 'جاري تشغيل تلاوة الآيات (الشيخ مشاري العفاسي)';
-        if (playerStatusSub) playerStatusSub.textContent = 'استمع جيداً إلى مخارج الحروف وأحكام التجويد';
-    }).catch(err => {
-        console.warn("Exemplary play notice:", err);
-    });
+    if (!audioExemplary.src || audioExemplary.src === window.location.href) {
+        let startAyah = 1;
+        if (recitationScopeMode === 'range') startAyah = Math.min(rangeFromAyah, rangeToAyah);
+        else if (recitationScopeMode === 'single') startAyah = currentAyahNumber || 1;
+        prepareExemplaryAudio(currentSurahNumber, startAyah);
+    }
+
+    const p = audioExemplary.play();
+    if (p !== undefined) {
+        p.then(() => {
+            isExemplaryPlaying = true;
+            if (exemplaryPlayIcon) exemplaryPlayIcon.className = 'fa-solid fa-pause';
+            if (quickListenIcon) quickListenIcon.className = 'fa-solid fa-pause';
+            if (quickListenText) quickListenText.textContent = 'إيقاف التلاوة';
+            if (btnQuickListen) btnQuickListen.classList.add('playing');
+            if (cardListenExemplary) cardListenExemplary.classList.add('playing');
+            if (barWaveformVisualizer) barWaveformVisualizer.classList.add('playing');
+            if (playerStatusMain) playerStatusMain.textContent = `جاري استماع الآية (${currentExemplaryAyahNum}) - الشيخ مشاري العفاسي`;
+            if (playerStatusSub) playerStatusSub.textContent = 'استمع جيداً إلى مخارج الحروف وأحكام التجويد';
+        }).catch(err => {
+            console.warn("Exemplary play notice:", err);
+        });
+    }
 }
 
 function pauseExemplaryAudio() {
@@ -2021,8 +2065,9 @@ function combineSpeechSegments(prev, next) {
     }
 
     // Check for overlapping boundary words at the seam between segments
+    // Require at least 2 words to treat as an overlap echo so we NEVER discard a valid single opening word
     const maxOverlap = Math.min(pWords.length, nWords.length);
-    for (let len = maxOverlap; len >= 1; len--) {
+    for (let len = maxOverlap; len >= 2; len--) {
         let match = true;
         for (let k = 0; k < len; k++) {
             if (!areArabicWordsMatching(pWords[pWords.length - len + k], nWords[k])) {
@@ -2141,7 +2186,6 @@ function recoverClippedSpeechWord(prevCommittedText, currentSessionText, targetA
     }
 
     // Check Case 1: Partial syllable/prefix clipping where the opening word had its initial sound clipped
-    // e.g. "الحمد" -> recognized as "...مد" or "حمد" or "لمد" (suffix/stem match)
     const normOpening = normalizeArabicText(expectedOpening.raw);
     const normSpoken = normalizeArabicText(firstSpoken);
     const isOpeningSuffix = (normSpoken.length >= 2 && normOpening.length > normSpoken.length && normOpening.endsWith(normSpoken));
@@ -2184,11 +2228,11 @@ function recoverClippedSpeechWord(prevCommittedText, currentSessionText, targetA
     return curr;
 }
 
-// Safety net: Ensures every Ayah boundary in the full transcript preserves its opening word
+// Safety net: Ensures every Ayah boundary in the full transcript preserves its opening word WITHOUT duplication
 function ensureAllAyahBoundariesIntact(transcribedText, targetAyahs) {
     if (!transcribedText || !targetAyahs || targetAyahs.length <= 1) return transcribedText;
     let words = transcribedText.split(/\s+/).filter(Boolean);
-    if (!words.length) return transcribedText;
+    if (words.length < 2) return transcribedText;
 
     for (let aIdx = 0; aIdx < targetAyahs.length - 1; aIdx++) {
         const currAyah = targetAyahs[aIdx];
@@ -2196,14 +2240,32 @@ function ensureAllAyahBoundariesIntact(transcribedText, targetAyahs) {
         if (!currAyah.rawWords || !currAyah.rawWords.length || !nextAyah.rawWords || nextAyah.rawWords.length < 2) continue;
 
         const currLastWord = currAyah.rawWords[currAyah.rawWords.length - 1];
+        const currPenultimate = currAyah.rawWords.length >= 2 ? currAyah.rawWords[currAyah.rawWords.length - 2] : null;
+
         const nextFirstWord = nextAyah.rawWords[0];
         const nextSecondWord = nextAyah.rawWords[1];
 
         for (let i = 0; i < words.length - 1; i++) {
             if (areArabicWordsMatching(words[i], currLastWord)) {
+                if (currPenultimate && i > 0 && !areArabicWordsMatching(words[i - 1], currPenultimate)) {
+                    continue; // Skip false match from earlier in the Ayah
+                }
+
                 const candidateFollow = words[i + 1];
-                if (!areArabicWordsMatching(candidateFollow, nextFirstWord) && areArabicWordsMatching(candidateFollow, nextSecondWord)) {
-                    // Single-word drop: first word of next ayah was clipped
+
+                // If candidateFollow ALREADY matches nextFirstWord, boundary is intact!
+                if (areArabicWordsMatching(candidateFollow, nextFirstWord)) {
+                    break;
+                }
+
+                // Strict anti-duplication guard: if nextFirstWord already exists anywhere ahead in the next 3 words, NEVER duplicate!
+                const alreadyPresentAhead = words.slice(i + 1, i + 4).some(w => areArabicWordsMatching(w, nextFirstWord));
+                if (alreadyPresentAhead) {
+                    break;
+                }
+
+                // Single-word drop: first word of next ayah was clipped
+                if (areArabicWordsMatching(candidateFollow, nextSecondWord)) {
                     let confirmed = true;
                     if (words.length > i + 2 && nextAyah.rawWords.length > 2) {
                         if (!areArabicWordsMatching(words[i + 2], nextAyah.rawWords[2])) {
@@ -2212,22 +2274,6 @@ function ensureAllAyahBoundariesIntact(transcribedText, targetAyahs) {
                     }
                     if (confirmed) {
                         words.splice(i + 1, 0, nextFirstWord);
-                        break;
-                    }
-                }
-                // Two-word drop: first AND second words of next ayah were clipped
-                if (!areArabicWordsMatching(candidateFollow, nextFirstWord) && 
-                    !areArabicWordsMatching(candidateFollow, nextSecondWord) &&
-                    nextAyah.rawWords.length > 2 &&
-                    areArabicWordsMatching(candidateFollow, nextAyah.rawWords[2])) {
-                    let confirmed2 = true;
-                    if (words.length > i + 2 && nextAyah.rawWords.length > 3) {
-                        if (!areArabicWordsMatching(words[i + 2], nextAyah.rawWords[3])) {
-                            confirmed2 = false;
-                        }
-                    }
-                    if (confirmed2) {
-                        words.splice(i + 1, 0, nextFirstWord, nextSecondWord);
                         break;
                     }
                 }

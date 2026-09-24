@@ -1248,24 +1248,39 @@ body.mushaf-studio-body {
     padding: 4px 6px;
     direction: rtl !important;
     unicode-bidi: isolate;
+    scrollbar-width: thin !important;
+    scrollbar-color: #C5A859 rgba(189, 160, 80, 0.12) !important;
 }
 
-.mushaf-sacred-verses-flow::-webkit-scrollbar {
-    width: 6px;
+.mushaf-sacred-verses-flow::-webkit-scrollbar,
+#mushaf-verses-flow::-webkit-scrollbar {
+    width: 6px !important;
 }
 
-.mushaf-sacred-verses-flow::-webkit-scrollbar-track {
-    background: rgba(189, 160, 80, 0.08);
-    border-radius: 10px;
+.mushaf-sacred-verses-flow::-webkit-scrollbar-track,
+#mushaf-verses-flow::-webkit-scrollbar-track {
+    background: rgba(189, 160, 80, 0.1) !important;
+    border-radius: 8px !important;
 }
 
-.mushaf-sacred-verses-flow::-webkit-scrollbar-thumb {
-    background: rgba(189, 160, 80, 0.35);
-    border-radius: 10px;
+.mushaf-sacred-verses-flow::-webkit-scrollbar-thumb,
+#mushaf-verses-flow::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfc26e 0%, #C5A859 50%, #9a7d30 100%) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.mushaf-sacred-verses-flow::-webkit-scrollbar-thumb:hover {
-    background: var(--gold);
+.mushaf-sacred-verses-flow::-webkit-scrollbar-thumb:hover,
+#mushaf-verses-flow::-webkit-scrollbar-thumb:hover {
+    background: #dfc26e !important;
+}
+
+.mushaf-sacred-verses-flow::-webkit-scrollbar-button,
+#mushaf-verses-flow::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* Mushaf Empty Selection Prompt State */

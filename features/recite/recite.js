@@ -1660,10 +1660,11 @@ async function startRecording() {
 
     // 3. Coordinate MediaRecorder & microphone acquisition:
     // On Desktop, MediaRecorder and SpeechRecognition run concurrently without hardware conflict.
-    // On Mobile (Android / iOS), opening getUserMedia simultaneously locks the OS microphone HAL
-    // and causes Google Speech Recognition to fail with audio-capture error.
-    // 3. Run MediaRecorder on both Desktop and Mobile so the recorded audio player and download appear universally!
-    const shouldRunMediaRecorder = Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    // On Mobile (Android / iOS), opening getUserMedia simultaneously locks the OS microphone HAL,
+    // causing Google Speech Recognition to fail with audio-capture error or receive pure silence (0 dB).
+    // Therefore, on Mobile, SpeechRecognition MUST have exclusive access to the hardware microphone!
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const shouldRunMediaRecorder = !isMobileDevice && Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 
     if (shouldRunMediaRecorder) {
         try {
@@ -2334,9 +2335,8 @@ function spawnSpeechRecognizer() {
         const recognizer = new SpeechRec();
         speechRecognizer = recognizer;
         recognizer.lang = 'ar-SA';
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        // On Mobile (Android/iOS), continuous must be false so the native Google Speech intent can process utterances reliably
-        recognizer.continuous = !isMobile;
+        // Continuous must be true across all devices (Desktop & Mobile) so recognition stays active throughout recitation without stopping after 1 second!
+        recognizer.continuous = true;
         recognizer.interimResults = true;
         recognizer.maxAlternatives = 1;
 

@@ -1,0 +1,1360 @@
+/* features/tracker/tracker.css - أنماط وتنسيقات صفحة متابعة العبادات اليومية */
+
+:root {
+    --gold: #C5A859;
+    --gold-light: #dfc274;
+    --gold-glow: rgba(197, 168, 89, 0.35);
+    --gold-border: rgba(197, 168, 89, 0.18);
+    --dark-bg: #0b0d11;
+    --card-bg: rgba(0, 0, 0, 0.32);
+    --card-hover-bg: rgba(0, 0, 0, 0.45);
+    --text-main: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.72);
+    --text-dim: rgba(255, 255, 255, 0.45);
+    --success: #2ecc71;
+    --success-border: rgba(46, 204, 113, 0.4);
+    --success-bg: rgba(46, 204, 113, 0.12);
+}
+
+/* --- Luxury Golden Islamic Scrollbar --- */
+html, body, * {
+    scrollbar-width: thin;
+    scrollbar-color: #C5A859 rgba(12, 16, 23, 0.75);
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(12, 16, 23, 0.65);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfc26e 0%, #C5A859 50%, #9a7d30 100%);
+    border-radius: 8px;
+    border: 1.5px solid rgba(12, 16, 23, 0.7);
+    box-shadow: 0 0 6px rgba(197, 168, 89, 0.35);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #f3de96 0%, #dfc26e 50%, #C5A859 100%);
+    box-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
+}
+
+::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Tajawal", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--dark-bg);
+    color: var(--text-main);
+    overflow-x: hidden;
+    min-height: 100vh;
+    direction: rtl;
+    text-align: right;
+}
+
+/* --- Fullscreen Background Carousel --- */
+.fullscreen-carousel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.carousel-slide.active { opacity: 1; }
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* --- Main Container --- */
+.tracker-app-container {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 16px 20px 48px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+}
+
+/* --- Top Header (Isolated, transparent back button, clean title, date nav) --- */
+.tracker-top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 16px 4px;
+    border-bottom: 1px solid rgba(197, 168, 89, 0.15);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 500;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Back Button: Strictly NO background box */
+.tracker-back-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #e5e9f0;
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    padding: 6px 4px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    font-family: "Tajawal", sans-serif;
+    user-select: none;
+}
+
+.tracker-back-btn i {
+    font-size: 16px;
+    color: var(--gold);
+    transition: transform 0.25s ease, color 0.25s ease;
+    background: none !important;
+    border: none !important;
+}
+
+.tracker-back-btn:hover {
+    color: var(--gold-light);
+}
+
+.tracker-back-btn:hover i {
+    transform: translateX(4px);
+    color: #ffd54f;
+    text-shadow: 0 0 8px rgba(255, 213, 79, 0.5);
+}
+
+/* Center Title Badge */
+.tracker-center-badge {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.2px;
+}
+
+.tracker-center-badge i {
+    font-size: 19px;
+    color: var(--gold);
+    background: none !important;
+    border: none !important;
+}
+
+/* Date Navigator (Previous, Current, Next & Calendar) */
+.tracker-date-navigator {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--gold-border);
+    border-radius: 24px;
+    padding: 3px 8px;
+}
+
+.date-nav-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    padding: 5px 9px;
+    border-radius: 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.85;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    user-select: none;
+}
+
+.date-nav-btn:hover:not(:disabled) {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--gold-light) !important;
+    opacity: 1;
+}
+
+.date-nav-btn:active:not(:disabled) {
+    background: transparent !important;
+    opacity: 0.65;
+}
+
+.date-nav-btn:disabled {
+    opacity: 0.28 !important;
+    cursor: not-allowed;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.date-nav-btn i {
+    font-size: 11px;
+    background: none !important;
+    border: none !important;
+}
+
+.date-current-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 14px;
+    background: transparent !important;
+    opacity: 0.95;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.date-current-badge:hover,
+.date-current-badge.cal-active {
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 1;
+    color: var(--gold-light);
+}
+
+.date-current-badge i {
+    color: var(--gold);
+    font-size: 13px;
+    background: none !important;
+    border: none !important;
+    transition: color 0.2s ease;
+}
+
+.date-current-badge:hover i,
+.date-current-badge.cal-active i {
+    color: #dfc274;
+}
+
+.date-dropdown-arrow {
+    font-size: 9px !important;
+    opacity: 0.6;
+    margin-right: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.date-current-badge.cal-active .date-dropdown-arrow,
+.date-current-badge:hover .date-dropdown-arrow {
+    opacity: 1;
+    transform: rotate(180deg);
+}
+
+.date-tag-mini {
+    font-size: 11px;
+    font-weight: 800;
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.15);
+    border-radius: 8px;
+    padding: 1px 6px;
+    white-space: nowrap;
+}
+
+/* ================= CALENDAR DROPDOWN POPUP (شفافة تماماً بترانسبيرنس وضباب) ================= */
+.calendar-dropdown-popup {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 600;
+    width: 290px;
+    max-width: calc(100vw - 32px);
+    background: rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(197, 168, 89, 0.25);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(197, 168, 89, 0.1);
+    padding: 14px;
+    display: none;
+    user-select: none;
+    animation: calFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.calendar-dropdown-popup.show {
+    display: block;
+}
+
+@keyframes calFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+.cal-pop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(197, 168, 89, 0.15);
+}
+
+.cal-month-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.2px;
+}
+
+.cal-nav-btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: var(--gold);
+    font-size: 13px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, opacity 0.2s ease;
+    opacity: 0.85;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.cal-nav-btn:hover:not(:disabled),
+.cal-nav-btn:active:not(:disabled) {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--gold-light) !important;
+    opacity: 1;
+}
+
+.cal-nav-btn:disabled {
+    opacity: 0.25 !important;
+    cursor: not-allowed;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.cal-nav-btn i {
+    background: none !important;
+    border: none !important;
+}
+
+/* Weekday header row */
+.cal-weekdays-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+
+/* Days Grid (7 columns) */
+.cal-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.cal-day-cell {
+    position: relative;
+    height: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #e5e9f0;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+}
+
+.cal-day-cell.empty {
+    cursor: default;
+    pointer-events: none;
+}
+
+.cal-day-cell:hover:not(.is-future):not(.empty) {
+    background: rgba(197, 168, 89, 0.18);
+    color: #ffffff;
+}
+
+.cal-day-cell.is-today {
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+}
+
+.cal-day-cell.is-selected {
+    background: var(--gold) !important;
+    color: #0b0d11 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 10px rgba(197, 168, 89, 0.4);
+}
+
+.cal-day-cell.is-future {
+    opacity: 0.22;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Tiny dot indicating recorded worship on that day */
+.cal-day-dot {
+    position: absolute;
+    bottom: 2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+}
+
+.cal-day-cell.is-selected .cal-day-dot {
+    background: #0b0d11;
+}
+
+/* Popover footer */
+.cal-pop-footer {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(197, 168, 89, 0.15);
+    display: flex;
+    justify-content: center;
+}
+
+.cal-jump-today {
+    background: transparent !important;
+    border: none !important;
+    color: var(--gold);
+    font-size: 11.5px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    transition: color 0.2s ease, opacity 0.2s ease;
+    opacity: 0.85;
+}
+
+.cal-jump-today:hover {
+    color: var(--gold-light);
+    opacity: 1;
+}
+
+.cal-jump-today i {
+    font-size: 11px;
+    background: none !important;
+    border: none !important;
+}
+
+/* Subtitle guide */
+.tracker-header-subtitle {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin: -4px 0 22px 0;
+    line-height: 1.6;
+}
+
+/* ================= HERO SUMMARY CARD (شفافة، تظهر الكاروسيل، دقيقة للصلوات) ================= */
+.tracker-hero-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--gold-border);
+    border-radius: 18px;
+    padding: 22px 26px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    position: relative;
+    overflow: hidden;
+}
+
+.tracker-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 250px;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(197, 168, 89, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Circular Progress Ring (5 Prayers = 100%) */
+.progress-ring-box {
+    position: relative;
+    width: 114px;
+    height: 114px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.progress-ring-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 8;
+}
+
+.progress-ring-fill {
+    fill: none;
+    stroke: url(#goldGradient);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
+}
+
+.progress-ring-content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.progress-percent-text {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-fraction-text {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-weight: 600;
+}
+
+/* Hero Center Info */
+.tracker-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.tracker-hero-quote {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.tracker-hero-quote i {
+    color: var(--gold);
+    font-size: 16px;
+    background: none !important;
+    border: none !important;
+}
+
+.tracker-hero-subquote {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Streak & Badges Strip */
+.tracker-badges-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 3px;
+}
+
+.streak-pill {
+    background: rgba(230, 126, 34, 0.12);
+    border: 1px solid rgba(230, 126, 34, 0.32);
+    border-radius: 20px;
+    padding: 5px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #f39c12;
+}
+
+.streak-pill i {
+    font-size: 13px;
+    color: #e67e22;
+    background: none !important;
+    border: none !important;
+}
+
+.nawafil-pill {
+    background: rgba(197, 168, 89, 0.1);
+    border: 1px solid var(--gold-border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--gold-light);
+}
+
+.nawafil-pill i {
+    color: var(--gold);
+    font-size: 12px;
+    background: none !important;
+    border: none !important;
+}
+
+.status-summary-pill {
+    background: rgba(197, 168, 89, 0.08);
+    border: 1px solid var(--gold-border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.status-summary-pill i {
+    color: #2ecc71;
+    font-size: 12px;
+    background: none !important;
+    border: none !important;
+}
+
+.status-summary-pill:hover {
+    border-color: rgba(197, 168, 89, 0.35);
+    color: #ffffff;
+}
+
+/* ================= SECTIONS & CARDS (زجاجية شفافة بدون حواف معتمة) ================= */
+.tracker-sections-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tracker-section-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--gold-border);
+    border-radius: 16px;
+    padding: 18px 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s ease;
+}
+
+.tracker-section-card:hover {
+    border-color: rgba(197, 168, 89, 0.32);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header.clickable {
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 0;
+    transition: opacity 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.section-header.clickable:hover {
+    opacity: 0.9;
+}
+
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-icon {
+    font-size: 19px !important;
+    color: var(--gold) !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+}
+
+.section-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--gold);
+    margin: 0;
+}
+
+.section-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 2px 0 0 0;
+}
+
+.section-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Counter Badge: Strictly NO border and NO background as requested */
+.section-counter-badge {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--gold-light) !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    display: inline-block !important;
+    font-variant-numeric: tabular-nums;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Chevron indicator: Completely background-free */
+.section-toggle-icon-wrap {
+    color: var(--gold);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition: color 0.25s ease;
+}
+
+.section-header.clickable:hover .section-toggle-icon-wrap {
+    background: transparent !important;
+    color: var(--gold-light);
+}
+
+.toggle-icon {
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tracker-section-card.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Collapsible Body: display: none to block with fade (100% reliable) */
+.section-collapsible-body {
+    display: none;
+    padding-top: 14px;
+    border-top: 1px solid rgba(197, 168, 89, 0.12);
+    margin-top: 14px;
+}
+
+.tracker-section-card.expanded .section-collapsible-body {
+    display: block;
+    animation: fadeInQuick 0.25s ease;
+}
+
+@keyframes fadeInQuick {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= 1. PRAYERS LIST (الصلوات الخمس) ================= */
+.prayers-worship-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(197, 168, 89, 0.12);
+}
+
+@media (max-width: 900px) {
+    .prayers-worship-list {
+        grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    }
+}
+
+.prayer-worship-item {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.prayer-worship-item:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(197, 168, 89, 0.25);
+}
+
+.prayer-worship-item.status-mosque {
+    border-color: rgba(46, 204, 113, 0.45);
+    background: rgba(46, 204, 113, 0.08);
+}
+
+.prayer-worship-item.status-home {
+    border-color: rgba(197, 168, 89, 0.45);
+    background: rgba(197, 168, 89, 0.08);
+}
+
+.prayer-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.prayer-item-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prayer-item-name i {
+    font-size: 14px;
+    color: var(--gold);
+    background: none !important;
+    border: none !important;
+}
+
+.prayer-status-text {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-dim);
+}
+
+.prayer-worship-item.status-mosque .prayer-status-text {
+    color: #2ecc71;
+}
+
+.prayer-worship-item.status-home .prayer-status-text {
+    color: var(--gold-light);
+}
+
+/* Prayer Selection Buttons: 2 clean choices */
+.prayer-choice-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.prayer-choice-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    padding: 7px 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.prayer-choice-btn i {
+    font-size: 12px;
+    background: none !important;
+    border: none !important;
+}
+
+.prayer-choice-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(197, 168, 89, 0.25);
+}
+
+.prayer-choice-btn.active-mosque {
+    background: #27ae60;
+    border-color: #2ecc71;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.35);
+}
+
+.prayer-choice-btn.active-home {
+    background: var(--gold);
+    border-color: var(--gold-light);
+    color: #0b0d11;
+    font-weight: 800;
+    box-shadow: 0 0 10px rgba(197, 168, 89, 0.35);
+}
+
+/* ================= 2. HABITS & CHECKLISTS ================= */
+.habits-checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 10px;
+}
+
+.habit-check-card {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.habit-check-card:hover {
+    background: rgba(0, 0, 0, 0.38);
+    border-color: rgba(197, 168, 89, 0.28);
+}
+
+.habit-check-card.checked {
+    background: rgba(46, 204, 113, 0.08);
+    border-color: rgba(46, 204, 113, 0.35);
+}
+
+.habit-info-side {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.habit-icon {
+    font-size: 17px !important;
+    color: var(--gold) !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+}
+
+.habit-check-card.checked .habit-icon {
+    color: #2ecc71 !important;
+}
+
+.habit-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.habit-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.habit-reward {
+    font-size: 11.5px;
+    color: var(--text-dim);
+}
+
+.habit-check-card.checked .habit-reward {
+    color: rgba(46, 204, 113, 0.85);
+}
+
+/* Custom Check Circle */
+.habit-checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(197, 168, 89, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.habit-checkbox i {
+    font-size: 11px;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+    background: none !important;
+    border: none !important;
+}
+
+.habit-check-card.checked .habit-checkbox {
+    background: #27ae60;
+    border-color: #2ecc71;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+}
+
+.habit-check-card.checked .habit-checkbox i {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Special Quran Card with Stepper */
+.quran-worship-card {
+    grid-column: 1 / -1;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(197, 168, 89, 0.18);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.quran-info-wrap {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.quran-pages-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(197, 168, 89, 0.2);
+    border-radius: 24px;
+    padding: 2px 7px;
+}
+
+.stepper-btn {
+    background: transparent;
+    border: none;
+    color: var(--gold);
+    font-size: 13px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.stepper-btn:hover {
+    background: rgba(197, 168, 89, 0.2);
+    color: #fff;
+}
+
+.stepper-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    min-width: 60px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.btn-open-quran {
+    background: rgba(197, 168, 89, 0.1);
+    border: 1px solid var(--gold-border);
+    color: var(--gold-light);
+    border-radius: 8px;
+    padding: 7px 13px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-open-quran:hover {
+    background: var(--gold);
+    color: #0b0d11;
+    border-color: var(--gold);
+}
+
+.btn-open-quran i {
+    background: none !important;
+    border: none !important;
+}
+
+/* ================= BOTTOM ACTIONS ================= */
+.tracker-bottom-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(197, 168, 89, 0.15);
+}
+
+.btn-share-tracker {
+    background: linear-gradient(135deg, #dfc26e 0%, #C5A859 100%);
+    border: none;
+    color: #0b0d11;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 800;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(197, 168, 89, 0.35);
+}
+
+.btn-share-tracker:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(197, 168, 89, 0.5);
+}
+
+.btn-share-tracker i {
+    background: none !important;
+    border: none !important;
+}
+
+.btn-reset-tracker {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    transition: color 0.2s ease;
+}
+
+.btn-reset-tracker:hover {
+   color: var(--gold-light);
+}
+
+.btn-reset-tracker i {
+    background: none !important;
+    border: none !important;
+}
+
+/* ================= FOOTER ================= */
+.tracker-footer {
+    margin-top: 36px;
+    padding: 20px 0 10px 0;
+    border-top: 1px solid rgba(197, 168, 89, 0.15);
+    text-align: center;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footer-copyright {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.footer-visitor-box {
+    display: flex;
+    align-items: center;
+}
+
+.visitor-counter-badge {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--gold-border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--gold-light);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.visitor-counter-badge i {
+    color: var(--gold);
+    background: none !important;
+    border: none !important;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .tracker-hero-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px 18px;
+        gap: 18px;
+    }
+    .tracker-hero-info {
+        align-items: center;
+    }
+    .tracker-badges-strip {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .tracker-app-container {
+        padding: 12px 14px 40px 14px;
+    }
+    .tracker-top-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        text-align: center;
+    }
+    .tracker-back-btn {
+        align-self: flex-start;
+    }
+    .tracker-center-badge {
+        justify-content: center;
+    }
+    .tracker-date-navigator {
+        align-self: center;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .tracker-hero-card {
+        padding: 18px 14px;
+    }
+    .tracker-section-card {
+        padding: 16px 14px;
+    }
+    .prayers-worship-list {
+        grid-template-columns: 1fr;
+    }
+    .habits-checklist-grid {
+        grid-template-columns: 1fr;
+    }
+    .quran-worship-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .quran-pages-stepper {
+        justify-content: space-between;
+    }
+    .tracker-bottom-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .btn-share-tracker {
+        justify-content: center;
+    }
+    .btn-reset-tracker {
+        justify-content: center;
+    }
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+}

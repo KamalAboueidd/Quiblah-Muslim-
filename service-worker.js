@@ -1,11 +1,12 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v66';
+const CACHE_NAME = 'quiblah-muslim-v70';
 
 // الأصول الأساسية لتشغيل التطبيق أوفلاين بالكامل (App Shell & Core Data)
 const STATIC_ASSETS = [
     './',
     './index.html',
     './home.html',
+    './tracker.html',
     './bot.html',
     './quiz.html',
     './quran.html',
@@ -62,6 +63,8 @@ const STATIC_ASSETS = [
     './features/quiz/quiz.js',
     './features/quiz/quiz.css',
     './features/quiz/quiz-data.js',
+    './features/tracker/tracker.js',
+    './features/tracker/tracker.css',
     // البيانات والأصول
     './manifest.json',
     './azkar.json',

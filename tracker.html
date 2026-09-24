@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>متابعة العبادات اليومية - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="تطبيق قبلة المسلم: متابعة دقيقة لصلوات الفريضة الخمس، مع قوائم قابلة للطي للسنن والنوافل والأذكار اليومية.">
+    <meta name="keywords" content="متابعة الصلوات, صلوات الفريضة, السنن الرواتب, أذكار, قبلة المسلم, عبادات يومية">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="متابعة العبادات اليومية - قبلة المسلم">
+    <meta property="og:description" content="تابع صلوات الفريضة الخمس يومياً بدقة، وسجل سننك وأورادك بسلسلة التزام وحفظ محلي.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+    <script src="core/player-bridge.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C5A859">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <link rel="stylesheet" href="features/tracker/tracker.css?v=8">
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="tracker-app-container">
+        
+        <!-- Top Header (Clean back button, Title, Date Navigator) -->
+        <header class="tracker-top-header">
+            <a href="home.html" class="tracker-back-btn" id="tracker-back-btn" title="العودة للمواقيت">
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                <span>العودة للمواقيت</span>
+            </a>
+
+            <div class="tracker-center-badge">
+                <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+                <span>متابعة العبادات اليومية</span>
+            </div>
+
+            <!-- Date Navigator: Previous / Current / Next & Calendar Dropdown -->
+            <div class="tracker-date-navigator" id="tracker-date-navigator">
+                <button type="button" class="date-nav-btn" id="btn-prev-day" title="اليوم السابق">
+                    <i class="fa-solid fa-chevron-right"></i>
+                    <span>أمس</span>
+                </button>
+                <div class="date-current-badge" id="btn-today-reset" title="مرر أو انقر لفتح التقويم واختيار يوم">
+                    <i class="fa-regular fa-calendar-days"></i>
+                    <span id="current-date-label">اليوم</span>
+                    <i class="fa-solid fa-chevron-down date-dropdown-arrow"></i>
+                </div>
+                <button type="button" class="date-nav-btn" id="btn-next-day" title="اليوم التالي" disabled>
+                    <span>اليوم</span>
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <!-- Interactive Calendar Popup -->
+                <div class="calendar-dropdown-popup" id="calendar-dropdown-popup" aria-hidden="true">
+                    <div class="cal-pop-header">
+                        <button type="button" class="cal-nav-btn" id="cal-prev-month" title="الشهر السابق">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <div class="cal-month-title" id="cal-month-title">سبتمبر 2026</div>
+                        <button type="button" class="cal-nav-btn" id="cal-next-month" title="الشهر التالي">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                    </div>
+                    <div class="cal-weekdays-row">
+                        <span>سبت</span>
+                        <span>أحد</span>
+                        <span>اثنين</span>
+                        <span>ثلاثاء</span>
+                        <span>أربعاء</span>
+                        <span>خميس</span>
+                        <span>جمعة</span>
+                    </div>
+                    <div class="cal-days-grid" id="cal-days-grid">
+                        <!-- أيام الشهر تنشأ برمجياً -->
+                    </div>
+                    <div class="cal-pop-footer">
+                        <button type="button" class="cal-jump-today" id="cal-jump-today">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            <span>العودة لليوم الحالي</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Subtitle guide banner (No emojis) -->
+        <div class="tracker-header-subtitle">
+            تابع صلوات الفريضة الخمس بدقة، وتصفح السنن والنوافل والأوراد بسهولة
+        </div>
+
+        <!-- ================= HERO SUMMARY CARD (عداد دقيق لصلوات الفريضة الخمس) ================= -->
+        <section class="tracker-hero-card">
+            <!-- Progress Ring (5 Prayers) -->
+            <div class="progress-ring-box">
+                <svg class="progress-ring-svg" viewBox="0 0 112 112">
+                    <defs>
+                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#dfc274" />
+                            <stop offset="100%" stop-color="#C5A859" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="progress-ring-bg" cx="56" cy="56" r="48" />
+                    <circle class="progress-ring-fill" id="progress-ring-fill" cx="56" cy="56" r="48"
+                            stroke-dasharray="301.59" stroke-dashoffset="301.59" />
+                </svg>
+                <div class="progress-ring-content">
+                    <span class="progress-percent-text" id="progress-percent">0%</span>
+                    <span class="progress-fraction-text" id="progress-fraction">0 من 5 صلوات</span>
+                </div>
+            </div>
+
+            <!-- Hero Center Info -->
+            <div class="tracker-hero-info">
+                <div class="tracker-hero-quote">
+                    <i class="fa-solid fa-mosque" aria-hidden="true"></i>
+                    <span id="tracker-quote-text">صلوات الفريضة الخمس</span>
+                </div>
+                <div class="tracker-hero-subquote" id="tracker-subquote-text">
+                    عماد الدين.. حافظ عليها في أوقاتها لتنال أجر الفريضة كاملاً.
+                </div>
+                <div class="tracker-badges-strip">
+                    <div class="streak-pill" title="سلسلة الأيام المتتالية التي أتممت فيها صلواتك الخمس">
+                        <i class="fa-solid fa-fire" aria-hidden="true"></i>
+                        <span>سلسلة الصلوات:</span>
+                        <strong id="streak-count">0 يوم</strong>
+                    </div>
+                    <div class="nawafil-pill" id="nawafil-summary-pill" title="مجموع السنن والأوراد الإضافية المنجزة اليوم">
+                        <i class="fa-solid fa-star" aria-hidden="true"></i>
+                        <span id="nawafil-count-text">0 سنن ونوافل مسجلة</span>
+                    </div>
+                    <div class="status-summary-pill">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                        <span>حفظ محلي فوري</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTIONS & CARDS ================= -->
+        <div class="tracker-sections-grid">
+
+            <!-- 1. الصلوات الخمس المفروضة (الأساس - مفتوحة دائماً وواضحة) -->
+            <section class="tracker-section-card" id="section-prayers">
+                <div class="section-header">
+                    <div class="section-title-wrap">
+                        <i class="fa-solid fa-mosque section-icon" aria-hidden="true"></i>
+                        <div>
+                            <h2 class="section-title">الصلوات الخمس المكتوبة</h2>
+                            <p class="section-sub">الصلوات المفروضة الواجبة على كل مسلم</p>
+                        </div>
+                    </div>
+                    <span class="section-counter-badge" id="badge-prayers" dir="ltr">0 / 5</span>
+                </div>
+
+                <div class="prayers-worship-list">
+                    <!-- Fajr -->
+                    <div class="prayer-worship-item" id="prayer-item-fajr">
+                        <div class="prayer-item-top">
+                            <span class="prayer-item-name"><i class="fa-solid fa-cloud-moon"></i> الفجر</span>
+                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                        </div>
+                        <div class="prayer-choice-group">
+                            <button type="button" class="prayer-choice-btn" data-prayer="fajr" data-choice="mosque" title="صليتها في المسجد جماعة">
+                                <i class="fa-solid fa-mosque"></i> في المسجد
+                            </button>
+                            <button type="button" class="prayer-choice-btn" data-prayer="fajr" data-choice="home" title="صليتها في البيت">
+                                <i class="fa-solid fa-house"></i> في البيت
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dhuhr -->
+                    <div class="prayer-worship-item" id="prayer-item-dhuhr">
+                        <div class="prayer-item-top">
+                            <span class="prayer-item-name"><i class="fa-regular fa-sun"></i> الظهر</span>
+                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                        </div>
+                        <div class="prayer-choice-group">
+                            <button type="button" class="prayer-choice-btn" data-prayer="dhuhr" data-choice="mosque" title="صليتها في المسجد جماعة">
+                                <i class="fa-solid fa-mosque"></i> في المسجد
+                            </button>
+                            <button type="button" class="prayer-choice-btn" data-prayer="dhuhr" data-choice="home" title="صليتها في البيت">
+                                <i class="fa-solid fa-house"></i> في البيت
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Asr -->
+                    <div class="prayer-worship-item" id="prayer-item-asr">
+                        <div class="prayer-item-top">
+                            <span class="prayer-item-name"><i class="fa-solid fa-cloud-sun"></i> العصر</span>
+                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                        </div>
+                        <div class="prayer-choice-group">
+                            <button type="button" class="prayer-choice-btn" data-prayer="asr" data-choice="mosque" title="صليتها في المسجد جماعة">
+                                <i class="fa-solid fa-mosque"></i> في المسجد
+                            </button>
+                            <button type="button" class="prayer-choice-btn" data-prayer="asr" data-choice="home" title="صليتها في البيت">
+                                <i class="fa-solid fa-house"></i> في البيت
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Maghrib -->
+                    <div class="prayer-worship-item" id="prayer-item-maghrib">
+                        <div class="prayer-item-top">
+                            <span class="prayer-item-name"><i class="fa-solid fa-moon"></i> المغرب</span>
+                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                        </div>
+                        <div class="prayer-choice-group">
+                            <button type="button" class="prayer-choice-btn" data-prayer="maghrib" data-choice="mosque" title="صليتها في المسجد جماعة">
+                                <i class="fa-solid fa-mosque"></i> في المسجد
+                            </button>
+                            <button type="button" class="prayer-choice-btn" data-prayer="maghrib" data-choice="home" title="صليتها في البيت">
+                                <i class="fa-solid fa-house"></i> في البيت
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Isha -->
+                    <div class="prayer-worship-item" id="prayer-item-isha">
+                        <div class="prayer-item-top">
+                            <span class="prayer-item-name"><i class="fa-solid fa-star-and-crescent"></i> العشاء</span>
+                            <span class="prayer-status-text">لم تُصلَّ بعد</span>
+                        </div>
+                        <div class="prayer-choice-group">
+                            <button type="button" class="prayer-choice-btn" data-prayer="isha" data-choice="mosque" title="صليتها في المسجد جماعة">
+                                <i class="fa-solid fa-mosque"></i> في المسجد
+                            </button>
+                            <button type="button" class="prayer-choice-btn" data-prayer="isha" data-choice="home" title="صليتها في البيت">
+                                <i class="fa-solid fa-house"></i> في البيت
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. السنن الرواتب والنوافل (قابلة للطي والفتح) -->
+            <section class="tracker-section-card collapsible" id="section-sunan">
+                <div class="section-header clickable">
+                    <div class="section-title-wrap">
+                        <i class="fa-solid fa-hands-praying section-icon" aria-hidden="true"></i>
+                        <div>
+                            <h2 class="section-title">السنن الرواتب والنوافل</h2>
+                            <p class="section-sub">ركعات مسنونة قربة لرب العالمين</p>
+                        </div>
+                    </div>
+                    <div class="section-header-actions">
+                        <span class="section-counter-badge" id="badge-sunan" dir="ltr">0 / 6</span>
+                        <div class="section-toggle-icon-wrap" aria-hidden="true">
+                            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-collapsible-body">
+                    <div class="habits-checklist-grid">
+                        <!-- سنة الفجر -->
+                        <div class="habit-check-card" data-habit="sunnah_fajr">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-cloud-moon habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">سنة الفجر</span>
+                                    <span class="habit-reward">ركعتان قبل الفجر • خير من الدنيا وما فيها</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- سنة الظهر -->
+                        <div class="habit-check-card" data-habit="sunnah_dhuhr">
+                            <div class="habit-info-side">
+                                <i class="fa-regular fa-sun habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">سنة الظهر</span>
+                                    <span class="habit-reward">4 ركعات قبل الظهر وركعتان بعدها</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- سنة المغرب -->
+                        <div class="habit-check-card" data-habit="sunnah_maghrib">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-moon habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">سنة المغرب</span>
+                                    <span class="habit-reward">ركعتان بعد صلاة المغرب</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- سنة العشاء -->
+                        <div class="habit-check-card" data-habit="sunnah_isha">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-star-and-crescent habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">سنة العشاء</span>
+                                    <span class="habit-reward">ركعتان بعد صلاة العشاء</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- صلاة الضحى -->
+                        <div class="habit-check-card" data-habit="duha">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-sun habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">صلاة الضحى</span>
+                                    <span class="habit-reward">ركعتان أو أكثر • صلاة الأوابين وصدقة عن المفاصل</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- قيام الليل والوتر -->
+                        <div class="habit-check-card" data-habit="witr">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-bed habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">قيام الليل والوتر</span>
+                                    <span class="habit-reward">شرف المؤمن ودأب الصالحين وقربة إلى الله</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. القرآن الكريم والذكر (قابلة للطي والفتح) -->
+            <section class="tracker-section-card collapsible" id="section-adhkar">
+                <div class="section-header clickable">
+                    <div class="section-title-wrap">
+                        <i class="fa-solid fa-book-quran section-icon" aria-hidden="true"></i>
+                        <div>
+                            <h2 class="section-title">القرآن الكريم والأذكار اليومية</h2>
+                            <p class="section-sub">ألا بذكر الله تطمئن القلوب</p>
+                        </div>
+                    </div>
+                    <div class="section-header-actions">
+                        <span class="section-counter-badge" id="badge-adhkar" dir="ltr">0 / 6</span>
+                        <div class="section-toggle-icon-wrap" aria-hidden="true">
+                            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-collapsible-body">
+                    <div class="habits-checklist-grid">
+                        <!-- Special Quran Card with Stepper -->
+                        <div class="quran-worship-card">
+                            <div class="quran-info-wrap">
+                                <i class="fa-solid fa-book-open habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">ورد القرآن الكريم اليومي</span>
+                                    <span class="habit-reward">سجل عدد الصفحات التي قرأتها اليوم</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <div class="quran-pages-stepper">
+                                    <button type="button" class="stepper-btn" id="btn-quran-minus" title="إنقاص صفحة">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                    <span class="stepper-value" id="quran-pages-count">0 صفحة</span>
+                                    <button type="button" class="stepper-btn" id="btn-quran-plus" title="زيادة صفحة">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <a href="quran.html" class="btn-open-quran" title="فتح المصحف الشريف للقراءة">
+                                    <i class="fa-solid fa-book-quran"></i>
+                                    <span>المصحف</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- أذكار الصباح -->
+                        <div class="habit-check-card" data-habit="azkar_morning">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-sun habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">أذكار الصباح</span>
+                                    <span class="habit-reward">حصن المسلم وبركة في بداية اليوم</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- أذكار المساء -->
+                        <div class="habit-check-card" data-habit="azkar_evening">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-moon habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">أذكار المساء</span>
+                                    <span class="habit-reward">حفظ وأمان وسكينة في ليلتك</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- أذكار النوم -->
+                        <div class="habit-check-card" data-habit="azkar_sleep">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-shield-halved habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">أذكار النوم وسورة الملك</span>
+                                    <span class="habit-reward">المنجية من عذاب القبر والحفظ حتى تصبح</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- الصلاة على النبي -->
+                        <div class="habit-check-card" data-habit="salawat">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-heart habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">الصلاة على النبي ﷺ (100 مرة)</span>
+                                    <span class="habit-reward">يكفى همك ويغفر ذنبك وتصلي عليك الملائكة</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- الاستغفار والتسبيح -->
+                        <div class="habit-check-card" data-habit="istighfar">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-gem habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">الاستغفار والتسبيح (100 مرة)</span>
+                                    <span class="habit-reward">مغفرة للذنوب وتفريج للكرب ومفاتيح للرزق</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. أعمال البر والخيرات اليومية (قابلة للطي والفتح) -->
+            <section class="tracker-section-card collapsible" id="section-deeds">
+                <div class="section-header clickable">
+                    <div class="section-title-wrap">
+                        <i class="fa-solid fa-hand-holding-heart section-icon" aria-hidden="true"></i>
+                        <div>
+                            <h2 class="section-title">أعمال البر والخيرات</h2>
+                            <p class="section-sub">وافعلوا الخير لعلكم تفلحون</p>
+                        </div>
+                    </div>
+                    <div class="section-header-actions">
+                        <span class="section-counter-badge" id="badge-deeds" dir="ltr">0 / 4</span>
+                        <div class="section-toggle-icon-wrap" aria-hidden="true">
+                            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-collapsible-body">
+                    <div class="habits-checklist-grid">
+                        <!-- صدقة اليوم -->
+                        <div class="habit-check-card" data-habit="sadaqah">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-hand-holding-dollar habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">صدقة اليوم</span>
+                                    <span class="habit-reward">ولو بشق تمرة أو إطعام طعام أو مساعدة محتاج</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- بر الوالدين وصلة الرحم -->
+                        <div class="habit-check-card" data-habit="birr_walidayn">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-people-roof habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">بر الوالدين وصلة الرحم</span>
+                                    <span class="habit-reward">اتصال أو زيارة أو دعاء لهما بظهر الغيب</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- صيام تطوع -->
+                        <div class="habit-check-card" data-habit="siyam_nafl">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-utensils habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">صيام نافلة (إن وجد)</span>
+                                    <span class="habit-reward">الاثنين والخميس أو الأيام البيض أو صيام تطوع</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+
+                        <!-- الكلمة الطيبة وحسن الخلق -->
+                        <div class="habit-check-card" data-habit="husn_khuluq">
+                            <div class="habit-info-side">
+                                <i class="fa-solid fa-face-smile habit-icon" aria-hidden="true"></i>
+                                <div class="habit-texts">
+                                    <span class="habit-title">الكلمة الطيبة وحسن الخلق</span>
+                                    <span class="habit-reward">تبسمك في وجه أخيك صدقة • أثقل ما يوضع في الميزان</span>
+                                </div>
+                            </div>
+                            <div class="habit-checkbox"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= BOTTOM ACTIONS ================= -->
+        <div class="tracker-bottom-actions">
+            <button type="button" class="btn-share-tracker" id="btn-share-tracker" title="مشاركة ملخص إنجاز اليوم">
+                <i class="fa-solid fa-share-nodes"></i>
+                <span>مشاركة إنجاز اليوم</span>
+            </button>
+            <button type="button" class="btn-reset-tracker" id="btn-reset-tracker" title="إعادة تعيين سجل هذا اليوم">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>إعادة تعيين اليوم</span>
+            </button>
+        </div>
+
+        <!-- ================= FOOTER ================= -->
+        <footer class="tracker-footer">
+            <div class="footer-container">
+                <div class="footer-copyright">
+                    جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
+                    تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                </div>
+                <div class="footer-visitor-box">
+                    <div class="visitor-counter-badge" title="إجمالي زوار الموقع">
+                        <i class="fa-solid fa-users" aria-hidden="true"></i>
+                        <span>زوار الموقع:</span>
+                        <span id="visitor-count">...</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="core/toast.js"></script>
+    <script src="core/pwa.js"></script>
+    <script src="core/visitor-counter.js"></script>
+    <script src="features/tracker/tracker.js?v=8"></script>
+</body>
+</html>

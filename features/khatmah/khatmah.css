@@ -1,0 +1,1282 @@
+/* features/khatmah/khatmah.css - التصميم الخاص بخطة الختمة الذكية
+ * تصميم فاخر وخاص بالقرآن الكريم - بدون بورديرات مزعجة وبأناقة زجاجية عصرية
+ * تطبيق قبلة المسلم - طور بواسطة كمال أبو عيد
+ */
+
+:root {
+    --gold: #C5A859;
+    --gold-light: #dfc274;
+    --gold-glow: rgba(197, 168, 89, 0.35);
+    --gold-subtle: rgba(197, 168, 89, 0.12);
+    --dark-bg: #090b0e;
+    --glass-card: rgba(13, 16, 23, 0.48);
+    --glass-card-hover: rgba(18, 22, 32, 0.65);
+    --glass-sub: rgba(255, 255, 255, 0.03);
+    --glass-sub-hover: rgba(255, 255, 255, 0.06);
+    --text-main: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.75);
+    --text-dim: rgba(255, 255, 255, 0.45);
+    --success: #2ecc71;
+    --success-glow: rgba(46, 204, 113, 0.35);
+    --success-bg: rgba(46, 204, 113, 0.12);
+    --top-rim: rgba(255, 255, 255, 0.07);
+}
+
+/* --- Luxury Golden Islamic Scrollbar --- */
+html, body, * {
+    scrollbar-width: thin;
+    scrollbar-color: #C5A859 rgba(12, 16, 23, 0.75);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(10, 13, 18, 0.7);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfc26e 0%, #C5A859 100%);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #f3de96;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Tajawal", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--dark-bg);
+    color: var(--text-main);
+    overflow-x: hidden;
+    min-height: 100vh;
+    direction: rtl;
+    text-align: right;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Fullscreen Background Carousel --- */
+.fullscreen-carousel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide.active { 
+    opacity: 1; 
+}
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 20%, rgba(11, 14, 20, 0.6) 0%, rgba(7, 9, 13, 0.84) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* --- Main Layout Container --- */
+.khatmah-app-container {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 16px 20px 60px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+}
+
+/* ================= 1. TOP HEADER (BORDERLESS & AIRY) ================= */
+.khatmah-top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 18px 4px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 50;
+    flex-wrap: wrap;
+    gap: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Clean, Floating Back Button */
+.tracker-back-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #e5e9f0;
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 6px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.tracker-back-btn i {
+    font-size: 16px;
+    color: var(--gold);
+    transition: transform 0.25s ease, color 0.25s ease;
+    background: transparent !important;
+}
+
+.tracker-back-btn:hover {
+    color: var(--gold-light);
+}
+
+.tracker-back-btn:hover i {
+    transform: translateX(4px);
+    color: #ffe082;
+    text-shadow: 0 0 10px rgba(255, 224, 130, 0.6);
+}
+
+/* Center Brand Badge */
+.tracker-center-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.3px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.tracker-center-badge i {
+    font-size: 21px;
+    color: var(--gold);
+    background: transparent !important;
+}
+
+/* Header Actions */
+.khatmah-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.header-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-top: 1px solid var(--top-rim);
+    border-radius: 22px;
+    color: var(--text-main);
+    padding: 8px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.25s ease;
+    user-select: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.header-action-btn i {
+    color: var(--gold);
+    font-size: 14px;
+    background: transparent !important;
+}
+
+.header-action-btn:hover {
+    background: rgba(197, 168, 89, 0.18);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.header-action-btn.btn-duaa {
+    background: rgba(46, 204, 113, 0.12);
+    color: #eafff2;
+}
+
+.header-action-btn.btn-duaa i {
+    color: var(--success);
+}
+
+.header-action-btn.btn-duaa:hover {
+    background: rgba(46, 204, 113, 0.22);
+}
+
+/* ================= 2. QURANIC HERO SANCTUARY (THE MIHRAB) ================= */
+.khatmah-hero-card {
+    background: var(--glass-card);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 28px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Soft golden aura at the top center */
+.khatmah-hero-card::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 320px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(197, 168, 89, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Traditional Calligraphy Verse */
+.hero-sacred-verse {
+    text-align: center;
+    font-family: 'Amiri', serif;
+    font-size: 21px;
+    color: var(--gold-light);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 14px rgba(197, 168, 89, 0.4);
+    user-select: none;
+}
+
+/* Main Hero Split: Left Dial & Right Insights */
+.hero-main-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 36px;
+    flex-wrap: wrap;
+}
+
+/* Astrolabe Progress Ring */
+.hero-dial-wrapper {
+    position: relative;
+    width: 136px;
+    height: 136px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.hero-dial-svg {
+    width: 136px;
+    height: 136px;
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 0 12px rgba(197, 168, 89, 0.25));
+}
+
+.hero-dial-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.06);
+    stroke-width: 9;
+}
+
+.hero-dial-fill {
+    fill: none;
+    stroke: url(#goldGradient);
+    stroke-width: 9;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hero-dial-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+}
+
+.hero-dial-percent {
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    text-shadow: 0 0 12px rgba(197, 168, 89, 0.5);
+}
+
+.hero-dial-pages {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+/* Hero Insights & Content Column */
+.hero-insights-col {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Target Preset Selector Strip (Directly inside Hero!) */
+.hero-preset-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hero-chip-btn {
+    background: var(--glass-sub);
+    border: none;
+    border-radius: 14px;
+    padding: 6px 13px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.hero-chip-btn:hover {
+    background: var(--glass-sub-hover);
+    color: #ffffff;
+}
+
+.hero-chip-btn.active {
+    background: var(--gold);
+    color: #0b0d11;
+    font-weight: 800;
+    box-shadow: 0 3px 12px rgba(197, 168, 89, 0.4);
+}
+
+/* Dynamic Encouragement / Pace Banner */
+.hero-status-ribbon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hero-pace-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 5px 13px;
+    border-radius: 14px;
+    background: var(--glass-sub);
+    color: var(--text-muted);
+}
+
+.hero-pace-pill.pace-ahead {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.hero-pace-pill.pace-ontrack {
+    background: var(--gold-subtle);
+    color: var(--gold-light);
+}
+
+.hero-pace-pill.pace-behind {
+    background: rgba(231, 76, 60, 0.14);
+    color: #ff6b6b;
+}
+
+.hero-headline-text {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.4;
+}
+
+.hero-subtext {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+/* Minimalist Stats Strip (NO BORDERS) */
+.hero-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.stat-capsule {
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 16px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s ease;
+}
+
+.stat-capsule:hover {
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.stat-capsule i {
+    font-size: 16px;
+    color: var(--gold);
+    background: transparent !important;
+}
+
+.stat-capsule.streak-capsule i {
+    color: #ff9800;
+}
+
+.stat-capsule-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-capsule-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+.stat-capsule-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+/* ================= 3. SECTIONS COMMON ARCHITECTURE ================= */
+.khatmah-deck {
+    background: var(--glass-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 26px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s ease;
+}
+
+.deck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.deck-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.deck-title-group i {
+    font-size: 20px;
+    color: var(--gold);
+    background: transparent !important;
+}
+
+.deck-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--gold);
+    margin: 0;
+    letter-spacing: 0.2px;
+}
+
+.deck-badge {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--glass-sub);
+    padding: 5px 12px;
+    border-radius: 12px;
+}
+
+/* ================= 4. TODAY'S PRAYER-DISTRIBUTED WIRD ================= */
+.today-progress-bar-wrap {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    height: 6px;
+    width: 100%;
+    margin-bottom: 18px;
+    overflow: hidden;
+    position: relative;
+}
+
+.today-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold) 0%, var(--success) 100%);
+    border-radius: 12px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+/* Prayer Journey Ribbon (5 Prayer Stops) */
+.prayer-journey-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+.prayer-stop-tile {
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 20px;
+    padding: 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.prayer-stop-tile:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.prayer-stop-tile.completed {
+    background: rgba(46, 204, 113, 0.08);
+}
+
+.stop-top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stop-prayer-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.stop-prayer-title i {
+    font-size: 15px;
+    color: var(--gold);
+    background: transparent !important;
+}
+
+/* Clean circular toggle button without box borders */
+.stop-toggle-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: transparent;
+    font-size: 12px;
+    transition: all 0.25s ease;
+    outline: none;
+}
+
+.stop-toggle-btn:hover {
+    background: rgba(197, 168, 89, 0.25);
+    color: var(--gold-light);
+}
+
+.prayer-stop-tile.completed .stop-toggle-btn {
+    background: var(--success);
+    color: #ffffff;
+    box-shadow: 0 0 12px var(--success-glow);
+}
+
+.stop-meta-line {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stop-pages-tag {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gold-light);
+}
+
+.stop-surah-tag {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Amiri', serif;
+}
+
+.stop-actions-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.stop-read-action {
+    color: var(--gold);
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s ease;
+}
+
+.stop-read-action:hover {
+    color: #ffe082;
+}
+
+.stop-state-label {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+.prayer-stop-tile.completed .stop-state-label {
+    color: var(--success);
+    font-weight: 700;
+}
+
+/* Today All Done Celebration */
+.today-congrats-card {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.16) 0%, rgba(197, 168, 89, 0.1) 100%);
+    border-radius: 20px;
+    padding: 16px 22px;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    animation: fadeIn 0.4s ease;
+}
+
+.today-congrats-card i {
+    font-size: 26px;
+    color: var(--success);
+    background: transparent !important;
+}
+
+/* ================= 5. INTERACTIVE PAGE LOGGER & BOOKMARK ================= */
+.logger-deck-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.logger-primary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.logger-bookmark-display {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.bookmark-page-large {
+    font-size: 46px;
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    text-shadow: 0 0 18px rgba(197, 168, 89, 0.45);
+}
+
+.bookmark-meta-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.bookmark-meta-title {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.bookmark-surah-calligraphy {
+    font-family: 'Amiri', serif;
+    font-size: 17px;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.bookmark-juz-title {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+}
+
+/* Floating Stepper Buttons (BORDERLESS FROSTED PEBBLES) */
+.logger-pebbles-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pebble-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 13.5px;
+    font-weight: 800;
+    font-family: inherit;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.pebble-btn:hover {
+    background: rgba(197, 168, 89, 0.22);
+    color: var(--gold-light);
+    transform: translateY(-2px);
+}
+
+.pebble-btn.pebble-gold {
+    color: var(--gold-light);
+}
+
+.pebble-btn:active {
+    transform: translateY(0);
+}
+
+/* Slider Track */
+.logger-slider-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-range-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.page-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
+    cursor: pointer;
+    border: 2.5px solid #ffffff;
+    transition: transform 0.15s ease;
+}
+
+.page-range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.page-range-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
+    cursor: pointer;
+    border: 2.5px solid #ffffff;
+}
+
+/* Direct Page Input Group (Clean & minimal) */
+.logger-input-jump {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-clean-input {
+    width: 76px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 12px;
+    padding: 8px 10px;
+    color: #ffffff;
+    font-size: 14.5px;
+    font-weight: 800;
+    text-align: center;
+    font-family: inherit;
+    outline: none;
+    transition: background 0.2s;
+}
+
+.page-clean-input:focus {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-jump-action {
+    background: var(--gold);
+    color: #0b0d11;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-jump-action:hover {
+    background: var(--gold-light);
+    transform: translateY(-1px);
+}
+
+/* ================= 6. THE 30 JUZ' CONSTELLATION ================= */
+.juz-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.juz-filter-btn {
+    background: var(--glass-sub);
+    border: none;
+    border-radius: 12px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.juz-filter-btn:hover {
+    background: var(--glass-sub-hover);
+    color: #ffffff;
+}
+
+.juz-filter-btn.active {
+    background: rgba(197, 168, 89, 0.2);
+    color: var(--gold-light);
+}
+
+.juz-mosaic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 10px;
+}
+
+.juz-tile {
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.juz-tile:hover {
+    background: rgba(255, 255, 255, 0.055);
+    transform: translateY(-2px);
+}
+
+.juz-tile.completed {
+    background: rgba(46, 204, 113, 0.08);
+}
+
+.juz-tile.in-progress {
+    background: rgba(197, 168, 89, 0.1);
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.15);
+}
+
+.juz-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.juz-tile-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.juz-tile.in-progress .juz-tile-title {
+    color: var(--gold-light);
+}
+
+.juz-tile-name {
+    font-family: 'Amiri', serif;
+    font-size: 13px;
+    color: var(--gold);
+}
+
+.juz-tile-pages {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.juz-progress-line {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.juz-progress-line-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+.juz-tile.completed .juz-progress-line-fill {
+    background: var(--success);
+}
+
+/* ================= 7. KHATMAH HISTORY & RESTART ================= */
+.khatmah-history-deck {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-item-tile {
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 16px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.history-left-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.history-left-info i {
+    font-size: 18px;
+    color: var(--gold);
+    background: transparent !important;
+}
+
+.empty-history-clean {
+    text-align: center;
+    padding: 24px 12px;
+    color: var(--text-muted);
+    font-size: 13.5px;
+}
+
+/* ================= 8. MODALS (LUXURY GLASS ARCHITECTURE) ================= */
+.khatmah-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.khatmah-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.khatmah-modal-card {
+    background: rgba(14, 18, 26, 0.88);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.khatmah-modal-backdrop.active .khatmah-modal-card {
+    transform: scale(1);
+}
+
+.modal-header-clean {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-header-clean h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-header-clean h3 i {
+    background: transparent !important;
+}
+
+.modal-close-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s;
+    outline: none;
+}
+
+.modal-close-icon:hover {
+    color: #ffffff;
+}
+
+.modal-body-scrollable {
+    padding: 20px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.preset-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.preset-card-choice {
+    background: rgba(255, 255, 255, 0.035);
+    border-radius: 16px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.preset-card-choice:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.preset-card-choice.selected {
+    background: rgba(197, 168, 89, 0.18);
+    box-shadow: 0 0 16px rgba(197, 168, 89, 0.25);
+}
+
+.preset-card-choice strong {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.preset-card-choice.selected strong {
+    color: var(--gold-light);
+}
+
+.preset-card-choice span {
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.modal-footer-clean {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ================= 9. TOAST NOTIFICATION ================= */
+.toast-msg {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    background: rgba(14, 18, 26, 0.94);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999999;
+}
+
+.toast-msg.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast-msg i {
+    color: var(--gold);
+    font-size: 16px;
+    background: transparent !important;
+}
+
+/* ================= 10. RESPONSIVE BREAKPOINTS ================= */
+@media (max-width: 768px) {
+    .khatmah-app-container {
+        padding: 12px 14px 40px 14px;
+    }
+
+    .khatmah-top-header {
+        padding: 6px 2px 14px 2px;
+        gap: 10px;
+    }
+
+    .tracker-center-badge {
+        font-size: 18px;
+    }
+
+    .khatmah-hero-card {
+        padding: 20px 18px;
+        border-radius: 22px;
+    }
+
+    .hero-sacred-verse {
+        font-size: 18px;
+    }
+
+    .hero-main-layout {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .hero-insights-col {
+        align-items: center;
+    }
+
+    .hero-preset-chips {
+        justify-content: center;
+    }
+
+    .hero-status-ribbon {
+        justify-content: center;
+    }
+
+    .hero-stats-row {
+        width: 100%;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .khatmah-deck {
+        padding: 18px 16px;
+        border-radius: 20px;
+    }
+
+    .logger-primary-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .logger-pebbles-group {
+        justify-content: center;
+    }
+
+    .preset-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}

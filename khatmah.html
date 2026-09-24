@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>خطة الختمة الذكية - قبلة المسلم</title>
+
+    <!-- SEO & Open Graph Tags -->
+    <meta name="description" content="خطة الختمة الذكية في تطبيق قبلة المسلم: جدول تفاعلي فاخر لختم القرآن الكريم مع مسار الصلوات الخمس ومتابعة الأجزاء.">
+    <meta name="keywords" content="ختمة القرآن, جدول الختمة, ختم القرآن في شهر, ورد اليوم, قبلة المسلم, مصحف, سور القرآن, أجزاء القرآن">
+    <meta name="author" content="كمال أبو عيد">
+    <meta property="og:title" content="خطة الختمة الذكية - قبلة المسلم">
+    <meta property="og:description" content="جدول ذكي وتفاعلي لختم القرآن الكريم مقسم بعد كل صلاة مع حلقة إنجاز ذهبية ومسار للأجزاء الـ 30.">
+    <meta property="og:image" content="assets/bg1.jpg">
+    <link rel="preload" as="image" href="assets/bg1.jpg">
+    <script src="core/player-bridge.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/mosque.svg">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C5A859">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <link rel="stylesheet" href="features/khatmah/khatmah.css?v=2">
+    <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=7">
+</head>
+<body>
+
+    <!-- Fullscreen Background Carousel -->
+    <div class="fullscreen-carousel">
+        <div class="carousel-slide active" style="background-image: url('assets/bg1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('assets/bg3.jpg');"></div>
+        <div class="carousel-overlay"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="khatmah-app-container">
+
+        <!-- Top Header (Clean back button, Title, Action Buttons) -->
+        <header class="khatmah-top-header">
+            <a href="home.html" class="tracker-back-btn" id="khatmah-back-btn" title="العودة للمواقيت">
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                <span>العودة للمواقيت</span>
+            </a>
+
+            <div class="tracker-center-badge">
+                <i class="fa-solid fa-book-bookmark" aria-hidden="true"></i>
+                <span>خطة الختمة الذكية</span>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="khatmah-header-actions">
+                <button type="button" class="header-action-btn" id="btn-open-plan-settings" title="تعديل مدة الختمة وتوزيع الورد">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                    <span>تعديل الخطة</span>
+                </button>
+                <button type="button" class="header-action-btn btn-duaa" id="btn-open-duaa-modal" title="قراءة دعاء ختم القرآن الكريم">
+                    <i class="fa-solid fa-hands-praying" aria-hidden="true"></i>
+                    <span>دعاء الختم</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ================= 2. QURANIC HERO SANCTUARY (THE MIHRAB) ================= -->
+        <section class="khatmah-hero-card" aria-label="لوحة إنجاز الختمة">
+            <div class="hero-sacred-verse">
+                ﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾
+            </div>
+
+            <div class="hero-main-layout">
+                <!-- Astrolabe Progress Dial -->
+                <div class="hero-dial-wrapper">
+                    <svg class="hero-dial-svg" viewBox="0 0 120 120">
+                        <defs>
+                            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#dfc274" />
+                                <stop offset="100%" stop-color="#C5A859" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="hero-dial-bg" cx="60" cy="60" r="50" />
+                        <circle class="hero-dial-fill" id="progress-ring-fill" cx="60" cy="60" r="50"
+                                stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+                    </svg>
+                    <div class="hero-dial-center">
+                        <span class="hero-dial-percent" id="progress-percent">0%</span>
+                        <span class="hero-dial-pages" id="progress-fraction">0 من 604 ص</span>
+                    </div>
+                </div>
+
+                <!-- Insights & Plan Controls Column -->
+                <div class="hero-insights-col">
+                    <!-- Quick Target Switching Chips -->
+                    <div class="hero-preset-chips" id="hero-preset-chips">
+                        <button type="button" class="hero-chip-btn active" data-plan="30">ختمة 30 يوماً (جزء)</button>
+                        <button type="button" class="hero-chip-btn" data-plan="15">15 يوماً (جزأين)</button>
+                        <button type="button" class="hero-chip-btn" data-plan="10">10 أيام (3 أجزاء)</button>
+                        <button type="button" class="hero-chip-btn" data-plan="60">60 يوماً (نصف جزء)</button>
+                    </div>
+
+                    <!-- Dynamic Pace Ribbon -->
+                    <div class="hero-status-ribbon">
+                        <div class="hero-headline-text" id="hero-quote-text">
+                            تلاوة مباركة وثبات يومي على الورد ✨
+                        </div>
+                        <div class="hero-pace-pill pace-ontrack" id="hero-pace-badge">
+                            <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+                            <span>ملتزم بالخطة تماماً</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-subtext" id="hero-subquote-text">
+                        استمرارك اليومي خير من كثير ينقطع، بوركت همتك وحفظك الله.
+                    </div>
+
+                    <!-- Minimalist Stats Capsules (No harsh borders) -->
+                    <div class="hero-stats-row">
+                        <div class="stat-capsule streak-capsule" title="سلسلة الأيام المتتالية">
+                            <i class="fa-solid fa-fire" aria-hidden="true"></i>
+                            <div class="stat-capsule-info">
+                                <span class="stat-capsule-label">سلسلة الالتزام</span>
+                                <span class="stat-capsule-value" id="streak-count-text">0 يوم</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-capsule" title="الأيام المتبقية للختم">
+                            <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+                            <div class="stat-capsule-info">
+                                <span class="stat-capsule-label">المتبقي للختم</span>
+                                <span class="stat-capsule-value" id="days-left-text">30 يوماً</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-capsule" title="الجزء الحالي">
+                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                            <div class="stat-capsule-info">
+                                <span class="stat-capsule-label">الجزء الحالي</span>
+                                <span class="stat-capsule-value" id="current-juz-badge-text">الجزء 1</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-capsule" title="معدل القراءة اليومي المطلوب">
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                            <div class="stat-capsule-info">
+                                <span class="stat-capsule-label">المعدل اليومي</span>
+                                <span class="stat-capsule-value" id="daily-rate-badge-text">20 ص / يوم</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 3. TODAY'S PRAYER WIRD RIBBON ================= -->
+        <section class="khatmah-deck" id="section-today-wird" aria-label="ورد اليوم">
+            <div class="deck-header">
+                <div class="deck-title-group">
+                    <i class="fa-solid fa-calendar-day" aria-hidden="true"></i>
+                    <h2 class="deck-title">ورد اليوم الموزع على الصلوات</h2>
+                </div>
+                <div class="deck-badge" id="today-wird-pages-range">
+                    من ص 1 إلى ص 20 (20 صفحة)
+                </div>
+            </div>
+
+            <!-- Daily Wird Completion Bar -->
+            <div class="today-progress-bar-wrap" title="نسبة إنجاز ورد اليوم">
+                <div class="today-progress-bar-fill" id="today-progress-bar-fill"></div>
+            </div>
+
+            <!-- Prayer Journey Grid (5 Connected Prayer Stops) -->
+            <div class="prayer-journey-grid" id="prayer-slots-grid">
+                <!-- يُنشأ برمجياً عبر khatmah.js -->
+            </div>
+
+            <!-- Today All Done Celebration -->
+            <div class="today-congrats-card" id="today-all-done-banner" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    <div>
+                        <strong style="font-size: 15px; color: #fff; display: block;">هنيئاً لك! أتممت كامل ورد اليوم بحمد الله ✨</strong>
+                        <span style="font-size: 12.5px; color: var(--text-muted);">تقبل الله طاعتك وثبتك على دوام تلاوة كتابه الكريم.</span>
+                    </div>
+                </div>
+                <button type="button" class="header-action-btn" onclick="openDuaaModal();">
+                    <i class="fa-solid fa-hands-praying"></i>
+                    <span>دعاء ختم القرآن</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= 4. INTERACTIVE BOOKMARK & PAGE TURNER ================= -->
+        <section class="khatmah-deck" id="section-page-logger" aria-label="محدث الصفحة السريع">
+            <div class="deck-header">
+                <div class="deck-title-group">
+                    <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
+                    <h2 class="deck-title">موضع تلاوتك الآن</h2>
+                </div>
+                <div class="deck-badge">
+                    سجل موضعك في المصحف فوراً
+                </div>
+            </div>
+
+            <div class="logger-deck-layout">
+                <div class="logger-primary-row">
+                    <!-- Bookmark Large Display -->
+                    <div class="logger-bookmark-display">
+                        <span class="bookmark-page-large" id="current-page-num-hero">0</span>
+                        <div class="bookmark-meta-col">
+                            <span class="bookmark-meta-title">الصفحة المقروءة</span>
+                            <span class="bookmark-surah-calligraphy" id="current-page-surah-info">سورة الفاتحة</span>
+                            <span class="bookmark-juz-title" id="current-page-juz-info">الجزء 1 (الم)</span>
+                        </div>
+                    </div>
+
+                    <!-- Frosted Stepper Pebbles -->
+                    <div class="logger-pebbles-group">
+                        <button type="button" class="pebble-btn" data-delta="-10" title="الرجوع 10 صفحات">-10</button>
+                        <button type="button" class="pebble-btn" data-delta="-5" title="الرجوع 5 صفحات">-5</button>
+                        <button type="button" class="pebble-btn" data-delta="-1" title="الرجوع صفحة واحدة">-1</button>
+                        <button type="button" class="pebble-btn pebble-gold" data-delta="1" title="تقدم صفحة واحدة">+1</button>
+                        <button type="button" class="pebble-btn pebble-gold" data-delta="5" title="تقدم 5 صفحات">+5</button>
+                        <button type="button" class="pebble-btn pebble-gold" data-delta="10" title="تقدم 10 صفحات">+10</button>
+                    </div>
+
+                    <!-- Direct Page Input -->
+                    <div class="logger-input-jump">
+                        <input type="number" id="page-num-input" class="page-clean-input" min="0" max="604" placeholder="ص" aria-label="رقم الصفحة">
+                        <button type="button" id="btn-jump-page" class="btn-jump-action">تحديث</button>
+                    </div>
+                </div>
+
+                <!-- Range Slider -->
+                <div class="logger-slider-bar">
+                    <span style="font-size: 11.5px; color: var(--text-dim); font-weight: 700;">ص 1</span>
+                    <input type="range" id="page-range-slider" class="page-range-slider" min="0" max="604" value="0" aria-label="شريط تصفح صفحات المصحف">
+                    <span style="font-size: 11.5px; color: var(--text-dim); font-weight: 700;">ص 604</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 5. THE 30 JUZ' CONSTELLATION ================= -->
+        <section class="khatmah-deck" id="section-juz-roadmap" aria-label="أجزاء القرآن الـ 30">
+            <div class="deck-header">
+                <div class="deck-title-group">
+                    <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+                    <h2 class="deck-title">خارطة الأجزاء الـ 30</h2>
+                </div>
+                <!-- Filter buttons -->
+                <div class="juz-filter-row" id="juz-filter-row">
+                    <button type="button" class="juz-filter-btn active" data-filter="all">جميع الأجزاء</button>
+                    <button type="button" class="juz-filter-btn" data-filter="completed">المكتملة</button>
+                    <button type="button" class="juz-filter-btn" data-filter="remaining">المتبقية</button>
+                </div>
+            </div>
+
+            <div class="juz-mosaic-grid" id="juz-roadmap-grid">
+                <!-- يُنشأ برمجياً عبر khatmah.js -->
+            </div>
+        </section>
+
+        <!-- ================= 6. KHATMAH HISTORY & ARCHIVE ================= -->
+        <section class="khatmah-deck" id="section-khatmah-history" aria-label="سجل الختمات السابقة">
+            <div class="deck-header">
+                <div class="deck-title-group">
+                    <i class="fa-solid fa-award" aria-hidden="true"></i>
+                    <h2 class="deck-title">سجل الختمات السابقة</h2>
+                </div>
+                <button type="button" class="header-action-btn" id="btn-restart-khatmah" title="بدء ختمة جديدة مع أرشفة السابقة">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>بدء ختمة جديدة</span>
+                </button>
+            </div>
+
+            <div class="khatmah-history-deck" id="khatmah-history-list">
+                <!-- يُنشأ برمجياً عبر khatmah.js -->
+            </div>
+        </section>
+
+        <!-- Clean Footer -->
+        <footer style="margin-top: 32px; text-align: center; padding: 20px 0 10px 0; color: var(--text-dim); font-size: 13px;">
+            <div style="margin-bottom: 6px;">
+                جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم
+            </div>
+            <div>
+                تم التطوير بعناية فائقة بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ================= PLAN SETTINGS MODAL ================= -->
+    <div class="khatmah-modal-backdrop" id="plan-settings-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="khatmah-modal-card">
+            <div class="modal-header-clean">
+                <h3><i class="fa-solid fa-sliders"></i> تخصيص خطة الختمة</h3>
+                <button type="button" class="modal-close-icon" id="btn-close-plan-settings" aria-label="إغلاق">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-scrollable">
+                <span style="font-size: 13px; color: var(--text-muted);">اختر المدة الزمنية الأنسب لظروفك اليومية، أو حدد مدة خاصة:</span>
+
+                <div class="preset-cards-grid">
+                    <div class="preset-card-choice" data-days="10">
+                        <strong>ختمة في 10 أيام</strong>
+                        <span>3 أجزاء (60 صفحة يومياً)</span>
+                    </div>
+                    <div class="preset-card-choice" data-days="15">
+                        <strong>ختمة في 15 يوماً</strong>
+                        <span>جزأين (40 صفحة يومياً)</span>
+                    </div>
+                    <div class="preset-card-choice selected" data-days="30">
+                        <strong>ختمة في 30 يوماً</strong>
+                        <span>جزء واحد (20 صفحة يومياً - موصى به)</span>
+                    </div>
+                    <div class="preset-card-choice" data-days="60">
+                        <strong>ختمة في 60 يوماً</strong>
+                        <span>نصف جزء (10 صفحات يومياً)</span>
+                    </div>
+                    <div class="preset-card-choice" data-days="custom" style="grid-column: span 2;">
+                        <strong>مدة مخصصة</strong>
+                        <span>حدد عدد الأيام أو صفحات البداية</span>
+                    </div>
+                </div>
+
+                <!-- Custom Days Input -->
+                <div id="custom-days-group" style="display: none; flex-direction: column; gap: 8px;">
+                    <label style="font-size: 13px; color: var(--gold-light); font-weight: 700;">عدد الأيام المطلوب للختم:</label>
+                    <input type="number" id="input-custom-days" class="page-clean-input" style="width: 100%; text-align: right; padding: 10px 14px;" min="1" max="365" value="45" placeholder="أدخل عدد الأيام (مثلاً 45)">
+                </div>
+
+                <!-- Start Page Option -->
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                    <label style="font-size: 13px; color: var(--text-muted); font-weight: 700;">بدء الخطة من صفحة معينة في المصحف (اختياري):</label>
+                    <input type="number" id="input-start-page" class="page-clean-input" style="width: 100%; text-align: right; padding: 10px 14px;" min="0" max="604" placeholder="الصفحة الحالية (0 للبدء من أول المصحف)">
+                </div>
+            </div>
+
+            <div class="modal-footer-clean">
+                <button type="button" class="header-action-btn" id="btn-cancel-plan">إلغاء</button>
+                <button type="button" class="btn-jump-action" id="btn-save-plan" style="padding: 9px 22px;">تطبيق الخطة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DUAA KHATM AL-QURAN MODAL ================= -->
+    <div class="khatmah-modal-backdrop" id="duaa-khatm-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="khatmah-modal-card" style="max-width: 620px;">
+            <div class="modal-header-clean">
+                <h3><i class="fa-solid fa-hands-praying" style="color: var(--success);"></i> دعاء ختم القرآن الكريم</h3>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" class="header-action-btn" id="btn-copy-duaa" title="نسخ الدعاء" style="padding: 5px 12px; font-size: 12px;">
+                        <i class="fa-solid fa-copy"></i> <span>نسخ</span>
+                    </button>
+                    <button type="button" class="pebble-btn" id="btn-duaa-zoom-in" title="تكبير الخط" style="padding: 4px 10px; font-size: 13px;">A+</button>
+                    <button type="button" class="pebble-btn" id="btn-duaa-zoom-out" title="تصغير الخط" style="padding: 4px 10px; font-size: 13px;">A-</button>
+                    <button type="button" class="modal-close-icon" id="btn-close-duaa-modal" aria-label="إغلاق">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-body-scrollable" style="line-height: 2.2; font-family: 'Amiri', serif; font-size: 18px; color: #f4f6f9; text-align: justify;" id="duaa-text-body">
+                <p style="text-align: center; color: var(--gold); font-size: 20px; font-weight: 700; margin-bottom: 12px;">
+                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                </p>
+                <p>
+                    اللَّهُمَّ ارْحَمْنِي بِالقُرْآنِ، وَاجْعَلْهُ لِي إِمَاماً وَنُوراً وَهُدًى وَرَحْمَةً. اللَّهُمَّ ذَكِّرْنِي مِنْهُ مَا نَسِيتُ، وَعَلِّمْنِي مِنْهُ مَا جَهِلْتُ، وَارْزُقْنِي تِلاَوَتَهُ آنَاءَ اللَّيْلِ وَأَطْرَافَ النَّهَارِ، وَاجْعَلْهُ لِي حُجَّةً يَا رَبَّ العَالَمِينَ.
+                </p>
+                <p>
+                    اللَّهُمَّ أَصْلِحْ لِي دِينِي الَّذِي هُوَ عِصْمَةُ أَمْرِي، وَأَصْلِحْ لِي دُنْيَايَ الَّتِي فِيهَا مَعَاشِي، وَأَصْلِحْ لِي آخِرَتِي الَّتِي فِيهَا مَعَادِي، وَاجْعَلِ الحَيَاةَ زِيَادَةً لِي فِي كُلِّ خَيْرٍ، وَاجْعَلِ المَوْتَ رَاحَةً لِي مِنْ كُلِّ شَرٍّ.
+                </p>
+                <p>
+                    اللَّهُمَّ اجْعَلْ خَيْرَ عُمْرِي آخِرَهُ، وَخَيْرَ عَمَلِي خَوَاتِمَهُ، وَخَيْرَ أَيَّامِي يَوْمَ أَلْقَاكَ فِيهِ. اللَّهُمَّ إِنِّي أَسْأَلُكَ عِيشَةً هَنِيَّةً، وَمِيتَةً سَوِيَّةً، وَمَرَدّاً غَيْرَ مُخْزٍ وَلاَ فَاضِحٍ.
+                </p>
+                <p>
+                    اللَّهُمَّ لاَ تَدَعْ لَنَا ذَنْباً إِلاَّ غَفَرْتَهُ، وَلاَ هَمّاً إِلاَّ فَرَّجْتَهُ، وَلاَ دَيْناً إِلاَّ قَضَيْتَهُ، وَلاَ حَاجَةً مِنْ حَوَائِجِ الدُّنْيَا وَالآخِرَةِ هِيَ لَكَ رِضاً وَلَنَا فِيهَا صَلاَحٌ إِلاَّ قَضَيْتَهَا يَا أَرْحَمَ الرَّاحِمِينَ.
+                </p>
+                <p style="text-align: center; color: var(--gold-light); margin-top: 14px;">
+                    رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ، وَصَلَّى اللهُ عَلَى نَبِيِّنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ وَسَلَّمَ تَسْلِيماً كَثِيراً.
+                </p>
+            </div>
+
+            <div class="modal-footer-clean">
+                <button type="button" class="btn-jump-action" onclick="document.getElementById('duaa-khatm-modal').classList.remove('active');">آمين يا رب العالمين</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-msg" class="toast-msg" role="status" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="features/radial-nav/radial-nav.js?v=7"></script>
+    <script src="features/khatmah/khatmah.js?v=2"></script>
+</body>
+</html>

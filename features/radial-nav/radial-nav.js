@@ -11,6 +11,7 @@
     const PRIMARY_PAGES = [
         { id: 'home', title: 'المواقيت', url: 'home.html', icon: 'fa-solid fa-clock' },
         { id: 'tracker', title: 'متابعة العبادات', url: 'tracker.html', icon: 'fa-solid fa-calendar-check' },
+        { id: 'khatmah', title: 'خطة الختمة', url: 'khatmah.html', icon: 'fa-solid fa-book-bookmark' },
         { id: 'quran', title: 'المصحف الشريف', url: 'quran.html', icon: 'fa-solid fa-book-quran' },
         { id: 'azkar', title: 'الأذكار اليومية', url: 'azkar.html', icon: 'fa-solid fa-hands-praying' },
         { id: 'azkar_sm', title: 'الصباح والمساء', url: 'azkar.html?m=sm', icon: 'fa-solid fa-sun' },

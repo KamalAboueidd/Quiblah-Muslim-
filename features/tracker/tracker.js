@@ -202,54 +202,100 @@
     }
 
     // ================= التقويم التفاعلي (Interactive Calendar Popup) =================
+    let isCalendarPinned = false;
+
+    // فتح التقويم المنبثق
+    function openCalendar(pinned = false) {
+        const triggerBadge = document.getElementById('btn-today-reset');
+        const popup = document.getElementById('calendar-dropdown-popup');
+        const backdropOverlay = document.getElementById('calendar-backdrop-blur');
+
+        if (!triggerBadge || !popup) return;
+
+        if (calCloseTimeout) {
+            clearTimeout(calCloseTimeout);
+            calCloseTimeout = null;
+        }
+
+        if (pinned) {
+            isCalendarPinned = true;
+        }
+
+        // ضبط شهر العرض على الشهر المختار حالياً
+        const parts = currentDateKey.split('-');
+        calViewYear = parseInt(parts[0], 10);
+        calViewMonth = parseInt(parts[1], 10) - 1;
+        renderCalendarGrid();
+
+        popup.classList.add('show');
+        popup.setAttribute('aria-hidden', 'false');
+        triggerBadge.classList.add('cal-active');
+        document.body.classList.add('calendar-open');
+
+        if (backdropOverlay) {
+            backdropOverlay.classList.add('show');
+            backdropOverlay.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    // إغلاق التقويم المنبثق
+    function closeCalendar(force = false) {
+        if (isCalendarPinned && !force) return;
+
+        if (calCloseTimeout) {
+            clearTimeout(calCloseTimeout);
+            calCloseTimeout = null;
+        }
+
+        isCalendarPinned = false;
+        const triggerBadge = document.getElementById('btn-today-reset');
+        const popup = document.getElementById('calendar-dropdown-popup');
+        const backdropOverlay = document.getElementById('calendar-backdrop-blur');
+
+        if (popup) {
+            popup.classList.remove('show');
+            popup.setAttribute('aria-hidden', 'true');
+        }
+        if (triggerBadge) {
+            triggerBadge.classList.remove('cal-active');
+        }
+        document.body.classList.remove('calendar-open');
+
+        if (backdropOverlay) {
+            backdropOverlay.classList.remove('show');
+            backdropOverlay.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    // جدولة إغلاق التقويم مع مهلة كافية لمنع الإغلاق المفاجئ أثناء حركة الماوس
+    function scheduleCalendarClose() {
+        if (isCalendarPinned) return;
+        if (calCloseTimeout) clearTimeout(calCloseTimeout);
+        calCloseTimeout = setTimeout(() => {
+            closeCalendar(true);
+        }, 380);
+    }
+
     function setupCalendarDropdown() {
         const navContainer = document.getElementById('tracker-date-navigator');
         const triggerBadge = document.getElementById('btn-today-reset');
         const popup = document.getElementById('calendar-dropdown-popup');
+        const backdropOverlay = document.getElementById('calendar-backdrop-blur');
         const prevMonthBtn = document.getElementById('cal-prev-month');
         const nextMonthBtn = document.getElementById('cal-next-month');
         const jumpTodayBtn = document.getElementById('cal-jump-today');
 
         if (!triggerBadge || !popup) return;
 
-        // فتح التقويم
-        function openCalendar() {
-            if (calCloseTimeout) {
-                clearTimeout(calCloseTimeout);
-                calCloseTimeout = null;
-            }
-            // ضبط شهر العرض على الشهر المختار حالياً
-            const parts = currentDateKey.split('-');
-            calViewYear = parseInt(parts[0], 10);
-            calViewMonth = parseInt(parts[1], 10) - 1;
-            renderCalendarGrid();
-            popup.classList.add('show');
-            popup.setAttribute('aria-hidden', 'false');
-            triggerBadge.classList.add('cal-active');
-        }
-
-        // إغلاق التقويم
-        function closeCalendar() {
-            popup.classList.remove('show');
-            popup.setAttribute('aria-hidden', 'true');
-            triggerBadge.classList.remove('cal-active');
-        }
-
-        // إغلاق مع مهلة للتنقل السلس بالماوس
-        function scheduleClose() {
-            calCloseTimeout = setTimeout(() => {
-                closeCalendar();
-            }, 250);
-        }
-
-        // سلوك الـ Hover (كما طلب كمال)
+        // سلوك الـ Hover السريع (يفتح فور تمرير الماوس على اليوم)
         triggerBadge.addEventListener('mouseenter', () => {
-            openCalendar();
+            openCalendar(false);
         });
         triggerBadge.addEventListener('mouseleave', () => {
-            scheduleClose();
+            scheduleCalendarClose();
         });
 
+        // عند دخول الماوس لمنطقة التقويم يظل مفتوحاً
         popup.addEventListener('mouseenter', () => {
             if (calCloseTimeout) {
                 clearTimeout(calCloseTimeout);
@@ -257,25 +303,50 @@
             }
         });
         popup.addEventListener('mouseleave', () => {
-            scheduleClose();
+            scheduleCalendarClose();
         });
 
-        // سلوك النقر (Toggle) للتابلت والموبايل
+        // منع إغلاق التقويم إذا تحرك الماوس ضمن حاوية التنقل
+        if (navContainer) {
+            navContainer.addEventListener('mouseenter', () => {
+                if (popup.classList.contains('show') && calCloseTimeout) {
+                    clearTimeout(calCloseTimeout);
+                    calCloseTimeout = null;
+                }
+            });
+        }
+
+        // سلوك النقر (تثبيت/إلغاء تثبيت للكمبيوتر والموبايل)
         triggerBadge.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (popup.classList.contains('show')) {
-                closeCalendar();
+            if (popup.classList.contains('show') && isCalendarPinned) {
+                closeCalendar(true);
             } else {
-                openCalendar();
+                openCalendar(true);
             }
         });
+
+        // النقر على طبقة الضباب الخلفية يغلق التقويم ويعيد الصفحة لطبيعتها
+        if (backdropOverlay) {
+            backdropOverlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeCalendar(true);
+            });
+        }
 
         // النقر خارج التقويم يغلقه
         document.addEventListener('click', (e) => {
             if (popup && popup.classList.contains('show')) {
                 if (!popup.contains(e.target) && !triggerBadge.contains(e.target)) {
-                    closeCalendar();
+                    closeCalendar(true);
                 }
+            }
+        });
+
+        // زر Escape يغلق التقويم
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && popup && popup.classList.contains('show')) {
+                closeCalendar(true);
             }
         });
 
@@ -318,7 +389,7 @@
                 triggerHaptic();
                 currentDateKey = getTodayDateKey();
                 renderDayView(currentDateKey);
-                closeCalendar();
+                closeCalendar(true);
             });
         }
     }
@@ -397,8 +468,7 @@
                     triggerHaptic();
                     currentDateKey = cellDateKey;
                     renderDayView(currentDateKey);
-                    const popup = document.getElementById('calendar-dropdown-popup');
-                    if (popup) popup.classList.remove('show');
+                    closeCalendar(true);
                 });
             }
 

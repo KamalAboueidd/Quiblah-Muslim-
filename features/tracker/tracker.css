@@ -309,25 +309,90 @@ body {
     white-space: nowrap;
 }
 
-/* ================= CALENDAR DROPDOWN POPUP (شفافة تماماً بترانسبيرنس وضباب) ================= */
+/* ================= CALENDAR BACKDROP BLUR OVERLAY ================= */
+.calendar-backdrop-blur {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(3, 6, 12, 0.48);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 450;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s ease;
+}
+
+.calendar-backdrop-blur.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* Page blur & fade when calendar is open (عزل وتمويه محتوى الصفحة خلف التقويم) */
+body.calendar-open .tracker-hero-card,
+body.calendar-open .tracker-content-grid,
+body.calendar-open .tracker-footer-card,
+body.calendar-open .tracker-header-subtitle {
+    filter: blur(8px);
+    opacity: 0.32;
+    pointer-events: none;
+    transition: filter 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+}
+
+body.calendar-open .tracker-back-btn,
+body.calendar-open .tracker-center-badge {
+    opacity: 0.4;
+    filter: blur(1.5px);
+    transition: opacity 0.28s ease, filter 0.28s ease;
+}
+
+.tracker-hero-card,
+.tracker-content-grid,
+.tracker-footer-card,
+.tracker-header-subtitle,
+.tracker-back-btn,
+.tracker-center-badge {
+    transition: filter 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+}
+
+/* ================= CALENDAR DROPDOWN POPUP (زجاجي شفاف وضباب راقٍ) ================= */
 .calendar-dropdown-popup {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     z-index: 600;
-    width: 290px;
+    width: 295px;
     max-width: calc(100vw - 32px);
-    background: rgba(0, 0, 0, 0.38);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(197, 168, 89, 0.25);
+    background: rgba(14, 18, 26, 0.65);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(197, 168, 89, 0.32);
     border-radius: 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(197, 168, 89, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(197, 168, 89, 0.12);
     padding: 14px;
     display: none;
     user-select: none;
     animation: calFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* جسر وهمي غير مرئي يمنع انقطاع الـ Hover عند تحريك الماوس بين كلمة "اليوم" والتقويم */
+.calendar-dropdown-popup::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: -15px;
+    right: -15px;
+    height: 16px;
+    background: transparent;
+    pointer-events: auto;
 }
 
 .calendar-dropdown-popup.show {

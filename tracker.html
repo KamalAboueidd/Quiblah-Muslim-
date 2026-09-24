@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/tracker/tracker.css?v=9">
+    <link rel="stylesheet" href="features/tracker/tracker.css?v=10">
 </head>
 <body>
 
@@ -46,6 +46,9 @@
 
     <!-- Main App Container -->
     <div class="tracker-app-container">
+        
+        <!-- Calendar Backdrop Blur Overlay (تأثير الضباب لباقي الصفحة عند فتح التقويم) -->
+        <div class="calendar-backdrop-blur" id="calendar-backdrop-blur" aria-hidden="true"></div>
         
         <!-- Top Header (Clean back button, Title, Date Navigator) -->
         <header class="tracker-top-header">
@@ -600,6 +603,6 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/tracker/tracker.js?v=9"></script>
+    <script src="features/tracker/tracker.js?v=10"></script>
 </body>
 </html>

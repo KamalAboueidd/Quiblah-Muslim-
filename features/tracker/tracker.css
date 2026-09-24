@@ -1032,36 +1032,31 @@ body.is-past-day .btn-reset-tracker {
     gap: 8px;
 }
 
-.prayer-top-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: nowrap;
-}
-
 .prayer-time-countdown {
+    text-align: center;
     font-size: 11px;
     font-weight: 700;
     color: var(--gold-light);
-    background: rgba(197, 168, 89, 0.12);
-    border: 1px solid rgba(197, 168, 89, 0.28);
-    padding: 2px 7px;
-    border-radius: 6px;
-    white-space: nowrap;
-    display: none;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 3px 0 0 0;
+    margin: 0 auto;
     font-family: 'Tajawal', sans-serif;
     letter-spacing: 0.2px;
+    display: none;
+    user-select: none;
 }
 
 .prayer-time-countdown.show {
-    display: inline-flex;
-    align-items: center;
+    display: block;
 }
 
 .prayer-time-countdown.entered {
     color: #f39c12;
-    background: rgba(211, 84, 0, 0.12);
-    border-color: rgba(230, 126, 34, 0.35);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .prayer-item-name {

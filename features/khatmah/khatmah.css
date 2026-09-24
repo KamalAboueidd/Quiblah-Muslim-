@@ -1218,38 +1218,22 @@ body {
 
 /* ================= 9.5. GUIDANCE BANNER & COLLAPSIBLE ARCHITECTURE ================= */
 .khatmah-guide-banner {
-    background: linear-gradient(135deg, rgba(197, 168, 89, 0.12) 0%, rgba(13, 16, 23, 0.6) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(197, 168, 89, 0.32);
-    border-radius: 24px;
-    padding: 20px 24px;
-    margin-bottom: 22px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: 0;
+    padding: 6px 4px 18px 4px;
+    margin-bottom: 12px;
     display: flex;
     align-items: flex-start;
-    gap: 18px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     position: relative;
-    overflow: hidden;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s ease, margin 0.3s ease;
 }
 
 .khatmah-guide-banner.hidden {
     display: none !important;
-}
-
-.guide-banner-icon-disc {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: rgba(197, 168, 89, 0.16);
-    border: 1px solid rgba(197, 168, 89, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gold-light);
-    font-size: 20px;
-    flex-shrink: 0;
 }
 
 .guide-banner-body {

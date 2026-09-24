@@ -265,21 +265,18 @@
             color: #f1f5f9;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
 
         .sheet-grid-item:hover,
-        .sheet-grid-item:focus-visible {
-            background: transparent;
-            border-color: transparent;
-            transform: translateY(-2px);
-        }
-
+        .sheet-grid-item:focus-visible,
         .sheet-grid-item:active {
-            transform: scale(0.95);
-            background: transparent;
+            background: transparent !important;
+            border-color: transparent !important;
+            transform: none !important;
+            opacity: 1 !important;
         }
 
         .sheet-grid-item.active {
@@ -295,7 +292,7 @@
 
         .sheet-grid-item.active .sheet-item-icon {
             filter: drop-shadow(0 0 10px rgba(197, 168, 89, 0.7));
-            transform: scale(1.08);
+            transform: none !important;
         }
 
         .sheet-item-icon {
@@ -305,11 +302,14 @@
             align-items: center;
             justify-content: center;
             height: 32px;
-            transition: transform 0.2s;
+            transition: none;
         }
 
-        .sheet-grid-item:hover .sheet-item-icon {
-            transform: scale(1.12);
+        .sheet-grid-item:hover .sheet-item-icon,
+        .sheet-grid-item:focus-visible .sheet-item-icon,
+        .sheet-grid-item:active .sheet-item-icon {
+            transform: none !important;
+            opacity: 1 !important;
         }
 
         .sheet-item-label {
@@ -322,6 +322,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 100%;
+            transition: none;
+        }
+
+        .sheet-grid-item:hover .sheet-item-label,
+        .sheet-grid-item:focus-visible .sheet-item-label,
+        .sheet-grid-item:active .sheet-item-label {
+            transform: none !important;
+            opacity: 1 !important;
         }
 
         .sheet-footer {
@@ -1327,13 +1335,17 @@
             background: transparent !important;
             border: none !important;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: none;
         }
 
-        .sheet-pwa-banner:hover {
-            background: rgba(197, 168, 89, 0.06) !important;
+        .sheet-pwa-banner:hover,
+        .sheet-pwa-banner:focus-visible,
+        .sheet-pwa-banner:active {
+            background: transparent !important;
             border: none !important;
-            transform: scale(1.01);
+            transform: none !important;
+            box-shadow: none !important;
+            opacity: 1 !important;
         }
 
         .sheet-pwa-icon {

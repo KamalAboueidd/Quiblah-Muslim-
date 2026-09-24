@@ -2381,8 +2381,9 @@ function spawnSpeechRecognizer() {
         const recognizer = new SpeechRec();
         speechRecognizer = recognizer;
         recognizer.lang = 'ar-SA';
-        // Continuous must be true across all devices (Desktop & Mobile) so recognition stays active throughout recitation without stopping after 1 second!
-        recognizer.continuous = true;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        // On Mobile (Android/iOS), continuous must be false so the native Google Speech intent can process utterances reliably
+        recognizer.continuous = !isMobile;
         recognizer.interimResults = true;
         recognizer.maxAlternatives = 1;
 
@@ -2618,7 +2619,7 @@ function respawnActiveSpeechRecognizer() {
         speechRestartTimeout = null;
     }
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const delay = isMobile ? 40 : 0;
+    const delay = isMobile ? 120 : 0;
     speechRestartTimeout = setTimeout(() => {
         if (isRecording) {
             try {
@@ -2628,7 +2629,7 @@ function respawnActiveSpeechRecognizer() {
                     if (isRecording) {
                         try { spawnSpeechRecognizer(); } catch (e) {}
                     }
-                }, 80);
+                }, 150);
             }
         }
     }, delay);

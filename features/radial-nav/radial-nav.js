@@ -1,33 +1,40 @@
 /**
  * features/radial-nav/radial-nav.js
- * قائمة التنقل الدائرية السريعة المتمحورة حول حافة الشاشة
+ * قائمة التنقل الدائرية القوسية السريعة (Radial Arc Quick-Nav)
  * تطبيق قبلة المسلم - طور بواسطة كمال أبو عيد
  */
 
 (function () {
     'use strict';
 
-    // قائمة جميع صفحات وأقسام التطبيق
-    const ALL_PAGES = [
+    // 1. القائمة الأساسية الأكثر استخداماً (Primary Worship & Quran)
+    const PRIMARY_PAGES = [
         { id: 'home', title: 'المواقيت', url: 'home.html', icon: 'fa-solid fa-clock' },
+        { id: 'tracker', title: 'متابعة العبادات', url: 'tracker.html', icon: 'fa-solid fa-calendar-check' },
         { id: 'quran', title: 'المصحف الشريف', url: 'quran.html', icon: 'fa-solid fa-book-quran' },
         { id: 'azkar', title: 'الأذكار اليومية', url: 'azkar.html', icon: 'fa-solid fa-hands-praying' },
         { id: 'azkar_sm', title: 'الصباح والمساء', url: 'azkar.html?m=sm', icon: 'fa-solid fa-sun' },
         { id: 'qibla', title: 'اتجاه القبلة', url: 'qibla.html', icon: 'fa-solid fa-compass' },
         { id: 'tafseer', title: 'التفسير الميسر', url: 'tafseer.html', icon: 'fa-solid fa-book-open-reader' },
-        { id: 'tracker', title: 'متابعة العبادات', url: 'tracker.html', icon: 'fa-solid fa-calendar-check' },
         { id: 'hadith', title: 'الأحاديث النبوية', url: 'hadith.html', icon: 'fa-solid fa-book-bookmark' },
-        { id: 'listen', title: 'الاستماع والتلاوات', url: 'listen.html', icon: 'fa-solid fa-headphones' },
+        { id: 'listen', title: 'الاستماع والتلاوات', url: 'listen.html', icon: 'fa-solid fa-headphones' }
+    ];
+
+    // 2. قائمة الخدمات والمعارف الإضافية (Secondary Services)
+    const SECONDARY_PAGES = [
         { id: 'names', title: 'أسماء الله الحسنى', url: 'names.html', icon: 'fa-solid fa-list-ol' },
         { id: 'mosques', title: 'أقرب مسجد', url: 'mosques.html', icon: 'fa-solid fa-mosque' },
         { id: 'quiz', title: 'اختبر نفسك', url: 'quiz.html', icon: 'fa-solid fa-award' },
-        { id: 'bot', title: 'المساعد الذكي', url: 'bot.html', icon: 'fa-solid fa-robot' }
+        { id: 'bot', title: 'المساعد الذكي', url: 'bot.html', icon: 'fa-solid fa-robot' },
+        { id: 'recite', title: 'المصحح القرآني', url: 'recite.html', icon: 'fa-solid fa-microphone-lines' },
+        { id: 'reminders', title: 'التذكيرات', url: 'reminders.html', icon: 'fa-solid fa-bell' }
     ];
 
+    let showSecondary = false;
     let closeTimeout = null;
     let isPinned = false;
 
-    // تهيئة القائمة عند اكتمال تحميل DOM
+    // تهيئة القائمة عند تحميل الصفحة
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initRadialNav);
     } else {
@@ -37,53 +44,51 @@
     function initRadialNav() {
         if (document.getElementById('radial-nav-container')) return;
 
-        // تحديد الصفحة الحالية لاستبعادها وعرض باقي الصفحات
+        // تصفية الصفحة الحالية
         const currentPath = window.location.pathname.split('/').pop() || 'home.html';
         const search = window.location.search || '';
-        
-        let destinationPages = ALL_PAGES.filter(p => {
-            if (p.url.includes('?')) {
-                return (currentPath + search) !== p.url;
-            }
-            return currentPath !== p.url;
-        });
 
-        // التأكد من وجود 12 صفحة موزعة على مدارين (6 في المدار الداخلي و 6 في المدار الخارجي)
-        destinationPages = destinationPages.slice(0, 12);
-        const innerPages = destinationPages.slice(0, 6);
-        const outerPages = destinationPages.slice(6, 12);
+        const filterCurrent = (list) => {
+            return list.filter(p => {
+                if (p.url.includes('?')) {
+                    return (currentPath + search) !== p.url;
+                }
+                return currentPath !== p.url;
+            });
+        };
 
-        // إنشاء بنية القائمة الدائرية
+        const primaryFiltered = filterCurrent(PRIMARY_PAGES).slice(0, 7);
+        const secondaryFiltered = filterCurrent(SECONDARY_PAGES).slice(0, 6);
+
+        // إنشاء الحاوية الرئيسية (بدون أي transform لكامل الشاشة)
         const container = document.createElement('aside');
         container.className = 'radial-nav-container';
         container.id = 'radial-nav-container';
-        container.setAttribute('aria-label', 'قائمة التنقل الدائرية السريعة');
+        container.setAttribute('aria-label', 'قائمة التنقل السريع');
 
-        // خلفية التظليل
+        // خلفية الضباب والتعتيم الكلي للشاشة كاملة
         const backdrop = document.createElement('div');
         backdrop.className = 'radial-nav-backdrop';
         backdrop.id = 'radial-nav-backdrop';
 
-        // زر المحور البارز على الجنب
+        // زر المحور الجانبي (Side Jewel - بدون كلمة تنقل)
         const hubBtn = document.createElement('button');
         hubBtn.type = 'button';
         hubBtn.className = 'radial-nav-hub';
         hubBtn.id = 'radial-nav-hub';
         hubBtn.setAttribute('aria-expanded', 'false');
-        hubBtn.setAttribute('title', 'التنقل السريع بين جميع الصفحات');
+        hubBtn.setAttribute('title', 'التنقل السريع بين الصفحات');
         hubBtn.innerHTML = `
             <div class="radial-hub-ripple"></div>
             <i class="fa-solid fa-compass radial-hub-icon" aria-hidden="true"></i>
-            <span class="radial-hub-text">تنقل</span>
         `;
 
-        // طبق الأقواس والمسارات المدارية
+        // درع الحماية القوسي
         const plate = document.createElement('div');
         plate.className = 'radial-nav-plate';
         plate.id = 'radial-nav-plate';
         plate.innerHTML = `
-            <div class="radial-orbit-arc arc-inner"></div>
-            <div class="radial-orbit-arc arc-outer"></div>
+            <div class="radial-orbit-arc-line"></div>
             <div class="radial-items-wrap" id="radial-items-wrap"></div>
         `;
 
@@ -94,104 +99,119 @@
 
         const itemsWrap = plate.querySelector('#radial-items-wrap');
 
-        // بناء عناصر المدارين وحساب الإحداثيات
-        renderRadialItems(itemsWrap, innerPages, outerPages);
+        // رسم كبسولات القوس
+        const renderCurrentView = () => {
+            const currentList = showSecondary ? secondaryFiltered : primaryFiltered;
+            renderPillArc(itemsWrap, currentList, showSecondary, () => {
+                showSecondary = !showSecondary;
+                renderCurrentView();
+            });
+        };
 
-        // ربط أحداث الماوس واللمس
+        renderCurrentView();
+
+        // ربط التفاعلات
         setupEventHandlers(container, hubBtn, backdrop);
 
-        // تحديث الإحداثيات عند تغيير حجم الشاشة (Resize)
         window.addEventListener('resize', debounce(() => {
-            renderRadialItems(itemsWrap, innerPages, outerPages);
+            renderCurrentView();
         }, 150));
     }
 
-    // حساب الإحداثيات القطبية ورسم العناصر
-    function renderRadialItems(wrap, innerPages, outerPages) {
+    // حساب الإحداثيات ورسم الكبسولات في مسار قوسي متناسق
+    function renderPillArc(wrap, pages, isSecondaryMode, onToggleMode) {
         if (!wrap) return;
         wrap.innerHTML = '';
 
         const isMobile = window.innerWidth <= 768;
-        const R1 = isMobile ? 98 : 132;
-        const R2 = isMobile ? 168 : 228;
+        const R = isMobile ? 150 : 215;
 
         const container = document.getElementById('radial-nav-container');
         if (container) {
-            container.style.setProperty('--orbit-r1', `${R1}px`);
-            container.style.setProperty('--orbit-r2', `${R2}px`);
+            container.style.setProperty('--orbit-radius', `${R}px`);
         }
 
-        // زوايا المدار الداخلي (6 عناصر من -65 إلى +65 درجة)
-        const innerAngles = [-65, -39, -13, 13, 39, 65];
+        // إجمالي العناصر = الصفحات + زر التبديل
+        const totalItems = pages.length + 1;
 
-        // زوايا المدار الخارجي (6 عناصر من -72 إلى +72 درجة متداخلة بلباقة)
-        const outerAngles = [-72, -43, -15, 15, 43, 72];
+        // زوايا القوس (توزع بانسيابية من -64 إلى +64 درجة)
+        const startAngle = -64;
+        const endAngle = 64;
+        const step = (endAngle - startAngle) / (totalItems - 1);
 
-        let globalIndex = 0;
-
-        // 1. رسم عناصر المدار الداخلي
-        innerPages.forEach((page, i) => {
-            const angle = innerAngles[i] || 0;
+        pages.forEach((page, i) => {
+            const angle = startAngle + (i * step);
             const rad = (angle * Math.PI) / 180;
-            const tx = -Math.round(R1 * Math.cos(rad));
-            const ty = Math.round(R1 * Math.sin(rad));
-            const delay = (globalIndex * 0.032).toFixed(3);
+            const tx = -Math.round(R * Math.cos(rad));
+            const ty = Math.round(R * Math.sin(rad));
+            const delay = (i * 0.032).toFixed(3);
 
-            const itemEl = createItemElement(page, tx, ty, delay, 1);
-            wrap.appendChild(itemEl);
-            globalIndex++;
+            const a = document.createElement('a');
+            a.href = page.url;
+            a.className = 'radial-item-pill';
+            a.setAttribute('title', `الانتقال إلى ${page.title}`);
+            a.style.setProperty('--tx', `${tx}px`);
+            a.style.setProperty('--ty', `${ty}px`);
+            a.style.setProperty('--delay', `${delay}s`);
+
+            a.innerHTML = `
+                <div class="radial-pill-icon">
+                    <i class="${page.icon}" aria-hidden="true"></i>
+                </div>
+                <span class="radial-pill-name">${page.title}</span>
+            `;
+
+            a.addEventListener('click', () => {
+                triggerHaptic();
+                closeRadialNav(true);
+            });
+
+            wrap.appendChild(a);
         });
 
-        // 2. رسم عناصر المدار الخارجي
-        outerPages.forEach((page, i) => {
-            const angle = outerAngles[i] || 0;
-            const rad = (angle * Math.PI) / 180;
-            const tx = -Math.round(R2 * Math.cos(rad));
-            const ty = Math.round(R2 * Math.sin(rad));
-            const delay = (globalIndex * 0.032).toFixed(3);
+        // زر التبديل بين القائمة الأساسية وباقي الخدمات في آخر القوس
+        const toggleAngle = endAngle;
+        const toggleRad = (toggleAngle * Math.PI) / 180;
+        const ttx = -Math.round(R * Math.cos(toggleRad));
+        const tty = Math.round(R * Math.sin(toggleRad));
+        const tDelay = (pages.length * 0.032).toFixed(3);
 
-            const itemEl = createItemElement(page, tx, ty, delay, 2);
-            wrap.appendChild(itemEl);
-            globalIndex++;
-        });
-    }
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'radial-item-pill pill-toggle-more';
+        toggleBtn.style.setProperty('--tx', `${ttx}px`);
+        toggleBtn.style.setProperty('--ty', `${tty}px`);
+        toggleBtn.style.setProperty('--delay', `${tDelay}s`);
 
-    function createItemElement(page, tx, ty, delay, orbitNumber) {
-        const a = document.createElement('a');
-        a.href = page.url;
-        a.className = `radial-item orbit-${orbitNumber}`;
-        a.setAttribute('data-orbit', orbitNumber);
-        a.setAttribute('title', `الانتقال إلى ${page.title}`);
-        a.style.setProperty('--tx', `${tx}px`);
-        a.style.setProperty('--ty', `${ty}px`);
-        a.style.setProperty('--delay', `${delay}s`);
+        if (isSecondaryMode) {
+            toggleBtn.innerHTML = `
+                <div class="radial-pill-icon"><i class="fa-solid fa-arrow-rotate-left"></i></div>
+                <span class="radial-pill-name">العبادات الأساسية</span>
+            `;
+        } else {
+            toggleBtn.innerHTML = `
+                <div class="radial-pill-icon"><i class="fa-solid fa-ellipsis"></i></div>
+                <span class="radial-pill-name">باقي الأقسام</span>
+            `;
+        }
 
-        a.innerHTML = `
-            <div class="radial-item-circle">
-                <i class="${page.icon}" aria-hidden="true"></i>
-            </div>
-            <span class="radial-item-label">${page.title}</span>
-        `;
-
-        a.addEventListener('click', () => {
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             triggerHaptic();
-            closeRadialNav(true);
+            if (onToggleMode) onToggleMode();
         });
 
-        return a;
+        wrap.appendChild(toggleBtn);
     }
 
-    // إدارة التفاعل (Hover للكمبيوتر + Tap للموبايل والتثبيت)
+    // إدارة أحداث التفاعل المستقرة تماماً
     function setupEventHandlers(container, hubBtn, backdrop) {
-        // سلوك الـ Hover على الكمبيوتر
+        // الفتح عند الـ Hover
         hubBtn.addEventListener('mouseenter', () => {
             openRadialNav();
         });
 
-        hubBtn.addEventListener('mouseleave', () => {
-            scheduleClose();
-        });
-
+        // بقاء القائمة مفتوحة طالما الماوس داخل المنطقة
         container.addEventListener('mouseenter', () => {
             if (closeTimeout) {
                 clearTimeout(closeTimeout);
@@ -199,11 +219,12 @@
             }
         });
 
+        // الإغلاق بمهلة مستقرة عند خروج الماوس
         container.addEventListener('mouseleave', () => {
             scheduleClose();
         });
 
-        // سلوك النقر / اللمس (Toggle و تثبيت للموبايل والكمبيوتر)
+        // النقر للتبديل والتثبيت
         hubBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             triggerHaptic();
@@ -218,7 +239,7 @@
             }
         });
 
-        // النقر على خلفية التظليل يغلق القائمة فوراً
+        // النقر على الخلفية المظللة يغلق فوراً
         if (backdrop) {
             backdrop.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -272,12 +293,12 @@
         if (closeTimeout) clearTimeout(closeTimeout);
         closeTimeout = setTimeout(() => {
             closeRadialNav(true);
-        }, 360);
+        }, 450);
     }
 
     function triggerHaptic() {
         try {
-            if (navigator.vibrate) navigator.vibrate(22);
+            if (navigator.vibrate) navigator.vibrate(20);
         } catch (e) {}
     }
 

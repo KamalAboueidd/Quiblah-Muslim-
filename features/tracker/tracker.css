@@ -108,7 +108,7 @@ body {
 /* --- Main Container --- */
 .tracker-app-container {
     width: 100%;
-    max-width: 1050px;
+    max-width: 1120px;
     margin: 0 auto;
     padding: 16px 20px 48px 20px;
     min-height: 100vh;
@@ -875,15 +875,15 @@ body {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 12px;
-    padding: 12px 14px;
+    padding: 10px 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.2s ease;
 }
 
 .prayer-worship-item:hover {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.38);
     border-color: rgba(197, 168, 89, 0.25);
 }
 
@@ -897,6 +897,11 @@ body {
     background: rgba(197, 168, 89, 0.08);
 }
 
+.prayer-worship-item.status-qadaa {
+    border-color: rgba(230, 126, 34, 0.45);
+    background: rgba(230, 126, 34, 0.08);
+}
+
 .prayer-item-top {
     display: flex;
     justify-content: space-between;
@@ -904,25 +909,26 @@ body {
 }
 
 .prayer-item-name {
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 800;
     color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
 }
 
 .prayer-item-name i {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--gold);
     background: none !important;
     border: none !important;
 }
 
 .prayer-status-text {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--text-dim);
+    white-space: nowrap;
 }
 
 .prayer-worship-item.status-mosque .prayer-status-text {
@@ -933,55 +939,75 @@ body {
     color: var(--gold-light);
 }
 
-/* Prayer Selection Buttons: 2 clean choices */
+.prayer-worship-item.status-qadaa .prayer-status-text {
+    color: #f39c12;
+}
+
+/* Prayer Selection Buttons: 3 sleek mini-cards */
 .prayer-choice-group {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
 }
 
 .prayer-choice-btn {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     font-family: 'Tajawal', sans-serif;
-    padding: 7px 4px;
+    padding: 7px 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
 }
 
 .prayer-choice-btn i {
     font-size: 12px;
     background: none !important;
     border: none !important;
+    transition: transform 0.2s ease;
 }
 
 .prayer-choice-btn:hover {
     color: #fff;
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(197, 168, 89, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(197, 168, 89, 0.3);
+}
+
+.prayer-choice-btn:hover i {
+    transform: translateY(-1px);
 }
 
 .prayer-choice-btn.active-mosque {
-    background: #27ae60;
-    border-color: #2ecc71;
-    color: #ffffff;
+    background: #27ae60 !important;
+    border-color: #2ecc71 !important;
+    color: #ffffff !important;
     box-shadow: 0 0 10px rgba(46, 204, 113, 0.35);
 }
 
 .prayer-choice-btn.active-home {
-    background: var(--gold);
-    border-color: var(--gold-light);
-    color: #0b0d11;
+    background: var(--gold) !important;
+    border-color: var(--gold-light) !important;
+    color: #0b0d11 !important;
     font-weight: 800;
     box-shadow: 0 0 10px rgba(197, 168, 89, 0.35);
+}
+
+.prayer-choice-btn.active-qadaa {
+    background: #d35400 !important;
+    border-color: #e67e22 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(230, 126, 34, 0.35);
 }
 
 /* ================= 2. HABITS & CHECKLISTS ================= */

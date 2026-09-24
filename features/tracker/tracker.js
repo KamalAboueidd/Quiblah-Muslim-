@@ -487,14 +487,17 @@
         calculateAndRenderStats(dayData);
     }
 
-    // ================= إعداد مستمعي الصلوات (في المسجد / في البيت) =================
+    // ================= إعداد مستمعي الصلوات (في المسجد / في البيت / قضاء) =================
     function setupPrayerListeners() {
         document.querySelectorAll('.prayer-choice-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const prayer = btn.getAttribute('data-prayer');
-                const choiceType = btn.getAttribute('data-choice'); // "mosque" or "home"
-                const choiceVal = (choiceType === 'mosque') ? 2 : 1;
+                const choiceType = btn.getAttribute('data-choice'); // "mosque", "home", "qadaa"
+                let choiceVal = 1;
+                if (choiceType === 'mosque') choiceVal = 2;
+                else if (choiceType === 'home') choiceVal = 1;
+                else if (choiceType === 'qadaa') choiceVal = 3;
 
                 const dayData = getDayData(currentDateKey);
                 if (!dayData.prayers) dayData.prayers = {};
@@ -521,14 +524,16 @@
         const item = document.getElementById(`prayer-item-${prayer}`);
         if (!item) return;
 
-        item.classList.remove('status-mosque', 'status-home');
+        item.classList.remove('status-mosque', 'status-home', 'status-qadaa');
         const statusText = item.querySelector('.prayer-status-text');
 
         const mosqueBtn = item.querySelector('.prayer-choice-btn[data-choice="mosque"]');
         const homeBtn = item.querySelector('.prayer-choice-btn[data-choice="home"]');
+        const qadaaBtn = item.querySelector('.prayer-choice-btn[data-choice="qadaa"]');
 
         if (mosqueBtn) mosqueBtn.classList.remove('active-mosque');
         if (homeBtn) homeBtn.classList.remove('active-home');
+        if (qadaaBtn) qadaaBtn.classList.remove('active-qadaa');
 
         if (status === 2) {
             item.classList.add('status-mosque');
@@ -538,6 +543,10 @@
             item.classList.add('status-home');
             if (homeBtn) homeBtn.classList.add('active-home');
             if (statusText) statusText.textContent = "صليتها في البيت";
+        } else if (status === 3) {
+            item.classList.add('status-qadaa');
+            if (qadaaBtn) qadaaBtn.classList.add('active-qadaa');
+            if (statusText) statusText.textContent = "صليتها قضاءً";
         } else {
             if (statusText) statusText.textContent = "لم تُصلَّ بعد";
         }
@@ -606,7 +615,7 @@
         // 1. الصلوات المفروضة الخمس (المعيار الأساسي للعداد)
         let prayersDone = 0;
         PRAYER_KEYS.forEach(p => {
-            if (dayData.prayers && (dayData.prayers[p] === 1 || dayData.prayers[p] === 2)) {
+            if (dayData.prayers && dayData.prayers[p] > 0) {
                 prayersDone++;
             }
         });

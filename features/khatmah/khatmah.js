@@ -176,6 +176,7 @@
     let khatmahData = loadKhatmahData();
     let currentDuaaFontSize = 18;
     let currentJuzFilter = 'all';
+    let isJuzExpanded = false;
 
     // استخراج السورة الأنسب لرقم الصفحة
     function getSurahForPage(pageNum) {
@@ -327,23 +328,23 @@
             heroPaceBadge.className = 'hero-pace-pill';
             if (current >= TOTAL_PAGES) {
                 heroPaceBadge.classList.add('pace-ahead');
-                heroPaceBadge.innerHTML = `<i class="fa-solid fa-crown"></i> ختمة مباركة ومكتملة!`;
-                heroQuoteText.textContent = 'مبارك! أتممت ختم كتاب الله تعالى كاملاً 🌟';
+                heroPaceBadge.innerHTML = `<i class="fa-solid fa-crown"></i> متقدم ومكتمل!`;
+                heroQuoteText.textContent = 'مبارك! أتممت ختم كتاب الله تعالى كاملاً';
                 heroSubquoteText.textContent = 'تقبل الله منك وجعله شفيعاً لك يوم القيامة ورفعة في الدرجات.';
             } else if (pace.delta > 2) {
                 heroPaceBadge.classList.add('pace-ahead');
-                heroPaceBadge.innerHTML = `<i class="fa-solid fa-rocket"></i> متقدم بـ ${pace.delta} صفحة`;
-                heroQuoteText.textContent = 'ما شاء الله! وتيرة متقدمة تسبق خطتك 🚀';
+                heroPaceBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> متقدم بـ ${pace.delta} صفحة`;
+                heroQuoteText.textContent = 'ما شاء الله! وتيرة متقدمة تسبق خطتك';
                 heroSubquoteText.textContent = `أنت متقدم على جدولك، استمر بهذا الإقبال والهمة العالية.`;
             } else if (pace.delta < -2) {
                 heroPaceBadge.classList.add('pace-behind');
                 heroPaceBadge.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> متأخر بـ ${Math.abs(pace.delta)} صفحة`;
-                heroQuoteText.textContent = 'خطوات يسيرة وتستعيد وتيرة خطتك ⏳';
+                heroQuoteText.textContent = 'خطوات يسيرة وتستعيد وتيرة خطتك';
                 heroSubquoteText.textContent = `لا بأس، قراءة صفحتين إضافيتين بعد كل صلاة اليوم تعيدك للقمة فوراً!`;
             } else {
                 heroPaceBadge.classList.add('pace-ontrack');
                 heroPaceBadge.innerHTML = `<i class="fa-solid fa-check-double"></i> ملتزم بالخطة تماماً`;
-                heroQuoteText.textContent = 'تلاوة مباركة وثبات يومي على الورد ✨';
+                heroQuoteText.textContent = 'تلاوة مباركة وثبات يومي على الورد';
                 heroSubquoteText.textContent = `استمرارك اليومي خير من كثير ينقطع، بوركت همتك وحفظك الله.`;
             }
         }
@@ -438,7 +439,7 @@
                         <i class="fa-solid fa-book-open"></i>
                         <span>تلاوة</span>
                     </a>
-                    <span class="stop-state-label">${isCompleted ? 'تم الإنجاز ✓' : 'في الانتظار'}</span>
+                    <span class="stop-state-label">${isCompleted ? 'تم الإنجاز' : 'في الانتظار'}</span>
                 </div>
             `;
 
@@ -475,7 +476,7 @@
 
         if (!wasCompleted) {
             khatmahData.currentPage = Math.min(TOTAL_PAGES, (khatmahData.currentPage || 0) + slotPagesCount);
-            showToast(`أحسنت! أتممت قراءة ورد ${getPrayerName(prayerKey)} (${slotPagesCount} صفحات) ✨`, 'fa-solid fa-check');
+            showToast(`أحسنت! أتممت قراءة ورد ${getPrayerName(prayerKey)} (${slotPagesCount} صفحات)`, 'fa-solid fa-check');
             checkStreakUpdate();
         } else {
             khatmahData.currentPage = Math.max(0, (khatmahData.currentPage || 0) - slotPagesCount);
@@ -517,24 +518,32 @@
             }
 
             openDuaaModal();
-            showToast("هنيئاً لك! أتممت ختم القرآن الكريم كاملاً مباركاً 🌟", "fa-solid fa-crown");
+            showToast("هنيئاً لك! أتممت ختم القرآن الكريم كاملاً مباركاً", "fa-solid fa-crown");
         }
     }
 
-    // رسم خارطة الأجزاء الـ 30 مع دعم الفلترة
+    // رسم خارطة الأجزاء الـ 30 مع دعم الفلترة والطي والتوسيع
     function renderJuzRoadmap(currentPage) {
         const grid = document.getElementById('juz-roadmap-grid');
         if (!grid) return;
         grid.innerHTML = '';
 
-        JUZ_DATA.forEach(juz => {
+        // تصفية الأجزاء حسب الفلتر النشط
+        const filteredList = JUZ_DATA.filter(juz => {
+            const isCompleted = currentPage >= juz.end;
+            if (currentJuzFilter === 'completed' && !isCompleted) return false;
+            if (currentJuzFilter === 'remaining' && isCompleted) return false;
+            return true;
+        });
+
+        // إذا كانت القائمة مطوية، يتم عرض أول 3 أجزاء فقط
+        const PREVIEW_LIMIT = 3;
+        const shouldLimit = !isJuzExpanded && filteredList.length > PREVIEW_LIMIT;
+        const displayList = shouldLimit ? filteredList.slice(0, PREVIEW_LIMIT) : filteredList;
+
+        displayList.forEach(juz => {
             const isCompleted = currentPage >= juz.end;
             const isInProgress = currentPage >= juz.start && currentPage < juz.end;
-            const isRemaining = currentPage < juz.start;
-
-            // فلترة
-            if (currentJuzFilter === 'completed' && !isCompleted) return;
-            if (currentJuzFilter === 'remaining' && isCompleted) return;
 
             let percentInJuz = 0;
             const juzTotalPages = (juz.end - juz.start + 1);
@@ -570,6 +579,33 @@
 
             grid.appendChild(tile);
         });
+
+        // زر توسيع أو طي القائمة عند وجود أكثر من 3 أجزاء
+        if (filteredList.length > PREVIEW_LIMIT) {
+            const expandWrap = document.createElement('div');
+            expandWrap.className = 'juz-expand-wrapper';
+            expandWrap.style.gridColumn = '1 / -1';
+
+            const expandBtn = document.createElement('button');
+            expandBtn.type = 'button';
+            expandBtn.className = 'btn-toggle-juz-expand';
+            expandBtn.id = 'btn-toggle-juz-expand';
+
+            if (!isJuzExpanded) {
+                expandBtn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> <span>عرض بقية الأجزاء (${filteredList.length - PREVIEW_LIMIT} أجزاء إضافية)</span>`;
+            } else {
+                expandBtn.innerHTML = `<i class="fa-solid fa-chevron-up"></i> <span>طي القائمة وعرض الأجزاء الأولى</span>`;
+            }
+
+            expandBtn.addEventListener('click', () => {
+                isJuzExpanded = !isJuzExpanded;
+                triggerHaptic();
+                renderJuzRoadmap(khatmahData.currentPage || 0);
+            });
+
+            expandWrap.appendChild(expandBtn);
+            grid.appendChild(expandWrap);
+        }
     }
 
     // رسم سجل الختمات السابقة
@@ -628,7 +664,7 @@
                     saveKhatmahData(khatmahData);
                     triggerHaptic();
                     renderKhatmahUI();
-                    showToast(`تم تعيين خطة الختمة: ${plan} يوماً! سددك الله ✨`, 'fa-solid fa-check');
+                    showToast(`تم تعيين خطة الختمة: ${plan} يوماً! سددك الله`, 'fa-solid fa-check');
                 }
             });
         });
@@ -748,7 +784,7 @@
                 saveKhatmahData(khatmahData);
                 closePlanModal();
                 renderKhatmahUI();
-                showToast(`تم تفعيل خطتك بنجاح: ختمة في ${days} يوماً! سددك الله ✨`, 'fa-solid fa-check');
+                showToast(`تم تفعيل خطتك بنجاح: ختمة في ${days} يوماً! سددك الله`, 'fa-solid fa-check');
             });
         }
 
@@ -816,8 +852,68 @@
                     khatmahData.todaySlots = { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false };
                     saveKhatmahData(khatmahData);
                     renderKhatmahUI();
-                    showToast('تم بدء ختمة جديدة مباركة! وفقك الله لإتمامها ✨', 'fa-solid fa-book-quran');
+                    showToast('تم بدء ختمة جديدة مباركة! وفقك الله لإتمامها', 'fa-solid fa-book-quran');
                 }
+            });
+        }
+
+        // الدليل الإرشادي (Guide Onboarding Banner)
+        const guideBanner = document.getElementById('khatmah-guide-banner');
+        const btnToggleGuide = document.getElementById('btn-toggle-guide');
+        const btnGuideClose = document.getElementById('btn-guide-close');
+        const btnGuideDismiss = document.getElementById('btn-guide-dismiss');
+        const btnGuideStartPlan = document.getElementById('btn-guide-start-plan');
+
+        const isGuideDismissed = localStorage.getItem('quiblah_khatmah_guide_dismissed') === 'true';
+        if (guideBanner) {
+            if (isGuideDismissed) {
+                guideBanner.classList.add('hidden');
+            } else {
+                guideBanner.classList.remove('hidden');
+            }
+        }
+
+        const dismissGuide = () => {
+            if (guideBanner) {
+                guideBanner.classList.add('hidden');
+            }
+            localStorage.setItem('quiblah_khatmah_guide_dismissed', 'true');
+        };
+
+        if (btnGuideClose) btnGuideClose.addEventListener('click', dismissGuide);
+        if (btnGuideDismiss) btnGuideDismiss.addEventListener('click', dismissGuide);
+        if (btnGuideStartPlan) {
+            btnGuideStartPlan.addEventListener('click', () => {
+                openPlanSettingsModal();
+            });
+        }
+        if (btnToggleGuide) {
+            btnToggleGuide.addEventListener('click', () => {
+                if (guideBanner) {
+                    guideBanner.classList.toggle('hidden');
+                    if (!guideBanner.classList.contains('hidden')) {
+                        guideBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            });
+        }
+
+        // أزرار طي وتوسيع الأقسام (Section Collapse)
+        const btnCollapseJuzDeck = document.getElementById('btn-collapse-juz-deck');
+        const juzDeckBody = document.getElementById('juz-deck-body');
+        if (btnCollapseJuzDeck && juzDeckBody) {
+            btnCollapseJuzDeck.addEventListener('click', () => {
+                const isCollapsed = juzDeckBody.classList.toggle('collapsed');
+                btnCollapseJuzDeck.classList.toggle('collapsed', isCollapsed);
+            });
+        }
+
+        const btnCollapseHistoryDeck = document.getElementById('btn-collapse-history-deck');
+        const historyDeckBody = document.getElementById('history-deck-body');
+        if (btnCollapseHistoryDeck && historyDeckBody) {
+            btnCollapseHistoryDeck.addEventListener('click', () => {
+                const isCollapsed = historyDeckBody.classList.toggle('collapsed');
+                btnCollapseHistoryDeck.classList.toggle('collapsed', isCollapsed);
             });
         }
     }

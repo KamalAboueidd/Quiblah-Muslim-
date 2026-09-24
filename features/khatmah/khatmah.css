@@ -411,13 +411,15 @@ body {
 }
 
 .hero-pace-pill.pace-ahead {
-    background: var(--success-bg);
-    color: var(--success);
+    background: rgba(197, 168, 89, 0.16);
+    color: var(--gold-light);
+    border: 1px solid rgba(197, 168, 89, 0.35);
 }
 
 .hero-pace-pill.pace-ontrack {
     background: var(--gold-subtle);
     color: var(--gold-light);
+    border: 1px solid rgba(197, 168, 89, 0.25);
 }
 
 .hero-pace-pill.pace-behind {
@@ -467,7 +469,7 @@ body {
 }
 
 .stat-capsule.streak-capsule i {
-    color: #ff9800;
+    color: var(--gold);
 }
 
 .stat-capsule-info {
@@ -1212,6 +1214,228 @@ body {
     color: var(--gold);
     font-size: 16px;
     background: transparent !important;
+}
+
+/* ================= 9.5. GUIDANCE BANNER & COLLAPSIBLE ARCHITECTURE ================= */
+.khatmah-guide-banner {
+    background: linear-gradient(135deg, rgba(197, 168, 89, 0.12) 0%, rgba(13, 16, 23, 0.6) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(197, 168, 89, 0.32);
+    border-radius: 24px;
+    padding: 20px 24px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.khatmah-guide-banner.hidden {
+    display: none !important;
+}
+
+.guide-banner-icon-disc {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: rgba(197, 168, 89, 0.16);
+    border: 1px solid rgba(197, 168, 89, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-light);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.guide-banner-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.guide-banner-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.guide-banner-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-banner-heading {
+    margin: 0;
+    font-size: 16.5px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.guide-dismiss-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.guide-dismiss-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+.guide-banner-text {
+    margin: 0 0 14px 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+.guide-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-guide-cta {
+    background: linear-gradient(135deg, #dfc274 0%, #C5A859 100%);
+    color: #0b0e14;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(197, 168, 89, 0.35);
+}
+
+.btn-guide-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(197, 168, 89, 0.5);
+}
+
+.btn-guide-read {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s ease;
+}
+
+.btn-guide-read:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--gold-light);
+}
+
+/* Deck Section Collapse Button */
+.deck-collapse-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.deck-collapse-btn:hover {
+    background: rgba(197, 168, 89, 0.15);
+    color: var(--gold-light);
+    border-color: rgba(197, 168, 89, 0.3);
+}
+
+.deck-collapse-btn i {
+    transition: transform 0.3s ease;
+}
+
+.deck-collapse-btn.collapsed i {
+    transform: rotate(180deg);
+}
+
+/* Collapsible Content Wrapper */
+.collapsible-deck-body {
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+    overflow: hidden;
+    max-height: 2500px;
+    opacity: 1;
+}
+
+.collapsible-deck-body.collapsed {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    pointer-events: none;
+}
+
+/* Juz Grid Expand / Collapse Trigger */
+.juz-expand-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+    width: 100%;
+}
+
+.btn-toggle-juz-expand {
+    background: rgba(197, 168, 89, 0.1);
+    border: 1px solid rgba(197, 168, 89, 0.28);
+    border-radius: 16px;
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: inherit;
+    color: var(--gold-light);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.btn-toggle-juz-expand:hover {
+    background: rgba(197, 168, 89, 0.2);
+    border-color: rgba(197, 168, 89, 0.45);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.btn-toggle-juz-expand:active {
+    transform: translateY(0);
 }
 
 /* ================= 10. RESPONSIVE BREAKPOINTS ================= */

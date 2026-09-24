@@ -62,6 +62,10 @@
 
             <!-- Header Quick Actions -->
             <div class="khatmah-header-actions">
+                <button type="button" class="header-action-btn" id="btn-toggle-guide" title="كيف تبدأ؟ دليل إعداد الخطة">
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                    <span>كيف تبدأ؟</span>
+                </button>
                 <button type="button" class="header-action-btn" id="btn-open-plan-settings" title="تعديل مدة الختمة وتوزيع الورد">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                     <span>تعديل الخطة</span>
@@ -72,6 +76,37 @@
                 </button>
             </div>
         </header>
+
+        <!-- ================= ONBOARDING & SETUP GUIDE BANNER ================= -->
+        <section class="khatmah-guide-banner" id="khatmah-guide-banner" aria-label="دليل إعداد خطة الختمة">
+            <div class="guide-banner-icon-disc">
+                <i class="fa-solid fa-compass" aria-hidden="true"></i>
+            </div>
+            <div class="guide-banner-body">
+                <div class="guide-banner-top-row">
+                    <div class="guide-banner-title-wrap">
+                        <i class="fa-solid fa-book-quran" style="color: var(--gold-light);" aria-hidden="true"></i>
+                        <h3 class="guide-banner-heading">مرحباً بك في خطة الختمة الذكية</h3>
+                    </div>
+                    <button type="button" class="guide-dismiss-btn" id="btn-guide-close" aria-label="إغلاق الدليل" title="إخفاء هذا الإرشاد">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <p class="guide-banner-text">
+                    حدد خطتك المناسبة (مثلاً ختمة في 30 يوماً بمعدل جزء يومياً أو 60 يوماً بنصف جزء)، وسيقوم النظام بتوزيع وردك تلقائياً بعد كل صلاة مع متابعة دقيقة لموضع تلاوتك في المصحف وتوثيق تقدمك خطوة بخطوة.
+                </p>
+                <div class="guide-banner-actions">
+                    <button type="button" class="btn-guide-cta" id="btn-guide-start-plan">
+                        <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                        <span>اختر خطتك الآن</span>
+                    </button>
+                    <button type="button" class="btn-guide-read" id="btn-guide-dismiss">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i>
+                        <span>فهمت ذلك</span>
+                    </button>
+                </div>
+            </div>
+        </section>
 
         <!-- ================= 2. QURANIC HERO SANCTUARY (THE MIHRAB) ================= -->
         <section class="khatmah-hero-card" aria-label="لوحة إنجاز الختمة">
@@ -112,7 +147,7 @@
                     <!-- Dynamic Pace Ribbon -->
                     <div class="hero-status-ribbon">
                         <div class="hero-headline-text" id="hero-quote-text">
-                            تلاوة مباركة وثبات يومي على الورد ✨
+                            تلاوة مباركة وثبات يومي على الورد
                         </div>
                         <div class="hero-pace-pill pace-ontrack" id="hero-pace-badge">
                             <i class="fa-solid fa-check-double" aria-hidden="true"></i>
@@ -189,7 +224,7 @@
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
                     <div>
-                        <strong style="font-size: 15px; color: #fff; display: block;">هنيئاً لك! أتممت كامل ورد اليوم بحمد الله ✨</strong>
+                        <strong style="font-size: 15px; color: #fff; display: block;">هنيئاً لك! أتممت كامل ورد اليوم بحمد الله</strong>
                         <span style="font-size: 12.5px; color: var(--text-muted);">تقبل الله طاعتك وثبتك على دوام تلاوة كتابه الكريم.</span>
                     </div>
                 </div>
@@ -257,16 +292,23 @@
                     <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
                     <h2 class="deck-title">خارطة الأجزاء الـ 30</h2>
                 </div>
-                <!-- Filter buttons -->
-                <div class="juz-filter-row" id="juz-filter-row">
-                    <button type="button" class="juz-filter-btn active" data-filter="all">جميع الأجزاء</button>
-                    <button type="button" class="juz-filter-btn" data-filter="completed">المكتملة</button>
-                    <button type="button" class="juz-filter-btn" data-filter="remaining">المتبقية</button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <!-- Filter buttons -->
+                    <div class="juz-filter-row" id="juz-filter-row">
+                        <button type="button" class="juz-filter-btn active" data-filter="all">جميع الأجزاء</button>
+                        <button type="button" class="juz-filter-btn" data-filter="completed">المكتملة</button>
+                        <button type="button" class="juz-filter-btn" data-filter="remaining">المتبقية</button>
+                    </div>
+                    <button type="button" class="deck-collapse-btn" id="btn-collapse-juz-deck" aria-label="طي أو توسيع قسم الأجزاء" title="طي / توسيع">
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="juz-mosaic-grid" id="juz-roadmap-grid">
-                <!-- يُنشأ برمجياً عبر khatmah.js -->
+            <div class="collapsible-deck-body" id="juz-deck-body">
+                <div class="juz-mosaic-grid" id="juz-roadmap-grid">
+                    <!-- يُنشأ برمجياً عبر khatmah.js -->
+                </div>
             </div>
         </section>
 
@@ -277,14 +319,21 @@
                     <i class="fa-solid fa-award" aria-hidden="true"></i>
                     <h2 class="deck-title">سجل الختمات السابقة</h2>
                 </div>
-                <button type="button" class="header-action-btn" id="btn-restart-khatmah" title="بدء ختمة جديدة مع أرشفة السابقة">
-                    <i class="fa-solid fa-rotate-left"></i>
-                    <span>بدء ختمة جديدة</span>
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="header-action-btn" id="btn-restart-khatmah" title="بدء ختمة جديدة مع أرشفة السابقة">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>بدء ختمة جديدة</span>
+                    </button>
+                    <button type="button" class="deck-collapse-btn" id="btn-collapse-history-deck" aria-label="طي أو توسيع سجل الختمات" title="طي / توسيع">
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="khatmah-history-deck" id="khatmah-history-list">
-                <!-- يُنشأ برمجياً عبر khatmah.js -->
+            <div class="collapsible-deck-body" id="history-deck-body">
+                <div class="khatmah-history-deck" id="khatmah-history-list">
+                    <!-- يُنشأ برمجياً عبر khatmah.js -->
+                </div>
             </div>
         </section>
 

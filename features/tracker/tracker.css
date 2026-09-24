@@ -772,8 +772,8 @@ body.is-past-day .btn-reset-tracker {
 }
 
 .streak-pill {
-    background: rgba(230, 126, 34, 0.12);
-    border: 1px solid rgba(230, 126, 34, 0.32);
+    background: rgba(197, 168, 89, 0.12);
+    border: 1px solid rgba(197, 168, 89, 0.35);
     border-radius: 20px;
     padding: 5px 12px;
     display: inline-flex;
@@ -781,12 +781,12 @@ body.is-past-day .btn-reset-tracker {
     gap: 6px;
     font-size: 12.5px;
     font-weight: 800;
-    color: #f39c12;
+    color: var(--gold-light);
 }
 
 .streak-pill i {
     font-size: 13px;
-    color: #e67e22;
+    color: var(--gold);
     background: none !important;
     border: none !important;
 }
@@ -812,8 +812,8 @@ body.is-past-day .btn-reset-tracker {
 }
 
 .status-summary-pill {
-    background: rgba(197, 168, 89, 0.08);
-    border: 1px solid var(--gold-border);
+    background: rgba(197, 168, 89, 0.1);
+    border: 1px solid rgba(197, 168, 89, 0.32);
     border-radius: 20px;
     padding: 5px 12px;
     display: inline-flex;
@@ -821,13 +821,13 @@ body.is-past-day .btn-reset-tracker {
     gap: 6px;
     font-size: 12.5px;
     font-weight: 700;
-    color: var(--text-muted);
+    color: var(--gold-light);
     transition: all 0.25s ease;
     user-select: none;
 }
 
 .status-summary-pill i {
-    color: #2ecc71;
+    color: var(--gold);
     font-size: 12px;
     background: none !important;
     border: none !important;

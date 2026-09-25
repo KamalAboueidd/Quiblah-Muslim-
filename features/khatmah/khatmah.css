@@ -189,9 +189,8 @@ body {
 }
 
 .header-action-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    border-top: 1px solid var(--top-rim);
+    background: rgba(255, 255, 255, 0.06);
+    border: none !important;
     border-radius: 22px;
     color: var(--text-main);
     padding: 8px 16px;
@@ -216,7 +215,7 @@ body {
 }
 
 .header-action-btn:hover {
-    background: rgba(197, 168, 89, 0.18);
+    background: rgba(197, 168, 89, 0.22);
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
@@ -1323,9 +1322,9 @@ body {
 .btn-guide-read {
     background: rgba(255, 255, 255, 0.06);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: none !important;
     border-radius: 14px;
-    padding: 8px 16px;
+    padding: 8px 18px;
     font-size: 13px;
     font-weight: 700;
     font-family: inherit;
@@ -1337,14 +1336,14 @@ body {
 }
 
 .btn-guide-read:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.14);
     color: var(--gold-light);
 }
 
 /* Deck Section Collapse Button */
 .deck-collapse-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
+    border: none !important;
     border-radius: 12px;
     width: 32px;
     height: 32px;
@@ -1357,9 +1356,8 @@ body {
 }
 
 .deck-collapse-btn:hover {
-    background: rgba(197, 168, 89, 0.15);
+    background: rgba(197, 168, 89, 0.22);
     color: var(--gold-light);
-    border-color: rgba(197, 168, 89, 0.3);
 }
 
 .deck-collapse-btn i {
@@ -1395,10 +1393,10 @@ body {
 }
 
 .btn-toggle-juz-expand {
-    background: rgba(197, 168, 89, 0.1);
-    border: 1px solid rgba(197, 168, 89, 0.28);
+    background: rgba(197, 168, 89, 0.12);
+    border: none !important;
     border-radius: 16px;
-    padding: 10px 22px;
+    padding: 10px 24px;
     font-size: 13px;
     font-weight: 800;
     font-family: inherit;
@@ -1412,10 +1410,10 @@ body {
 }
 
 .btn-toggle-juz-expand:hover {
-    background: rgba(197, 168, 89, 0.2);
-    border-color: rgba(197, 168, 89, 0.45);
+    background: rgba(197, 168, 89, 0.25);
+    color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .btn-toggle-juz-expand:active {

@@ -1035,19 +1035,42 @@
                 opacity: 1;
             }
 
+            .header-page-title {
+                display: none !important;
+            }
+
             .reader-top-bar { 
                 margin-bottom: 8px; 
-                padding: 4px 4px; 
+                padding-top: max(6px, env(safe-area-inset-top));
+                padding-bottom: 6px;
+                padding-left: max(8px, env(safe-area-inset-left));
+                padding-right: max(8px, env(safe-area-inset-right));
                 width: 100%;
                 max-width: 100%;
                 box-sizing: border-box;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 6px;
+                overflow: hidden;
             }
-            .menu-btn { font-size: 13px; gap: 5px; padding: 4px 4px; }
-            .header-page-title { font-size: 13px; gap: 5px; }
-            .back-home-btn { font-size: 13px; gap: 5px; padding: 4px 4px; }
-            .topbar-bookmark-btn { font-size: 13px; gap: 5px; padding: 4px 4px; }
-            .nav-right-cluster { gap: 8px; min-width: 0; }
-            .nav-actions-cluster { gap: 6px; flex-shrink: 0; }
+            .menu-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .back-home-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .topbar-bookmark-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .topbar-khatmah-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .nav-right-cluster { 
+                display: flex;
+                align-items: center;
+                gap: 8px; 
+                min-width: 0; 
+                flex-shrink: 1;
+            }
+            .nav-actions-cluster { 
+                display: flex;
+                align-items: center;
+                gap: 6px; 
+                flex-shrink: 0; 
+            }
 
             .reader-area { 
                 padding: 16px 14px 40px; 
@@ -1181,6 +1204,31 @@
                 font-size: 14px;
                 margin-bottom: 0;
             }
+        }
+
+        @media (max-width: 540px) {
+            .menu-btn span {
+                display: none;
+            }
+            .topbar-khatmah-btn .khatmah-btn-text {
+                display: none;
+            }
+            .topbar-bookmark-btn .bookmark-btn-text {
+                display: none;
+            }
+            .back-home-btn span {
+                display: none;
+            }
+            .menu-btn,
+            .topbar-khatmah-btn,
+            .topbar-bookmark-btn,
+            .back-home-btn {
+                padding: 6px 8px !important;
+                font-size: 15px !important;
+            }
+            .nav-right-cluster { gap: 6px !important; }
+            .nav-actions-cluster { gap: 4px !important; }
+            .mushaf-page-badge { font-size: 11px !important; padding: 3px 7px !important; }
         }
 
         @media (max-width: 480px) {

@@ -14,8 +14,9 @@
         const overlay = document.getElementById('sidebar-overlay');
         
         function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
+            const isOpen = sidebar.classList.toggle('open');
+            overlay.classList.toggle('active', isOpen);
+            document.body.classList.toggle('sidebar-opened', isOpen);
         }
 
         menuBtn.addEventListener('click', (e) => {
@@ -34,6 +35,187 @@
         const contentContainer = document.getElementById('content-container');
         const readerArea = document.getElementById('reader-area');
         const mobileTitle = document.getElementById('mobile-title');
+
+        // --- Reading Settings & Appearance Management (إعدادات القراءة والمظهر والخط) ---
+        const READING_MODE_STORAGE_KEY = 'quiblah_quran_reading_mode';
+        const FONT_SIZE_STORAGE_KEY = 'quiblah_quran_font_size';
+        const THEME_STORAGE_KEY = 'quiblah_quran_theme';
+
+        let currentReadingMode = localStorage.getItem(READING_MODE_STORAGE_KEY) || 'pages';
+        if (currentReadingMode !== 'pages' && currentReadingMode !== 'continuous') {
+            currentReadingMode = 'pages';
+        }
+
+        let currentQuranFontSize = parseInt(localStorage.getItem(FONT_SIZE_STORAGE_KEY)) || 32;
+        if (isNaN(currentQuranFontSize) || currentQuranFontSize < 20 || currentQuranFontSize > 54) {
+            currentQuranFontSize = 32;
+        }
+
+        const VALID_THEMES = ['carousel', 'black-gold', 'paper-light', 'dark-static'];
+        let currentQuranTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'carousel';
+        if (!VALID_THEMES.includes(currentQuranTheme)) {
+            currentQuranTheme = 'carousel';
+        }
+
+        function getReadingMode() {
+            return currentReadingMode;
+        }
+
+        function setReadingMode(mode, userInitiated = true) {
+            if (mode !== 'pages' && mode !== 'continuous') mode = 'pages';
+            currentReadingMode = mode;
+            try {
+                localStorage.setItem(READING_MODE_STORAGE_KEY, mode);
+            } catch(e) {
+                console.warn("Failed to save reading mode:", e);
+            }
+            updateModeSwitcherUI();
+
+            if (userInitiated) {
+                const label = mode === 'pages' ? 'تصفح بالصفحات' : 'التمرير المستمر';
+                if (typeof showToast === 'function') {
+                    showToast(`تم ضبط طريقة العرض: ${label}`, 'fa-solid fa-sliders');
+                }
+
+                if (mode === 'pages') {
+                    const page = currentVisiblePage || (currentSurahNumber ? getStartPageForSurah(currentSurahNumber) : 1);
+                    loadMushafPage(page);
+                } else {
+                    if (currentSurahNumber) {
+                        loadSurah(currentSurahNumber);
+                    } else if (currentVisiblePage) {
+                        let sNum = 1;
+                        if (window.QURAN_PAGES_MAP && window.QURAN_PAGES_MAP[currentVisiblePage]) {
+                            sNum = window.QURAN_PAGES_MAP[currentVisiblePage][1][0][0];
+                        }
+                        loadSurah(sNum);
+                    }
+                }
+            }
+        }
+
+        function updateModeSwitcherUI() {
+            // Update landing cards if present
+            const landingPages = document.getElementById('landing-card-pages');
+            const landingCont = document.getElementById('landing-card-continuous');
+            if (landingPages) {
+                landingPages.classList.toggle('is-selected', currentReadingMode === 'pages');
+                const icon = landingPages.querySelector('.landing-card-radio i');
+                if (icon) {
+                    icon.className = currentReadingMode === 'pages' ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
+                }
+            }
+            if (landingCont) {
+                landingCont.classList.toggle('is-selected', currentReadingMode === 'continuous');
+                const icon = landingCont.querySelector('.landing-card-radio i');
+                if (icon) {
+                    icon.className = currentReadingMode === 'continuous' ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
+                }
+            }
+
+            // Update modal pills if present
+            const pillPages = document.getElementById('modal-pill-pages');
+            const pillCont = document.getElementById('modal-pill-continuous');
+            if (pillPages) {
+                pillPages.classList.toggle('active', currentReadingMode === 'pages');
+            }
+            if (pillCont) {
+                pillCont.classList.toggle('active', currentReadingMode === 'continuous');
+            }
+        }
+
+        // --- Font Size Logic ---
+        function applyQuranFontSize(size, save = true) {
+            size = Math.max(18, Math.min(60, parseInt(size) || 32));
+            currentQuranFontSize = size;
+            document.documentElement.style.setProperty('--quran-font-size', `${size}px`);
+
+            const lh = size >= 40 ? '3.0' : (size >= 30 ? '2.8' : '2.5');
+            document.documentElement.style.setProperty('--quran-line-height', lh);
+
+            if (save) {
+                try { localStorage.setItem(FONT_SIZE_STORAGE_KEY, size.toString()); } catch(e){}
+            }
+
+            const fontInput = document.getElementById('quran-font-input');
+            if (fontInput && document.activeElement !== fontInput) {
+                fontInput.value = size;
+            }
+
+            const previewAyah = document.getElementById('font-preview-ayah');
+            if (previewAyah) {
+                previewAyah.style.fontSize = `${size}px`;
+                previewAyah.style.lineHeight = lh;
+            }
+        }
+
+        function adjustQuranFontSize(delta) {
+            applyQuranFontSize(currentQuranFontSize + delta, true);
+        }
+
+        function onQuranFontSizeInput(val) {
+            applyQuranFontSize(val, true);
+        }
+
+        // --- Theme & Senior Comfort Backgrounds Logic ---
+        function applyQuranTheme(theme, save = true) {
+            if (!VALID_THEMES.includes(theme)) theme = 'carousel';
+            currentQuranTheme = theme;
+
+            VALID_THEMES.forEach(t => document.body.classList.remove(`theme-${t}`));
+            document.body.classList.add(`theme-${theme}`);
+
+            if (save) {
+                try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch(e){}
+            }
+
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            const activeCard = document.getElementById(`theme-card-${theme}`);
+            if (activeCard) activeCard.classList.add('active');
+
+            if (save && typeof showToast === 'function') {
+                const names = {
+                    'carousel': 'خلفيات متحركة دورية',
+                    'black-gold': 'أسود ملكي وذهبي (مريح للعين)',
+                    'paper-light': 'ورقي كلاسيكي (أبيض وأسود)',
+                    'dark-static': 'رمادي داكن هادئ'
+                };
+                showToast(`تم تطبيق المظهر: ${names[theme] || theme}`, 'fa-solid fa-palette');
+            }
+        }
+
+        function setQuranTheme(theme) {
+            applyQuranTheme(theme, true);
+        }
+
+        // --- Settings Modal Open / Close / Reset ---
+        function openQuranSettingsModal() {
+            const backdrop = document.getElementById('settings-modal-backdrop');
+            if (!backdrop) return;
+
+            applyQuranFontSize(currentQuranFontSize, false);
+            applyQuranTheme(currentQuranTheme, false);
+            updateModeSwitcherUI();
+
+            backdrop.classList.add('show');
+        }
+
+        function closeQuranSettingsModal() {
+            const backdrop = document.getElementById('settings-modal-backdrop');
+            if (backdrop) backdrop.classList.remove('show');
+        }
+
+        function resetQuranSettings() {
+            applyQuranFontSize(32, true);
+            setQuranTheme('carousel');
+            setReadingMode('pages', true);
+            if (typeof showToast === 'function') {
+                showToast('تمت استعادة الإعدادات الافتراضية', 'fa-solid fa-rotate-left');
+            }
+        }
+
         // --- Bookmark Management (علامة القراءة وموضع التوقف) ---
         const BOOKMARK_STORAGE_KEY = 'quiblah_quran_bookmark';
 
@@ -77,9 +259,11 @@
             try {
                 const snippet = (ayahText || '').trim().replace(/\s+/g, ' ').substring(0, 140);
                 const resolvedSurahName = surahName || (allSurahs.find(s => s.number === parseInt(surahNumber))?.name || `سورة ${surahNumber}`);
+                const pageNumber = (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${surahNumber}:${ayahNumber}`]) || getPageForAyah(parseInt(surahNumber), parseInt(ayahNumber));
                 const bookmark = {
                     surahNumber: parseInt(surahNumber),
                     ayahNumber: parseInt(ayahNumber),
+                    pageNumber: pageNumber,
                     surahName: resolvedSurahName,
                     ayahSnippet: snippet,
                     timestamp: Date.now()
@@ -207,36 +391,33 @@
             if (wrap && !wrap.dataset.bound) {
                 wrap.dataset.bound = 'true';
 
-                // Touch support: show on touch, immediately hide on lift ("أول لما أشيل إيدي الغي وأخفيها")
-                let touchActive = false;
+                // Click / Tap toggle: opens and stays open until dismissed
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    wrap.classList.toggle('is-open');
+                });
 
-                btn.addEventListener('touchstart', (e) => {
-                    touchActive = true;
+                // Desktop mouse hover support
+                wrap.addEventListener('mouseenter', () => {
                     wrap.classList.add('is-open');
-                }, { passive: true });
+                });
+                wrap.addEventListener('mouseleave', () => {
+                    wrap.classList.remove('is-open');
+                });
 
-                const closeOnRelease = () => {
-                    if (touchActive) {
-                        touchActive = false;
-                        wrap.classList.remove('is-open');
-                    }
-                };
-
-                btn.addEventListener('touchend', closeOnRelease, { passive: true });
-                btn.addEventListener('touchcancel', closeOnRelease, { passive: true });
-
-                // Dismiss if tapped outside
-                document.addEventListener('touchstart', (e) => {
-                    if (!wrap.contains(e.target)) {
-                        wrap.classList.remove('is-open');
-                    }
-                }, { passive: true });
-
+                // Dismiss if clicked or tapped outside
                 document.addEventListener('click', (e) => {
                     if (!wrap.contains(e.target)) {
                         wrap.classList.remove('is-open');
                     }
                 });
+
+                document.addEventListener('touchstart', (e) => {
+                    if (!wrap.contains(e.target)) {
+                        wrap.classList.remove('is-open');
+                    }
+                }, { passive: true });
             }
 
             if (bm) {
@@ -294,10 +475,19 @@
             const wrap = document.getElementById('topbar-bookmark-wrap');
             if (wrap) wrap.classList.remove('is-open');
 
-            if (currentSurahNumber === bm.surahNumber) {
-                scrollToAyah(bm.ayahNumber, true);
+            if (currentReadingMode === 'pages') {
+                const targetPage = bm.pageNumber || (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${bm.surahNumber}:${bm.ayahNumber}`]) || getPageForAyah(bm.surahNumber, bm.ayahNumber);
+                if (currentVisiblePage === targetPage) {
+                    scrollToAyah(bm.ayahNumber, true);
+                } else {
+                    loadMushafPage(targetPage, bm.ayahNumber);
+                }
             } else {
-                loadSurah(bm.surahNumber, bm.ayahNumber);
+                if (currentSurahNumber === bm.surahNumber) {
+                    scrollToAyah(bm.ayahNumber, true);
+                } else {
+                    loadSurah(bm.surahNumber, bm.ayahNumber);
+                }
             }
         }
 
@@ -403,12 +593,19 @@
                 const isActive = (currentSurahNumber && surah.number === currentSurahNumber) ? 'active' : '';
                 const isBookmarked = (bm && bm.surahNumber === surah.number);
                 const bookmarkBadge = isBookmarked ? `<span class="surah-bm-tag" title="علامة قراءة عند الآية ${bm.ayahNumber}"><i class="fa-solid fa-bookmark"></i> آية ${bm.ayahNumber}</span>` : '';
+                const startPage = getStartPageForSurah(surah.number);
                 html += `
                     <div class="surah-item ${isActive}" data-id="${surah.number}">
                         <div class="surah-number">${surah.number}</div>
                         <div class="surah-details">
                             <div class="surah-name">${surah.name} ${bookmarkBadge}</div>
-                            <div class="surah-info">${surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'} • آياتها ${surah.numberOfAyahs}</div>
+                            <div class="surah-info">
+                                <span>${surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+                                <span class="info-sep">•</span>
+                                <span>آياتها ${surah.numberOfAyahs}</span>
+                                <span class="info-sep">•</span>
+                                <span class="surah-page-label">ص ${startPage}</span>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -424,7 +621,12 @@
                     document.querySelectorAll('.surah-item').forEach(el => el.classList.remove('active'));
                     this.classList.add('active');
                     
-                    loadSurah(id);
+                    if (currentReadingMode === 'pages') {
+                        const startPage = getStartPageForSurah(id);
+                        loadMushafPage(startPage);
+                    } else {
+                        loadSurah(id);
+                    }
                     
                     // Close sidebar on mobile
                     if (window.innerWidth <= 900 && sidebar.classList.contains('open')) {
@@ -564,6 +766,12 @@
 
         // Load Specific Surah Content (with instant caching & multi-tier resilience)
         async function loadSurah(id, targetAyah = null) {
+            if (currentReadingMode === 'pages') {
+                const targetPage = targetAyah ? getPageForAyah(id, targetAyah) : getStartPageForSurah(id);
+                loadMushafPage(targetPage, targetAyah);
+                return;
+            }
+
             currentSurahNumber = id;
             readerArea.scrollTop = 0;
 
@@ -644,26 +852,57 @@
         let currentVisiblePage = 1;
         let currentVisibleJuz = 1;
 
-        // Calculate page for any ayah using QURAN_SURAH_PAGES
+        // Get start page for any surah
+        function getStartPageForSurah(surahNum) {
+            const sNum = parseInt(surahNum);
+            if (window.QURAN_SURAH_PAGES) {
+                const found = window.QURAN_SURAH_PAGES.find(s => s.num === sNum);
+                if (found) return found.page;
+            }
+            if (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${sNum}:1`]) {
+                return window.QURAN_AYAH_PAGE_MAP[`${sNum}:1`];
+            }
+            return 1;
+        }
+
+        // Calculate page for any ayah using accurate Medina Mushaf map
         function getPageForAyah(surahNum, ayahNum) {
+            const sNum = parseInt(surahNum);
+            const aNum = parseInt(ayahNum);
+            if (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${sNum}:${aNum}`]) {
+                return window.QURAN_AYAH_PAGE_MAP[`${sNum}:${aNum}`];
+            }
+
             const pages = window.QURAN_SURAH_PAGES;
             if (!pages) return 1;
-            const currentSurah = pages.find(s => s.num === surahNum);
+            const currentSurah = pages.find(s => s.num === sNum);
             if (!currentSurah) return 1;
-            if (surahNum === 114) return 604;
+            if (sNum === 114) return 604;
 
-            const nextSurah = pages.find(s => s.num === surahNum + 1);
+            const nextSurah = pages.find(s => s.num === sNum + 1);
             const startPage = currentSurah.page;
             const endPage = nextSurah ? Math.max(startPage, nextSurah.page - 1) : 604;
 
             if (startPage === endPage) return startPage;
 
-            const meta = window.QURAN_SURAHS_DATA ? window.QURAN_SURAHS_DATA.find(s => s.number === surahNum) : null;
+            const meta = window.QURAN_SURAHS_DATA ? window.QURAN_SURAHS_DATA.find(s => s.number === sNum) : null;
             const totalAyahs = (meta && meta.numberOfAyahs) ? meta.numberOfAyahs : 1;
 
-            const ratio = Math.max(0, Math.min(1, (ayahNum - 1) / totalAyahs));
+            const ratio = Math.max(0, Math.min(1, (aNum - 1) / totalAyahs));
             const estimatedPage = Math.floor(startPage + ratio * (endPage - startPage + 1));
             return Math.min(endPage, Math.max(startPage, estimatedPage));
+        }
+
+        // Jump directly to any mushaf page
+        function jumpToMushafPage(val) {
+            const pageNum = parseInt(val);
+            if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= 604) {
+                loadMushafPage(pageNum);
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast('يرجى إدخال رقم صفحة صحيح بين 1 و 604', 'fa-solid fa-circle-exclamation');
+                }
+            }
         }
 
         // Calculate juz for any mushaf page using QURAN_JUZ_DATA
@@ -732,6 +971,8 @@
                 mobileTitle.innerHTML = `<i class="fa-solid fa-book-quran"></i> <span>القرآن الكريم</span>`;
             }
 
+            const isPages = currentReadingMode === 'pages';
+
             contentContainer.innerHTML = `
                 <div class="surah-picker-landing">
                     <div class="picker-icon-box">
@@ -741,6 +982,41 @@
                     <h2 class="picker-main-title">اختر السورة المباركة للبدء في القراءة</h2>
                     <p class="picker-subtext">تصفح فهرس سور القرآن الكريم (114 سورة) واقرأ آيات الذكر الحكيم برسم المصحف العثماني الشريف</p>
                     
+                    <!-- Reading Mode Choice Cards on Landing -->
+                    <div class="landing-mode-selector-wrap">
+                        <div class="landing-mode-title">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>طريقة عرض وترتيب المصحف المفضلة لديك:</span>
+                        </div>
+                        <div class="landing-mode-cards-grid">
+                            <div class="landing-mode-card ${isPages ? 'is-selected' : ''}" id="landing-card-pages" onclick="setReadingMode('pages')">
+                                <div class="landing-card-top">
+                                    <div class="landing-card-title-group">
+                                        <i class="fa-solid fa-book-open landing-card-pure-icon"></i>
+                                        <strong class="landing-card-name">تصفح بالصفحات</strong>
+                                        <span class="landing-card-badge">الافتراضي</span>
+                                    </div>
+                                    <div class="landing-card-radio">
+                                        <i class="${isPages ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'}"></i>
+                                    </div>
+                                </div>
+                                <div class="landing-card-desc">عرض المصحف الحقيقي صفحة بصفحة (604 صفحات) مع تنقل سهل يميناً ويساراً</div>
+                            </div>
+                            <div class="landing-mode-card ${!isPages ? 'is-selected' : ''}" id="landing-card-continuous" onclick="setReadingMode('continuous')">
+                                <div class="landing-card-top">
+                                    <div class="landing-card-title-group">
+                                        <i class="fa-solid fa-arrows-up-down landing-card-pure-icon"></i>
+                                        <strong class="landing-card-name">تمرير مستمر</strong>
+                                    </div>
+                                    <div class="landing-card-radio">
+                                        <i class="${!isPages ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'}"></i>
+                                    </div>
+                                </div>
+                                <div class="landing-card-desc">تتابع السور تلقائياً مع تحميل السورة التالية عند التمرير لأسفل دون تقطيع</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="button" class="open-surah-drawer-btn" onclick="toggleSidebar()">
                         <i class="fa-solid fa-list-ul"></i>
                         <span>فتح قائمة السور (114 سورة)</span>
@@ -748,25 +1024,32 @@
                 </div>
             `;
             updateTopbarBookmarkUI();
+            updateModeSwitcherUI();
         }
 
         function buildSurahSectionHtml(data, isFirst = false) {
             const bm = getQuranBookmark();
             let html = `
                 <div class="single-surah-block" id="surah-block-${data.number}" data-surah="${data.number}">
-                    <div class="surah-header-card">
-                        <h1 class="surah-title">${data.name}</h1>
-                        <div class="surah-meta">
-                            <span>${data.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
-                            <span>آياتها: ${data.numberOfAyahs}</span>
-                        </div>
-                        <div class="surah-header-actions">
-                            <a href="tafseer.html?surah=${data.number}" class="header-action-link" title="تفسير السورة">
-                                <i class="fa-solid fa-book-open-reader"></i> <span>تفسير السورة</span>
-                            </a>
-                            <button onclick="playSurahGlobalAudio(${data.number}, '${escapeQuotes(data.name)}')" class="header-action-link" title="استمع للسورة">
-                                <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
-                            </button>
+                    <div class="surah-header-card compact-header" id="surah-header-${data.number}">
+                        <div class="surah-header-row">
+                            <div class="surah-header-actions-side">
+                                <a href="tafseer.html?surah=${data.number}" class="header-action-link" title="تفسير السورة">
+                                    <i class="fa-solid fa-book-open-reader"></i> <span>تفسير السورة</span>
+                                </a>
+                                <button type="button" onclick="playSurahGlobalAudio(${data.number}, '${escapeQuotes(data.name)}')" class="header-action-link" title="استمع للسورة">
+                                    <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
+                                </button>
+                            </div>
+                            <div class="surah-header-center-info">
+                                <h1 class="surah-title">${data.name}</h1>
+                                <div class="surah-meta">
+                                    <span>${data.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+                                    <span class="meta-dot">•</span>
+                                    <span>آياتها: ${data.numberOfAyahs}</span>
+                                </div>
+                            </div>
+                            <div class="surah-header-side-placeholder"></div>
                         </div>
                     </div>
             `;
@@ -794,7 +1077,7 @@
                         <span class="ayah-actions-wrap">
                             ${isBookmarked ? '<span class="bookmark-ribbon-tag"><i class="fa-solid fa-bookmark"></i> موضع توقفك</span>' : ''}
                             <span class="verse-number" onclick="showQuickTafseer(${data.number}, ${ayah.numberInSurah})" title="تفسير الآية (${ayah.numberInSurah})">${ayah.numberInSurah}</span>
-                            <button type="button" class="ayah-bookmark-btn ${isBookmarked ? 'is-bookmarked' : ''}" onclick="toggleAyahBookmark(${data.number}, ${ayah.numberInSurah}, '${escapeQuotes(data.name)}', null, event)" title="${isBookmarked ? 'إزالة علامة القراءة' : 'وضع علامة قراءة عند هذه الآية'}">
+                            <button type="button" class="ayah-bookmark-btn ${isBookmarked ? 'is-bookmarked' : ''}" onclick="toggleAyahBookmark(${data.number}, ${ayah.numberInSurah}, '${escapeQuotes(data.name)}', ${ayahPage}, event)" title="${isBookmarked ? 'إزالة علامة القراءة' : 'وضع علامة قراءة عند هذه الآية'}">
                                 <i class="${isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'}"></i>
                             </button>
                         </span>
@@ -802,14 +1085,28 @@
                 `;
             });
 
+            const nextNum = data.number < 114 ? data.number + 1 : null;
+
             html += `
-                    <div class="sadaqallah-box">
-                        <span class="sadaqallah-line"></span>
-                        <span class="sadaqallah-text">« صَدَقَ اللَّهُ الْعَظِيمُ »</span>
-                        <span class="sadaqallah-line"></span>
+                        <!-- Pure Golden Typography Navigation Links -->
+                        <div class="surah-end-actions" id="surah-end-${data.number}">
+                            <div class="surah-end-stars">✦ &nbsp; ✦ &nbsp; ✦</div>
+                            <div class="surah-end-links-row">
+                                ${nextNum ? `
+                                    <a href="javascript:void(0)" class="surah-gold-link next-surah-link" onclick="loadSurah(${nextNum})" title="الانتقال إلى السورة التالية">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                        <span>الانتقال إلى السورة التالية</span>
+                                    </a>
+                                ` : ''}
+
+                                <a href="javascript:void(0)" class="surah-gold-link catalog-surah-link" onclick="toggleSidebar()" title="عرض قائمة وفهرس سور القرآن الكريم كاملة">
+                                    <i class="fa-solid fa-list-ul"></i>
+                                    <span>عرض قائمة السور</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
             `;
 
             return html;
@@ -821,12 +1118,14 @@
             if (mobileTitle) mobileTitle.innerText = data.name;
 
             const surahHtml = buildSurahSectionHtml(data, true);
-            const sentinelHtml = `
+
+            const sentinelHtml = (currentReadingMode === 'continuous') ? `
                 <div id="infinite-scroll-sentinel" class="infinite-loading-indicator" style="display: none;">
                     <i class="fa-solid fa-circle-notch fa-spin"></i>
                     <span>جاري تحضير السورة التالية...</span>
                 </div>
-            `;
+            ` : '';
+
             const footerHtml = `
                 <div id="quran-footer" style="text-align: center; padding: 20px; margin-top: 40px; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6;">
                     جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
@@ -844,6 +1143,248 @@
                 setTimeout(() => {
                     scrollToAyah(targetAyah, true);
                 }, 150);
+            }
+        }
+
+        // =========================================================================
+        // Medina Mushaf Page-by-Page Reading Mode (تصفح صفحات مصحف المدينة المنورة 1-604)
+        // =========================================================================
+        async function loadMushafPage(pageNum, targetAyah = null) {
+            pageNum = Math.max(1, Math.min(604, parseInt(pageNum) || 1));
+            currentVisiblePage = pageNum;
+            readerArea.scrollTop = 0;
+
+            try {
+                localStorage.setItem('quiblah_last_page', pageNum);
+            } catch(e) {}
+
+            const pageInfo = (window.QURAN_PAGES_MAP && window.QURAN_PAGES_MAP[pageNum]) || null;
+            const juzNum = pageInfo ? pageInfo[0] : getJuzForPage(pageNum);
+            const ranges = pageInfo ? pageInfo[1] : []; // array of [surahNum, startAyah, endAyah]
+
+            if (!ranges || ranges.length === 0) {
+                let sNum = 1;
+                if (window.QURAN_SURAH_PAGES) {
+                    for (let i = 0; i < window.QURAN_SURAH_PAGES.length; i++) {
+                        if (window.QURAN_SURAH_PAGES[i].page <= pageNum) sNum = window.QURAN_SURAH_PAGES[i].num;
+                        else break;
+                    }
+                }
+                ranges.push([sNum, 1, 10]);
+            }
+
+            const primarySurahNum = ranges[0][0];
+            currentSurahNumber = primarySurahNum;
+            loadedSurahIds = [primarySurahNum];
+
+            // Sync active state in sidebar
+            document.querySelectorAll('.surah-item').forEach(el => {
+                if (parseInt(el.getAttribute('data-id')) === primarySurahNum) {
+                    el.classList.add('active');
+                    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            // Close sidebar on mobile
+            if (window.innerWidth <= 900 && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
+
+            updateCurrentMushafPageUI(pageNum);
+
+            const primaryMeta = (allSurahs && allSurahs.find(s => s.number === primarySurahNum)) || 
+                                (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === primarySurahNum));
+            if (mobileTitle) {
+                mobileTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> <span>${primaryMeta ? primaryMeta.name : 'سورة ' + primarySurahNum} (ص ${pageNum})</span>`;
+            }
+
+            // Ensure full surah data is ready for all ranges on this page
+            for (const r of ranges) {
+                const sId = r[0];
+                if (!window.QURAN_FULL_DATA || !window.QURAN_FULL_DATA[sId]) {
+                    try {
+                        const fetched = await smartFetchSurah(sId);
+                        if (!window.QURAN_FULL_DATA) window.QURAN_FULL_DATA = {};
+                        window.QURAN_FULL_DATA[sId] = fetched;
+                    } catch(err) {
+                        console.error(`Failed to fetch surah ${sId} for page ${pageNum}:`, err);
+                    }
+                }
+            }
+
+            const bm = getQuranBookmark();
+            let pageHtml = `<div class="mushaf-page-wrapper" id="mushaf-page-${pageNum}" data-page="${pageNum}">`;
+
+            // Process each surah range on this page
+            ranges.forEach((range, rIdx) => {
+                const sNum = range[0];
+                const startAyah = range[1];
+                const endAyah = range[2];
+
+                const sMeta = (allSurahs && allSurahs.find(s => s.number === sNum)) || 
+                              (window.QURAN_SURAHS_DATA && window.QURAN_SURAHS_DATA.find(s => s.number === sNum)) ||
+                              { name: `سورة ${sNum}`, numberOfAyahs: endAyah, revelationType: 'Meccan' };
+
+                const fullSurah = (window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[sNum]) || 
+                                  (window.SURAHS_INITIAL_CACHE && window.SURAHS_INITIAL_CACHE[sNum]);
+
+                // If this is the first ayah of the surah, render compact Surah Header + Bismillah
+                if (startAyah === 1) {
+                    pageHtml += `
+                        <div class="surah-header-card compact-header" id="surah-header-${sNum}">
+                            <div class="surah-header-row">
+                                <div class="surah-header-actions-side">
+                                    <a href="tafseer.html?surah=${sNum}" class="header-action-link" title="تفسير ${escapeHtml(sMeta.name)}">
+                                        <i class="fa-solid fa-book-open-reader"></i> <span>تفسير السورة</span>
+                                    </a>
+                                    <button type="button" onclick="playSurahGlobalAudio(${sNum}, '${escapeQuotes(sMeta.name)}')" class="header-action-link" title="استمع للسورة">
+                                        <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
+                                    </button>
+                                </div>
+                                <div class="surah-header-center-info">
+                                    <h1 class="surah-title">${sMeta.name}</h1>
+                                    <div class="surah-meta">
+                                        <span>${sMeta.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+                                        <span class="meta-dot">•</span>
+                                        <span>آياتها: ${sMeta.numberOfAyahs}</span>
+                                    </div>
+                                </div>
+                                <div class="surah-header-side-placeholder"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (sNum !== 1 && sNum !== 9) {
+                        pageHtml += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+                    }
+                } else if (rIdx === 0) {
+                    // Page continues an existing surah: render thin, graceful mushaf page header
+                    pageHtml += `
+                        <div class="mushaf-page-mini-header">
+                            <div class="page-mini-actions">
+                                <a href="tafseer.html?surah=${sNum}" class="header-action-link mini-link" title="تفسير ${escapeHtml(sMeta.name)}">
+                                    <i class="fa-solid fa-book-open-reader"></i> <span>تفسير</span>
+                                </a>
+                                <button type="button" onclick="playSurahGlobalAudio(${sNum}, '${escapeQuotes(sMeta.name)}')" class="header-action-link mini-link" title="استمع للسورة">
+                                    <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
+                                </button>
+                            </div>
+                            <div class="page-mini-center">
+                                <span class="page-mini-surah">${sMeta.name}</span>
+                                <span class="page-mini-sep">•</span>
+                                <span class="page-mini-juz">الجزء ${juzNum}</span>
+                            </div>
+                            <div class="page-mini-tag">
+                                <span>ص ${pageNum}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                pageHtml += `<div class="verses-container mushaf-page-verses">`;
+
+                if (fullSurah && fullSurah.ayahs) {
+                    for (let aNum = startAyah; aNum <= endAyah; aNum++) {
+                        const ayahObj = fullSurah.ayahs.find(a => a.numberInSurah === aNum) || fullSurah.ayahs[aNum - 1];
+                        if (!ayahObj) continue;
+
+                        let text = (ayahObj.text || '').replace(/^\ufeff/, '');
+                        if (sNum !== 1 && aNum === 1) {
+                            text = text.replace(/^[\ufeff]?بّ?ِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/, '');
+                        }
+
+                        const isBookmarked = (bm && bm.surahNumber === sNum && bm.ayahNumber === aNum);
+
+                        pageHtml += `
+                            <span class="ayah-unit ${isBookmarked ? 'is-bookmarked' : ''}" id="ayah-unit-${sNum}-${aNum}" data-surah="${sNum}" data-ayah="${aNum}" data-page="${pageNum}" data-juz="${juzNum}">
+                                <span class="verse">${text}</span>
+                                <span class="ayah-actions-wrap">
+                                    ${isBookmarked ? '<span class="bookmark-ribbon-tag"><i class="fa-solid fa-bookmark"></i> موضع توقفك</span>' : ''}
+                                    <span class="verse-number" onclick="showQuickTafseer(${sNum}, ${aNum})" title="تفسير الآية (${aNum})">${aNum}</span>
+                                    <button type="button" class="ayah-bookmark-btn ${isBookmarked ? 'is-bookmarked' : ''}" onclick="toggleAyahBookmark(${sNum}, ${aNum}, '${escapeQuotes(sMeta.name)}', ${pageNum}, event)" title="${isBookmarked ? 'إزالة علامة القراءة' : 'وضع علامة قراءة عند هذه الآية'}">
+                                        <i class="${isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'}"></i>
+                                    </button>
+                                </span>
+                            </span>
+                        `;
+                    }
+                }
+
+                pageHtml += `</div>`; // closes verses-container
+
+
+            });
+
+            // Mushaf Page Bottom Navigation
+            const prevP = pageNum > 1 ? pageNum - 1 : null;
+            const nextP = pageNum < 604 ? pageNum + 1 : null;
+
+            pageHtml += `
+                <div class="mushaf-page-navigation" id="mushaf-page-navigation" role="navigation" aria-label="تنقل صفحات المصحف">
+                    <button type="button" class="page-nav-btn prev-page-btn" ${!prevP ? 'disabled' : `onclick="loadMushafPage(${prevP})"`} title="${prevP ? `الانتقال إلى صفحة ${prevP}` : 'أول صفحة في المصحف'}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                        <span class="nav-btn-text">${prevP ? `صفحة ${prevP}` : 'بداية المصحف'}</span>
+                    </button>
+
+                    <div class="page-nav-center-info">
+                        <div class="page-nav-title">صفحة <strong>${pageNum}</strong> من <strong>604</strong></div>
+                        <div class="page-nav-sub">
+                            <span>الجزء ${juzNum}</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="page-nav-btn next-page-btn" ${!nextP ? 'disabled' : `onclick="loadMushafPage(${nextP})"`} title="${nextP ? `الانتقال إلى صفحة ${nextP}` : 'آخر صفحة في المصحف'}">
+                        <span class="nav-btn-text">${nextP ? `صفحة ${nextP}` : 'نهاية المصحف'}</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+
+                <!-- Quick Page Jump Bar -->
+                <div class="mushaf-quick-jump-strip">
+                    <span class="jump-label"><i class="fa-solid fa-compass"></i> انتقل لصفحة:</span>
+                    <div class="jump-input-wrap">
+                        <input type="number" id="quick-page-input" min="1" max="604" value="${pageNum}" onkeydown="if(event.key==='Enter') jumpToMushafPage(this.value)" placeholder="1 - 604" aria-label="رقم صفحة المصحف">
+                        <button type="button" class="jump-submit-btn" onclick="jumpToMushafPage(document.getElementById('quick-page-input').value)">
+                            <span>انتقال</span> <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Desktop Floating Edge Arrows -->
+                <div class="mushaf-floating-nav">
+                    ${prevP ? `
+                        <button type="button" class="floating-page-arrow floating-prev" onclick="loadMushafPage(${prevP})" title="الصفحة السابقة (ص ${prevP})">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    ` : ''}
+                    ${nextP ? `
+                        <button type="button" class="floating-page-arrow floating-next" onclick="loadMushafPage(${nextP})" title="الصفحة التالية (ص ${nextP})">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            pageHtml += `</div>`; // closes mushaf-page-wrapper
+
+            const footerHtml = `
+                <div id="quran-footer" style="text-align: center; padding: 20px; margin-top: 30px; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6;">
+                    جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
+                    تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                </div>
+            `;
+
+            contentContainer.innerHTML = pageHtml + footerHtml;
+            updateTopbarBookmarkUI();
+
+            history.replaceState(null, '', `?page=${pageNum}`);
+
+            if (targetAyah) {
+                setTimeout(() => {
+                    scrollToAyah(targetAyah, true);
+                }, 120);
             }
         }
 
@@ -900,10 +1441,12 @@
         function onReaderAreaScrolled() {
             if (!loadedSurahIds || loadedSurahIds.length === 0) return;
 
-            // 1. Infinite scroll check
-            const scrollBottom = readerArea.scrollTop + readerArea.clientHeight;
-            if (scrollBottom >= readerArea.scrollHeight - 650) {
-                loadNextSurahInInfiniteScroll();
+            // 1. Infinite scroll check (ONLY when continuous mode is active!)
+            if (currentReadingMode === 'continuous') {
+                const scrollBottom = readerArea.scrollTop + readerArea.clientHeight;
+                if (scrollBottom >= readerArea.scrollHeight - 650) {
+                    loadNextSurahInInfiniteScroll();
+                }
             }
 
             // 2. Track current visible ayah and page
@@ -1170,11 +1713,73 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeQuickTafseer();
+            if (e.key === 'Escape') {
+                closeQuickTafseer();
+                closeQuranSettingsModal();
+                return;
+            }
+
+            // Keyboard Page Flip in Pages Mode (ArrowLeft = Next Page in RTL, ArrowRight = Prev Page)
+            if (currentReadingMode === 'pages' && currentVisiblePage) {
+                if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+                    return;
+                }
+                const modal = document.getElementById('settings-modal-backdrop');
+                if (modal && modal.classList.contains('active')) return;
+                const tafseerM = document.getElementById('tafseer-modal-backdrop');
+                if (tafseerM && tafseerM.classList.contains('active')) return;
+
+                if (e.key === 'ArrowLeft') {
+                    if (currentVisiblePage < 604) loadMushafPage(currentVisiblePage + 1);
+                } else if (e.key === 'ArrowRight') {
+                    if (currentVisiblePage > 1) loadMushafPage(currentVisiblePage - 1);
+                }
+            }
         });
+
+        // Touch Swipe Handling on readerArea for Page-by-Page Mode
+        let touchStartX = 0;
+        let touchStartY = 0;
+        if (readerArea) {
+            readerArea.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            readerArea.addEventListener('touchend', (e) => {
+                if (currentReadingMode !== 'pages' || !currentVisiblePage) return;
+                if (e.changedTouches && e.changedTouches.length === 1) {
+                    const deltaX = e.changedTouches[0].clientX - touchStartX;
+                    const deltaY = e.changedTouches[0].clientY - touchStartY;
+                    // Check if horizontal swipe is dominant and significant (> 55px)
+                    if (Math.abs(deltaX) > 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+                        if (deltaX < 0) {
+                            // Swiped Left -> In RTL, Next Page
+                            if (currentVisiblePage < 604) loadMushafPage(currentVisiblePage + 1);
+                        } else {
+                            // Swiped Right -> Previous Page
+                            if (currentVisiblePage > 1) loadMushafPage(currentVisiblePage - 1);
+                        }
+                    }
+                }
+            }, { passive: true });
+        }
+
+        const settingsBackdropEl = document.getElementById('settings-modal-backdrop');
+        if (settingsBackdropEl) {
+            settingsBackdropEl.addEventListener('click', (e) => {
+                if (e.target.id === 'settings-modal-backdrop') closeQuranSettingsModal();
+            });
+        }
 
         // Expose helpers globally for inline onclick handlers
         window.loadSurah = loadSurah;
+        window.loadMushafPage = loadMushafPage;
+        window.jumpToMushafPage = jumpToMushafPage;
+        window.getStartPageForSurah = getStartPageForSurah;
+        window.getPageForAyah = getPageForAyah;
         window.toggleSidebar = toggleSidebar;
         window.renderSurahPickerLanding = renderSurahPickerLanding;
         window.toggleAyahBookmark = toggleAyahBookmark;
@@ -1183,6 +1788,19 @@
         window.clearQuranBookmark = clearQuranBookmark;
         window.toggleBookmarkFromModal = toggleBookmarkFromModal;
         window.scrollToAyah = scrollToAyah;
+        window.setReadingMode = setReadingMode;
+        window.getReadingMode = getReadingMode;
+        window.openQuranSettingsModal = openQuranSettingsModal;
+        window.closeQuranSettingsModal = closeQuranSettingsModal;
+        window.adjustQuranFontSize = adjustQuranFontSize;
+        window.onQuranFontSizeInput = onQuranFontSizeInput;
+        window.setQuranTheme = setQuranTheme;
+        window.resetQuranSettings = resetQuranSettings;
+
+        // Apply saved font size, theme, and reading mode UI on boot
+        applyQuranFontSize(currentQuranFontSize, false);
+        applyQuranTheme(currentQuranTheme, false);
+        updateModeSwitcherUI();
 
         // Initialize with query params support
         const urlParams = new URLSearchParams(window.location.search);
@@ -1190,22 +1808,27 @@
         const urlAyah = parseInt(urlParams.get('ayah'));
         const urlPage = parseInt(urlParams.get('page'));
 
-        if (!urlSurah && urlPage && urlPage >= 1 && urlPage <= 604 && window.QURAN_SURAH_PAGES) {
-            for (let i = 0; i < window.QURAN_SURAH_PAGES.length; i++) {
-                if (window.QURAN_SURAH_PAGES[i].page <= urlPage) {
-                    urlSurah = window.QURAN_SURAH_PAGES[i].num;
-                } else {
-                    break;
-                }
-            }
-        }
-
         fetchSurahs();
         updateTopbarBookmarkUI();
 
-        if (urlSurah && urlSurah >= 1 && urlSurah <= 114) {
+        if (urlPage && urlPage >= 1 && urlPage <= 604) {
+            if (currentReadingMode === 'pages') {
+                loadMushafPage(urlPage, urlAyah || null);
+            } else {
+                let sNum = 1;
+                if (window.QURAN_PAGES_MAP && window.QURAN_PAGES_MAP[urlPage]) {
+                    sNum = window.QURAN_PAGES_MAP[urlPage][1][0][0];
+                }
+                loadSurah(sNum, urlAyah || null);
+            }
+        } else if (urlSurah && urlSurah >= 1 && urlSurah <= 114) {
             currentSurahNumber = urlSurah;
-            loadSurah(urlSurah, urlAyah || null);
+            if (currentReadingMode === 'pages') {
+                const targetPage = urlAyah ? getPageForAyah(urlSurah, urlAyah) : getStartPageForSurah(urlSurah);
+                loadMushafPage(targetPage, urlAyah || null);
+            } else {
+                loadSurah(urlSurah, urlAyah || null);
+            }
         } else {
             currentSurahNumber = null;
             renderSurahPickerLanding();

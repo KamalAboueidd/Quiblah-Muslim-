@@ -32,7 +32,8 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/khatmah/khatmah.css?v=8">
+    <link rel="stylesheet" href="features/khatmah/khatmah.css?v=9">
+    <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=7">
 </head>
 <body>
 
@@ -313,11 +314,14 @@
         </section>
 
         <!-- ================= 6. KHATMAH HISTORY & ARCHIVE ================= -->
-        <section class="khatmah-deck" id="section-khatmah-history" aria-label="سجل الختمات السابقة">
+        <section class="khatmah-deck" id="section-khatmah-history" aria-label="سجل ومتابعة الختمات">
             <div class="deck-header">
                 <div class="deck-title-group">
                     <i class="fa-solid fa-award" aria-hidden="true"></i>
-                    <h2 class="deck-title">سجل الختمات السابقة</h2>
+                    <div>
+                        <h2 class="deck-title">سجل ومتابعة الختمات</h2>
+                        <span class="deck-subtitle">متابعة مسار الختمة الجارية وسجل الختمات السابقة المباركة</span>
+                    </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <button type="button" class="header-action-btn" id="btn-restart-khatmah" title="بدء ختمة جديدة مع أرشفة السابقة">
@@ -483,6 +487,7 @@
     <div id="toast-msg" class="toast-msg" role="status" aria-live="polite"></div>
 
     <!-- Scripts -->
-    <script src="features/khatmah/khatmah.js?v=8"></script>
+    <script src="features/khatmah/khatmah.js?v=9"></script>
+    <script src="features/radial-nav/radial-nav.js?v=7"></script>
 </body>
 </html>

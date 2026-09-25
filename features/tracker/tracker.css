@@ -1011,17 +1011,14 @@ body.is-past-day .btn-reset-tracker {
 }
 
 .prayer-worship-item.status-mosque {
-    border-color: rgba(46, 204, 113, 0.45);
     background: rgba(46, 204, 113, 0.08);
 }
 
 .prayer-worship-item.status-home {
-    border-color: rgba(197, 168, 89, 0.45);
     background: rgba(197, 168, 89, 0.08);
 }
 
 .prayer-worship-item.status-qadaa {
-    border-color: rgba(230, 126, 34, 0.45);
     background: rgba(230, 126, 34, 0.08);
 }
 
@@ -1270,18 +1267,32 @@ body.is-past-day .btn-reset-tracker {
     transform: scale(1);
 }
 
-/* Special Quran Card with Stepper */
+/* Special Quran Card with Stepper (2 clean spacious rows) */
 .quran-worship-card {
     grid-column: 1 / -1;
     background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(197, 168, 89, 0.18);
-    border-radius: 12px;
-    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.quran-worship-card:hover {
+    background: rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Row 1: Title on right, Stepper + Done button on left */
+.quran-card-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
+    width: 100%;
 }
 
 .quran-info-wrap {
@@ -1290,19 +1301,39 @@ body.is-past-day .btn-reset-tracker {
     gap: 11px;
 }
 
+.quran-stepper-and-done {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.quran-stepper-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quran-stepper-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold-light);
+    white-space: nowrap;
+}
+
 .quran-pages-stepper {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(197, 168, 89, 0.2);
+    border: 1px solid rgba(197, 168, 89, 0.25);
     border-radius: 24px;
-    padding: 2px 7px;
+    padding: 2px 6px;
 }
 
 .stepper-btn {
-    background: transparent;
-    border: none;
+    background: transparent !important;
+    border: none !important;
     color: var(--gold);
     font-size: 13px;
     width: 26px;
@@ -1312,12 +1343,15 @@ body.is-past-day .btn-reset-tracker {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.stepper-btn:hover {
-    background: rgba(197, 168, 89, 0.2);
-    color: #fff;
+/* NO background on hover for stepper buttons */
+.stepper-btn:hover,
+.stepper-btn:active {
+    background: transparent !important;
+    color: #fff !important;
+    transform: scale(1.2);
 }
 
 .stepper-value {
@@ -1329,71 +1363,7 @@ body.is-past-day .btn-reset-tracker {
     font-variant-numeric: tabular-nums;
 }
 
-.quran-controls-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.quran-stepper-wrap {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.quran-stepper-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--gold-light);
-    white-space: nowrap;
-}
-
-.quran-actions-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.quran-read-link {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    color: var(--gold) !important;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: 'Tajawal', sans-serif;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 9px;
-    transition: all 0.22s ease;
-    cursor: pointer;
-    border-radius: 8px;
-    white-space: nowrap;
-}
-
-.quran-read-link:hover {
-    color: var(--gold-light) !important;
-    gap: 10px;
-    background: rgba(197, 168, 89, 0.08) !important;
-}
-
-.quran-read-link i {
-    font-size: 13px;
-    background: none !important;
-    border: none !important;
-    transition: transform 0.22s ease;
-}
-
-.quran-read-link:hover i.fa-arrow-left {
-    transform: translateX(-4px);
-}
-
-/* Quran Mark as Done Button (الكتابة بالذهبي فقط) */
+/* Quran Mark as Done Button */
 .quran-mark-done-btn {
     background: transparent !important;
     border: none !important;
@@ -1406,22 +1376,34 @@ body.is-past-day .btn-reset-tracker {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 4px 6px;
     cursor: pointer;
     border-radius: 8px;
-    transition: all 0.22s ease;
+    transition: color 0.22s ease, transform 0.2s ease;
     white-space: nowrap;
 }
 
-.quran-mark-done-btn:hover {
+/* NO background on hover for mark done button */
+.quran-mark-done-btn:hover,
+.quran-mark-done-btn:active {
     color: var(--gold-light) !important;
-    background: rgba(197, 168, 89, 0.08) !important;
+    background: transparent !important;
 }
 
+/* Green state when completed (أتممت القراءة بالأخضر دون تلوين إطار الكارت) */
 .quran-mark-done-btn.completed {
-    color: var(--gold-light) !important;
-    text-shadow: 0 0 10px rgba(197, 168, 89, 0.5);
-    background: rgba(197, 168, 89, 0.12) !important;
+    color: #2ecc71 !important;
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.45);
+    background: transparent !important;
+}
+
+.quran-mark-done-btn.completed i {
+    color: #2ecc71 !important;
+}
+
+.quran-mark-done-btn.completed:hover {
+    color: #55efc4 !important;
+    background: transparent !important;
 }
 
 .quran-mark-done-btn i {
@@ -1432,6 +1414,54 @@ body.is-past-day .btn-reset-tracker {
 
 .quran-mark-done-btn:hover i {
     transform: scale(1.15);
+}
+
+/* Row 2: Secondary Quick Links (الذهاب للمصحف & خطة الختمة) */
+.quran-card-links-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+.quran-read-link {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: var(--gold) !important;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    transition: color 0.22s ease, gap 0.22s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* NO background on hover for links */
+.quran-read-link:hover,
+.quran-read-link:active {
+    color: var(--gold-light) !important;
+    gap: 9px;
+    background: transparent !important;
+}
+
+.quran-read-link i {
+    font-size: 12px;
+    background: none !important;
+    border: none !important;
+    transition: transform 0.22s ease;
+}
+
+.quran-read-link:hover i.fa-arrow-left {
+    transform: translateX(-3px);
 }
 
 /* روابط الذهاب إلى الذكر في صفحة الأذكار (الكتابة بالذهبي الصافي) */
@@ -1646,54 +1676,32 @@ body.is-past-day .btn-reset-tracker {
         grid-template-columns: 1fr;
     }
     .quran-worship-card {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        justify-content: center;
-        padding: 16px 14px;
-        gap: 14px;
-    }
-    .quran-info-wrap {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        gap: 8px;
-    }
-    .quran-info-wrap .habit-texts {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    .quran-controls-row {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
+        padding: 14px 12px;
         gap: 12px;
     }
-    .quran-stepper-wrap {
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-    .quran-pages-stepper {
-        justify-content: center;
-    }
-    .quran-actions-wrap {
-        display: flex;
+    .quran-card-header-row {
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+        align-items: flex-start;
+        gap: 12px;
         width: 100%;
     }
-    .quran-read-link,
-    .quran-mark-done-btn {
-        justify-content: center;
-        text-align: center;
-        width: auto;
+    .quran-info-wrap {
+        align-items: center;
+        gap: 10px;
+    }
+    .quran-stepper-and-done {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 10px;
+    }
+    .quran-card-links-row {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        gap: 14px;
+        flex-wrap: wrap;
     }
     .tracker-bottom-actions {
         flex-direction: column;

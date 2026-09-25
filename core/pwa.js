@@ -406,7 +406,9 @@
         document.querySelectorAll('.pwa-install-trigger').forEach((el) => {
             el.removeEventListener('click', handleInstallClick);
             el.addEventListener('click', handleInstallClick);
-            el.style.display = 'inline-flex';
+            if (!el.classList.contains('mobile-top-install-btn')) {
+                el.style.display = 'inline-flex';
+            }
         });
     }
 

@@ -145,6 +145,15 @@
             transform: translateY(-50%);
         }
 
+        /* --- Hide Mobile Header Actions on Desktop --- */
+        .top-bar-actions {
+            display: none;
+        }
+
+        .mobile-top-install-btn {
+            display: none !important;
+        }
+
         /* --- Mobile Navigation Toggle Button --- */
         .mobile-menu-btn {
             display: none;

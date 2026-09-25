@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/quran/quran.css?v=67">
+    <link rel="stylesheet" href="features/quran/quran.css?v=78">
 </head>
 <body>
 
@@ -101,6 +101,12 @@
                         </span>
                     </div>
                     <div class="nav-actions-cluster">
+                        <!-- Reading Settings Button (حجم الخط، النمط، ومظهر كبار السن) -->
+                        <button type="button" class="topbar-settings-btn" id="topbar-settings-btn" onclick="openQuranSettingsModal()" title="إعدادات القراءة والمظهر" aria-label="إعدادات القراءة" style="background: transparent; border: none; color: var(--gold);">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span class="settings-btn-text">إعدادات القراءة</span>
+                        </button>
+
                         <!-- Khatmah Sync Button -->
                         <button type="button" class="topbar-khatmah-btn" id="topbar-khatmah-btn" onclick="handleSyncKhatmahClick()" title="تحديث موضع الختمة لموضعي الحالي">
                             <i class="fa-solid fa-arrows-rotate"></i>
@@ -108,7 +114,7 @@
                         </button>
 
                         <div class="topbar-bookmark-wrap" id="topbar-bookmark-wrap">
-                            <button type="button" class="topbar-bookmark-btn" id="topbar-bookmark-btn" onclick="handleTopbarBookmarkClick()" aria-label="علامة القراءة">
+                            <button type="button" class="topbar-bookmark-btn" id="topbar-bookmark-btn" aria-label="علامة القراءة">
                                 <i class="fa-solid fa-bookmark"></i>
                                 <span class="bookmark-btn-text">علامة القراءة</span>
                             </button>
@@ -206,11 +212,127 @@
         </div>
     </div>
 
+    <!-- Quran Reading & Display Settings Modal (إعدادات القراءة والمظهر) -->
+    <!-- Quran Reading & Display Settings Modal (إعدادات القراءة والمظهر) -->
+    <div class="settings-modal-backdrop" id="settings-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+        <div class="settings-modal-card">
+            <div class="settings-modal-header">
+                <div class="settings-modal-title" id="settings-modal-title">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>إعدادات القراءة والمظهر</span>
+                </div>
+                <button type="button" class="settings-modal-close" onclick="closeQuranSettingsModal()" aria-label="إغلاق">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="settings-modal-body">
+                <!-- 1. Font Size Control (Stepper + Direct Numeric Input, No Range Slider) -->
+                <div class="settings-group">
+                    <div class="settings-group-title">
+                        <i class="fa-solid fa-text-height"></i>
+                        <span>حجم خط الآيات</span>
+                    </div>
+                    <div class="font-controls-wrap">
+                        <button type="button" class="font-btn-stepper" onclick="adjustQuranFontSize(-2)" title="تصغير حجم الخط" aria-label="تصغير حجم الخط">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <div class="font-input-wrapper">
+                            <input type="number" id="quran-font-input" min="18" max="60" step="1" value="32" oninput="onQuranFontSizeInput(this.value)" aria-label="حجم الخط">
+                            <span class="font-unit-label">px</span>
+                        </div>
+                        <button type="button" class="font-btn-stepper" onclick="adjustQuranFontSize(2)" title="تكبير حجم الخط" aria-label="تكبير حجم الخط">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="font-preview-card">
+                        <p class="font-preview-ayah" id="font-preview-ayah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+                    </div>
+                </div>
+
+                <!-- 2. Reading Mode (Simple Flat Tabs, No Box Backgrounds) -->
+                <div class="settings-group">
+                    <div class="settings-group-title">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>طريقة العرض</span>
+                    </div>
+                    <div class="settings-pills-row">
+                        <button type="button" class="settings-pill-btn" id="modal-pill-pages" onclick="setReadingMode('pages')">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span>تصفح بالصفحات</span>
+                        </button>
+                        <button type="button" class="settings-pill-btn" id="modal-pill-continuous" onclick="setReadingMode('continuous')">
+                            <i class="fa-solid fa-arrows-up-down"></i>
+                            <span>تمرير مستمر</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Theme & Background - Pure Icons, No Background Boxes -->
+                <div class="settings-group">
+                    <div class="settings-group-title">
+                        <i class="fa-solid fa-palette"></i>
+                        <span>مظهر الخلفية</span>
+                    </div>
+                    <div class="settings-themes-grid">
+                        <div class="theme-card" id="theme-card-carousel" onclick="setQuranTheme('carousel')">
+                            <i class="fa-solid fa-image theme-icon-pure"></i>
+                            <div class="theme-card-details">
+                                <strong class="theme-card-title">صور متحركة</strong>
+                                <span class="theme-card-desc">صور إسلامية تتغير بالخلفية</span>
+                            </div>
+                            <div class="theme-card-radio"><i class="fa-solid fa-circle-check"></i></div>
+                        </div>
+
+                        <div class="theme-card" id="theme-card-black-gold" onclick="setQuranTheme('black-gold')">
+                            <i class="fa-solid fa-moon theme-icon-pure"></i>
+                            <div class="theme-card-details">
+                                <strong class="theme-card-title">أسود ملكي وذهبي</strong>
+                                <span class="theme-card-desc">خلفية سوداء ثابتة مريحة للعين</span>
+                            </div>
+                            <div class="theme-card-radio"><i class="fa-solid fa-circle-check"></i></div>
+                        </div>
+
+                        <div class="theme-card" id="theme-card-paper-light" onclick="setQuranTheme('paper-light')">
+                            <i class="fa-solid fa-book-open theme-icon-pure"></i>
+                            <div class="theme-card-details">
+                                <strong class="theme-card-title">ورقي كلاسيكي</strong>
+                                <span class="theme-card-desc">مصحف ورقي وخلفية هادئة</span>
+                            </div>
+                            <div class="theme-card-radio"><i class="fa-solid fa-circle-check"></i></div>
+                        </div>
+
+                        <div class="theme-card" id="theme-card-dark-static" onclick="setQuranTheme('dark-static')">
+                            <i class="fa-solid fa-circle-half-stroke theme-icon-pure"></i>
+                            <div class="theme-card-details">
+                                <strong class="theme-card-title">رمادي داكن هادئ</strong>
+                                <span class="theme-card-desc">خلفية داكنة مع خط أبيض ناصع</span>
+                            </div>
+                            <div class="theme-card-radio"><i class="fa-solid fa-circle-check"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-modal-footer">
+                <button type="button" class="settings-reset-link" onclick="resetQuranSettings()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>استعادة الافتراضي</span>
+                </button>
+                <button type="button" class="settings-confirm-btn" onclick="closeQuranSettingsModal()">
+                    <i class="fa-solid fa-check"></i>
+                    <span>تم</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="core/surahs_meta.js?v=66"></script>
+    <script src="core/quran_pages_data.js?v=1"></script>
     <script src="core/quran_data.js"></script>
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/quran/quran.js?v=66"></script>
+    <script src="features/quran/quran.js?v=78"></script>
 </body>
 </html>
 

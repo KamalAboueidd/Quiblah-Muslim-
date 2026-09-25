@@ -219,11 +219,111 @@
         return `${y}-${m}-${d}`;
     }
 
+    // استخراج الوقت الحالي بصيغة أنيقة (مثال: 8:30 م)
+    function getNowTime() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'م' : 'ص';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        return `${hours}:${minutes} ${ampm}`;
+    }
+
+    // تنسيق التاريخ بالعربية مع اسم اليوم (مثال: الجمعة، 25 سبتمبر 2026)
+    function formatArabicDateWithDay(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const clean = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+            const parts = clean.split('-');
+            if (parts.length === 3) {
+                const y = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1;
+                const d = parseInt(parts[2], 10);
+                const dt = new Date(y, m, d);
+                const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                const monthNames = [
+                    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+                ];
+                const dayName = dayNames[dt.getDay()];
+                const monthName = monthNames[dt.getMonth()];
+                if (dayName && monthName && !isNaN(d) && !isNaN(y)) {
+                    return `${dayName}، ${d} ${monthName} ${y}`;
+                }
+            }
+            return dateStr;
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    // دمج التاريخ والوقت للعرض في السجل
+    function formatDateTimeString(dateStr, timeStr) {
+        if (!dateStr) return 'غير محدد';
+        const dateFormatted = formatArabicDateWithDay(dateStr);
+        if (timeStr) {
+            return `${dateFormatted} (${timeStr})`;
+        }
+        return dateFormatted;
+    }
+
+    // حساب التاريخ المتوقع لإتمام الختمة
+    function getExpectedEndDate(startDateStr, planDays) {
+        if (!startDateStr) return '';
+        try {
+            const clean = startDateStr.includes('T') ? startDateStr.split('T')[0] : startDateStr;
+            const parts = clean.split('-');
+            if (parts.length === 3) {
+                const y = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1;
+                const d = parseInt(parts[2], 10);
+                const start = new Date(y, m, d);
+                const daysToAdd = parseInt(planDays || 30, 10);
+                const end = new Date(start.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+                const ey = end.getFullYear();
+                const em = String(end.getMonth() + 1).padStart(2, '0');
+                const ed = String(end.getDate()).padStart(2, '0');
+                return `${ey}-${em}-${ed}`;
+            }
+            return '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    // حساب مدة الختمة بالأيام
+    function calculateDurationDays(startStr, endStr) {
+        if (!startStr || !endStr) return null;
+        try {
+            const clean1 = startStr.includes('T') ? startStr.split('T')[0] : startStr;
+            const clean2 = endStr.includes('T') ? endStr.split('T')[0] : endStr;
+            const p1 = clean1.split('-');
+            const p2 = clean2.split('-');
+            if (p1.length === 3 && p2.length === 3) {
+                const d1 = new Date(parseInt(p1[0], 10), parseInt(p1[1], 10) - 1, parseInt(p1[2], 10));
+                const d2 = new Date(parseInt(p2[0], 10), parseInt(p2[1], 10) - 1, parseInt(p2[2], 10));
+                const diffMs = d2.getTime() - d1.getTime();
+                const days = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                if (isNaN(days) || days < 0) return null;
+                if (days === 0) return 'في يوم واحد';
+                if (days === 1) return 'يوم واحد';
+                if (days === 2) return 'يومان';
+                if (days >= 3 && days <= 10) return `${days} أيام`;
+                return `${days} يوماً`;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    }
+
     // تحميل البيانات من LocalStorage
     function loadKhatmahData() {
         const defaultState = {
             planDays: 30, // 30 يوماً افتراضياً (ختمة شهرية)
             startDate: getTodayKey(),
+            startTime: getNowTime(),
             currentPage: 0,
             streak: 0,
             lastStreakDate: '',
@@ -237,6 +337,9 @@
             if (!raw) return defaultState;
             const parsed = JSON.parse(raw);
             const state = Object.assign({}, defaultState, parsed);
+            if (!state.startTime) {
+                state.startTime = getNowTime();
+            }
 
             // تحقق من تجديد اليوم
             const today = getTodayKey();
@@ -522,11 +625,17 @@
             const completionEntry = {
                 id: Date.now(),
                 date: getTodayKey(),
-                planDays: khatmahData.planDays
+                startDate: khatmahData.startDate || getTodayKey(),
+                startTime: khatmahData.startTime || '',
+                endDate: getTodayKey(),
+                endTime: getNowTime(),
+                planDays: khatmahData.planDays || 30,
+                status: 'completed',
+                pagesRead: TOTAL_PAGES
             };
             if (!khatmahData.completedKhatmahs) khatmahData.completedKhatmahs = [];
             
-            const alreadyLogged = khatmahData.completedKhatmahs.some(k => k.date === getTodayKey());
+            const alreadyLogged = khatmahData.completedKhatmahs.some(k => k.id && (Date.now() - k.id < 5000));
             if (!alreadyLogged) {
                 khatmahData.completedKhatmahs.unshift(completionEntry);
             }
@@ -637,38 +746,184 @@
         }
     }
 
-    // رسم سجل الختمات السابقة
+    // رسم سجل ومسار الختمات (الختمة الحالية والسابقة)
     function renderKhatmahHistory() {
         const list = document.getElementById('khatmah-history-list');
         if (!list) return;
 
         const history = khatmahData.completedKhatmahs || [];
-        if (!history.length) {
-            list.innerHTML = `
-                <div class="empty-history-clean">
-                    <i class="fa-solid fa-book-quran" style="font-size: 24px; color: var(--gold); margin-bottom: 8px; display: block;"></i>
-                    <span>لم يتم تسجيل ختمات سابقة بعد.. عند إتمام صفحة 604 ستُضاف ختمتك تلقائياً هنا لتكون ذكرى طيبة مباركة!</span>
-                </div>
-            `;
-            return;
-        }
+        const current = Math.min(TOTAL_PAGES, Math.max(0, khatmahData.currentPage || 0));
+        const percent = Math.min(100, Math.round((current / TOTAL_PAGES) * 100));
+        const isCurrentFinished = current >= TOTAL_PAGES;
 
         list.innerHTML = '';
-        history.forEach((k, idx) => {
-            const item = document.createElement('div');
-            item.className = 'history-item-tile';
-            item.innerHTML = `
-                <div class="history-left-info">
-                    <i class="fa-solid fa-award"></i>
-                    <div>
-                        <strong style="font-size: 14px; color: #fff; display: block;">الختمة رقم ${history.length - idx}</strong>
-                        <span style="font-size: 12px; color: var(--text-dim);">خطة الـ ${k.planDays} يوماً</span>
+
+        // 1. بطاقة الختمة الحالية (جارية حالياً أو أُتمّت حديثاً)
+        if (!isCurrentFinished) {
+            const currentKhatmahNum = history.length + 1;
+            const startDateFormatted = formatDateTimeString(khatmahData.startDate, khatmahData.startTime);
+            const expectedEndDateKey = getExpectedEndDate(khatmahData.startDate, khatmahData.planDays);
+            const expectedEndDateFormatted = formatArabicDateWithDay(expectedEndDateKey);
+
+            const activeTile = document.createElement('div');
+            activeTile.className = 'history-item-tile active-khatmah-tile';
+            activeTile.innerHTML = `
+                <div class="history-tile-header">
+                    <div class="history-tile-title-group">
+                        <div class="history-tile-icon active-icon">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                        </div>
+                        <div>
+                            <div class="history-title-row">
+                                <strong class="history-khatmah-name">الختمة الحالية (رقم ${currentKhatmahNum})</strong>
+                                <span class="khatmah-badge badge-active">
+                                    <span class="pulse-dot"></span>
+                                    <span>جارية حالياً</span>
+                                </span>
+                            </div>
+                            <span class="history-plan-tag">خطة الـ ${khatmahData.planDays || 30} يوماً</span>
+                        </div>
+                    </div>
+                    <div class="history-tile-actions">
+                        <a href="quran.html?page=${Math.max(1, current)}" class="history-resume-btn" title="مواصلة التلاوة من آخر موضع">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span>مواصلة التلاوة</span>
+                        </a>
                     </div>
                 </div>
-                <span style="font-size: 12px; color: var(--gold-light); font-weight: 700;"><i class="fa-regular fa-calendar" style="margin-left: 6px;"></i>${k.date}</span>
+
+                <div class="history-progress-row">
+                    <div class="history-mini-bar">
+                        <div class="history-mini-fill" style="width: ${percent}%;"></div>
+                    </div>
+                    <span class="history-progress-text">صفحة <strong>${current}</strong> من ${TOTAL_PAGES} (${percent}%)</span>
+                </div>
+
+                <div class="history-dates-strip">
+                    <div class="history-date-item">
+                        <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
+                        <strong>بدأت في:</strong>
+                        <span class="date-val">${startDateFormatted || 'اليوم'}</span>
+                    </div>
+                    ${expectedEndDateFormatted ? `
+                    <div class="history-date-item">
+                        <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                        <strong>الختام المتوقع:</strong>
+                        <span class="date-val">${expectedEndDateFormatted}</span>
+                    </div>
+                    ` : ''}
+                </div>
             `;
-            list.appendChild(item);
-        });
+            list.appendChild(activeTile);
+        } else {
+            // أتممت الختمة كاملاً
+            const finishedTile = document.createElement('div');
+            finishedTile.className = 'history-item-tile current-finished-tile';
+            finishedTile.innerHTML = `
+                <div class="history-tile-header">
+                    <div class="history-tile-title-group">
+                        <div class="history-tile-icon crown-icon">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <div>
+                            <div class="history-title-row">
+                                <strong class="history-khatmah-name">أتممت هذه الختمة كاملاً بحمد الله!</strong>
+                                <span class="khatmah-badge badge-completed">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>مكتملة</span>
+                                </span>
+                            </div>
+                            <span class="history-plan-tag">تقبل الله طاعتك وبارك في مسعاك، يمكنك بدء ختمة جديدة عبر الزر أعلاه</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.appendChild(finishedTile);
+        }
+
+        // 2. قائمة الختمات السابقة المكتملة
+        if (history.length > 0) {
+            const sectionDivider = document.createElement('div');
+            sectionDivider.className = 'history-section-divider';
+            sectionDivider.innerHTML = `
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>الختمات السابقة المكتملة (${history.length})</span>
+            `;
+            list.appendChild(sectionDivider);
+
+            history.forEach((k, idx) => {
+                const item = document.createElement('div');
+                item.className = 'history-item-tile completed-khatmah-tile';
+
+                const khatmahNumber = history.length - idx;
+                const startDateStr = formatDateTimeString(k.startDate, k.startTime);
+                const endDateStr = formatDateTimeString(k.endDate || k.date, k.endTime);
+                const duration = calculateDurationDays(k.startDate, k.endDate || k.date);
+
+                let datesHtml = '';
+                if (k.startDate) {
+                    datesHtml = `
+                        <div class="history-date-item">
+                            <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
+                            <strong>بدأت في:</strong>
+                            <span class="date-val">${startDateStr}</span>
+                        </div>
+                        <div class="history-date-item">
+                            <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>
+                            <strong>انتهت في:</strong>
+                            <span class="date-val">${endDateStr}</span>
+                        </div>
+                        ${duration ? `
+                        <div class="history-date-item">
+                            <span class="history-duration-pill"><i class="fa-solid fa-hourglass-end"></i> المدة: ${duration}</span>
+                        </div>
+                        ` : ''}
+                    `;
+                } else {
+                    // للتوافق مع البيانات السابقة التي كان يُسجل فيها تاريخ الختم فقط
+                    datesHtml = `
+                        <div class="history-date-item">
+                            <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>
+                            <strong>انتهت في:</strong>
+                            <span class="date-val">${endDateStr}</span>
+                        </div>
+                    `;
+                }
+
+                item.innerHTML = `
+                    <div class="history-tile-header">
+                        <div class="history-tile-title-group">
+                            <div class="history-tile-icon completed-icon">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <div class="history-title-row">
+                                    <strong class="history-khatmah-name">الختمة رقم ${khatmahNumber}</strong>
+                                    <span class="khatmah-badge badge-completed">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        <span>مكتملة بحمد الله</span>
+                                    </span>
+                                </div>
+                                <span class="history-plan-tag">خطة الـ ${k.planDays || 30} يوماً</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="history-dates-strip">
+                        ${datesHtml}
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        } else if (!isCurrentFinished) {
+            // لا توجد ختمات سابقة بعد
+            const emptyNotice = document.createElement('div');
+            emptyNotice.className = 'empty-history-clean';
+            emptyNotice.innerHTML = `
+                <i class="fa-solid fa-book-quran" style="font-size: 22px; color: var(--gold); margin-bottom: 6px; display: block;"></i>
+                <span>لا توجد ختمات سابقة بعد.. عند إتمام صفحة 604 ستُؤرشف ختمتك تلقائياً هنا لتكون ذكرى طيبة مباركة!</span>
+            `;
+            list.appendChild(emptyNotice);
+        }
     }
 
     // تحديث الصفحة يدوياً
@@ -689,7 +944,10 @@
                 const plan = parseInt(chip.getAttribute('data-plan'));
                 if (plan) {
                     khatmahData.planDays = plan;
-                    khatmahData.startDate = getTodayKey();
+                    if (khatmahData.currentPage === 0) {
+                        khatmahData.startDate = getTodayKey();
+                        khatmahData.startTime = getNowTime();
+                    }
                     saveKhatmahData(khatmahData);
                     triggerHaptic();
                     renderKhatmahUI();
@@ -795,7 +1053,10 @@
                 }
 
                 khatmahData.planDays = days;
-                khatmahData.startDate = getTodayKey();
+                if (khatmahData.currentPage === 0) {
+                    khatmahData.startDate = getTodayKey();
+                    khatmahData.startTime = getNowTime();
+                }
                 saveKhatmahData(khatmahData);
                 closePlanModal();
                 renderKhatmahUI();
@@ -878,14 +1139,27 @@
                 closeRestartModal();
                 if (khatmahData.currentPage > 0) {
                     if (!khatmahData.completedKhatmahs) khatmahData.completedKhatmahs = [];
-                    khatmahData.completedKhatmahs.unshift({
-                        id: Date.now(),
-                        date: getTodayKey(),
-                        planDays: khatmahData.planDays
-                    });
+                    const isFull = khatmahData.currentPage >= TOTAL_PAGES;
+                    const isAlreadyArchived = khatmahData.completedKhatmahs.length > 0 &&
+                        khatmahData.completedKhatmahs[0].pagesRead === TOTAL_PAGES &&
+                        isFull;
+                    if (!isAlreadyArchived) {
+                        khatmahData.completedKhatmahs.unshift({
+                            id: Date.now(),
+                            date: getTodayKey(),
+                            startDate: khatmahData.startDate || getTodayKey(),
+                            startTime: khatmahData.startTime || '',
+                            endDate: getTodayKey(),
+                            endTime: getNowTime(),
+                            planDays: khatmahData.planDays || 30,
+                            status: isFull ? 'completed' : 'archived',
+                            pagesRead: khatmahData.currentPage
+                        });
+                    }
                 }
                 khatmahData.currentPage = 0;
                 khatmahData.startDate = getTodayKey();
+                khatmahData.startTime = getNowTime();
                 khatmahData.todaySlots = { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false };
                 saveKhatmahData(khatmahData);
                 renderKhatmahUI();

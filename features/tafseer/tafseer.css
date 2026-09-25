@@ -300,24 +300,41 @@
             border: 1px solid rgba(197, 168, 89, 0.4);
         }
 
+        /* Surah Numbering - Clean Typographic Style (No square box) */
         .surah-number {
-            width: 30px;
-            height: 30px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            display: flex;
+            min-width: 26px;
+            width: auto;
+            height: auto;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
             color: var(--gold);
-            font-size: 12px;
+            font-size: 14px;
             flex-shrink: 0;
-            border: 1px solid rgba(197, 168, 89, 0.25);
+            opacity: 0.9;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .surah-item:hover .surah-number {
+            color: #ffffff;
+            opacity: 1;
+            transform: scale(1.1);
         }
 
         .surah-item.active .surah-number {
-            background: var(--gold);
-            color: #111;
+            background: transparent !important;
+            border: none !important;
+            color: var(--gold-light, #ffd700) !important;
+            font-weight: 900;
+            font-size: 15px;
+            opacity: 1;
+            text-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
         }
 
         .surah-details { flex: 1; min-width: 0; }

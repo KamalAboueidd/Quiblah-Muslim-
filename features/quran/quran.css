@@ -2,7 +2,10 @@
 :root {
             --primary-teal: #2F7A78;
             --gold: #C5A859;
+            --gold-light: #DFC26E;
             --white: #FFFFFF;
+            --quran-font-size: 32px;
+            --quran-line-height: 2.8;
         }
 
         *, *::before, *::after {
@@ -122,6 +125,8 @@
             box-shadow: none !important;
             flex-shrink: 0;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1001;
         }
 
         .nav-right-cluster {
@@ -219,10 +224,10 @@
         /* --- Sidebar --- */
         .sidebar {
             width: 320px;
-            background: rgba(10, 12, 16, 0.45);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(14, 18, 26, 0.28);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             flex-direction: column;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -230,7 +235,8 @@
 
         .sidebar-header {
             padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: transparent;
         }
 
         .sidebar-title {
@@ -275,8 +281,8 @@
         
         .search-box input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: white;
             padding: 14px 15px 14px 45px;
             border-radius: 12px;
@@ -284,9 +290,12 @@
             font-family: inherit;
             font-size: 16px;
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background 0.2s;
         }
-        .search-box input:focus { border-color: var(--gold); }
+        .search-box input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--gold);
+        }
         .search-box input::placeholder { color: rgba(255,255,255,0.4); }
         .search-box i {
             position: absolute;
@@ -324,23 +333,41 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
+        /* Surah Numbering - Clean Typographic Style (No square box) */
         .surah-number {
-            width: 32px;
-            height: 32px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-            display: flex;
+            min-width: 26px;
+            width: auto;
+            height: auto;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
+            font-weight: 800;
             color: var(--gold);
-            font-size: 14px;
+            font-size: 15px;
             flex-shrink: 0;
-            border: 1px solid rgba(255,255,255,0.05);
+            opacity: 0.9;
+            transition: all 0.2s ease;
+            user-select: none;
         }
+
+        .surah-item:hover .surah-number {
+            color: #ffffff;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
         .surah-item.active .surah-number {
-            background: var(--gold);
-            color: #111;
+            background: transparent !important;
+            border: none !important;
+            color: var(--gold-light, #ffd700) !important;
+            font-weight: 900;
+            font-size: 16px;
+            opacity: 1;
+            text-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
         }
 
         .surah-details {
@@ -397,44 +424,77 @@
         }
 
         .surah-header-card {
-            padding: 20px 20px 0 20px;
+            padding: 10px 16px 0 16px;
             text-align: center;
-            margin: 0 auto 10px auto;
-            max-width: 650px;
+            margin: 0 auto 6px auto;
+            max-width: 950px;
             width: 100%;
             box-sizing: border-box;
             background: transparent;
         }
 
+        .surah-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            position: relative;
+            width: 100%;
+        }
+
+        .surah-header-actions-side {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .surah-header-center-info {
+            text-align: center;
+            flex: 1 1 auto;
+        }
+
+        .surah-header-side-placeholder {
+            flex: 0 0 180px; /* Balances side actions on desktop so title is mathematically centered */
+        }
+
         .surah-title {
             font-family: 'Amiri Quran', serif;
-            font-size: 54px;
+            font-size: 42px;
             color: var(--gold);
-            margin: 0 0 28px 0; /* Significant breathing room beneath the title */
+            margin: 0;
             text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
-            line-height: 1.35;
+            line-height: 1.25;
         }
 
         .surah-meta {
-            display: flex;
-            justify-content: center;
+            display: inline-flex;
             align-items: center;
-            gap: 28px;
-            color: #ddd;
+            justify-content: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.78);
             font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 22px; /* Breathing room beneath meta details */
-            flex-wrap: wrap;
+            font-size: 13.5px;
+            margin: 3px 0 0 0;
+            background: rgba(0, 0, 0, 0.28);
+            padding: 2px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .meta-dot {
+            color: var(--gold);
+            opacity: 0.7;
+            font-size: 11px;
         }
 
         .surah-header-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 0 auto 0 auto;
+            margin: 0 auto;
             width: 100%;
-            max-width: 460px;
         }
 
         .header-action-link {
@@ -442,33 +502,44 @@
             align-items: center;
             justify-content: center;
             gap: 7px;
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(197, 168, 89, 0.35);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(197, 168, 89, 0.4);
             color: var(--gold);
             text-decoration: none;
             font-weight: 700;
             font-size: 13px;
             cursor: pointer;
             font-family: inherit;
-            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             white-space: nowrap;
             box-sizing: border-box;
+            backdrop-filter: blur(8px);
         }
 
         .header-action-link:hover {
-            background: rgba(197, 168, 89, 0.2);
+            background: rgba(197, 168, 89, 0.25);
             border-color: var(--gold);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(197, 168, 89, 0.2);
+        }
+
+        .header-action-link.mini-link {
+            padding: 4px 10px;
+            font-size: 12px;
+            gap: 5px;
+            border-radius: 14px;
         }
 
         .bismillah {
             text-align: center;
             font-family: 'Amiri Quran', serif;
-            font-size: 34px;
-            margin: 6px auto 28px auto;
+            font-size: 28px;
+            margin: 4px auto 14px auto;
             color: #ffffff;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.85);
+            line-height: 1.4;
         }
 
         .verses-container {
@@ -478,7 +549,7 @@
             text-align: justify;
             text-justify: inter-word;
             direction: rtl;
-            line-height: 2.8;
+            line-height: var(--quran-line-height, 2.8);
             padding-bottom: 100px;
             min-height: 100vh;
             box-sizing: border-box;
@@ -488,9 +559,10 @@
 
         .verse {
             font-family: 'Amiri Quran', serif;
-            font-size: 34px;
+            font-size: var(--quran-font-size, 32px);
             color: white;
             text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+            transition: font-size 0.2s ease;
         }
 
         .verse-number {
@@ -520,16 +592,9 @@
             box-shadow: 0 0 10px rgba(197, 168, 89, 0.6);
         }
 
-        /* Sadaqallah Al-Azeem */
+        /* Sadaqallah Al-Azeem (Removed as requested) */
         .sadaqallah-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin: 45px auto 25px auto;
-            text-align: center;
-            width: 100%;
-            max-width: 600px;
+            display: none !important;
         }
 
         .sadaqallah-text {
@@ -980,10 +1045,10 @@
             width: 100vw;
             height: 100vh;
             height: 100dvh;
-            background: rgba(0, 0, 0, 0.72);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 998;
+            background: rgba(0, 0, 0, 0.7) !important;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 2990 !important;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -991,21 +1056,21 @@
         /* --- Responsive --- */
         @media (max-width: 900px) {
             .sidebar-close-btn {
-            display: none;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            color: var(--gold);
-            width: 32px;
-            height: 32px;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-            padding: 0;
-            transition: all 0.2s ease;
-            outline: none;
-        }
+                display: flex !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                color: var(--gold);
+                width: 32px;
+                height: 32px;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                font-size: 20px;
+                padding: 0;
+                transition: all 0.2s ease;
+                outline: none;
+            }
 
             .nav-bar { gap: 10px; padding: 10px; }
             .nav-item { padding: 8px 12px; font-size: 13px; }
@@ -1017,26 +1082,35 @@
                 bottom: 0;
                 height: 100vh;
                 height: 100dvh;
-                z-index: 1000;
+                z-index: 3000 !important;
                 transform: translateX(100%);
-                width: 310px;
-                max-width: 85vw;
-                background: rgba(10, 12, 16, 0.5) !important;
-                backdrop-filter: blur(25px);
-                -webkit-backdrop-filter: blur(25px);
-                border-left: 1px solid rgba(197, 168, 89, 0.25);
-                box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6);
+                width: 320px;
+                max-width: 86vw;
+                background: #0d121a !important;
+                background: rgba(13, 18, 26, 0.98) !important;
+                backdrop-filter: blur(30px) saturate(190%);
+                -webkit-backdrop-filter: blur(30px) saturate(190%);
+                border-left: 1px solid rgba(197, 168, 89, 0.3);
+                box-shadow: -10px 0 45px rgba(0, 0, 0, 0.85);
+            }
+            .sidebar-header {
+                background: rgba(13, 18, 26, 0.98) !important;
             }
             .sidebar.open {
                 transform: translateX(0);
             }
             .sidebar-overlay.active {
-                display: block;
-                opacity: 1;
+                display: block !important;
+                opacity: 1 !important;
             }
 
             .header-page-title {
                 display: none !important;
+            }
+
+            body.sidebar-opened .reader-top-bar {
+                opacity: 0.2;
+                pointer-events: none;
             }
 
             .reader-top-bar { 
@@ -1052,16 +1126,23 @@
                 justify-content: space-between;
                 align-items: center;
                 gap: 6px;
-                overflow: hidden;
+                overflow: visible !important;
+                position: relative;
+                z-index: 100 !important;
             }
             .menu-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .menu-btn span { display: none !important; }
             .back-home-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .back-home-btn span { display: none !important; }
+            .topbar-settings-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .topbar-settings-btn .settings-btn-text { display: none !important; }
             .topbar-bookmark-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
             .topbar-khatmah-btn { font-size: 13px; gap: 5px; padding: 4px 6px; }
+            .topbar-khatmah-btn .khatmah-btn-text { display: none !important; }
             .nav-right-cluster { 
                 display: flex;
                 align-items: center;
-                gap: 8px; 
+                gap: 6px; 
                 min-width: 0; 
                 flex-shrink: 1;
             }
@@ -1080,23 +1161,27 @@
                 overflow-x: hidden;
             }
             .surah-header-card { 
-                padding: 15px 8px 0; 
-                margin-bottom: 8px; 
+                padding: 10px 8px 0; 
+                margin-bottom: 6px; 
                 width: 100%;
                 max-width: 100%;
                 box-sizing: border-box;
             }
-            .surah-title { font-size: 36px; margin-bottom: 18px; }
-            .surah-meta { font-size: 13.5px; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
-            .surah-header-actions {
-                display: inline-flex;
+            .surah-header-side-placeholder { display: none; }
+            .surah-header-row {
+                flex-direction: column;
+                gap: 6px;
+                align-items: center;
+            }
+            .surah-title { font-size: 32px; margin-bottom: 2px; }
+            .surah-meta { font-size: 13px; gap: 8px; margin-bottom: 4px; }
+            .surah-header-actions-side {
+                order: 2;
+                display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 12px;
-                flex-wrap: nowrap;
-                width: auto;
-                max-width: 100%;
-                margin: 0 auto 0 auto;
+                gap: 8px;
+                margin-top: 2px;
             }
             .header-action-link {
                 flex: 0 0 auto;
@@ -1210,23 +1295,40 @@
             .menu-btn span {
                 display: none;
             }
+            .topbar-settings-btn .settings-btn-text {
+                display: none !important;
+            }
             .topbar-khatmah-btn .khatmah-btn-text {
                 display: none;
             }
             .topbar-bookmark-btn .bookmark-btn-text {
-                display: none;
+                display: inline-block !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                max-width: 105px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap !important;
+                vertical-align: middle;
             }
             .back-home-btn span {
                 display: none;
             }
             .menu-btn,
+            .topbar-settings-btn,
             .topbar-khatmah-btn,
-            .topbar-bookmark-btn,
             .back-home-btn {
                 padding: 6px 8px !important;
-                font-size: 15px !important;
+                font-size: 14px !important;
             }
-            .nav-right-cluster { gap: 6px !important; }
+            .topbar-bookmark-btn {
+                padding: 5px 8px !important;
+                background: rgba(197, 168, 89, 0.12) !important;
+                border: 1px solid rgba(197, 168, 89, 0.28) !important;
+                border-radius: 12px !important;
+                font-size: 12.5px !important;
+            }
+            .nav-right-cluster { gap: 4px !important; }
             .nav-actions-cluster { gap: 4px !important; }
             .mushaf-page-badge { font-size: 11px !important; padding: 3px 7px !important; }
         }
@@ -1240,7 +1342,7 @@
                 line-height: 2.4;
             }
             .verse {
-                font-size: clamp(20px, 5.2vw, 23px);
+                font-size: var(--quran-font-size, clamp(20px, 5.2vw, 23px));
             }
             .surah-title {
                 font-size: 32px;
@@ -1281,17 +1383,20 @@
         }
 
         /* Desktop Tweaks */
-        @media (min-width: 900px) {
+        @media (min-width: 901px) {
+            .open-surah-drawer-btn {
+                display: none !important;
+            }
             .sidebar { width: 300px; }
             .reader-area { padding: 25px 40px 60px; }
             
-            .surah-header-card { padding: 20px 20px 0 20px; margin: 0 auto 10px auto; max-width: 650px; }
-            .surah-title { font-size: 54px; margin: 0 0 28px 0; }
-            .surah-meta { font-size: 16px; gap: 28px; margin-bottom: 26px; }
-            .bismillah { font-size: 34px; margin: 6px auto 28px auto; }
+            .surah-header-card { padding: 12px 20px 0 20px; margin: 0 auto 6px auto; max-width: 950px; }
+            .surah-title { font-size: 42px; margin: 0; }
+            .surah-meta { font-size: 13.5px; gap: 8px; margin-bottom: 0; }
+            .bismillah { font-size: 28px; margin: 4px auto 14px auto; }
             
             .verses-container { max-width: 950px; padding: 0 20px; line-height: 2.5; }
-            .verse { font-size: 30px; }
+            .verse { font-size: var(--quran-font-size, 32px); }
             .verse-number { width: 26px; height: 26px; font-size: 11px; margin: 0 5px; }
         }
 
@@ -1527,32 +1632,33 @@
             font-weight: 700;
         }
 
-        /* Top Bar Bookmark Wrap & Hover Dropdown Card (قائمة المعاينة الشفافة عند التمرير) */
         .topbar-bookmark-wrap {
             position: relative;
             display: inline-flex;
             align-items: center;
+            z-index: 1002;
         }
 
         .bookmark-hover-dropdown {
             position: absolute;
-            top: calc(100% + 12px);
+            top: calc(100% + 4px);
             left: 0;
             width: 320px;
-            max-width: 360px;
-            background: rgba(14, 21, 30, 0.94);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            max-width: min(340px, calc(100vw - 24px));
+            background: rgba(14, 20, 28, 0.96);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(197, 168, 89, 0.4);
             border-radius: 16px;
             padding: 16px 18px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(197, 168, 89, 0.2);
-            z-index: 1000;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 24px rgba(197, 168, 89, 0.22);
+            z-index: 10000;
+            display: none;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-            transform: translateY(-8px);
-            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+            transform: translateY(-6px);
+            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
             text-align: right;
             direction: rtl;
         }
@@ -1562,10 +1668,10 @@
             content: '';
             position: absolute;
             top: -6px;
-            left: 24px;
+            left: 20px;
             width: 10px;
             height: 10px;
-            background: rgba(14, 21, 30, 0.96);
+            background: rgba(14, 20, 28, 0.96);
             border-top: 1px solid rgba(197, 168, 89, 0.4);
             border-right: 1px solid rgba(197, 168, 89, 0.4);
             transform: rotate(-45deg);
@@ -1575,24 +1681,16 @@
         .bookmark-hover-dropdown::after {
             content: '';
             position: absolute;
-            top: -14px;
+            top: -10px;
             left: 0;
             right: 0;
-            height: 14px;
+            height: 12px;
         }
 
-        /* Enable hover only on devices supporting hover (desktop mouse) */
-        @media (hover: hover) and (pointer: fine) {
-            .topbar-bookmark-wrap:hover .bookmark-hover-dropdown {
-                opacity: 1;
-                visibility: visible;
-                pointer-events: auto;
-                transform: translateY(0);
-            }
-        }
-
-        /* Class-based trigger for touch devices (closes immediately when finger is lifted) */
+        /* Enable hover on desktop and active toggle state */
+        .topbar-bookmark-wrap:hover .bookmark-hover-dropdown,
         .topbar-bookmark-wrap.is-open .bookmark-hover-dropdown {
+            display: block;
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
@@ -1800,4 +1898,1340 @@
             font-weight: 800;
             border: none !important;
         }
+
+        /* ========================================================
+           --- Quran Reading Mode & Navigation Styles ---
+           ======================================================== */
+
+        /* --- Pure Golden Typography Navigation at Surah End (No Button Boxes!) --- */
+        .surah-end-actions {
+            margin: 28px auto 14px auto;
+            text-align: center;
+            direction: rtl;
+            width: 100%;
+            max-width: 850px;
+        }
+
+        .surah-end-stars {
+            color: var(--gold);
+            font-size: 13px;
+            letter-spacing: 5px;
+            opacity: 0.8;
+            margin-bottom: 14px;
+            text-shadow: 0 0 8px rgba(197, 168, 89, 0.5);
+            user-select: none;
+        }
+
+        .surah-end-links-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 20px;
+            padding: 8px 12px;
+        }
+
+        .surah-gold-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gold) !important;
+            font-family: "Tajawal", "Amiri", sans-serif;
+            font-size: 15.5px;
+            font-weight: 800;
+            text-decoration: none !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 5px 8px;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            position: relative;
+            letter-spacing: 0.2px;
+        }
+
+        .surah-gold-link i {
+            font-size: 13px;
+            color: var(--gold);
+            transition: transform 0.22s ease, filter 0.22s ease;
+        }
+
+        .surah-gold-link:hover {
+            color: #f7e6a7 !important;
+            text-shadow: 0 0 12px rgba(197, 168, 89, 0.7);
+            transform: translateY(-1.5px);
+        }
+
+        .surah-gold-link:hover i {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 6px rgba(197, 168, 89, 0.8));
+        }
+
+        .surah-gold-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 8px;
+            right: 8px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(197, 168, 89, 0.7), transparent);
+            opacity: 0;
+            transform: scaleX(0.4);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .surah-gold-link:hover::after {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+
+        /* --- Bottom Pagination Bar (Removed as requested) --- */
+        .quran-bottom-pagination {
+            display: none !important;
+        }
+
+        .pagination-step-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 12px;
+            background: rgba(197, 168, 89, 0.12);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            text-decoration: none;
+            white-space: nowrap;
+            outline: none;
+        }
+
+        .pagination-step-btn i {
+            color: var(--gold);
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .pagination-step-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(223, 194, 110, 0.28), rgba(197, 168, 89, 0.28));
+            border-color: var(--gold);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(197, 168, 89, 0.3);
+        }
+
+        .pagination-step-btn:hover:not(:disabled) i {
+            transform: scale(1.2);
+        }
+
+        .pagination-step-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .pagination-center-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            text-align: center;
+        }
+
+        .pagination-surah-idx {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .pagination-surah-idx strong {
+            color: var(--gold);
+        }
+
+        .pagination-sub-idx {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+
+        .pagination-page-tag,
+        .pagination-juz-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(197, 168, 89, 0.14);
+            border: 1px solid rgba(197, 168, 89, 0.25);
+            color: var(--gold);
+            padding: 1px 7px;
+            border-radius: 8px;
+        }
+
+        .pagination-page-tag i,
+        .pagination-juz-tag i {
+            font-size: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .surah-end-links-row {
+                flex-wrap: nowrap !important;
+                gap: 12px !important;
+                padding: 6px 4px !important;
+            }
+            .surah-gold-link {
+                font-size: 13.5px !important;
+                white-space: nowrap !important;
+                padding: 6px 10px !important;
+                gap: 6px !important;
+            }
+            .quran-bottom-pagination {
+                display: none !important;
+            }
+        }
+
+        /* --- Landing Mode Selection Cards --- */
+        .landing-mode-selector-wrap {
+            max-width: 520px;
+            width: 100%;
+            margin: 16px auto 22px auto;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .landing-mode-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--gold);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .landing-mode-title i {
+            font-size: 12.5px;
+        }
+
+        .landing-mode-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .landing-mode-card {
+            position: relative;
+            background: rgba(14, 20, 28, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(197, 168, 89, 0.28);
+            border-radius: 14px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: right;
+            box-sizing: border-box;
+            transform: none !important;
+        }
+
+        .landing-mode-card:hover {
+            border-color: rgba(197, 168, 89, 0.55);
+            background: rgba(197, 168, 89, 0.12);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 10px rgba(197, 168, 89, 0.15);
+            transform: none !important;
+        }
+
+        .landing-mode-card.is-selected {
+            background: rgba(197, 168, 89, 0.16);
+            border-color: var(--gold);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(197, 168, 89, 0.22);
+            transform: none !important;
+        }
+
+        .landing-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .landing-card-title-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .landing-card-pure-icon {
+            color: var(--gold) !important;
+            font-size: 15px !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: inline-block;
+            vertical-align: middle;
+            filter: drop-shadow(0 0 4px rgba(197, 168, 89, 0.35));
+        }
+
+        .landing-card-name {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .landing-card-badge {
+            background: linear-gradient(135deg, #dfc26e 0%, #C5A859 100%);
+            color: #0b1117;
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 6px;
+            margin-inline-start: 2px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .landing-card-radio {
+            color: var(--gold);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .landing-card-radio .fa-regular {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .landing-card-desc {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        @media (max-width: 580px) {
+            .landing-mode-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .landing-mode-card {
+                padding: 11px 13px;
+            }
+        }
+
+        /* =========================================================
+           --- Topbar Settings Button ---
+           ========================================================= */
+        .topbar-settings-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 6px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            white-space: nowrap !important;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .topbar-settings-btn:hover {
+            color: var(--gold-light, #dfc26e);
+        }
+
+        .topbar-settings-btn i {
+            font-size: 14px;
+            color: var(--gold);
+            transition: transform 0.25s ease;
+        }
+
+        .topbar-settings-btn:hover i {
+            transform: rotate(45deg);
+        }
+
+        /* =========================================================
+           --- Reading & Appearance Settings Modal Styles ---
+           ========================================================= */
+        .settings-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 7, 12, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .settings-modal-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .settings-modal-card {
+            background: rgba(14, 20, 29, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 168, 89, 0.3);
+            border-radius: 16px;
+            width: calc(100vw - 28px);
+            max-width: 380px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(197, 168, 89, 0.15);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            direction: rtl;
+            text-align: right;
+            overflow: hidden;
+        }
+
+        .settings-modal-backdrop.show .settings-modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .settings-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-modal-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-modal-title i {
+            color: var(--gold);
+            font-size: 14px;
+        }
+
+        .settings-modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.15s ease;
+        }
+
+        .settings-modal-close:hover {
+            color: #ffffff;
+        }
+
+        .settings-modal-body {
+            padding: 12px 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .settings-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .settings-group-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .settings-group-title i {
+            color: var(--gold);
+            font-size: 12px;
+        }
+
+        /* Direct Numeric Font Size Stepper & Input - No Heavy Backgrounds */
+        .font-controls-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 4px 0;
+            background: transparent;
+        }
+
+        .font-btn-stepper {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .font-btn-stepper:hover {
+            border-color: var(--gold);
+            background: rgba(197, 168, 89, 0.1);
+            color: #ffffff;
+        }
+
+        .font-btn-stepper:active {
+            transform: scale(0.95);
+        }
+
+        .font-input-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 2px 10px;
+            height: 36px;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease;
+        }
+
+        .font-input-wrapper:focus-within {
+            border-color: var(--gold);
+        }
+
+        #quran-font-input {
+            width: 44px;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            -moz-appearance: textfield;
+            padding: 0;
+        }
+
+        #quran-font-input::-webkit-outer-spin-button,
+        #quran-font-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .font-unit-label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .font-preview-card {
+            background: transparent;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 6px 10px;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .font-preview-ayah {
+            font-family: 'Amiri Quran', serif;
+            font-size: 30px;
+            color: #f1f5f9;
+            margin: 0;
+            line-height: 2;
+            transition: font-size 0.15s ease;
+        }
+
+        /* Reading Mode Pills - Transparent, No Bulky Grey Box */
+        .settings-pills-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .settings-pill-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 10px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .settings-pill-btn i {
+            font-size: 12px;
+            color: #94a3b8;
+            transition: color 0.15s ease;
+        }
+
+        .settings-pill-btn:hover {
+            border-color: rgba(197, 168, 89, 0.4);
+            color: #ffffff;
+        }
+
+        .settings-pill-btn.active {
+            background: transparent;
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .settings-pill-btn.active i {
+            color: var(--gold);
+        }
+
+        /* Themes - Pure Icons, No Background Tiles */
+        .settings-themes-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .theme-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 10px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: right;
+        }
+
+        .theme-card:hover {
+            border-color: rgba(197, 168, 89, 0.35);
+        }
+
+        .theme-card.active {
+            border-color: var(--gold);
+            background: rgba(197, 168, 89, 0.04);
+        }
+
+        .theme-icon-pure {
+            font-size: 15px;
+            color: #94a3b8;
+            flex-shrink: 0;
+            width: 22px;
+            text-align: center;
+            transition: color 0.15s ease;
+        }
+
+        .theme-card.active .theme-icon-pure {
+            color: var(--gold);
+        }
+
+        .theme-card-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .theme-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #f1f5f9;
+            transition: color 0.15s ease;
+        }
+
+        .theme-card.active .theme-card-title {
+            color: var(--gold);
+        }
+
+        .theme-card-desc {
+            font-size: 10px;
+            color: #94a3b8;
+            line-height: 1.3;
+        }
+
+        .theme-card-radio {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            transition: color 0.15s ease;
+        }
+
+        .theme-card.active .theme-card-radio {
+            color: var(--gold);
+        }
+
+        /* Modal Footer */
+        .settings-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: transparent;
+        }
+
+        .settings-reset-link {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px;
+            transition: color 0.15s ease;
+        }
+
+        .settings-reset-link:hover {
+            color: var(--gold);
+        }
+
+        .settings-confirm-btn {
+            padding: 6px 18px;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+        }
+
+        .settings-confirm-btn:hover {
+            background: var(--gold);
+            color: #0b1117;
+        }
+
+        /* =========================================================
+           --- Theme Styling (مظهر القراءة وخلفيات كبار السن) ---
+           ========================================================= */
+
+        /* 1. Theme: Carousel (Default) */
+        body.theme-carousel .fullscreen-carousel {
+            display: block !important;
+            opacity: 1 !important;
+        }
+
+        /* 2. Theme: Royal Black & Gold (مريح للعين وكبار السن) */
+        body.theme-black-gold {
+            background-color: #07090e !important;
+            color: #F0D288 !important;
+        }
+        body.theme-black-gold .fullscreen-carousel {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        body.theme-black-gold .reader-area {
+            background-color: #07090e !important;
+        }
+        body.theme-black-gold .verse {
+            color: #F0D288 !important;
+            text-shadow: 0 0 10px rgba(197, 168, 89, 0.45) !important;
+        }
+        body.theme-black-gold .surah-title {
+            color: #F8E5A7 !important;
+            text-shadow: 0 0 18px rgba(197, 168, 89, 0.5) !important;
+        }
+        body.theme-black-gold .bismillah {
+            color: #DFC26E !important;
+            text-shadow: 0 0 10px rgba(197, 168, 89, 0.35) !important;
+        }
+        body.theme-black-gold .verse-number {
+            border-color: #DFC26E !important;
+            background: rgba(14, 18, 25, 0.95) !important;
+            color: #F0D288 !important;
+            box-shadow: 0 0 10px rgba(197, 168, 89, 0.35) !important;
+        }
+        body.theme-black-gold .surah-meta span {
+            color: #DFC26E !important;
+            opacity: 0.9;
+        }
+        body.theme-black-gold .sadaqallah-text {
+            color: #F0D288 !important;
+            text-shadow: 0 0 16px rgba(197, 168, 89, 0.6) !important;
+        }
+
+        /* 3. Theme: Paper Light (أبيض وأسود / مثل المصحف الورقي الأصلي) */
+        body.theme-paper-light {
+            background-color: #F5EFE4 !important;
+            color: #1a1a1a !important;
+        }
+        body.theme-paper-light .fullscreen-carousel {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        body.theme-paper-light .reader-area {
+            background-color: #F5EFE4 !important;
+        }
+        body.theme-paper-light .verse {
+            color: #121820 !important;
+            text-shadow: none !important;
+        }
+        body.theme-paper-light .surah-title {
+            color: #1b3d32 !important;
+            text-shadow: none !important;
+        }
+        body.theme-paper-light .bismillah {
+            color: #1b3d32 !important;
+            text-shadow: none !important;
+        }
+        body.theme-paper-light .surah-meta span {
+            color: #4b5563 !important;
+        }
+        body.theme-paper-light .verse-number {
+            border-color: #8c733e !important;
+            background: #E8DEC9 !important;
+            color: #5a441b !important;
+            box-shadow: none !important;
+        }
+        body.theme-paper-light .ayah-unit.is-bookmarked {
+            background: rgba(197, 168, 89, 0.25) !important;
+            border-bottom: 2px solid #9c7b2c !important;
+            box-shadow: 0 0 0 4px rgba(197, 168, 89, 0.15) !important;
+        }
+        body.theme-paper-light .sadaqallah-text {
+            color: #1b3d32 !important;
+            text-shadow: none !important;
+        }
+        body.theme-paper-light .sadaqallah-line {
+            background: linear-gradient(90deg, transparent, rgba(140, 115, 62, 0.5), transparent) !important;
+        }
+        body.theme-paper-light .surah-end-stars {
+            color: #8c733e !important;
+            text-shadow: none !important;
+        }
+        body.theme-paper-light .surah-gold-link {
+            color: #6a4f17 !important;
+        }
+        body.theme-paper-light .surah-gold-link:hover {
+            color: #3b2c0b !important;
+            text-shadow: none !important;
+        }
+        body.theme-paper-light .quran-bottom-pagination {
+            background: rgba(240, 233, 220, 0.95) !important;
+            border-color: rgba(140, 115, 62, 0.35) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+        }
+        body.theme-paper-light .pagination-step-btn {
+            background: #E8DEC9 !important;
+            color: #222222 !important;
+            border-color: rgba(140, 115, 62, 0.35) !important;
+        }
+        body.theme-paper-light .pagination-step-btn:hover:not(:disabled) {
+            background: #DFCFAA !important;
+            color: #111111 !important;
+        }
+        body.theme-paper-light .pagination-surah-idx {
+            color: #1a1a1a !important;
+        }
+        body.theme-paper-light .pagination-surah-idx strong {
+            color: #6a4f17 !important;
+        }
+        body.theme-paper-light .pagination-page-tag,
+        body.theme-paper-light .pagination-juz-tag {
+            color: #5a441b !important;
+            background: #E2D7C1 !important;
+            border-color: rgba(140, 115, 62, 0.3) !important;
+        }
+        body.theme-paper-light .reader-top-bar {
+            color: #1a1a1a !important;
+        }
+        body.theme-paper-light .topbar-settings-btn,
+        body.theme-paper-light .topbar-khatmah-btn,
+        body.theme-paper-light .topbar-bookmark-btn,
+        body.theme-paper-light .back-home-btn {
+            color: #5a441b !important;
+        }
+        body.theme-paper-light .topbar-settings-btn:hover,
+        body.theme-paper-light .topbar-khatmah-btn:hover,
+        body.theme-paper-light .topbar-bookmark-btn:hover,
+        body.theme-paper-light .back-home-btn:hover {
+            color: #2b1f09 !important;
+        }
+        body.theme-paper-light .topbar-settings-btn i,
+        body.theme-paper-light .topbar-khatmah-btn i,
+        body.theme-paper-light .topbar-bookmark-btn i,
+        body.theme-paper-light .back-home-btn i {
+            color: #5a441b !important;
+        }
+        body.theme-paper-light .mushaf-page-badge {
+            background: rgba(140, 115, 62, 0.12) !important;
+            color: #333333 !important;
+            border: 1px solid rgba(140, 115, 62, 0.25) !important;
+        }
+        body.theme-paper-light .mushaf-page-badge i {
+            color: #6a4f17 !important;
+        }
+        body.theme-paper-light .header-action-link {
+            background: #E8DEC9 !important;
+            color: #5a441b !important;
+            border-color: rgba(140, 115, 62, 0.35) !important;
+        }
+        body.theme-paper-light .header-action-link:hover {
+            background: #DFCFAA !important;
+            color: #2b1f09 !important;
+        }
+
+        /* 4. Theme: Static Dark Slate */
+        body.theme-dark-static {
+            background-color: #0E141D !important;
+            color: #FFFFFF !important;
+        }
+        body.theme-dark-static .fullscreen-carousel {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        body.theme-dark-static .reader-area {
+            background-color: #0E141D !important;
+        }
+        body.theme-dark-static .verse {
+            color: #FFFFFF !important;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6) !important;
+        }
+
+        @media (max-width: 600px) {
+            .settings-modal-card {
+                max-height: 94vh;
+                border-radius: 16px;
+            }
+            .settings-modal-header,
+            .settings-modal-body,
+            .settings-modal-footer {
+                padding: 14px 16px;
+            }
+            .topbar-settings-btn .settings-btn-text {
+                display: none !important;
+            }
+            .topbar-settings-btn {
+                padding: 6px 8px !important;
+                font-size: 14px !important;
+            }
+        }
+
+        /* =========================================================================
+           Medina Mushaf Page-by-Page Reading Mode Styles (نظام تصفح صفحات المصحف)
+           ========================================================================= */
+
+        .mushaf-page-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .mushaf-page-verses {
+            margin-top: 4px;
+            margin-bottom: 20px;
+        }
+
+        /* Mini Mushaf Page Header (for pages in the middle of a surah) */
+        .mushaf-page-mini-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 18px;
+            margin: 0 auto 10px auto;
+            max-width: 950px;
+            width: 100%;
+            border-bottom: 1px solid rgba(197, 168, 89, 0.25);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 14px;
+            box-sizing: border-box;
+        }
+
+        .page-mini-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-mini-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .page-mini-surah {
+            font-family: 'Amiri Quran', serif;
+            font-size: 17px;
+        }
+
+        .page-mini-sep {
+            color: rgba(197, 168, 89, 0.5);
+            font-size: 11px;
+        }
+
+        .page-mini-juz {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+        }
+
+        .page-mini-tag {
+            background: rgba(197, 168, 89, 0.16);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            color: var(--gold);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Mushaf Page Bottom Navigation Bar */
+        .mushaf-page-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            max-width: 720px;
+            margin: 25px auto 14px auto;
+            padding: 12px 18px;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(197, 168, 89, 0.35);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .page-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(197, 168, 89, 0.22), rgba(197, 168, 89, 0.08));
+            border: 1px solid rgba(197, 168, 89, 0.45);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        .page-nav-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(197, 168, 89, 0.4), rgba(197, 168, 89, 0.18));
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(197, 168, 89, 0.28);
+        }
+
+        .page-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-nav-btn i {
+            color: var(--gold);
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .page-nav-btn.prev-page-btn:hover:not(:disabled) i {
+            transform: translateX(3px);
+        }
+
+        .page-nav-btn.next-page-btn:hover:not(:disabled) i {
+            transform: translateX(-3px);
+        }
+
+        .page-nav-center-info {
+            text-align: center;
+            color: #ffffff;
+            line-height: 1.35;
+        }
+
+        .page-nav-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .page-nav-sub {
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, 0.72);
+            margin-top: 2px;
+        }
+
+        /* Quick Page Jump Strip */
+        .mushaf-quick-jump-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            max-width: 440px;
+            margin: 0 auto 16px auto;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(197, 168, 89, 0.22);
+            border-radius: 14px;
+            box-sizing: border-box;
+        }
+
+        .jump-label {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .jump-label i {
+            color: var(--gold);
+            font-size: 12px;
+        }
+
+        .jump-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #quick-page-input {
+            width: 70px;
+            text-align: center;
+            padding: 5px 8px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(197, 168, 89, 0.4);
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #quick-page-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(197, 168, 89, 0.3);
+        }
+
+        .jump-submit-btn {
+            padding: 5px 14px;
+            border-radius: 10px;
+            background: rgba(197, 168, 89, 0.22);
+            border: 1px solid var(--gold);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+
+        .jump-submit-btn:hover {
+            background: var(--gold);
+            color: #07090e;
+        }
+
+        /* Floating Edge Arrows for Desktop */
+        .mushaf-floating-nav {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+            z-index: 80;
+        }
+
+        .floating-page-arrow {
+            pointer-events: auto;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 89, 0.45);
+            color: var(--gold);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .floating-page-arrow:hover {
+            background: rgba(197, 168, 89, 0.3);
+            border-color: var(--gold);
+            transform: scale(1.12);
+            box-shadow: 0 0 18px rgba(197, 168, 89, 0.4);
+        }
+
+        @media (max-width: 1024px) {
+            .mushaf-floating-nav {
+                display: none !important;
+            }
+        }
+
+        /* Sidebar Page Label */
+        .surah-page-label {
+            color: var(--gold);
+            font-weight: 700;
+            opacity: 0.9;
+            font-size: 11.5px;
+        }
+
+        .info-sep {
+            color: rgba(255, 255, 255, 0.3);
+            margin: 0 2px;
+        }
+
+        /* Theme Overrides for Mushaf Page Navigation */
+        body.theme-black-gold .mushaf-page-mini-header {
+            background: #0B0E14 !important;
+            border-color: rgba(212, 175, 55, 0.3) !important;
+        }
+        body.theme-black-gold .mushaf-page-navigation {
+            background: #0B0E14 !important;
+            border-color: rgba(212, 175, 55, 0.4) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8) !important;
+        }
+        body.theme-black-gold .mushaf-quick-jump-strip {
+            background: #0B0E14 !important;
+            border-color: rgba(212, 175, 55, 0.25) !important;
+        }
+
+        body.theme-paper-light .mushaf-page-mini-header {
+            background: #EDE3D2 !important;
+            border-color: rgba(140, 115, 62, 0.3) !important;
+            color: #2b1f09 !important;
+        }
+        body.theme-paper-light .page-mini-surah,
+        body.theme-paper-light .page-mini-center,
+        body.theme-paper-light .page-mini-tag {
+            color: #4a3410 !important;
+        }
+        body.theme-paper-light .page-mini-juz {
+            color: #444444 !important;
+        }
+        body.theme-paper-light .page-mini-tag {
+            background: rgba(140, 115, 62, 0.15) !important;
+            border-color: rgba(140, 115, 62, 0.35) !important;
+        }
+        body.theme-paper-light .mushaf-page-navigation {
+            background: #EDE3D2 !important;
+            border-color: rgba(140, 115, 62, 0.35) !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+        }
+        body.theme-paper-light .page-nav-btn {
+            background: #E0D3BE !important;
+            border-color: rgba(140, 115, 62, 0.45) !important;
+            color: #2b1f09 !important;
+        }
+        body.theme-paper-light .page-nav-btn i {
+            color: #6a4f17 !important;
+        }
+        body.theme-paper-light .page-nav-title {
+            color: #4a3410 !important;
+        }
+        body.theme-paper-light .page-nav-sub {
+            color: #555555 !important;
+        }
+        body.theme-paper-light .mushaf-quick-jump-strip {
+            background: #EDE3D2 !important;
+            border-color: rgba(140, 115, 62, 0.3) !important;
+        }
+        body.theme-paper-light .jump-label {
+            color: #444444 !important;
+        }
+        body.theme-paper-light #quick-page-input {
+            background: #FAF6EE !important;
+            border-color: rgba(140, 115, 62, 0.4) !important;
+            color: #2b1f09 !important;
+        }
+        body.theme-paper-light .jump-submit-btn {
+            background: #6a4f17 !important;
+            color: #FFFFFF !important;
+            border-color: #5a441b !important;
+        }
+
+
 

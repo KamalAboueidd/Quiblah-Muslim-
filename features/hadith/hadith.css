@@ -936,9 +936,18 @@ body {
 
 /* Hide default Chrome, Safari, Edge, Opera number stepper buttons */
 .jump-input::-webkit-outer-spin-button,
-.jump-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.jump-input::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .jump-input::placeholder {

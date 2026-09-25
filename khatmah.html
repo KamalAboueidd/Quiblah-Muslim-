@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>خطة الختمة الذكية - قبلة المسلم</title>
 
     <!-- SEO & Open Graph Tags -->
@@ -32,8 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/khatmah/khatmah.css?v=2">
-    <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=7">
+    <link rel="stylesheet" href="features/khatmah/khatmah.css?v=8">
 </head>
 <body>
 
@@ -199,7 +198,10 @@
             <div class="deck-header">
                 <div class="deck-title-group">
                     <i class="fa-solid fa-calendar-day" aria-hidden="true"></i>
-                    <h2 class="deck-title">ورد اليوم الموزع على الصلوات</h2>
+                    <div>
+                        <h2 class="deck-title">ورد اليوم الموزع على الصلوات</h2>
+                        <span class="deck-subtitle" id="today-wird-plan-subtitle">محسوب وموزع تلقائياً بناءً على خطتك المحددة لتيسير قراءة وردك بعد كل صلاة.</span>
+                    </div>
                 </div>
                 <div class="deck-badge" id="today-wird-pages-range">
                     من ص 1 إلى ص 20 (20 صفحة)
@@ -237,10 +239,14 @@
             <div class="deck-header">
                 <div class="deck-title-group">
                     <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
-                    <h2 class="deck-title">موضع تلاوتك الآن</h2>
+                    <div>
+                        <h2 class="deck-title">موضع تلاوتك الآن</h2>
+                        <span class="logger-deck-subtitle">بدأت ختمتك بالفعل أو نسيت تسجيل تلاوتك؟ حدد صفحتك هنا لمتابعة خطتك من حيث وصلت.</span>
+                    </div>
                 </div>
                 <div class="deck-badge">
-                    سجل موضعك في المصحف فوراً
+                    <i class="fa-solid fa-arrows-rotate" style="margin-left: 4px;"></i>
+                    <span>مزامنة ومتابعة الموضع</span>
                 </div>
             </div>
 
@@ -267,17 +273,16 @@
                     </div>
 
                     <!-- Direct Page Input -->
-                    <div class="logger-input-jump">
-                        <input type="number" id="page-num-input" class="page-clean-input" min="0" max="604" placeholder="ص" aria-label="رقم الصفحة">
-                        <button type="button" id="btn-jump-page" class="btn-jump-action">تحديث</button>
+                    <div class="logger-jump-wrapper">
+                        <label for="page-num-input" class="logger-jump-label">
+                            <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
+                            <span>اكتب الصفحة التي تقف عندها</span>
+                        </label>
+                        <div class="logger-input-jump">
+                            <input type="number" id="page-num-input" class="page-clean-input" min="0" max="604" placeholder="ص" inputmode="numeric" aria-label="رقم الصفحة">
+                            <button type="button" id="btn-jump-page" class="btn-jump-action">تحديث</button>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Range Slider -->
-                <div class="logger-slider-bar">
-                    <span style="font-size: 11.5px; color: var(--text-dim); font-weight: 700;">ص 1</span>
-                    <input type="range" id="page-range-slider" class="page-range-slider" min="0" max="604" value="0" aria-label="شريط تصفح صفحات المصحف">
-                    <span style="font-size: 11.5px; color: var(--text-dim); font-weight: 700;">ص 604</span>
                 </div>
             </div>
         </section>
@@ -289,13 +294,11 @@
                     <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
                     <h2 class="deck-title">خارطة الأجزاء الـ 30</h2>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <!-- Filter buttons -->
-                    <div class="juz-filter-row" id="juz-filter-row">
-                        <button type="button" class="juz-filter-btn active" data-filter="all">جميع الأجزاء</button>
-                        <button type="button" class="juz-filter-btn" data-filter="completed">المكتملة</button>
-                        <button type="button" class="juz-filter-btn" data-filter="remaining">المتبقية</button>
-                    </div>
+                <!-- Filter buttons and collapse button in the exact same horizontal line -->
+                <div class="juz-filter-row" id="juz-filter-row">
+                    <button type="button" class="juz-filter-btn active" data-filter="all">جميع الأجزاء</button>
+                    <button type="button" class="juz-filter-btn" data-filter="completed">المكتملة</button>
+                    <button type="button" class="juz-filter-btn" data-filter="remaining">المتبقية</button>
                     <button type="button" class="deck-collapse-btn" id="btn-collapse-juz-deck" aria-label="طي أو توسيع قسم الأجزاء" title="طي / توسيع">
                         <i class="fa-solid fa-chevron-up"></i>
                     </button>
@@ -406,7 +409,7 @@
     <div class="khatmah-modal-backdrop" id="duaa-khatm-modal" role="dialog" aria-modal="true" aria-hidden="true">
         <div class="khatmah-modal-card" style="max-width: 620px;">
             <div class="modal-header-clean">
-                <h3><i class="fa-solid fa-hands-praying" style="color: var(--success);"></i> دعاء ختم القرآن الكريم</h3>
+                <h3><i class="fa-solid fa-hands-praying" style="color: var(--gold);"></i> دعاء ختم القرآن الكريم</h3>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button type="button" class="header-action-btn" id="btn-copy-duaa" title="نسخ الدعاء" style="padding: 5px 12px; font-size: 12px;">
                         <i class="fa-solid fa-copy"></i> <span>نسخ</span>
@@ -446,11 +449,40 @@
         </div>
     </div>
 
+    <!-- ================= RESTART KHATMAH CONFIRMATION MODAL ================= -->
+    <div class="khatmah-modal-backdrop" id="restart-khatmah-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="khatmah-modal-card" style="max-width: 480px;">
+            <div class="modal-header-clean">
+                <h3><i class="fa-solid fa-rotate-left"></i> بدء ختمة جديدة</h3>
+                <button type="button" class="modal-close-icon" id="btn-close-restart-modal" aria-label="إغلاق">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-scrollable" style="text-align: center; padding: 24px 20px;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(197, 168, 89, 0.14); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; color: var(--gold); font-size: 26px;">
+                    <i class="fa-solid fa-book-quran"></i>
+                </div>
+                <h4 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">هل ترغب في بدء ختمة جديدة مباركة؟</h4>
+                <p style="font-size: 13.5px; line-height: 1.7; color: var(--text-muted); margin: 0 auto; max-width: 380px;">
+                    سيتم حفظ وأرشفة تقدمك الحالي تلقائياً في <strong>سجل الختمات السابقة</strong> ليكون ذكرى طيبة مباركة، والبدء من جديد من أول المصحف الشريف.
+                </p>
+            </div>
+
+            <div class="modal-footer-clean" style="display: flex; gap: 12px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                <button type="button" class="header-action-btn" id="btn-cancel-restart" style="padding: 9px 20px;">إلغاء</button>
+                <button type="button" class="btn-jump-action" id="btn-confirm-restart" style="padding: 9px 22px; font-weight: 800; display: inline-flex; align-items: center; gap: 7px;">
+                    <i class="fa-solid fa-check"></i>
+                    <span>نعم، ابدأ ختمة جديدة</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast-msg" class="toast-msg" role="status" aria-live="polite"></div>
 
     <!-- Scripts -->
-    <script src="features/radial-nav/radial-nav.js?v=7"></script>
-    <script src="features/khatmah/khatmah.js?v=2"></script>
+    <script src="features/khatmah/khatmah.js?v=8"></script>
 </body>
 </html>

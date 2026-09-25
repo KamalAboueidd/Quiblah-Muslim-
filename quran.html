@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>القرآن الكريم - قراءة</title>
 
     <!-- SEO & Open Graph Tags -->
@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/quran/quran.css?v=9">
+    <link rel="stylesheet" href="features/quran/quran.css?v=66">
 </head>
 <body>
 
@@ -94,8 +94,19 @@
                             <i class="fa-solid fa-book-quran"></i>
                             <span>القرآن الكريم</span>
                         </span>
+                        <!-- Mushaf Page & Juz Indicator -->
+                        <span class="mushaf-page-badge" id="mushaf-page-badge" style="display: none;" title="موضع الصفحة والجزء في المصحف">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span id="mushaf-page-text">ص 1 • الجزء 1</span>
+                        </span>
                     </div>
                     <div class="nav-actions-cluster">
+                        <!-- Khatmah Sync Button -->
+                        <button type="button" class="topbar-khatmah-btn" id="topbar-khatmah-btn" onclick="handleSyncKhatmahClick()" title="تحديث موضع الختمة لموضعي الحالي">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span class="khatmah-btn-text">تحديث الختمة</span>
+                        </button>
+
                         <div class="topbar-bookmark-wrap" id="topbar-bookmark-wrap">
                             <button type="button" class="topbar-bookmark-btn" id="topbar-bookmark-btn" onclick="handleTopbarBookmarkClick()" aria-label="علامة القراءة">
                                 <i class="fa-solid fa-bookmark"></i>
@@ -195,11 +206,11 @@
         </div>
     </div>
 
-    <script src="core/surahs_meta.js"></script>
+    <script src="core/surahs_meta.js?v=66"></script>
     <script src="core/quran_data.js"></script>
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/quran/quran.js?v=65"></script>
+    <script src="features/quran/quran.js?v=66"></script>
 </body>
 </html>
 

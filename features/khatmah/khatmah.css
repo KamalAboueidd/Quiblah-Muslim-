@@ -217,21 +217,7 @@ body {
 .header-action-btn:hover {
     background: rgba(197, 168, 89, 0.22);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-}
-
-.header-action-btn.btn-duaa {
-    background: rgba(46, 204, 113, 0.12);
-    color: #eafff2;
-}
-
-.header-action-btn.btn-duaa i {
-    color: var(--success);
-}
-
-.header-action-btn.btn-duaa:hover {
-    background: rgba(46, 204, 113, 0.22);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 /* ================= 2. QURANIC HERO SANCTUARY (THE MIHRAB) ================= */
@@ -421,9 +407,11 @@ body {
     border: 1px solid rgba(197, 168, 89, 0.25);
 }
 
-.hero-pace-pill.pace-behind {
-    background: rgba(231, 76, 60, 0.14);
-    color: #ff6b6b;
+.hero-pace-pill.pace-behind,
+.hero-pace-pill.pace-remaining {
+    background: rgba(197, 168, 89, 0.12);
+    color: var(--gold-light);
+    border: 1px solid rgba(197, 168, 89, 0.28);
 }
 
 .hero-headline-text {
@@ -513,7 +501,7 @@ body {
 
 .deck-title-group {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
 }
 
@@ -521,6 +509,7 @@ body {
     font-size: 20px;
     color: var(--gold);
     background: transparent !important;
+    margin-top: 2px;
 }
 
 .deck-title {
@@ -538,6 +527,27 @@ body {
     background: var(--glass-sub);
     padding: 5px 12px;
     border-radius: 12px;
+}
+
+.logger-deck-subtitle,
+.deck-subtitle {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
+#section-page-logger .deck-badge {
+    background: transparent !important;
+    color: var(--gold-light);
+    border: none;
+    font-size: 12.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
 }
 
 /* ================= 4. TODAY'S PRAYER-DISTRIBUTED WIRD ================= */
@@ -579,7 +589,6 @@ body {
 
 .prayer-stop-tile:hover {
     background: rgba(255, 255, 255, 0.05);
-    transform: translateY(-2px);
 }
 
 .prayer-stop-tile.completed {
@@ -787,7 +796,6 @@ body {
 .pebble-btn:hover {
     background: rgba(197, 168, 89, 0.22);
     color: var(--gold-light);
-    transform: translateY(-2px);
 }
 
 .pebble-btn.pebble-gold {
@@ -795,57 +803,32 @@ body {
 }
 
 .pebble-btn:active {
-    transform: translateY(0);
-}
-
-/* Slider Track */
-.logger-slider-bar {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.page-range-slider {
-    flex: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    outline: none;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.page-range-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
-    cursor: pointer;
-    border: 2.5px solid #ffffff;
-    transition: transform 0.15s ease;
-}
-
-.page-range-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-}
-
-.page-range-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
-    cursor: pointer;
-    border: 2.5px solid #ffffff;
+    background: rgba(197, 168, 89, 0.3);
 }
 
 /* Direct Page Input Group (Clean & minimal) */
+.logger-jump-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.logger-jump-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.logger-jump-label i {
+    color: var(--gold);
+    font-size: 11px;
+}
+
 .logger-input-jump {
     display: inline-flex;
     align-items: center;
@@ -865,6 +848,20 @@ body {
     font-family: inherit;
     outline: none;
     transition: background 0.2s;
+    -moz-appearance: textfield;
+}
+
+.page-clean-input::-webkit-outer-spin-button,
+.page-clean-input::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 .page-clean-input:focus {
@@ -886,45 +883,76 @@ body {
 
 .btn-jump-action:hover {
     background: var(--gold-light);
-    transform: translateY(-1px);
 }
 
 /* ================= 6. THE 30 JUZ' CONSTELLATION ================= */
 .juz-filter-row {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
+    gap: 6px;
+    margin-bottom: 0 !important;
 }
 
 .juz-filter-btn {
-    background: var(--glass-sub);
-    border: none;
-    border-radius: 12px;
-    padding: 6px 14px;
-    font-size: 12.5px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
     font-weight: 700;
     font-family: inherit;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
 }
 
 .juz-filter-btn:hover {
-    background: var(--glass-sub-hover);
+    background: transparent !important;
     color: #ffffff;
 }
 
 .juz-filter-btn.active {
-    background: rgba(197, 168, 89, 0.2);
+    background: transparent !important;
     color: var(--gold-light);
+    font-weight: 800;
+    text-shadow: 0 0 10px rgba(197, 168, 89, 0.45);
+}
+
+.juz-filter-btn.active:hover {
+    color: #ffffff;
+    text-shadow: 0 0 14px rgba(197, 168, 89, 0.7);
 }
 
 .juz-mosaic-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
     gap: 10px;
+}
+
+.juz-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 36px 20px;
+    text-align: center;
+}
+
+.juz-empty-state i {
+    font-size: 26px;
+    color: var(--gold);
+    background: transparent !important;
+}
+
+.juz-empty-state span {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.2px;
 }
 
 .juz-tile {
@@ -943,7 +971,6 @@ body {
 
 .juz-tile:hover {
     background: rgba(255, 255, 255, 0.055);
-    transform: translateY(-2px);
 }
 
 .juz-tile.completed {
@@ -1067,11 +1094,10 @@ body {
 }
 
 .khatmah-modal-card {
-    background: rgba(14, 18, 26, 0.88);
+    background: rgba(14, 18, 26, 0.72);
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 28px;
     width: 100%;
     max-width: 540px;
@@ -1111,17 +1137,19 @@ body {
 }
 
 .modal-close-icon {
-    background: transparent;
+    background: transparent !important;
     border: none;
     color: var(--text-dim);
     font-size: 18px;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
     outline: none;
 }
 
 .modal-close-icon:hover {
-    color: #ffffff;
+    background: transparent !important;
+    color: var(--gold-light);
+    transform: none;
 }
 
 .modal-body-scrollable {
@@ -1175,9 +1203,31 @@ body {
 .modal-footer-clean {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
     padding: 16px 24px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-footer-clean .header-action-btn,
+#btn-cancel-plan,
+#btn-cancel-restart {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+    padding: 8px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    transition: color 0.2s ease;
+}
+
+.modal-footer-clean .header-action-btn:hover,
+#btn-cancel-plan:hover,
+#btn-cancel-restart:hover {
+    background: transparent !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
 }
 
 /* ================= 9. TOAST NOTIFICATION ================= */
@@ -1263,24 +1313,23 @@ body {
 }
 
 .guide-dismiss-btn {
-    background: rgba(255, 255, 255, 0.05);
+    background: transparent !important;
     border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-dim);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
     flex-shrink: 0;
 }
 
 .guide-dismiss-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
-    transform: rotate(90deg);
+    background: transparent !important;
+    color: var(--gold-light);
+    transform: none;
 }
 
 .guide-banner-text {
@@ -1315,7 +1364,6 @@ body {
 }
 
 .btn-guide-cta:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(197, 168, 89, 0.5);
 }
 
@@ -1342,22 +1390,56 @@ body {
 
 /* Deck Section Collapse Button */
 .deck-collapse-btn {
-    background: rgba(255, 255, 255, 0.06);
+    background: transparent !important;
     border: none !important;
-    border-radius: 12px;
-    width: 32px;
-    height: 32px;
+    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: color 0.2s ease;
 }
 
 .deck-collapse-btn:hover {
-    background: rgba(197, 168, 89, 0.22);
+    background: transparent !important;
     color: var(--gold-light);
+    text-shadow: 0 0 10px rgba(197, 168, 89, 0.5);
+}
+
+/* Button Restart Khatmah - Clean & Backgroundless */
+#btn-restart-khatmah {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 6px 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+#btn-restart-khatmah i {
+    color: var(--gold);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+#btn-restart-khatmah:hover {
+    background: transparent !important;
+    color: #ffffff;
+    box-shadow: none !important;
+}
+
+#btn-restart-khatmah:hover i {
+    color: var(--gold-light);
+    text-shadow: 0 0 12px rgba(197, 168, 89, 0.6);
 }
 
 .deck-collapse-btn i {
@@ -1393,31 +1475,31 @@ body {
 }
 
 .btn-toggle-juz-expand {
-    background: rgba(197, 168, 89, 0.12);
+    background: transparent !important;
     border: none !important;
-    border-radius: 16px;
-    padding: 10px 24px;
-    font-size: 13px;
+    padding: 8px 16px;
+    font-size: 13.5px;
     font-weight: 800;
     font-family: inherit;
-    color: var(--gold-light);
+    color: var(--gold);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.25s ease;
+    transition: color 0.2s ease;
     user-select: none;
+    box-shadow: none !important;
 }
 
 .btn-toggle-juz-expand:hover {
-    background: rgba(197, 168, 89, 0.25);
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    background: transparent !important;
+    color: var(--gold-light);
+    box-shadow: none !important;
 }
 
 .btn-toggle-juz-expand:active {
-    transform: translateY(0);
+    background: transparent !important;
+    transform: none;
 }
 
 /* ================= 10. RESPONSIVE BREAKPOINTS ================= */
@@ -1480,6 +1562,10 @@ body {
 
     .logger-pebbles-group {
         justify-content: center;
+    }
+
+    .logger-jump-wrapper {
+        align-items: center;
     }
 
     .preset-cards-grid {

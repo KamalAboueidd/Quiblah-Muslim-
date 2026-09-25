@@ -613,12 +613,22 @@ body.mushaf-studio-body {
     font-weight: 800;
     outline: none;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .ayah-num-field::-webkit-outer-spin-button,
-.ayah-num-field::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.ayah-num-field::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .ayah-max-label {

@@ -11,6 +11,12 @@
         html {
             scrollbar-width: thin;
             scrollbar-color: #C5A859 rgba(12, 16, 23, 0.75);
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden !important;
+            touch-action: pan-y;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
 
         ::-webkit-scrollbar {
@@ -55,7 +61,13 @@
             padding: 0;
             background-color: #111;
             color: var(--white);
-            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden !important;
+            position: relative;
+            touch-action: pan-y;
+            -webkit-text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* --- Fullscreen Background Carousel --- */
@@ -97,11 +109,15 @@
         /* --- App Container (On top of carousel) --- */
         .app-container {
             width: 100%;
+            max-width: 100%;
             min-height: 100vh;
+            min-height: 100dvh;
             position: relative;
             display: flex;
             flex-direction: column;
             z-index: 10;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
 
         /* Top Bar */
@@ -1032,9 +1048,13 @@
         }
 
         /* Mobile & Tablet specific adjustments */
+        /* Mobile & Tablet specific adjustments */
         @media (max-width: 1024px) {
             .top-bar { 
-                padding: 14px 20px 8px 20px !important; 
+                padding-top: max(14px, env(safe-area-inset-top)) !important;
+                padding-bottom: 8px !important;
+                padding-left: max(16px, env(safe-area-inset-left)) !important;
+                padding-right: max(16px, env(safe-area-inset-right)) !important;
                 display: flex !important;
                 justify-content: space-between !important;
                 align-items: center !important;
@@ -1047,6 +1067,42 @@
                 font-weight: 900 !important;
                 letter-spacing: 0.5px !important;
             }
+
+            .top-bar-actions {
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+            }
+
+            .mobile-top-install-btn {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                padding: 6px 14px !important;
+                border-radius: 20px !important;
+                background: rgba(197, 168, 89, 0.12) !important;
+                border: 1px solid rgba(197, 168, 89, 0.4) !important;
+                color: var(--gold-light, #f5e4ab) !important;
+                font-size: 13px !important;
+                font-weight: 700 !important;
+                cursor: pointer !important;
+                text-decoration: none !important;
+                transition: all 0.2s ease !important;
+                -webkit-tap-highlight-color: transparent !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            .mobile-top-install-btn:hover,
+            .mobile-top-install-btn:active {
+                background: rgba(197, 168, 89, 0.25) !important;
+                border-color: var(--gold) !important;
+                transform: scale(1.02);
+            }
+
+            .mobile-top-install-btn i {
+                color: var(--gold);
+                font-size: 13px;
+            }
             
             .mobile-menu-btn {
                 display: flex !important;
@@ -1058,38 +1114,76 @@
             }
             
             .main-content {
-                padding: 10px 15px !important;
-                gap: 15px !important;
-                margin-top: 10px !important;
+                padding: 8px 14px !important;
+                gap: 14px !important;
+                margin-top: 5px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
             }
 
             .countdown-area {
-                margin-top: 10px !important;
-                margin-bottom: 20px !important;
+                margin-top: 5px !important;
+                margin-bottom: 16px !important;
+                width: 100% !important;
+                display: flex !important;
+                justify-content: center !important;
             }
             
-            /* Circle and text sizes are now handled by clamp() in main CSS */
+            .circle-countdown {
+                width: clamp(215px, 66vw, 275px) !important;
+                height: clamp(215px, 66vw, 275px) !important;
+            }
             
-            .prayers-container { padding: 0 10px; margin-bottom: 20px; }
+            .prayers-container { 
+                padding: 0 12px !important; 
+                margin-bottom: 22px !important; 
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
             .prayers-row { 
-                flex-wrap: nowrap; 
-                gap: 5px; 
+                display: flex !important;
+                flex-wrap: nowrap !important; 
+                gap: 6px !important; 
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             .prayer-card { 
-                flex: 1; 
-                min-width: 0; 
-                padding: 10px 2px; 
-                border-radius: 10px;
+                flex: 1 1 0 !important; 
+                min-width: 0 !important; 
+                padding: 12px 3px !important; 
+                border-radius: 12px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                box-sizing: border-box !important;
             }
-            .prayer-icon { font-size: 16px; margin-bottom: 6px; }
-            .prayer-name { font-size: 12px; margin-bottom: 2px; }
-            .prayer-time { font-size: 13px; }
+            .prayer-icon { 
+                font-size: 18px !important; 
+                margin-bottom: 6px !important; 
+            }
+            .prayer-name { 
+                font-size: 12.5px !important; 
+                font-weight: 700 !important;
+                margin-bottom: 3px !important; 
+                white-space: nowrap !important;
+            }
+            .prayer-time { 
+                font-size: 13.5px !important; 
+                font-weight: 800 !important;
+                white-space: nowrap !important;
+            }
             
-            .quran-section { width: calc(100% - 20px); margin: 0 auto 20px auto; }
-            .quran-header { padding: 12px 15px; font-size: 16px; }
-            .quran-body { padding: 25px 20px; min-height: 100px; }
-            .verse-text { font-size: 22px; margin-bottom: 15px; }
-            .quran-footer { padding: 12px 15px; font-size: 14px; }
+            .quran-section { 
+                width: calc(100% - 24px) !important; 
+                max-width: 100% !important;
+                margin: 0 auto 22px auto !important; 
+                box-sizing: border-box !important;
+            }
+            .quran-header { padding: 12px 16px; font-size: 16px; }
+            .quran-body { padding: 22px 18px; min-height: 90px; }
+            .verse-text { font-size: clamp(20px, 5.5vw, 24px); margin-bottom: 12px; line-height: 1.8; }
+            .quran-footer { padding: 10px 12px; font-size: 13.5px; }
             
             /* Info Area Adjustments - Centered for Mobile & Tablet */
             .info-area {

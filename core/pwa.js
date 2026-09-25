@@ -44,7 +44,7 @@
         // التطبيق مثبت بالفعل ويعمل كنافذة مستقلة - إخفاء جميع عناصر التثبيت فوراً
         document.documentElement.classList.add('is-standalone');
         const hideTriggers = () => {
-            document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
+            document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .mobile-top-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
                 el.style.setProperty('display', 'none', 'important');
             });
         };
@@ -58,9 +58,10 @@
 
     // فحص بيئة ونوع جهاز المستخدم
     const ua = (window.navigator.userAgent || '').toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(ua) && !window.MSStream;
+    const isIOS = (/iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
     const isAndroid = /android/.test(ua);
     const isDesktop = !isIOS && !isAndroid;
+    const isInAppBrowser = isIOS && (/fban|fbav|instagram|crios|line|micromessenger|snapchat|musical_ly|tiktok/i.test(ua) || (ua.includes('safari') && !ua.includes('version/') && ua.includes('mobile/')));
 
     let deferredPrompt = null;
     let installBtn = null;
@@ -112,6 +113,7 @@
         @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui), (display-mode: window-controls-overlay) {
             .pwa-install-trigger,
             .pwa-install-btn,
+            .mobile-top-install-btn,
             .sheet-pwa-banner,
             .footer-pwa-action,
             #btn-bot-install-pwa {
@@ -120,6 +122,7 @@
         }
         html.is-standalone .pwa-install-trigger,
         html.is-standalone .pwa-install-btn,
+        html.is-standalone .mobile-top-install-btn,
         html.is-standalone .sheet-pwa-banner,
         html.is-standalone .footer-pwa-action,
         html.is-standalone #btn-bot-install-pwa {
@@ -461,18 +464,32 @@
             if (isIOS) {
                 iconHtml = '<i class="fa-brands fa-apple"></i>';
                 title = 'تثبيت التطبيق على الآيفون والآيباد';
+                let inAppWarning = '';
+                if (isInAppBrowser) {
+                    inAppWarning = `
+                    <div class="pwa-guide-step" style="background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.35); margin-bottom: 8px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #ff6b6b; font-size: 20px;"></i>
+                        <span style="color: #ffc4c4; font-size: 13.5px; line-height: 1.5;">أنت تتصفح من داخل تطبيق (مثل واتساب أو فيسبوك). اضغط على زر الخيارات ثم <strong>"فتح في Safari" (Open in Safari)</strong> لتتمكن من التثبيت على شاشتك.</span>
+                    </div>
+                    `;
+                }
                 stepsHtml = `
+                    ${inAppWarning}
                     <div class="pwa-guide-step">
                         <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                        <span>1. اضغط على زر المشاركة <strong>(Share)</strong> أسفل شريط متصفح Safari.</span>
+                        <span>1. اضغط على زر المشاركة <strong>(Share 📤)</strong> في الشريط السفلي لمتصفح Safari.</span>
                     </div>
                     <div class="pwa-guide-step">
                         <i class="fa-solid fa-square-plus"></i>
-                        <span>2. مرر للأسفل واختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong>.</span>
+                        <span>2. مرر القائمة للأسفل واختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen ➕)</strong>.</span>
                     </div>
                     <div class="pwa-guide-step">
                         <i class="fa-solid fa-check"></i>
-                        <span>3. اضغط على <strong>"إضافة" (Add)</strong> بالأعلى لتثبيت التطبيق على جهازك.</span>
+                        <span>3. اضغط على <strong>"إضافة" (Add)</strong> بالأعلى ومبارك عليك التطبيق!</span>
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--gold-light, #f5e4ab); opacity: 0.85; text-align: center; margin-top: 8px; line-height: 1.5;">
+                        <i class="fa-solid fa-circle-info" style="margin-left: 4px;"></i>
+                        يعمل التطبيق كبرنامج أصلي بدون إنترنت، ويوفر تنبيهات الأذان ومواقيت الصلاة الدقيقة.
                     </div>
                 `;
             } else if (isAndroid) {
@@ -538,7 +555,7 @@
     // 8. إخفاء جميع عناصر التثبيت عند اكتمال التثبيت
     function hideAllInstallTriggers() {
         document.documentElement.classList.add('is-standalone');
-        document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
+        document.querySelectorAll('.pwa-install-trigger, #pwa-install-btn, .top-bar-install-btn, .mobile-top-install-btn, .footer-pwa-action, .sheet-pwa-banner, #btn-bot-install-pwa').forEach((el) => {
             el.style.setProperty('display', 'none', 'important');
         });
     }

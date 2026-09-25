@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>قبلة المسلم</title>
 
     <!-- SEO & Open Graph Tags -->
@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/home/home.css?v=78">
+    <link rel="stylesheet" href="features/home/home.css?v=80">
 </head>
 <body>
 
@@ -56,9 +56,15 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="title">قبلة المسلم</div>
-            <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" onclick="togglePagesSheet()" aria-label="قائمة الصفحات" title="استكشف الصفحات">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <div class="top-bar-actions">
+                <button type="button" class="mobile-top-install-btn pwa-install-trigger" id="mobile-top-install-btn" title="تثبيت التطبيق">
+                    <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+                    <span>تثبيت</span>
+                </button>
+                <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" onclick="togglePagesSheet()" aria-label="قائمة الصفحات" title="استكشف الصفحات">
+                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Navigation Bar -->
@@ -226,17 +232,6 @@
                 </div>
             </div>
 
-            <!-- Sheet PWA Install Banner -->
-            <div class="sheet-pwa-banner pwa-install-trigger" onclick="window.triggerPWAInstall()" role="button" tabindex="0" title="تثبيت تطبيق قبلة المسلم">
-                <div class="sheet-pwa-icon">
-                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
-                </div>
-                <div class="sheet-pwa-info">
-                    <strong>تثبيت قبلة المسلم كـ تطبيق</strong>
-                    <span>تصفح أسرع، بدون إنترنت، وتنبيهات الأذان</span>
-                </div>
-                <span class="sheet-pwa-cta-btn">تثبيت</span>
-            </div>
 
             <!-- Sheet Body: 3-Column Grid -->
             <div class="sheet-grid">
@@ -328,7 +323,7 @@
     <audio id="azan-audio" src="assets/Azan/456572.mp3" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="core/toast.js"></script>
-    <script src="core/pwa.js?v=25"></script>
+    <script src="core/pwa.js?v=26"></script>
     <script src="core/reminders.js"></script>
     <script src="core/visitor-counter.js"></script>
     <script src="features/home/home.js?v=63"></script>

@@ -201,6 +201,15 @@
         return JUZ_DATA[0];
     }
 
+    // تنسيق عدد الصفحات لغوياً بشكل سليم
+    function formatPagesCount(num) {
+        const n = Math.abs(num);
+        if (n === 1) return 'صفحة واحدة';
+        if (n === 2) return 'صفحتان';
+        if (n >= 3 && n <= 10) return `${n} صفحات`;
+        return `${n} صفحة`;
+    }
+
     // مفتاح تاريخ اليوم YYYY-MM-DD
     function getTodayKey() {
         const now = new Date();
@@ -328,22 +337,23 @@
             heroPaceBadge.className = 'hero-pace-pill';
             if (current >= TOTAL_PAGES) {
                 heroPaceBadge.classList.add('pace-ahead');
-                heroPaceBadge.innerHTML = `<i class="fa-solid fa-crown"></i> متقدم ومكتمل!`;
+                heroPaceBadge.innerHTML = `<i class="fa-solid fa-crown"></i> أتممت الختمة كاملاً مبارك!`;
                 heroQuoteText.textContent = 'مبارك! أتممت ختم كتاب الله تعالى كاملاً';
                 heroSubquoteText.textContent = 'تقبل الله منك وجعله شفيعاً لك يوم القيامة ورفعة في الدرجات.';
             } else if (pace.delta > 2) {
                 heroPaceBadge.classList.add('pace-ahead');
-                heroPaceBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> متقدم بـ ${pace.delta} صفحة`;
+                heroPaceBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> أتممت ورد اليوم ومتقدم بـ ${formatPagesCount(pace.delta)}`;
                 heroQuoteText.textContent = 'ما شاء الله! وتيرة متقدمة تسبق خطتك';
                 heroSubquoteText.textContent = `أنت متقدم على جدولك، استمر بهذا الإقبال والهمة العالية.`;
-            } else if (pace.delta < -2) {
-                heroPaceBadge.classList.add('pace-behind');
-                heroPaceBadge.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> متأخر بـ ${Math.abs(pace.delta)} صفحة`;
-                heroQuoteText.textContent = 'خطوات يسيرة وتستعيد وتيرة خطتك';
-                heroSubquoteText.textContent = `لا بأس، قراءة صفحتين إضافيتين بعد كل صلاة اليوم تعيدك للقمة فوراً!`;
+            } else if (pace.delta < 0) {
+                const remainingToday = Math.abs(pace.delta);
+                heroPaceBadge.classList.add('pace-remaining');
+                heroPaceBadge.innerHTML = `<i class="fa-solid fa-book-open-reader"></i> باقي على ورد اليوم ${formatPagesCount(remainingToday)}`;
+                heroQuoteText.textContent = 'خطوات يسيرة لإتمام وردك اليوم';
+                heroSubquoteText.textContent = `صفحات معدودة بعد صلواتك وتكون قد أتممت ورد اليوم بكل يسر وسكينة.`;
             } else {
                 heroPaceBadge.classList.add('pace-ontrack');
-                heroPaceBadge.innerHTML = `<i class="fa-solid fa-check-double"></i> ملتزم بالخطة تماماً`;
+                heroPaceBadge.innerHTML = `<i class="fa-solid fa-check-double"></i> أتممت ورد اليوم بامتياز`;
                 heroQuoteText.textContent = 'تلاوة مباركة وثبات يومي على الورد';
                 heroSubquoteText.textContent = `استمرارك اليومي خير من كثير ينقطع، بوركت همتك وحفظك الله.`;
             }
@@ -358,14 +368,12 @@
         const currentHeroPageNum = document.getElementById('current-page-num-hero');
         const currentSurahInfo = document.getElementById('current-page-surah-info');
         const currentJuzInfo = document.getElementById('current-page-juz-info');
-        const pageSlider = document.getElementById('page-range-slider');
         const pageNumInput = document.getElementById('page-num-input');
 
         const activeSurah = getSurahForPage(Math.max(1, current));
         if (currentHeroPageNum) currentHeroPageNum.textContent = current;
         if (currentSurahInfo) currentSurahInfo.textContent = `سورة ${activeSurah.name}`;
         if (currentJuzInfo) currentJuzInfo.textContent = `الجزء ${currentJuz.juz} (${currentJuz.name})`;
-        if (pageSlider) pageSlider.value = current;
         if (pageNumInput) pageNumInput.value = current;
 
         // 5. Render Today's Prayer Wird
@@ -388,6 +396,12 @@
 
         const current = khatmahData.currentPage || 0;
         const pagesPerDay = pace.pagesPerDay || 20;
+        const planDays = khatmahData.planDays || 30;
+
+        const planSubtitle = document.getElementById('today-wird-plan-subtitle');
+        if (planSubtitle) {
+            planSubtitle.textContent = `محسوب وموزع تلقائياً بناءً على خطتك المحددة (${planDays} يوماً • ${pagesPerDay} ص/يوم) لتيسير قراءة وردك بعد كل صلاة.`;
+        }
 
         const startPageToday = Math.min(TOTAL_PAGES, current + 1);
         const endPageToday = Math.min(TOTAL_PAGES, current + pagesPerDay);
@@ -396,7 +410,7 @@
             if (current >= TOTAL_PAGES) {
                 wirdPagesRange.textContent = 'تم إتمام الختمة كاملة بحمد الله!';
             } else {
-                wirdPagesRange.textContent = `من ص ${startPageToday} إلى ص ${endPageToday} (${pagesPerDay} صفحة)`;
+                wirdPagesRange.innerHTML = `<i class="fa-solid fa-sliders" style="margin-left: 5px; color: var(--gold);"></i> وفق خطتك: من ص ${startPageToday} إلى ص ${endPageToday} (${pagesPerDay} صفحة)`;
             }
         }
 
@@ -435,7 +449,7 @@
                     <span class="stop-surah-tag">سورة ${startSurah.name}</span>
                 </div>
                 <div class="stop-actions-line">
-                    <a href="quran.html?surah=${startSurah.num}" class="stop-read-action" title="فتح سورة ${startSurah.name} في المصحف">
+                    <a href="quran.html?surah=${startSurah.num}&page=${currentSlotStart}" class="stop-read-action" title="فتح سورة ${startSurah.name} في المصحف">
                         <i class="fa-solid fa-book-open"></i>
                         <span>تلاوة</span>
                     </a>
@@ -536,6 +550,21 @@
             return true;
         });
 
+        // إذا لم تكن هناك أجزاء مطابقة للفلتر
+        if (filteredList.length === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'juz-empty-state';
+            const msg = currentJuzFilter === 'completed' 
+                ? 'لا توجد أجزاء مكتملة' 
+                : 'لا توجد أجزاء متبقية';
+            emptyState.innerHTML = `
+                <i class="fa-solid fa-book-bookmark" aria-hidden="true"></i>
+                <span>${msg}</span>
+            `;
+            grid.appendChild(emptyState);
+            return;
+        }
+
         // إذا كانت القائمة مطوية، يتم عرض أول 3 أجزاء فقط
         const PREVIEW_LIMIT = 3;
         const shouldLimit = !isJuzExpanded && filteredList.length > PREVIEW_LIMIT;
@@ -574,7 +603,7 @@
             // عند النقر يفتح المصحف على بداية هذا الجزء
             tile.addEventListener('click', () => {
                 const surah = getSurahForPage(juz.start);
-                window.location.href = `quran.html?surah=${surah.num}`;
+                window.location.href = `quran.html?surah=${surah.num}&page=${juz.start}`;
             });
 
             grid.appendChild(tile);
@@ -687,20 +716,6 @@
             });
         });
 
-        // شريط التمرير للصفحات (Slider)
-        const slider = document.getElementById('page-range-slider');
-        if (slider) {
-            slider.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value) || 0;
-                const heroNum = document.getElementById('current-page-num-hero');
-                const numInput = document.getElementById('page-num-input');
-                if (heroNum) heroNum.textContent = val;
-                if (numInput) numInput.value = val;
-            });
-            slider.addEventListener('change', (e) => {
-                setCurrentPageManual(e.target.value);
-            });
-        }
 
         // إدخال رقم الصفحة المباشر
         const btnJumpPage = document.getElementById('btn-jump-page');
@@ -834,26 +849,47 @@
             });
         }
 
-        // زر إعادة ضبط الختمة / بدء ختمة جديدة
+        // زر إعادة ضبط الختمة / بدء ختمة جديدة عبر مودال مخصص فاخر
         const btnRestartKhatmah = document.getElementById('btn-restart-khatmah');
-        if (btnRestartKhatmah) {
-            btnRestartKhatmah.addEventListener('click', () => {
-                if (confirm('هل ترغب في بدء ختمة جديدة؟ سيتم أرشفة ختمتك الحالية في السجل والبدء من الصفحة الأولى.')) {
-                    if (khatmahData.currentPage > 0) {
-                        if (!khatmahData.completedKhatmahs) khatmahData.completedKhatmahs = [];
-                        khatmahData.completedKhatmahs.unshift({
-                            id: Date.now(),
-                            date: getTodayKey(),
-                            planDays: khatmahData.planDays
-                        });
-                    }
-                    khatmahData.currentPage = 0;
-                    khatmahData.startDate = getTodayKey();
-                    khatmahData.todaySlots = { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false };
-                    saveKhatmahData(khatmahData);
-                    renderKhatmahUI();
-                    showToast('تم بدء ختمة جديدة مباركة! وفقك الله لإتمامها', 'fa-solid fa-book-quran');
+        const restartModal = document.getElementById('restart-khatmah-modal');
+        const btnCloseRestartModal = document.getElementById('btn-close-restart-modal');
+        const btnCancelRestart = document.getElementById('btn-cancel-restart');
+        const btnConfirmRestart = document.getElementById('btn-confirm-restart');
+
+        const openRestartModal = () => {
+            if (restartModal) restartModal.classList.add('active');
+        };
+
+        const closeRestartModal = () => {
+            if (restartModal) restartModal.classList.remove('active');
+        };
+
+        if (btnRestartKhatmah) btnRestartKhatmah.addEventListener('click', openRestartModal);
+        if (btnCloseRestartModal) btnCloseRestartModal.addEventListener('click', closeRestartModal);
+        if (btnCancelRestart) btnCancelRestart.addEventListener('click', closeRestartModal);
+        if (restartModal) {
+            restartModal.addEventListener('click', (e) => {
+                if (e.target === restartModal) closeRestartModal();
+            });
+        }
+
+        if (btnConfirmRestart) {
+            btnConfirmRestart.addEventListener('click', () => {
+                closeRestartModal();
+                if (khatmahData.currentPage > 0) {
+                    if (!khatmahData.completedKhatmahs) khatmahData.completedKhatmahs = [];
+                    khatmahData.completedKhatmahs.unshift({
+                        id: Date.now(),
+                        date: getTodayKey(),
+                        planDays: khatmahData.planDays
+                    });
                 }
+                khatmahData.currentPage = 0;
+                khatmahData.startDate = getTodayKey();
+                khatmahData.todaySlots = { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false };
+                saveKhatmahData(khatmahData);
+                renderKhatmahUI();
+                showToast('تم بدء ختمة جديدة مباركة! وفقك الله لإتمامها', 'fa-solid fa-book-quran');
             });
         }
 

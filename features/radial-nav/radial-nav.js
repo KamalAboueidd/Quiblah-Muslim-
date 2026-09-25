@@ -81,7 +81,7 @@
         hubBtn.setAttribute('title', 'التنقل السريع بين الصفحات');
         hubBtn.innerHTML = `
             <div class="radial-hub-ripple"></div>
-            <i class="fa-solid fa-compass radial-hub-icon" aria-hidden="true"></i>
+            <i class="fa-solid fa-bars-staggered radial-hub-icon" aria-hidden="true"></i>
         `;
 
         // درع الحماية القوسي

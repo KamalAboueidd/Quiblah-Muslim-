@@ -12,35 +12,84 @@
         const sidebar = document.getElementById('sidebar');
         const menuBtn = document.getElementById('menu-btn');
         const overlay = document.getElementById('sidebar-overlay');
+        const sidebarCollapseHandle = document.getElementById('sidebar-collapse-handle');
         
         function toggleSidebar(forceState) {
+            if (!sidebar) return;
             const isMobile = window.innerWidth <= 900;
+            const isCurrentlyClosed = isMobile 
+                ? !sidebar.classList.contains('open') 
+                : (sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-closed'));
+            
+            const willOpen = (typeof forceState === 'boolean') ? forceState : isCurrentlyClosed;
+
             if (isMobile) {
-                const willOpen = (typeof forceState === 'boolean') ? forceState : !sidebar.classList.contains('open');
                 sidebar.classList.toggle('open', willOpen);
-                overlay.classList.toggle('active', willOpen);
+                if (overlay) overlay.classList.toggle('active', willOpen);
                 document.body.classList.toggle('sidebar-opened', willOpen);
             } else {
-                const isCurrentlyCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-closed');
-                const willCollapse = (typeof forceState === 'boolean') ? !forceState : !isCurrentlyCollapsed;
-                sidebar.classList.toggle('collapsed', willCollapse);
-                document.body.classList.toggle('sidebar-closed', willCollapse);
-                overlay.classList.remove('active');
+                sidebar.classList.toggle('collapsed', !willOpen);
+                document.body.classList.toggle('sidebar-closed', !willOpen);
+                if (overlay) overlay.classList.remove('active');
+            }
+
+            // Sync collapse handle icon & title
+            const handleBtn = document.getElementById('sidebar-collapse-handle');
+            if (handleBtn) {
+                const icon = handleBtn.querySelector('i');
+                if (willOpen) {
+                    handleBtn.title = 'إخفاء قائمة السور';
+                    handleBtn.setAttribute('aria-label', 'إخفاء قائمة السور');
+                    if (icon) icon.className = 'fa-solid fa-chevron-right';
+                } else {
+                    handleBtn.title = 'إظهار قائمة السور';
+                    handleBtn.setAttribute('aria-label', 'إظهار قائمة السور');
+                    if (icon) icon.className = 'fa-solid fa-chevron-left';
+                }
             }
         }
 
-        menuBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleSidebar();
-        });
-        overlay.addEventListener('click', () => toggleSidebar(false));
+        window.toggleSidebar = toggleSidebar;
+
+        if (menuBtn) {
+            menuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', () => toggleSidebar(false));
+        }
+        if (sidebarCollapseHandle) {
+            sidebarCollapseHandle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+
+        // Initialize handle icon on page load
+        if (window.innerWidth <= 900) {
+            if (sidebarCollapseHandle) {
+                const icon = sidebarCollapseHandle.querySelector('i');
+                if (icon) icon.className = 'fa-solid fa-chevron-left';
+                sidebarCollapseHandle.title = 'إظهار قائمة السور';
+            }
+        }
 
         window.addEventListener('resize', () => {
-            if (window.innerWidth > 900) {
+            const isMobile = window.innerWidth <= 900;
+            if (!isMobile) {
                 sidebar.classList.remove('open');
-                overlay.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
                 document.body.classList.remove('sidebar-opened');
+                const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-closed');
+                const handleBtn = document.getElementById('sidebar-collapse-handle');
+                if (handleBtn) {
+                    const icon = handleBtn.querySelector('i');
+                    if (icon) icon.className = isCollapsed ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
+                }
             }
         });
 
@@ -329,14 +378,24 @@
             }
         }
 
-        function saveQuranBookmark(surahNumber, ayahNumber, surahName, ayahText) {
+        function saveQuranBookmark(surahNumber, ayahNumber, surahName, ayahText, pageNum) {
             try {
-                const snippet = (ayahText || '').trim().replace(/\s+/g, ' ').substring(0, 140);
-                const resolvedSurahName = surahName || (allSurahs.find(s => s.number === parseInt(surahNumber))?.name || `سورة ${surahNumber}`);
-                const pageNumber = (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${surahNumber}:${ayahNumber}`]) || getPageForAyah(parseInt(surahNumber), parseInt(ayahNumber));
+                const sNum = parseInt(surahNumber);
+                const aNum = parseInt(ayahNumber);
+                if (isNaN(sNum) || isNaN(aNum)) return null;
+
+                const textStr = (typeof ayahText === 'string') ? ayahText : '';
+                const snippet = textStr.trim().replace(/\s+/g, ' ').substring(0, 140);
+                const resolvedSurahName = surahName || (allSurahs && allSurahs.find(s => s.number === sNum)?.name) || `سورة ${sNum}`;
+                
+                let pageNumber = (typeof pageNum === 'number' && pageNum > 0) ? pageNum : null;
+                if (!pageNumber) {
+                    pageNumber = (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${sNum}:${aNum}`]) || (typeof getPageForAyah === 'function' ? getPageForAyah(sNum, aNum) : 1);
+                }
+
                 const bookmark = {
-                    surahNumber: parseInt(surahNumber),
-                    ayahNumber: parseInt(ayahNumber),
+                    surahNumber: sNum,
+                    ayahNumber: aNum,
                     pageNumber: pageNumber,
                     surahName: resolvedSurahName,
                     ayahSnippet: snippet,
@@ -375,13 +434,31 @@
             return bm && bm.surahNumber === parseInt(surahNumber) && bm.ayahNumber === parseInt(ayahNumber);
         }
 
-        function toggleAyahBookmark(surahNumber, ayahNumber, surahName, ayahText, event) {
-            if (event) {
-                event.stopPropagation();
-                event.preventDefault();
+        function toggleAyahBookmark(surahNumber, ayahNumber, surahName, extraParam, event) {
+            let actualEvent = event;
+            let pageNum = null;
+            let ayahText = '';
+
+            // Handle polymorphic 4th / 5th arguments
+            if (extraParam && typeof extraParam === 'object' && (extraParam.stopPropagation || extraParam.preventDefault || extraParam.target)) {
+                actualEvent = extraParam;
+            } else if (typeof extraParam === 'number') {
+                pageNum = extraParam;
+            } else if (typeof extraParam === 'string') {
+                ayahText = extraParam;
             }
+
+            if (actualEvent && typeof actualEvent.stopPropagation === 'function') {
+                actualEvent.stopPropagation();
+            }
+            if (actualEvent && typeof actualEvent.preventDefault === 'function') {
+                actualEvent.preventDefault();
+            }
+
             const surahId = parseInt(surahNumber);
             const ayahId = parseInt(ayahNumber);
+            if (isNaN(surahId) || isNaN(ayahId)) return;
+
             const currentBm = getQuranBookmark();
 
             if (currentBm && currentBm.surahNumber === surahId && currentBm.ayahNumber === ayahId) {
@@ -394,36 +471,45 @@
                     const unitEl = document.getElementById(`ayah-unit-${surahId}-${ayahId}`);
                     if (unitEl) {
                         const verseSpan = unitEl.querySelector('.verse');
-                        if (verseSpan) ayahText = verseSpan.innerText;
+                        if (verseSpan) ayahText = verseSpan.innerText || verseSpan.textContent || '';
+                    }
+                    if (!ayahText && window.QURAN_FULL_DATA && window.QURAN_FULL_DATA[surahId]) {
+                        const fullSurah = window.QURAN_FULL_DATA[surahId];
+                        const aObj = fullSurah.ayahs?.find(a => a.numberInSurah === ayahId) || fullSurah.ayahs?.[ayahId - 1];
+                        if (aObj) ayahText = aObj.text || '';
                     }
                 }
-                const saved = saveQuranBookmark(surahId, ayahId, surahName, ayahText);
-                
-                if (currentSurahNumber === surahId) {
-                    document.querySelectorAll('.ayah-unit.is-bookmarked').forEach(el => el.classList.remove('is-bookmarked'));
-                    document.querySelectorAll('.ayah-bookmark-btn.is-bookmarked').forEach(btn => {
-                        btn.classList.remove('is-bookmarked');
-                        btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
-                        btn.title = 'وضع علامة قراءة عند هذه الآية';
-                    });
-                    document.querySelectorAll('.bookmark-ribbon-tag').forEach(tag => tag.remove());
 
-                    const newUnit = document.getElementById(`ayah-unit-${surahId}-${ayahId}`);
-                    if (newUnit) {
-                        newUnit.classList.add('is-bookmarked');
-                        const btn = newUnit.querySelector('.ayah-bookmark-btn');
-                        if (btn) {
-                            btn.classList.add('is-bookmarked');
-                            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
-                            btn.title = 'إزالة علامة القراءة';
-                        }
-                        const actionsWrap = newUnit.querySelector('.ayah-actions-wrap');
-                        if (actionsWrap && !actionsWrap.querySelector('.bookmark-ribbon-tag')) {
-                            const tag = document.createElement('span');
-                            tag.className = 'bookmark-ribbon-tag';
-                            tag.innerHTML = '<i class="fa-solid fa-bookmark"></i> موضع توقفك';
-                            actionsWrap.prepend(tag);
-                        }
+                if (!pageNum) {
+                    pageNum = (window.QURAN_AYAH_PAGE_MAP && window.QURAN_AYAH_PAGE_MAP[`${surahId}:${ayahId}`]) || (typeof getPageForAyah === 'function' ? getPageForAyah(surahId, ayahId) : 1);
+                }
+
+                const saved = saveQuranBookmark(surahId, ayahId, surahName, ayahText, pageNum);
+
+                // Update visual styles on all visible units in DOM (continuous or page mode)
+                document.querySelectorAll('.ayah-unit.is-bookmarked').forEach(el => el.classList.remove('is-bookmarked'));
+                document.querySelectorAll('.ayah-bookmark-btn.is-bookmarked').forEach(btn => {
+                    btn.classList.remove('is-bookmarked');
+                    btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+                    btn.title = 'وضع علامة قراءة عند هذه الآية';
+                });
+                document.querySelectorAll('.bookmark-ribbon-tag').forEach(tag => tag.remove());
+
+                const newUnit = document.getElementById(`ayah-unit-${surahId}-${ayahId}`);
+                if (newUnit) {
+                    newUnit.classList.add('is-bookmarked');
+                    const btn = newUnit.querySelector('.ayah-bookmark-btn');
+                    if (btn) {
+                        btn.classList.add('is-bookmarked');
+                        btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+                        btn.title = 'إزالة علامة القراءة';
+                    }
+                    const actionsWrap = newUnit.querySelector('.ayah-actions-wrap');
+                    if (actionsWrap && !actionsWrap.querySelector('.bookmark-ribbon-tag')) {
+                        const tag = document.createElement('span');
+                        tag.className = 'bookmark-ribbon-tag';
+                        tag.innerHTML = '<i class="fa-solid fa-bookmark"></i> موضع توقفك';
+                        actionsWrap.prepend(tag);
                     }
                 }
 
@@ -1325,11 +1411,22 @@
                 // If this is the first ayah of the surah, render noble Medina Mushaf Surah Banner + Bismillah
                 if (startAyah === 1) {
                     pageHtml += `
-                        <div class="mushaf-surah-frame" id="surah-header-${sNum}">
-                            <div class="mushaf-surah-banner">
-                                <span class="mushaf-banner-side">${sMeta.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
-                                <h2 class="mushaf-banner-name">${sMeta.name}</h2>
-                                <span class="mushaf-banner-side">آياتها ${sMeta.numberOfAyahs}</span>
+                        <div class="surah-header-card compact-header" id="surah-header-${sNum}">
+                            <div class="surah-title-wrap">
+                                <h1 class="surah-title">${sMeta.name}</h1>
+                                <span class="surah-meta">
+                                    <span>${sMeta.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+                                    <span class="meta-dot">•</span>
+                                    <span>آياتها: ${sMeta.numberOfAyahs}</span>
+                                </span>
+                            </div>
+                            <div class="surah-header-actions">
+                                <a href="tafseer.html?surah=${sNum}" class="header-action-link" title="تفسير السورة">
+                                    <i class="fa-solid fa-book-open-reader"></i> <span>تفسير السورة</span>
+                                </a>
+                                <button type="button" onclick="playSurahGlobalAudio(${sNum}, '${escapeQuotes(sMeta.name)}')" class="header-action-link" title="استمع للسورة">
+                                    <i class="fa-solid fa-circle-play"></i> <span>استمع</span>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -1783,6 +1880,8 @@
         window.toggleSidebar = toggleSidebar;
         window.renderSurahPickerLanding = renderSurahPickerLanding;
         window.toggleAyahBookmark = toggleAyahBookmark;
+        window.getQuranBookmark = getQuranBookmark;
+        window.saveQuranBookmark = saveQuranBookmark;
         window.handleTopbarBookmarkClick = handleTopbarBookmarkClick;
         window.handleSyncKhatmahClick = handleSyncKhatmahClick;
         window.clearQuranBookmark = clearQuranBookmark;

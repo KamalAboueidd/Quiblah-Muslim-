@@ -38,7 +38,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="features/quran/quran.css?v=88">
+    <link rel="stylesheet" href="features/quran/quran.css?v=94">
 </head>
 <body>
 
@@ -58,12 +58,14 @@
 
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
+            <!-- Border Edge Handle (Dashboard Style) -->
+            <button type="button" class="sidebar-collapse-handle" id="sidebar-collapse-handle" onclick="toggleSidebar()" aria-label="طي / فتح قائمة السور" title="طي / فتح قائمة السور">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
             <div class="sidebar-header">
                 <div class="sidebar-title">
                     <span><i class="fa-solid fa-book-quran"></i> سور القرآن الكريم</span>
-                    <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="إغلاق قائمة السور" title="إغلاق قائمة السور">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
                 </div>
                 <div class="search-box">
                     <i aria-hidden="true" class="fa-solid fa-magnifying-glass"></i>
@@ -77,12 +79,6 @@
                 </div>
             </div>
         </aside>
-
-        <!-- Floating Sidebar Toggle Button (Appears when sidebar is collapsed on desktop) -->
-        <button type="button" class="sidebar-toggle-floating-btn" id="sidebar-toggle-floating-btn" onclick="toggleSidebar(true)" title="فتح قائمة السور" aria-label="فتح قائمة السور">
-            <i class="fa-solid fa-bars"></i>
-            <span style="writing-mode: vertical-rl; font-size: 11px; font-weight: bold; letter-spacing: 1px; margin-top: 4px;">السور</span>
-        </button>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -334,7 +330,7 @@
     <script src="core/quran_data.js"></script>
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="features/quran/quran.js?v=87"></script>
+    <script src="features/quran/quran.js?v=94"></script>
 </body>
 </html>
 

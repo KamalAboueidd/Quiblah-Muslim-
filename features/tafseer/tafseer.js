@@ -102,8 +102,13 @@
 
         const sidebarCollapseHandle = document.getElementById('sidebar-collapse-handle');
 
+        let isSidebarToggling = false;
         function toggleSidebar(forceState) {
             if (!sidebar) return;
+            if (isSidebarToggling) return;
+            isSidebarToggling = true;
+            setTimeout(() => { isSidebarToggling = false; }, 260);
+
             const isMobile = window.innerWidth <= 850;
             const isCurrentlyClosed = isMobile 
                 ? !sidebar.classList.contains('open') 

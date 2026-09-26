@@ -14,8 +14,13 @@
         const overlay = document.getElementById('sidebar-overlay');
         const sidebarCollapseHandle = document.getElementById('sidebar-collapse-handle');
         
+        let isSidebarToggling = false;
         function toggleSidebar(forceState) {
             if (!sidebar) return;
+            if (isSidebarToggling) return;
+            isSidebarToggling = true;
+            setTimeout(() => { isSidebarToggling = false; }, 260);
+
             const isMobile = window.innerWidth <= 900;
             const isCurrentlyClosed = isMobile 
                 ? !sidebar.classList.contains('open') 
@@ -161,6 +166,12 @@
                 const label = mode === 'pages' ? 'تصفح بالصفحات' : 'التمرير المستمر';
                 if (typeof showToast === 'function') {
                     showToast(`تم ضبط طريقة العرض: ${label}`, 'fa-solid fa-sliders');
+                }
+
+                // If currently on landing picker screen, do NOT automatically open Surah Al-Fatihah! Let the user choose.
+                const isLandingScreen = !currentSurahNumber && !!document.querySelector('.surah-picker-landing');
+                if (isLandingScreen) {
+                    return;
                 }
 
                 if (mode === 'pages') {
@@ -1306,9 +1317,9 @@
             const surahHtml = buildSurahSectionHtml(data, true);
 
             const footerHtml = `
-                <div id="quran-footer" style="text-align: center; padding: 24px; margin-top: 40px; color: rgba(255,255,255,0.7); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; box-sizing: border-box; line-height: 1.6;">
-                    جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم <br>
-                    تم التطوير بواسطة <strong style="color: var(--gold);">كمال أبو عيد</strong>
+                <div id="quran-footer" class="quran-footer">
+                    <span class="quran-footer-copy">جميع الحقوق محفوظة &copy; 2026 - قبلة المسلم</span> <br>
+                    <span class="quran-footer-by">تم التطوير بواسطة <strong class="quran-footer-author">كمال أبو عيد</strong></span>
                 </div>
             `;
 
@@ -1860,7 +1871,6 @@
             }, { passive: true });
 
             readerArea.addEventListener('touchend', (e) => {
-                if (currentReadingMode !== 'pages' || !currentVisiblePage) return;
                 if (e.changedTouches && e.changedTouches.length === 1) {
                     const deltaX = e.changedTouches[0].clientX - touchStartX;
                     const deltaY = e.changedTouches[0].clientY - touchStartY;
@@ -1868,12 +1878,22 @@
 
                     // Check if horizontal swipe is dominant and significant
                     if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25 && elapsed < 800) {
-                        if (deltaX < 0) {
-                            // Swiped Left -> In RTL, Next Page
-                            if (currentVisiblePage < 604) changeMushafPage(currentVisiblePage + 1, 'next');
-                        } else {
-                            // Swiped Right -> In RTL, Previous Page
-                            if (currentVisiblePage > 1) changeMushafPage(currentVisiblePage - 1, 'prev');
+                        if (currentReadingMode === 'pages' && currentVisiblePage) {
+                            if (deltaX > 0) {
+                                // Swiped Right -> Next Page (الصفحة التالية)
+                                if (currentVisiblePage < 604) changeMushafPage(currentVisiblePage + 1, 'next');
+                            } else {
+                                // Swiped Left -> Previous Page (الصفحة السابقة)
+                                if (currentVisiblePage > 1) changeMushafPage(currentVisiblePage - 1, 'prev');
+                            }
+                        } else if (currentReadingMode === 'continuous' && currentSurahNumber) {
+                            if (deltaX > 0) {
+                                // Swiped Right -> Next Surah (السورة التالية)
+                                if (currentSurahNumber < 114) loadSurah(currentSurahNumber + 1);
+                            } else {
+                                // Swiped Left -> Previous Surah (السورة السابقة)
+                                if (currentSurahNumber > 1) loadSurah(currentSurahNumber - 1);
+                            }
                         }
                     }
                 }

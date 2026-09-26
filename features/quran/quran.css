@@ -692,6 +692,31 @@
             transform: translateY(0);
         }
 
+        /* Quran Reader Bottom Footer */
+        .quran-footer {
+            text-align: center;
+            padding: 28px 16px 36px 16px;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            box-sizing: border-box;
+            line-height: 1.7;
+        }
+
+        .quran-footer-copy {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .quran-footer-by {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .quran-footer-author {
+            color: var(--gold);
+        }
+
         /* Quick Tafseer Modal */
         .tafseer-modal-backdrop {
             display: none;
@@ -2737,9 +2762,21 @@
             color: #DFC26E !important;
             opacity: 0.9;
         }
-        body.theme-black-gold .sadaqallah-text {
-            color: #F0D288 !important;
-            text-shadow: 0 0 16px rgba(197, 168, 89, 0.6) !important;
+        body.theme-black-gold .quran-footer,
+        body.theme-black-gold #quran-footer {
+            color: rgba(223, 194, 110, 0.75) !important;
+            border-top: 1px solid rgba(223, 194, 110, 0.2) !important;
+        }
+        body.theme-black-gold .quran-footer-copy { color: rgba(223, 194, 110, 0.75) !important; }
+        body.theme-black-gold .quran-footer-by { color: rgba(223, 194, 110, 0.75) !important; }
+        body.theme-black-gold .quran-footer-author { color: #DFC26E !important; }
+        body.theme-black-gold .landing-mode-card {
+            background: rgba(14, 18, 25, 0.85) !important;
+            border-color: rgba(223, 194, 110, 0.3) !important;
+        }
+        body.theme-black-gold .landing-mode-card.is-selected {
+            background: rgba(223, 194, 110, 0.16) !important;
+            border-color: #DFC26E !important;
         }
 
         /* 3. Theme: Paper Light (أبيض وأسود / مثل المصحف الورقي الأصلي) */
@@ -3176,6 +3213,143 @@
             box-shadow: 0 4px 12px rgba(140, 115, 62, 0.3) !important;
         }
 
+        /* --- Paper Light - Landing Page & Mode Cards Harmonization --- */
+        body.theme-paper-light .surah-picker-landing {
+            background: transparent !important;
+        }
+
+        body.theme-paper-light .picker-icon-box {
+            color: #7d5e27 !important;
+            filter: drop-shadow(0 2px 8px rgba(125, 94, 39, 0.25)) !important;
+        }
+
+        body.theme-paper-light .picker-ayah-quote {
+            color: #2b1f09 !important;
+            text-shadow: none !important;
+            font-weight: 700 !important;
+        }
+
+        body.theme-paper-light .picker-main-title {
+            color: #5a441b !important;
+        }
+
+        body.theme-paper-light .picker-subtext {
+            color: #111111 !important;
+            font-weight: 700 !important;
+        }
+
+        body.theme-paper-light .landing-mode-title {
+            color: #2b1f09 !important;
+            font-weight: 700 !important;
+        }
+
+        body.theme-paper-light .landing-mode-title i {
+            color: #7d5e27 !important;
+        }
+
+        body.theme-paper-light .landing-mode-card {
+            background: #fbf8f1 !important;
+            border: 1.5px solid rgba(140, 115, 62, 0.35) !important;
+            box-shadow: 0 3px 12px rgba(74, 55, 26, 0.08) !important;
+        }
+
+        body.theme-paper-light .landing-mode-card:hover {
+            background: #f4ecdc !important;
+            border-color: #8c6e32 !important;
+            box-shadow: 0 4px 16px rgba(74, 55, 26, 0.14) !important;
+        }
+
+        body.theme-paper-light .landing-mode-card.is-selected {
+            background: #ede3cc !important;
+            border-color: #7d5e27 !important;
+            box-shadow: 0 4px 18px rgba(74, 55, 26, 0.18) !important;
+        }
+
+        body.theme-paper-light .landing-card-name {
+            color: #2b1f09 !important;
+            font-weight: 800 !important;
+        }
+
+        body.theme-paper-light .landing-card-desc {
+            color: #3b2a12 !important;
+            font-weight: 600 !important;
+        }
+
+        body.theme-paper-light .landing-card-pure-icon {
+            color: #7d5e27 !important;
+            filter: none !important;
+        }
+
+        body.theme-paper-light .landing-card-radio {
+            color: #7d5e27 !important;
+        }
+
+        body.theme-paper-light .landing-card-badge {
+            background: #7d5e27 !important;
+            color: #ffffff !important;
+        }
+
+        body.theme-paper-light .open-surah-drawer-btn {
+            background: linear-gradient(135deg, #8c6e32 0%, #6d5423 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 16px rgba(74, 55, 26, 0.28) !important;
+        }
+
+        body.theme-paper-light .open-surah-drawer-btn:hover {
+            background: linear-gradient(135deg, #9b7b3b 0%, #7d6129 100%) !important;
+            box-shadow: 0 6px 20px rgba(74, 55, 26, 0.35) !important;
+        }
+
+        /* --- Paper Light - Quran Footer Harmonization --- */
+        body.theme-paper-light .quran-footer,
+        body.theme-paper-light #quran-footer {
+            color: #111111 !important;
+            border-top: 1px solid rgba(140, 115, 62, 0.3) !important;
+        }
+
+        body.theme-paper-light .quran-footer-copy {
+            color: #111111 !important;
+            font-weight: 700 !important;
+        }
+
+        body.theme-paper-light .quran-footer-by {
+            color: #111111 !important;
+            font-weight: 600 !important;
+        }
+
+        body.theme-paper-light .quran-footer-author {
+            color: #b58d2a !important;
+            font-weight: 800 !important;
+        }
+
+        /* --- Paper Light - Sidebar Handle & Mobile Overrides --- */
+        body.theme-paper-light .sidebar-collapse-handle {
+            color: #5a441b !important;
+        }
+
+        body.theme-paper-light .sidebar-collapse-handle:hover {
+            color: #111111 !important;
+        }
+
+        body.theme-paper-light .sidebar-collapse-handle i {
+            filter: drop-shadow(0 1px 3px rgba(74, 55, 26, 0.35)) !important;
+        }
+
+        @media (max-width: 900px) {
+            body.theme-paper-light .sidebar {
+                background: #ede6d6 !important;
+                border-left: 1px solid rgba(140, 115, 62, 0.35) !important;
+                box-shadow: -10px 0 40px rgba(74, 55, 26, 0.25) !important;
+            }
+            body.theme-paper-light .sidebar-header {
+                background: #e5ddcd !important;
+                border-bottom: 1px solid rgba(140, 115, 62, 0.25) !important;
+            }
+            body.theme-paper-light .sidebar-collapse-handle {
+                color: #5a441b !important;
+            }
+        }
+
         /* 4. Theme: Static Dark Slate */
         body.theme-dark-static {
             background-color: #0E141D !important;
@@ -3235,7 +3409,7 @@
         @keyframes pageSlideNext {
             0% {
                 opacity: 0;
-                transform: translateX(-30px);
+                transform: translateX(30px);
             }
             100% {
                 opacity: 1;
@@ -3246,7 +3420,7 @@
         @keyframes pageSlidePrev {
             0% {
                 opacity: 0;
-                transform: translateX(30px);
+                transform: translateX(-30px);
             }
             100% {
                 opacity: 1;

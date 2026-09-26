@@ -28,7 +28,7 @@
         { id: 'quiz', title: 'اختبر نفسك', url: 'quiz.html', icon: 'fa-solid fa-award' },
         { id: 'bot', title: 'المساعد الذكي', url: 'bot.html', icon: 'fa-solid fa-robot' },
         { id: 'recite', title: 'المصحح القرآني', url: 'recite.html', icon: 'fa-solid fa-microphone-lines' },
-        { id: 'reminders', title: 'التذكيرات', url: 'reminders.html', icon: 'fa-solid fa-bell' }
+        { id: 'reminders', title: 'الأذان والإقامة', url: 'reminders.html', icon: 'fa-solid fa-volume-high' }
     ];
 
     let showSecondary = false;

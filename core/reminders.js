@@ -344,13 +344,14 @@
 
             /* Modal Card */
             .reminders-modal-card {
-                background: #0f1014;
-                background: rgba(15, 16, 20, 0.96);
-                border: 1px solid rgba(197, 168, 89, 0.35);
+                background: rgba(10, 10, 12, 0.88) !important;
+                backdrop-filter: blur(28px);
+                -webkit-backdrop-filter: blur(28px);
+                border: none !important;
                 border-radius: 20px;
                 width: 100%;
                 max-width: 440px;
-                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(197, 168, 89, 0.15);
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9) !important;
                 padding: 24px;
                 box-sizing: border-box;
                 font-family: "Tajawal", sans-serif;
@@ -386,23 +387,27 @@
             }
 
             .reminders-modal-close {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(197, 168, 89, 0.2);
-                color: var(--gold, #C5A859);
+                background: transparent !important;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                color: #94a3b8;
                 width: 32px;
                 height: 32px;
-                border-radius: 50%;
+                border-radius: 0 !important;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
-                font-size: 14px;
-                transition: all 0.2s ease;
+                font-size: 18px;
+                transition: color 0.2s ease, transform 0.2s ease;
             }
 
             .reminders-modal-close:hover {
-                background: rgba(197, 168, 89, 0.2);
-                color: #ffffff;
+                background: transparent !important;
+                border: none !important;
+                color: var(--gold-hover, #F5D77F) !important;
+                transform: scale(1.15);
             }
 
             /* Section Rows */
@@ -555,9 +560,9 @@
 
             .btn-test-notification {
                 flex: 1;
-                background: transparent !important;
-                border: 1px solid var(--gold, #C5A859) !important;
-                color: var(--gold, #C5A859) !important;
+                background: rgba(197, 168, 89, 0.12) !important;
+                border: none !important;
+                color: var(--gold-light, #F5D77F) !important;
                 padding: 10px 14px;
                 border-radius: 12px;
                 font-family: inherit;
@@ -573,14 +578,13 @@
             }
 
             .btn-test-notification:hover {
-                background: rgba(197, 168, 89, 0.15) !important;
+                background: rgba(197, 168, 89, 0.25) !important;
                 color: #ffffff !important;
-                box-shadow: 0 0 15px rgba(197, 168, 89, 0.3);
             }
 
             .btn-sound-preview {
-                background: transparent !important;
-                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                background: rgba(255, 255, 255, 0.06) !important;
+                border: none !important;
                 color: #ffffff !important;
                 padding: 10px 14px;
                 border-radius: 12px;
@@ -597,9 +601,8 @@
             }
 
             .btn-sound-preview:hover {
-                border-color: var(--gold, #C5A859) !important;
-                color: var(--gold, #C5A859) !important;
-                background: rgba(197, 168, 89, 0.08) !important;
+                background: rgba(255, 255, 255, 0.12) !important;
+                color: var(--gold-hover, #F5D77F) !important;
             }
 
             .reminders-unsupported-note {

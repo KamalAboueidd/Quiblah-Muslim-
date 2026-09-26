@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>التذكيرات الإسلامية - قبلة المسلم</title>
+    <title>الأذان والإقامة - نداء الصلاة والتنبيهات | قبلة المسلم</title>
 
     <!-- SEO & Open Graph Tags -->
-    <meta name="description" content="تطبيق قبلة المسلم: نظام التذكيرات الإسلامية الحقيقية بالصلاة على النبي ﷺ والأذكار والاستغفار في الخلفية وعبر شاشة القفل.">
-    <meta name="keywords" content="تذكيرات, صلاة على النبي, أذكار, استغفار, إشعارات, قبلة المسلم">
+    <meta name="description" content="تطبيق قبلة المسلم: نظام الأذان ونداء الصلاة التفاعلي، موعد الإقامة، اختيار أصوات المؤذنين، شاشة الأذان الحية، والتذكيرات الإسلامية الدورية لمحافظتك.">
+    <meta name="keywords" content="أذان, إقامة, صلاة, مؤذن, الحرم المكي, الحرم النبوي, مواقيت الصلاة, تذكيرات, إشعارات, قبلة المسلم">
     <meta name="author" content="كمال أبو عيد">
-    <meta property="og:title" content="التذكيرات الإسلامية - قبلة المسلم">
-    <meta property="og:description" content="تذكيرات إسلامية حقيقية بالصلاة على النبي ﷺ والأذكار كل 5 دقائق.">
+    <meta property="og:title" content="الأذان والإقامة - قبلة المسلم">
+    <meta property="og:description" content="نداء الصلاة والأذان التفاعلي، موعد الإقامة، أصوات المؤذنين، ودعاء ما بعد الأذان.">
     <meta property="og:image" content="assets/bg1.jpg">
     <link rel="preload" as="image" href="assets/bg1.jpg">
     <script src="core/player-bridge.js"></script>
@@ -32,7 +32,8 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/reminders/reminders-page.css?v=20">
+    <link rel="stylesheet" href="features/reminders/reminders-page.css?v=52">
+    <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=8">
 </head>
 <body>
 
@@ -47,174 +48,464 @@
     <!-- App Content -->
     <div class="app-container">
         
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="title">قبلة المسلم</div>
-            <a href="home.html" class="back-home-btn" title="الرجوع لصفحة المواقيت الرئيسية">
+        <!-- Top Bar (Clean Tracker / Khatmah Style) -->
+        <header class="top-bar">
+            <a href="home.html" class="tracker-back-btn" title="الرجوع لصفحة المواقيت الرئيسية">
                 <i class="fa-solid fa-arrow-right"></i>
                 <span>الرجوع للمواقيت</span>
             </a>
-        </div>
 
-        <!-- Main Wrapper -->
-        <div class="main-wrapper">
-            
-            <!-- Hero Header -->
-            <div class="page-hero">
-                <h1 class="page-hero-title">
-                    <i class="fa-solid fa-bell"></i>
-                    <span>التذكيرات الإسلامية</span>
-                </h1>
-                <p class="page-hero-sub">
-                    إشعارات نظام دورية بالصلاة على النبي ﷺ والتسبيح والاستغفار، تصلك في الخلفية وعلى شاشة القفل حتى عند إغلاق التطبيق.
-                </p>
+            <div class="tracker-center-badge">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>الأذان والإقامة</span>
             </div>
 
-            <!-- Transparent Glassmorphic Settings Card -->
-            <div class="reminders-glass-card">
-                
-                <!-- Master Switch -->
-                <div class="master-toggle-box">
-                    <div class="master-toggle-info">
-                        <div class="master-toggle-icon">
-                            <i class="fa-solid fa-bell"></i>
-                        </div>
-                        <div class="master-toggle-text">
-                            <h2>
-                                <span>تفعيل الإشعارات والتذكيرات</span>
-                                <span class="status-badge" id="page-status-badge">غير مفعّل</span>
-                            </h2>
-                            <p>استقبال تذكيرات تلقائية عبر إشعارات الهاتف الرسمية (Web Push)</p>
+            <div class="topbar-actions-cluster">
+                <button type="button" class="header-action-btn" id="btn-preview-adhan-screen" title="معاينة شاشة الأذان التفاعلية عند وقت الصلاة">
+                    <i class="fa-solid fa-expand"></i>
+                    <span>شاشة الأذان</span>
+                </button>
+                <button type="button" class="header-action-btn" id="btn-test-quick-adhan" title="تشغيل عينة سريعة من الأذان الحالي">
+                    <i class="fa-solid fa-play"></i>
+                    <span>تجربة الأذان</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Wrapper -->
+        <main class="main-wrapper">
+            
+            <!-- Hero Header -->
+            <section class="page-hero">
+                <h1 class="page-hero-title">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>الأذان والإقامة ونداء الصلاة</span>
+                </h1>
+                <p class="page-hero-sub">
+                    مواقيت أذان الصلوات الخمس بدقة لمحافظتك، الوقت المتبقي للإقامة، اختيار أصوات كبار المؤذنين، شاشة الأذان التفاعلية، والتنبيهات الإسلامية.
+                </p>
+            </section>
+
+            <!-- ================= 1. CARD: GOVERNORATE & PRAYER SYNC ================= -->
+            <section class="reminders-glass-card" id="governorate-card">
+                <div class="card-header-clean">
+                    <div class="card-title-group">
+                        <i class="fa-solid fa-location-dot title-pure-icon"></i>
+                        <div>
+                            <h2>تأكيد المحافظة ومواقيت الأذان والإقامة</h2>
+                            <p class="card-subtitle-text">تحديد المحافظة لضبط مواعيد رفع الأذان وحساب التوقيت ووقت الإقامة بدقة تامة</p>
                         </div>
                     </div>
-                    <label class="luxury-switch">
-                        <input type="checkbox" id="page-enable-toggle" />
-                        <span class="luxury-slider"></span>
-                    </label>
+                    <span class="status-pill active" id="active-city-badge">
+                        <span class="pulse-dot"></span>
+                        <span id="active-city-label">القاهرة</span>
+                    </span>
                 </div>
 
-                <!-- Settings Grid -->
-                <div class="settings-grid">
-                    
-                    <!-- Setting Card: Interval -->
-                    <div class="setting-card">
-                        <div class="setting-card-header">
-                            <div class="setting-card-title">
-                                <i class="fa-solid fa-clock"></i>
-                                <span>الفاصل الزمني</span>
-                            </div>
+                <!-- Alert Notice -->
+                <div class="alert-notice-banner">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <p>
+                        <strong>تنبيه هام:</strong> يتم رفع الأذان وحساب أوقات الصلوات الخمس وموعد الإقامة بدقة بناءً على المحافظة المعتمدة. عند تغيير محافظتك هنا، يتم حفظها وتثبيتها في التطبيق بالكامل تلقائياً.
+                    </p>
+                </div>
+
+                <!-- City Selector & Next Prayer Banner Grid -->
+                <div class="gov-layout-grid">
+                    <div class="gov-select-box" id="gov-select-box">
+                        <div class="gov-box-top">
+                            <label class="gov-field-label" for="gov-city-trigger">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                                <span>المحافظة المعتمدة للأذان:</span>
+                            </label>
+                            <span class="gov-sync-badge">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>توقيت محلي</span>
+                            </span>
                         </div>
-                        <p class="setting-card-desc">تكرار إرسال التذكيرات بذكر الله والصلاة على النبي ﷺ</p>
-                        
-                        <!-- Custom Luxury Dropdown -->
-                        <div class="custom-luxury-dropdown" id="page-interval-dropdown">
-                            <button type="button" class="dropdown-luxury-btn" id="interval-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
-                                <span id="interval-dropdown-label">كل 5 دقائق (الموصى به)</span>
+                        <div class="custom-luxury-dropdown gov-luxury-dropdown" id="gov-city-dropdown">
+                            <button type="button" class="dropdown-luxury-btn gov-dropdown-btn" id="gov-city-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="gov-selected-display">
+                                    <i class="fa-solid fa-location-dot pin-icon"></i>
+                                    <span id="gov-selected-city-text">القاهرة</span>
+                                </span>
                                 <i class="fa-solid fa-chevron-down arrow"></i>
                             </button>
-                            <div class="dropdown-luxury-list" role="listbox">
-                                <div class="dropdown-luxury-item active" data-value="5" role="option">
-                                    <span>كل 5 دقائق (الموصى به)</span>
-                                    <i class="fa-solid fa-check check"></i>
-                                </div>
-                                <div class="dropdown-luxury-item" data-value="15" role="option">
-                                    <span>كل 15 دقيقة</span>
-                                    <i class="fa-solid fa-check check"></i>
-                                </div>
-                                <div class="dropdown-luxury-item" data-value="30" role="option">
-                                    <span>كل 30 دقيقة</span>
-                                    <i class="fa-solid fa-check check"></i>
-                                </div>
-                                <div class="dropdown-luxury-item" data-value="60" role="option">
-                                    <span>كل ساعة (60 دقيقة)</span>
-                                    <i class="fa-solid fa-check check"></i>
-                                </div>
+                            <div class="dropdown-luxury-list gov-dropdown-list" id="gov-city-options-list" role="listbox">
+                                <div class="dropdown-luxury-item active" data-value="Cairo" role="option"><span>القاهرة</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Alexandria" role="option"><span>الاسكندرية</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Giza" role="option"><span>الجيزة</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Suez" role="option"><span>السويس</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Port Said" role="option"><span>بورسعيد</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Dakahlia" role="option"><span>المنصورة (الدقهلية)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Gharbia" role="option"><span>طنطا (الغربية)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Al Sharqia" role="option"><span>الزقازيق (الشرقية)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Qalyubia" role="option"><span>بنها (القليوبية)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Beheira" role="option"><span>دمنهور (البحيرة)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Kafr el-Sheikh" role="option"><span>كفر الشيخ</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Damietta" role="option"><span>دمياط</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Monufia" role="option"><span>شبين الكوم (المنوفية)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Faiyum" role="option"><span>الفيوم</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Beni Suef" role="option"><span>بني سويف</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Minya" role="option"><span>المنيا</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Asyut" role="option"><span>أسيوط</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Sohag" role="option"><span>سوهاج</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Qena" role="option"><span>قنا</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Luxor" role="option"><span>الأقصر</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Aswan" role="option"><span>أسوان</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Matrouh" role="option"><span>مرسى مطروح</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Red Sea" role="option"><span>الغردقة (البحر الأحمر)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="New Valley" role="option"><span>الخارجة (الوادي الجديد)</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="Ismailia" role="option"><span>الإسماعيلية</span><i class="fa-solid fa-check check"></i></div>
+                                <div class="dropdown-luxury-item" data-value="South Sinai" role="option"><span>الطور (جنوب سيناء)</span><i class="fa-solid fa-check check"></i></div>
+                            </div>
+                        </div>
+
+                        <!-- Spiritual Verse & Mosque Icon Widget (Requested by user) -->
+                        <div class="gov-spiritual-widget">
+                            <div class="gov-spiritual-icon-wrap">
+                                <i class="fa-solid fa-mosque"></i>
+                            </div>
+                            <div class="gov-spiritual-texts">
+                                <span class="gov-spiritual-ayah">﴿ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾</span>
+                                <span class="gov-spiritual-ref">سورة النساء • آية ١٠٣</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Setting Card: Sound -->
-                    <div class="setting-card">
-                        <div class="setting-card-header">
-                            <div class="setting-card-title">
-                                <i class="fa-solid fa-volume-high"></i>
-                                <span>صوت التذكير</span>
+                    <!-- Next Prayer Live Info Box with Iqamah -->
+                    <div class="next-prayer-live-box">
+                        <div class="live-box-top">
+                            <span class="live-indicator"><span class="pulse-dot"></span> الصلاة القادمة:</span>
+                            <strong class="live-prayer-name" id="next-prayer-name-display">...</strong>
+                        </div>
+                        <div class="live-box-bottom">
+                            <div class="live-time-item">
+                                <span class="time-label">وقت الأذان:</span>
+                                <span class="time-val" id="next-prayer-time-display">--:--</span>
                             </div>
-                            <label class="luxury-switch">
-                                <input type="checkbox" id="page-sound-toggle" />
+                            <div class="live-time-item">
+                                <span class="time-label">متبقي للأذان:</span>
+                                <span class="time-countdown" id="next-prayer-countdown-display">--:--:--</span>
+                            </div>
+                            <div class="iqamah-highlight-item">
+                                <div class="iqamah-main-wrap">
+                                    <span class="time-label"><i class="fa-solid fa-person-praying"></i> موعد الإقامة:</span>
+                                    <span class="time-val iqamah-time" id="next-iqamah-time-display">--:--</span>
+                                </div>
+                                <span class="time-sub-note" id="next-iqamah-countdown-display">(متبقي: -- دقيقة)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= 2. CARD: MUEZZIN SELECTION ================= -->
+            <section class="reminders-glass-card" id="muezzins-card">
+                <div class="card-header-clean">
+                    <div class="card-title-group">
+                        <i class="fa-solid fa-mosque title-pure-icon"></i>
+                        <div>
+                            <h2>أصوات كبار المؤذنين</h2>
+                            <p class="card-subtitle-text">المؤذن المعتمد لصلواتك مع إمكانية المعاينة والتغيير</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Primary Selected Muezzin (Always visible on mobile & desktop) -->
+                <div class="muezzin-primary-box" id="muezzin-primary-box">
+                    <!-- Injected dynamically by JS -->
+                </div>
+
+                <!-- Remaining Muezzins (Collapsible - hidden by default, expands on click) -->
+                <div class="muezzins-collapsible-wrapper" id="muezzins-collapsible-wrapper">
+                    <div class="muezzins-grid" id="muezzins-grid">
+                        <!-- Other muezzin cards injected dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- Footer Action: Toggle Muezzins at Bottom -->
+                <div class="muezzins-toggle-footer">
+                    <button type="button" class="btn-clean-expand" id="btn-toggle-muezzins" aria-expanded="false">
+                        <span id="label-toggle-muezzins">عرض باقي المؤذنين (4)</span>
+                        <i class="fa-solid fa-chevron-down expand-arrow" id="icon-toggle-muezzins"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ================= 3. CARD: ADHAN MODES ================= -->
+            <section class="reminders-glass-card" id="adhan-modes-card">
+                <div class="card-header-clean" id="adhan-modes-header-toggle" role="button" tabindex="0">
+                    <div class="card-title-group">
+                        <i class="fa-solid fa-sliders title-pure-icon"></i>
+                        <div>
+                            <h2>وضع نداء الأذان وقت الصلاة</h2>
+                            <p class="card-subtitle-text" id="active-mode-summary-text">أذان كامل بصوت المؤذن المعتمد</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-clean-expand" id="btn-toggle-adhan-modes" aria-expanded="false">
+                        <span id="label-toggle-modes">تغيير الوضع</span>
+                        <i class="fa-solid fa-chevron-down expand-arrow" id="icon-toggle-modes"></i>
+                    </button>
+                </div>
+
+                <!-- Collapsible Modes Container (Closed by default) -->
+                <div class="modes-collapsible-wrapper" id="modes-collapsible-wrapper">
+                    <div class="adhan-modes-grid">
+                        <!-- Option 1: Full Adhan -->
+                        <div class="adhan-mode-card" data-mode="full" id="mode-card-full">
+                            <div class="mode-card-radio">
+                                <i class="fa-regular fa-circle radio-icon"></i>
+                            </div>
+                            <div class="mode-card-content">
+                                <div class="mode-card-title-row">
+                                    <i class="fa-solid fa-volume-high mode-pure-icon"></i>
+                                    <span class="mode-card-name">أذان كامل (الافتراضي)</span>
+                                    <span class="mode-badge">الموصى به</span>
+                                </div>
+                                <p class="mode-card-desc">تشغيل نداء الأذان كاملاً بصوت المؤذن المختار مع فتح شاشة الأذان التفاعلية عند دخول وقت الصلاة.</p>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Takbeer Only -->
+                        <div class="adhan-mode-card" data-mode="takbeer" id="mode-card-takbeer">
+                            <div class="mode-card-radio">
+                                <i class="fa-regular fa-circle radio-icon"></i>
+                            </div>
+                            <div class="mode-card-content">
+                                <div class="mode-card-title-row">
+                                    <i class="fa-solid fa-bell-concierge mode-pure-icon"></i>
+                                    <span class="mode-card-name">تكبير فقط (تنبيه سريع)</span>
+                                </div>
+                                <p class="mode-card-desc">يكتفي بترديد التكبيرات الأولى ("الله أكبر، الله أكبر") كتنبيه لطيف ومختصر مناسب لأوقات العمل.</p>
+                            </div>
+                        </div>
+
+                        <!-- Option 3: Silent / Visual -->
+                        <div class="adhan-mode-card" data-mode="silent" id="mode-card-silent">
+                            <div class="mode-card-radio">
+                                <i class="fa-regular fa-circle radio-icon"></i>
+                            </div>
+                            <div class="mode-card-content">
+                                <div class="mode-card-title-row">
+                                    <i class="fa-solid fa-bell-slash mode-pure-icon"></i>
+                                    <span class="mode-card-name">وضع صامت (إشعار بصري فقط)</span>
+                                </div>
+                                <p class="mode-card-desc">تنبيه شاشة وإشعار بصري عبر الهاتف بدون إصدار أي صوت للأذان.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= 4. COLLAPSIBLE CARD: EXTRA SETTINGS & SUNAN ================= -->
+            <section class="reminders-glass-card extra-settings-card" id="extra-settings-card">
+                <div class="card-header-clean extra-settings-toggle" id="btn-toggle-extra-settings" role="button" tabindex="0">
+                    <div class="card-title-group">
+                        <i class="fa-solid fa-gear title-pure-icon"></i>
+                        <div>
+                            <h2>إعدادات وتخصيصات إضافية</h2>
+                            <p class="card-subtitle-text">دعاء ما بعد الأذان، التذكيرات الدورية، وفضل الصلاة على النبي ﷺ</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-clean-expand" id="btn-extra-settings-action" aria-expanded="false">
+                        <span id="label-toggle-extra">عرض الإعدادات</span>
+                        <i class="fa-solid fa-chevron-down expand-arrow" id="icon-toggle-extra"></i>
+                    </button>
+                </div>
+
+                <!-- Collapsible Body (Closed by default) -->
+                <div class="extra-settings-collapsible" id="extra-settings-collapsible">
+                    
+                    <!-- Sub-section A: Post-Adhan Duaa -->
+                    <div class="extra-inner-block" id="post-adhan-duaa-card">
+                        <div class="extra-block-header">
+                            <div class="card-title-group">
+                                <i class="fa-solid fa-hands-praying title-pure-icon"></i>
+                                <div>
+                                    <h3 class="extra-block-title">دعاء ما بعد الأذان</h3>
+                                    <p class="card-subtitle-text">سنة نبوية مؤكدة ونيل لشفاعة النبي المصطفى ﷺ يوم القيامة</p>
+                                </div>
+                            </div>
+                            <label class="luxury-switch" title="عرض كرت الدعاء تلقائياً بعد انتهاء كل أذان">
+                                <input type="checkbox" id="toggle-auto-duaa" checked />
                                 <span class="luxury-slider"></span>
                             </label>
                         </div>
-                        <p class="setting-card-desc">تشغيل صوت الصلاة على النبي ﷺ بصوت الشيخ مشاري العفاسي عند التنبيه والتطبيق مفتوح</p>
+
+                        <div class="duaa-box">
+                            <div class="duaa-hadith-intro">
+                                قَالَ رَسُولُ اللَّهِ ﷺ: «مَنْ قَالَ حِينَ يَسْمَعُ النِّدَاءَ:
+                            </div>
+                            <blockquote class="duaa-arabic-text" id="post-adhan-duaa-text">
+                                « اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ، وَالصَّلَاةِ القَائِمَةِ، آتِ مُحَمَّدًا الوَسِيلَةَ وَالفَضِيلَةَ، وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ »
+                            </blockquote>
+                            <div class="duaa-hadith-reward">
+                                حَلَّتْ لَهُ شَفَاعَتِي يَوْمَ القِيَامَةِ» — [رواه البخاري]
+                            </div>
+                        </div>
+
+                        <div class="duaa-actions-row">
+                            <button type="button" class="btn-clean-gold" id="btn-copy-duaa" title="نسخ نص الدعاء">
+                                <i class="fa-solid fa-copy"></i>
+                                <span>نسخ الدعاء</span>
+                            </button>
+                            <button type="button" class="btn-clean-gold" id="btn-read-duaa-voice" title="استماع إلى الدعاء">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <span>قراءة صوتية</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="extra-divider" aria-hidden="true"></div>
+
+                    <!-- Sub-section B: Periodic Reminders -->
+                    <div class="extra-inner-block" id="periodic-reminders-card">
+                        
+                        <!-- Master Switch -->
+                        <div class="master-toggle-box">
+                            <div class="master-toggle-info">
+                                <i class="fa-solid fa-bell title-pure-icon"></i>
+                                <div class="master-toggle-text">
+                                    <h3 class="extra-block-title">
+                                        <span>تفعيل التذكيرات الإسلامية الدورية</span>
+                                        <span class="status-pill" id="page-status-badge">غير مفعّل</span>
+                                    </h3>
+                                    <p>تذكيرات هادئة بالصلاة على النبي ﷺ والتسبيح والاستغفار في الخلفية وعبر شاشة القفل</p>
+                                </div>
+                            </div>
+                            <label class="luxury-switch">
+                                <input type="checkbox" id="page-enable-toggle" />
+                                <span class="luxury-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Settings Grid -->
+                        <div class="settings-grid">
+                            
+                            <!-- Interval Setting -->
+                            <div class="setting-card">
+                                <div class="setting-card-header">
+                                    <div class="setting-card-title">
+                                        <i class="fa-solid fa-clock title-pure-icon"></i>
+                                        <span>تكرار التذكير</span>
+                                    </div>
+                                </div>
+                                <p class="setting-card-desc">الفاصل الزمني بين كل تذكير وآخر بذكر الله والصلاة على النبي ﷺ</p>
+                                
+                                <div class="custom-luxury-dropdown" id="page-interval-dropdown">
+                                    <button type="button" class="dropdown-luxury-btn" id="interval-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span id="interval-dropdown-label">كل 5 دقائق (الموصى به)</span>
+                                        <i class="fa-solid fa-chevron-down arrow"></i>
+                                    </button>
+                                    <div class="dropdown-luxury-list" role="listbox">
+                                        <div class="dropdown-luxury-item active" data-value="5" role="option">
+                                            <span>كل 5 دقائق (الموصى به)</span>
+                                            <i class="fa-solid fa-check check"></i>
+                                        </div>
+                                        <div class="dropdown-luxury-item" data-value="15" role="option">
+                                            <span>كل 15 دقيقة</span>
+                                            <i class="fa-solid fa-check check"></i>
+                                        </div>
+                                        <div class="dropdown-luxury-item" data-value="30" role="option">
+                                            <span>كل 30 دقيقة</span>
+                                            <i class="fa-solid fa-check check"></i>
+                                        </div>
+                                        <div class="dropdown-luxury-item" data-value="60" role="option">
+                                            <span>كل ساعة (60 دقيقة)</span>
+                                            <i class="fa-solid fa-check check"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sound Toggle Setting -->
+                            <div class="setting-card">
+                                <div class="setting-card-header">
+                                    <div class="setting-card-title">
+                                        <i class="fa-solid fa-volume-high title-pure-icon"></i>
+                                        <span>صوت التذكير</span>
+                                    </div>
+                                    <label class="luxury-switch">
+                                        <input type="checkbox" id="page-sound-toggle" />
+                                        <span class="luxury-slider"></span>
+                                    </label>
+                                </div>
+                                <p class="setting-card-desc">تشغيل نداء "صلِّ على النبي ﷺ" بصوت الشيخ مشاري العفاسي عند ورود التذكير والتطبيق مفتوح</p>
+                            </div>
+
+                        </div>
+
+                        <!-- Types Section -->
+                        <div class="types-section">
+                            <div class="types-section-title">
+                                <i class="fa-solid fa-list-check title-pure-icon"></i>
+                                <span>محتوى التذكيرات المرسلة:</span>
+                            </div>
+                            <div class="types-grid-boxes">
+                                <label class="type-option-card">
+                                    <input type="checkbox" id="page-type-salawat" />
+                                    <div class="type-option-info">
+                                        <span class="type-option-title">الصلاة على النبي ﷺ</span>
+                                        <span class="type-option-sample">"صلِّ على النبي ﷺ 🤍"</span>
+                                    </div>
+                                </label>
+                                <label class="type-option-card">
+                                    <input type="checkbox" id="page-type-adhkar" />
+                                    <div class="type-option-info">
+                                        <span class="type-option-title">الأذكار والتسبيح</span>
+                                        <span class="type-option-sample">"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ"</span>
+                                    </div>
+                                </label>
+                                <label class="type-option-card">
+                                    <input type="checkbox" id="page-type-quran" />
+                                    <div class="type-option-info">
+                                        <span class="type-option-title">آيات قرآنية مختارة</span>
+                                        <span class="type-option-sample">"أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ"</span>
+                                    </div>
+                                </label>
+                                <label class="type-option-card">
+                                    <input type="checkbox" id="page-type-istighfar" />
+                                    <div class="type-option-info">
+                                        <span class="type-option-title">الاستغفار والتوبة</span>
+                                        <span class="type-option-sample">"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ"</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="actions-bar">
+                            <button type="button" class="btn-clean-gold" id="page-btn-send-test">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>إرسال إشعار تجريبي الآن</span>
+                            </button>
+                            <button type="button" class="btn-clean-gold" id="page-btn-preview-sound">
+                                <i class="fa-solid fa-play"></i>
+                                <span>استماع لصوت "صلِّ على النبي"</span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div class="extra-divider" aria-hidden="true"></div>
+
+                    <!-- Sub-section C: Salawat Showcase -->
+                    <div class="salawat-showcase">
+                        <div class="salawat-showcase-title">
+                            <i class="fa-solid fa-book-quran title-pure-icon"></i>
+                            <span>فضل الصلاة على النبي ﷺ</span>
+                        </div>
+                        <div class="salawat-verse-text">
+                            ﴿ إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا ﴾
+                        </div>
+                        <div class="salawat-verse-ref">سورة الأحزاب • الآية 56</div>
                     </div>
 
                 </div>
+            </section>
 
-                <!-- Notification Types Section -->
-                <div class="types-section">
-                    <div class="types-section-title">
-                        <i class="fa-solid fa-list-check"></i>
-                        <span>محتوى التذكيرات المرسلة:</span>
-                    </div>
-                    <div class="types-grid-boxes">
-                        <label class="type-option-card">
-                            <input type="checkbox" id="page-type-salawat" />
-                            <div class="type-option-info">
-                                <span class="type-option-title">الصلاة على النبي ﷺ</span>
-                                <span class="type-option-sample">"صلِّ على النبي ﷺ 🤍"</span>
-                            </div>
-                        </label>
-                        <label class="type-option-card">
-                            <input type="checkbox" id="page-type-adhkar" />
-                            <div class="type-option-info">
-                                <span class="type-option-title">الأذكار والتسبيح</span>
-                                <span class="type-option-sample">"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ"</span>
-                            </div>
-                        </label>
-                        <label class="type-option-card">
-                            <input type="checkbox" id="page-type-quran" />
-                            <div class="type-option-info">
-                                <span class="type-option-title">آيات قرآنية مختارة</span>
-                                <span class="type-option-sample">"أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ"</span>
-                            </div>
-                        </label>
-                        <label class="type-option-card">
-                            <input type="checkbox" id="page-type-istighfar" />
-                            <div class="type-option-info">
-                                <span class="type-option-title">الاستغفار والتوبة</span>
-                                <span class="type-option-sample">"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ"</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Action Buttons (Transparent Luxury) -->
-                <div class="actions-bar">
-                    <button type="button" class="btn-transparent-gold" id="page-btn-send-test">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        <span>إرسال إشعار تجريبي الآن</span>
-                    </button>
-                    <button type="button" class="btn-transparent-silver" id="page-btn-preview-sound">
-                        <i class="fa-solid fa-play"></i>
-                        <span>استماع لصوت "صلِّ على النبي"</span>
-                    </button>
-                </div>
-
-            </div>
-
-            <!-- Salawat Showcase Card -->
-            <div class="salawat-showcase">
-                <div class="salawat-showcase-title">
-                    <i class="fa-solid fa-book-quran"></i>
-                    <span>فضل الصلاة على النبي ﷺ</span>
-                </div>
-                <div class="salawat-verse-text">
-                    ﴿ إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا ﴾
-                </div>
-                <div class="salawat-verse-ref">سورة الأحزاب • الآية 56</div>
-            </div>
-
-        </div>
+        </main>
 
         <!-- Footer -->
         <footer class="app-footer">
@@ -235,13 +526,93 @@
         </footer>
     </div>
 
-    <!-- Hidden Audio for Salawat -->
+    <!-- ================= INTERACTIVE ADHAN SCREEN OVERLAY ================= -->
+    <div class="adhan-screen-backdrop" id="adhan-screen-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="adhan-screen-card">
+            
+            <!-- Close Icon -->
+            <button type="button" class="adhan-screen-close-btn" id="btn-close-adhan-screen" aria-label="إغلاق الشاشة">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Mosque Crest -->
+            <div class="adhan-crest-icon">
+                <i class="fa-solid fa-mosque"></i>
+            </div>
+
+            <!-- Adhan Announcement -->
+            <div class="adhan-screen-status">
+                <span class="pulse-dot"></span>
+                <span id="adhan-screen-status-text">يُرفع الآن الأذان المبارك</span>
+            </div>
+
+            <h2 class="adhan-screen-prayer-title" id="adhan-screen-prayer-title">
+                حَانَ الآنَ مَوْعِدُ أَذَانِ الظُّهْرِ
+            </h2>
+
+            <!-- Local City / Region Indicator -->
+            <div class="adhan-screen-city-tag" id="adhan-screen-city-tag">
+                <i class="fa-solid fa-location-dot"></i>
+                <span id="adhan-screen-city-text">حسب التوقيت المحلي لمحافظتك وضواحيها</span>
+            </div>
+
+            <!-- Muezzin & Mosque Info -->
+            <div class="adhan-screen-muezzin-info">
+                <span class="adhan-muezzin-name" id="adhan-screen-muezzin-name">أذان الحرم المكي الشريف</span>
+                <span class="adhan-muezzin-location" id="adhan-screen-muezzin-location">بصوت الشيخ علي أحمد ملا</span>
+            </div>
+
+            <!-- Animated Sound Waves -->
+            <div class="adhan-sound-waves" id="adhan-sound-waves" aria-hidden="true">
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+            </div>
+
+            <!-- Timer / Time Info -->
+            <div class="adhan-timer-display" id="adhan-timer-display">
+                <i class="fa-solid fa-clock"></i>
+                <span id="adhan-elapsed-time">00:00</span>
+            </div>
+
+            <!-- Adhan Screen Actions -->
+            <div class="adhan-screen-actions">
+                <div class="adhan-primary-actions">
+                    <button type="button" class="adhan-action-btn" id="btn-mute-adhan" title="كتم الصوت / تشغيل">
+                        <i class="fa-solid fa-volume-high" id="icon-mute-adhan"></i>
+                        <span id="label-mute-adhan">كتم الصوت</span>
+                    </button>
+                    <button type="button" class="adhan-action-btn danger" id="btn-stop-adhan" title="إيقاف الأذان">
+                        <i class="fa-solid fa-stop"></i>
+                        <span>إيقاف الأذان</span>
+                    </button>
+                </div>
+                <button type="button" class="adhan-duaa-btn" id="btn-modal-show-duaa" title="الانتقال إلى دعاء ما بعد الأذان">
+                    <i class="fa-solid fa-hands-praying"></i>
+                    <span>دعاء بعد الأذان</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Hidden Audio Elements -->
+    <audio id="adhan-audio-player" preload="auto"></audio>
+    <audio id="preview-audio-player" preload="none"></audio>
     <audio id="salawat-audio-player" src="assets/salawat.mp3" preload="auto"></audio>
 
+    <!-- Core & Feature Scripts -->
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="core/reminders.js"></script>
+    <script src="core/reminders.js?v=33"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/reminders/reminders-page.js"></script>
+    <script src="features/reminders/reminders-page.js?v=36"></script>
+    <script src="features/radial-nav/radial-nav.js?v=8"></script>
 </body>
 </html>

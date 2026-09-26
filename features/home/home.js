@@ -294,12 +294,40 @@ function GetPrayersTimingsByCoordinates(lat, lng) {
 }
 
 function playAzanAlarm(prayerName) {
+    const mode = localStorage.getItem('quiblah_adhan_mode') || 'full';
+    const muezzinUrl = localStorage.getItem('quiblah_selected_muezzin_url');
+    const muezzinName = localStorage.getItem('quiblah_selected_muezzin_name');
     const audio = document.getElementById('azan-audio');
-    if (audio) {
-        audio.play().catch(e => console.log("Audio play prevented by browser", e));
+
+    if (mode !== 'silent' && audio) {
+        if (muezzinUrl) {
+            audio.src = muezzinUrl;
+            audio.onerror = function() {
+                audio.src = 'assets/Azan/456572.mp3';
+                audio.play().catch(e => console.log(e));
+            };
+        }
+        audio.play().catch(e => {
+            console.log("Audio play prevented by browser", e);
+            audio.src = 'assets/Azan/456572.mp3';
+            audio.play().catch(() => {});
+        });
+
+        if (mode === 'takbeer') {
+            setTimeout(() => {
+                if (audio && !audio.paused) {
+                    audio.pause();
+                }
+            }, 28000);
+        }
     }
+
     if (window.showToast) {
-        window.showToast(`الآن موعد صلاة ${prayerName}`, "fa-solid fa-mosque", 15000);
+        const extraNote = muezzinName ? ` • بصوت ${muezzinName}` : '';
+        const selectedCityKey = localStorage.getItem("selectedCity") || currentCity || "Cairo";
+        const foundCity = cities.find(c => c.name.toLowerCase() === selectedCityKey.toLowerCase() || c.ArabicName === selectedCityKey);
+        const cityArabic = foundCity ? (foundCity.ArabicName.includes('(') ? foundCity.ArabicName.match(/\(([^)]+)\)/)[1] : foundCity.ArabicName) : selectedCityKey;
+        window.showToast(`حَانَ الآنَ مَوْعِدُ صَلَاةِ ${prayerName} بتوقيت محافظة ${cityArabic}${extraNote}`, "fa-solid fa-mosque", 15000);
     }
 }
 

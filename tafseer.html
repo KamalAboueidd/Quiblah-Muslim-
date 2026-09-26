@@ -39,7 +39,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/tafseer/tafseer.css?v=3">
+    <link rel="stylesheet" href="features/tafseer/tafseer.css?v=4">
     <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=7">
 </head>
 <body>
@@ -63,7 +63,7 @@
                     <span><i class="fa-solid fa-book-open-reader"></i> سور القرآن الكريم</span>
                     <div class="sidebar-title-actions">
                         <span class="surah-counter" id="surah-counter">114 سورة</span>
-                        <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" onclick="toggleSidebar()" aria-label="إغلاق قائمة السور">
+                        <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="إغلاق قائمة السور" title="إغلاق قائمة السور">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -81,6 +81,12 @@
             </div>
         </aside>
 
+        <!-- Floating Sidebar Toggle Button (Appears when sidebar is collapsed on desktop) -->
+        <button type="button" class="sidebar-toggle-floating-btn" id="sidebar-toggle-floating-btn" onclick="toggleSidebar(true)" title="فتح قائمة السور" aria-label="فتح قائمة السور">
+            <i class="fa-solid fa-bars"></i>
+            <span style="writing-mode: vertical-rl; font-size: 11px; font-weight: bold; letter-spacing: 1px; margin-top: 4px;">السور</span>
+        </button>
+
         <!-- Main Content Area -->
         <main class="main-content">
             <!-- Reader Scroll Container -->
@@ -88,7 +94,7 @@
                 <!-- Top Navigation & Action Row (Borderless, Backgroundless, Straight) -->
                 <div class="reader-top-bar">
                     <div class="nav-right-cluster">
-                        <button class="menu-btn" id="menu-btn" aria-label="فتح قائمة السور">
+                        <button class="menu-btn" id="menu-btn" aria-label="قائمة السور" title="فتح / إغلاق قائمة السور">
                             <i class="fa-solid fa-bars"></i>
                             <span>قائمة السور</span>
                         </button>
@@ -229,7 +235,7 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/tafseer/tafseer.js?v=64"></script>
+    <script src="features/tafseer/tafseer.js?v=65"></script>
     <script src="features/radial-nav/radial-nav.js?v=7"></script>
 </body>
 </html>

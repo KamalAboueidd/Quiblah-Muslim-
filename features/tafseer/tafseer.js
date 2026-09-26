@@ -100,13 +100,38 @@
         const BATCH_SIZE = 10;
         let currentRenderedAyahsCount = 0;
 
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
+        function toggleSidebar(forceState) {
+            const isMobile = window.innerWidth <= 850;
+            if (isMobile) {
+                const willOpen = (typeof forceState === 'boolean') ? forceState : !sidebar.classList.contains('open');
+                sidebar.classList.toggle('open', willOpen);
+                overlay.classList.toggle('active', willOpen);
+                document.body.classList.toggle('sidebar-opened', willOpen);
+            } else {
+                const isCurrentlyCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-closed');
+                const willCollapse = (typeof forceState === 'boolean') ? !forceState : !isCurrentlyCollapsed;
+                sidebar.classList.toggle('collapsed', willCollapse);
+                document.body.classList.toggle('sidebar-closed', willCollapse);
+                overlay.classList.remove('active');
+            }
         }
 
-        menuBtn.addEventListener('click', toggleSidebar);
-        overlay.addEventListener('click', toggleSidebar);
+        menuBtn.addEventListener('click', (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            toggleSidebar();
+        });
+        overlay.addEventListener('click', () => toggleSidebar(false));
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 850) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.classList.remove('sidebar-opened');
+            }
+        });
 
         readerArea.addEventListener('scroll', () => {
             if (readerArea.scrollTop > 300) {

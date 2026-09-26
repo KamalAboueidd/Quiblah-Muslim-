@@ -163,9 +163,16 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.2s, transform 0.2s;
+            transition: color 0.2s, background 0.2s;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
         }
-        .btn-extra:hover { color: #000000; transform: scale(1.1); }
+        .btn-extra:hover {
+            color: #000000;
+            background: rgba(0, 0, 0, 0.08);
+            transform: none;
+        }
         .btn-repeat.active { color: #000000; font-weight: 900; }
         .btn-speed span { font-size: 11px; font-weight: 800; background: rgba(0, 0, 0, 0.15); color: #0c0e12; padding: 2px 5px; border-radius: 4px; }
 
@@ -248,32 +255,38 @@
             color: #1a1813;
             font-size: 18px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: color 0.2s, background 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
         }
 
         .ctrl-btn:hover {
             color: #000000;
-            transform: scale(1.1);
+            background: rgba(0, 0, 0, 0.08);
+            transform: none;
         }
 
         .ctrl-btn-play {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: #0c0e12;
             color: #dfc374;
-            font-size: 14px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+            font-size: 15px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
             border: none;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
         }
 
         .ctrl-btn-play:hover {
-            background: #000000;
-            transform: scale(1.08);
-            color: #ffffff;
+            background: #20242c;
+            color: #f7e4a8;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+            transform: none;
         }
 
         .scrubber-row {
@@ -299,9 +312,9 @@
 
         .scrubber-bar {
             flex-grow: 1;
-            height: 5px;
-            background: rgba(0, 0, 0, 0.18);
-            border-radius: 3px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
             cursor: pointer;
             position: relative;
             display: flex;
@@ -310,14 +323,14 @@
         }
 
         .scrubber-bar:hover {
-            height: 7px;
+            height: 10px;
         }
 
         .scrubber-fill {
             height: 100%;
             background: #0c0e12;
             box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
-            border-radius: 3px;
+            border-radius: 5px;
             width: 0%;
             pointer-events: none;
             transition: width 0.12s linear;
@@ -325,17 +338,17 @@
         }
 
         .scrubber-thumb {
-            width: 13px;
-            height: 13px;
+            width: 14px;
+            height: 14px;
             background: #0c0e12;
-            border: 2px solid #ffffff;
+            border: 2.5px solid #dfc374;
             border-radius: 50%;
             position: absolute;
             left: 0;
             top: 50%;
             transform: translate(-50%, -50%);
             opacity: 0;
-            transition: opacity 0.2s, transform 0.2s;
+            transition: opacity 0.2s;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
             pointer-events: none;
         }
@@ -343,7 +356,7 @@
         .scrubber-bar:hover .scrubber-thumb,
         .scrubber-bar.active .scrubber-thumb {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.2);
+            transform: translate(-50%, -50%);
         }
 
         /* Right Actions (Volume & Close) */
@@ -368,21 +381,21 @@
             font-size: 16px;
             color: #1a1813;
             cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
+            transition: color 0.2s;
             flex-shrink: 0;
         }
 
         .volume-box:hover i,
         .volume-box i:hover {
             color: #000000;
-            transform: scale(1.15);
+            transform: none;
         }
 
         .volume-bar {
             flex-grow: 1;
-            height: 6px;
-            background: rgba(0, 0, 0, 0.18);
-            border-radius: 4px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
             cursor: pointer;
             position: relative;
             display: flex;
@@ -391,13 +404,13 @@
         }
 
         .volume-bar:hover {
-            height: 8px;
+            height: 10px;
         }
 
         .volume-fill {
             height: 100%;
             background: #0c0e12;
-            border-radius: 4px;
+            border-radius: 5px;
             width: 100%;
             pointer-events: none;
             box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
@@ -408,7 +421,7 @@
             width: 14px;
             height: 14px;
             background: #0c0e12;
-            border: 2px solid #ffffff;
+            border: 2.5px solid #dfc374;
             border-radius: 50%;
             position: absolute;
             left: 100%;
@@ -417,24 +430,36 @@
             opacity: 0.9;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
             pointer-events: none;
-            transition: opacity 0.2s, transform 0.2s;
+            transition: opacity 0.2s;
         }
 
         .volume-bar:hover .volume-thumb {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.15);
+            transform: translate(-50%, -50%);
         }
 
         .player-close-btn {
-            background: none;
-            border: none;
+            background: rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.12);
             color: #1a1813;
             cursor: pointer;
-            font-size: 16px;
-            transition: color 0.2s, transform 0.2s;
+            font-size: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.22s ease;
         }
 
-        .player-close-btn:hover { color: #b91c1c; transform: scale(1.2); }
+        .player-close-btn:hover {
+            color: #dfc374;
+            background: #11141a;
+            border-color: #11141a;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            transform: none;
+        }
 
         .mobile-expand-toggle,
         .mobile-close-btn { display: none; }

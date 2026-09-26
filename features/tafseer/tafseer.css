@@ -1502,9 +1502,75 @@
             }
         }
 
+        /* Clean Borderless Arrow Handle for Sidebar Collapse/Expand */
+        .sidebar-collapse-handle {
+            position: absolute;
+            left: -28px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 60px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold);
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10010 !important;
+            pointer-events: auto !important;
+            padding: 0;
+            outline: none;
+            transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .sidebar-collapse-handle:hover {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--gold-light, #dfc26e);
+            opacity: 0.85;
+        }
+
+        .sidebar-collapse-handle i {
+            display: inline-block;
+            font-size: 18px;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.75));
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
         @media (min-width: 851px) {
             .sidebar {
                 width: 320px;
                 position: relative;
+                z-index: 1005 !important;
+                overflow: visible !important;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .sidebar.collapsed,
+            body.sidebar-closed .sidebar {
+                margin-right: -320px !important;
+            }
+        }
+
+        @media (max-width: 850px) {
+            .sidebar {
+                overflow: visible !important;
+            }
+            .sidebar .sidebar-collapse-handle {
+                display: flex !important;
+                left: -34px !important;
+                width: 34px !important;
+                height: 64px !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                color: var(--gold) !important;
+                z-index: 10010 !important;
+            }
+            .sidebar-collapse-handle i {
+                font-size: 20px !important;
             }
         }

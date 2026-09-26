@@ -39,7 +39,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/tafseer/tafseer.css?v=8">
+    <link rel="stylesheet" href="features/tafseer/tafseer.css?v=9">
     <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=7">
 </head>
 <body>
@@ -58,6 +58,10 @@
 
         <!-- Sidebar (Surahs Drawer) -->
         <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Collapse/Expand Handle -->
+            <button type="button" class="sidebar-collapse-handle" id="sidebar-collapse-handle" onclick="toggleSidebar()" aria-label="طي / فتح قائمة السور" title="طي / فتح قائمة السور">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
             <div class="sidebar-header">
                 <div class="sidebar-title">
                     <span><i class="fa-solid fa-book-open-reader"></i> سور القرآن الكريم</span>
@@ -226,7 +230,7 @@
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/tafseer/tafseer.js?v=69"></script>
+    <script src="features/tafseer/tafseer.js?v=70"></script>
     <script src="features/radial-nav/radial-nav.js?v=7"></script>
 </body>
 </html>

@@ -90,6 +90,13 @@
                     const icon = handleBtn.querySelector('i');
                     if (icon) icon.className = isCollapsed ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
                 }
+            } else {
+                const isOpen = sidebar.classList.contains('open');
+                const handleBtn = document.getElementById('sidebar-collapse-handle');
+                if (handleBtn) {
+                    const icon = handleBtn.querySelector('i');
+                    if (icon) icon.className = isOpen ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
+                }
             }
         });
 

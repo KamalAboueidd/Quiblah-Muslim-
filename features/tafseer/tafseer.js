@@ -100,40 +100,14 @@
         const BATCH_SIZE = 10;
         let currentRenderedAyahsCount = 0;
 
-        const sidebarCollapseHandle = document.getElementById('sidebar-collapse-handle');
-
         function toggleSidebar(forceState) {
             if (!sidebar) return;
             const isMobile = window.innerWidth <= 850;
-            const isCurrentlyClosed = isMobile 
-                ? !sidebar.classList.contains('open') 
-                : (sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-closed'));
-            
-            const willOpen = (typeof forceState === 'boolean') ? forceState : isCurrentlyClosed;
-
             if (isMobile) {
+                const willOpen = (typeof forceState === 'boolean') ? forceState : !sidebar.classList.contains('open');
                 sidebar.classList.toggle('open', willOpen);
                 if (overlay) overlay.classList.toggle('active', willOpen);
                 document.body.classList.toggle('sidebar-opened', willOpen);
-            } else {
-                sidebar.classList.toggle('collapsed', !willOpen);
-                document.body.classList.toggle('sidebar-closed', !willOpen);
-                if (overlay) overlay.classList.remove('active');
-            }
-
-            // Sync collapse handle icon & title
-            const handleBtn = document.getElementById('sidebar-collapse-handle');
-            if (handleBtn) {
-                const icon = handleBtn.querySelector('i');
-                if (willOpen) {
-                    handleBtn.title = 'إخفاء قائمة السور';
-                    handleBtn.setAttribute('aria-label', 'إخفاء قائمة السور');
-                    if (icon) icon.className = 'fa-solid fa-chevron-right';
-                } else {
-                    handleBtn.title = 'إظهار قائمة السور';
-                    handleBtn.setAttribute('aria-label', 'إظهار قائمة السور');
-                    if (icon) icon.className = 'fa-solid fa-chevron-left';
-                }
             }
         }
 
@@ -151,34 +125,12 @@
         if (overlay) {
             overlay.addEventListener('click', () => toggleSidebar(false));
         }
-        if (sidebarCollapseHandle) {
-            sidebarCollapseHandle.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleSidebar();
-            });
-        }
-
-        if (window.innerWidth <= 850) {
-            if (sidebarCollapseHandle) {
-                const icon = sidebarCollapseHandle.querySelector('i');
-                if (icon) icon.className = 'fa-solid fa-chevron-left';
-                sidebarCollapseHandle.title = 'إظهار قائمة السور';
-            }
-        }
 
         window.addEventListener('resize', () => {
-            const isMobile = window.innerWidth <= 850;
-            if (!isMobile) {
+            if (window.innerWidth > 850) {
                 sidebar.classList.remove('open');
                 if (overlay) overlay.classList.remove('active');
                 document.body.classList.remove('sidebar-opened');
-                const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-closed');
-                const handleBtn = document.getElementById('sidebar-collapse-handle');
-                if (handleBtn) {
-                    const icon = handleBtn.querySelector('i');
-                    if (icon) icon.className = isCollapsed ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
-                }
             }
         });
 

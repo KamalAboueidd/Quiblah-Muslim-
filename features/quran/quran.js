@@ -116,9 +116,18 @@
             currentReadingMode = 'pages';
         }
 
-        let currentQuranFontSize = parseInt(localStorage.getItem(FONT_SIZE_STORAGE_KEY)) || 32;
-        if (isNaN(currentQuranFontSize) || currentQuranFontSize < 20 || currentQuranFontSize > 54) {
-            currentQuranFontSize = 32;
+        const isMobileScreen = window.innerWidth <= 900;
+        const defaultFontSize = isMobileScreen ? 20 : 32;
+        let savedSize = parseInt(localStorage.getItem(FONT_SIZE_STORAGE_KEY));
+        let currentQuranFontSize;
+        if (isMobileScreen) {
+            if (!savedSize || savedSize === 32) {
+                currentQuranFontSize = 20;
+            } else {
+                currentQuranFontSize = Math.max(16, Math.min(60, savedSize));
+            }
+        } else {
+            currentQuranFontSize = (!isNaN(savedSize) && savedSize >= 16 && savedSize <= 60) ? savedSize : 32;
         }
 
         const VALID_THEMES = ['carousel', 'black-gold', 'paper-light', 'dark-static'];
@@ -229,11 +238,13 @@
 
         // --- Font Size Logic ---
         function applyQuranFontSize(size, save = true) {
-            size = Math.max(18, Math.min(60, parseInt(size) || 32));
+            const minAllowed = window.innerWidth <= 900 ? 16 : 18;
+            const fallbackSize = window.innerWidth <= 900 ? 20 : 32;
+            size = Math.max(minAllowed, Math.min(60, parseInt(size) || fallbackSize));
             currentQuranFontSize = size;
             document.documentElement.style.setProperty('--quran-font-size', `${size}px`);
 
-            const lh = size >= 40 ? '3.0' : (size >= 30 ? '2.8' : '2.5');
+            const lh = size >= 40 ? '3.0' : (size >= 30 ? '2.8' : (size >= 24 ? '2.5' : '2.3'));
             document.documentElement.style.setProperty('--quran-line-height', lh);
 
             if (save) {
@@ -331,7 +342,8 @@
         }
 
         function resetQuranSettings() {
-            applyQuranFontSize(32, true);
+            const defaultSize = window.innerWidth <= 900 ? 20 : 32;
+            applyQuranFontSize(defaultSize, true);
             setQuranTheme('carousel');
             setReadingMode('pages', true);
             if (typeof showToast === 'function') {

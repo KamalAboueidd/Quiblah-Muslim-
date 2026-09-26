@@ -1172,12 +1172,16 @@
                 overflow-wrap: break-word;
                 word-break: normal;
             }
+            :root {
+                --quran-font-size: 20px;
+            }
             .verse { 
-                font-size: clamp(21px, 5.5vw, 25px); 
+                font-size: var(--quran-font-size, 20px); 
+                line-height: var(--quran-line-height, 2.3);
                 word-break: normal;
                 overflow-wrap: break-word;
             }
-            .verse-number { width: 29px; height: 29px; min-width: 29px; font-size: 12px; margin: 0 4px; border-width: 1.5px; }
+            .verse-number { width: 28px; height: 28px; min-width: 28px; font-size: 11px; margin: 0 4px; border-width: 1.5px; }
             .sadaqallah-text { font-size: 22px; }
             .sadaqallah-line { max-width: 50px; }
             .sadaqallah-box { margin: 30px auto 15px auto; }
@@ -1310,7 +1314,7 @@
                 line-height: 2.4;
             }
             .verse {
-                font-size: var(--quran-font-size, clamp(20px, 5.2vw, 23px));
+                font-size: var(--quran-font-size, 20px);
             }
             .surah-title {
                 font-size: 32px;
@@ -1425,13 +1429,8 @@
         }
 
         @media (max-width: 900px) {
-            .sidebar {
-                overflow: visible !important;
-            }
-            .sidebar .sidebar-collapse-handle {
-                display: flex !important;
-                left: -26px !important;
-                z-index: 3005 !important;
+            .sidebar-collapse-handle {
+                display: none !important;
             }
         }
 

@@ -45,7 +45,53 @@
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "1927aef6-662e-4720-bc7b-99c243f78c8a",
+          notifyButton: {
+            enable: true,
+            position: 'bottom-left',
+            text: {
+              'tip.state.unsubscribed': 'اشترك في تنبيهات الأذكار والأذان',
+              'tip.state.subscribed': "أنت مشترك في التنبيهات والأذكار",
+              'tip.state.blocked': "تم حظر الإشعارات من المتصفح",
+              'message.prenotify': 'اضغط لتفعيل تنبيهات الأذكار ومواقيت الصلاة',
+              'message.action.subscribed': "شكراً لاشتراكك في تنبيهات قبلة المسلم!",
+              'message.action.resubscribed': "تمت إعادة تفعيل التنبيهات",
+              'message.action.unsubscribed': "لن تستقبل تنبيهات بعد الآن",
+              'dialog.main.title': 'إدارة تنبيهات قبلة المسلم',
+              'dialog.main.button.subscribe': 'اشتراك',
+              'dialog.main.button.unsubscribe': 'إلغاء الاشتراك',
+              'dialog.blocked.title': 'إلغاء حظر التنبيهات',
+              'dialog.blocked.message': "اتبع تعليمات المتصفح للسماح بالإشعارات:"
+            }
+          },
+          promptOptions: {
+            slidedown: {
+              prompts: [
+                {
+                  type: "push",
+                  autoPrompt: true,
+                  text: {
+                    actionMessage: "هل ترغب في استقبال الأذكار اليومية ومواقيت الأذان وتذكيرات الصلاة على النبي ﷺ؟",
+                    acceptButton: "تفعيل التنبيهات",
+                    cancelButton: "لاحقاً"
+                  },
+                  delay: {
+                    pageViews: 1,
+                    timeDelay: 1
+                  }
+                }
+              ]
+            }
+          }
         });
+
+        // Trigger prompt automatically if not yet permitted
+        try {
+          if (!OneSignal.Notifications.permission) {
+            await OneSignal.Slidedown.promptPush();
+          }
+        } catch (e) {
+          console.log("OneSignal Slidedown prompt:", e);
+        }
       });
     </script>
 </head>

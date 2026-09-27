@@ -230,37 +230,69 @@
         }
     }
 
-    // 9. إرسال إشعار تجريبي فوري
+    // 9. إرسال إشعار تجريبي فوري حقيقي مع صوت الصلاة على النبي
     async function sendTestNotification() {
+        if (!('Notification' in window)) {
+            if (window.showToast) window.showToast('متصفحك لا يدعم الإشعارات', 'fa-solid fa-triangle-exclamation');
+            return;
+        }
+
+        let permission = Notification.permission;
+        if (permission !== 'granted') {
+            permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                if (window.showToast) window.showToast('يرجى السماح بالإشعارات من إعدادات المتصفح أولاً', 'fa-solid fa-bell-slash');
+                return;
+            }
+        }
+
+        const sampleMessages = [
+            { title: "قبلة المسلم • الصلاة على النبي", body: "اللَّهُمَّ صَلِّ وَسَلِّمْ وَبَارِكْ عَلَى نَبِيِّنَا مُحَمَّدٍ ﷺ 🤍" },
+            { title: "قبلة المسلم • ذكر وطمأنينة", body: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ اللَّهِ الْعَظِيمِ ✨" },
+            { title: "قبلة المسلم • استغفار", body: "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ وَأَتُوبُ إِلَيْهِ 🌿" },
+            { title: "قبلة المسلم • كنز من كنوز الجنة", body: "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ 🤲" }
+        ];
+
+        const item = sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
+
+        // تشغيل صوت الصلاة على النبي
+        playSalawatAudio();
+
         const registration = await getSWRegistration();
-        if (!registration) {
-            alert('السيرفس ووركر غير مفعل حالياً.');
-            return;
+        if (registration && registration.showNotification) {
+            try {
+                await registration.showNotification(item.title, {
+                    body: item.body,
+                    icon: 'icons/icon-192.png',
+                    badge: 'icons/icon-192.png',
+                    dir: 'rtl',
+                    lang: 'ar',
+                    tag: 'islamic-reminder-' + Date.now(),
+                    renotify: true,
+                    vibrate: [200, 100, 200],
+                    data: { url: './reminders.html' }
+                });
+                if (window.showToast) {
+                    window.showToast('تم إرسال الإشعار بنجاح إلى شاشة جهازك!', 'fa-solid fa-circle-check');
+                }
+                return;
+            } catch (err) {
+                console.warn('[Reminders] SW Notification fallback:', err);
+            }
         }
 
-        const subscription = await registration.pushManager.getSubscription();
-        if (!subscription) {
-            alert('يرجى تفعيل التذكيرات أولاً للاشتراك في الإشعارات.');
-            return;
-        }
-
+        // Fallback: window Notification
         try {
-            const resp = await fetch('./api/push/send-test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    subscription: subscription,
-                    message: "صلِّ على النبي ﷺ 🤍"
-                })
+            new Notification(item.title, {
+                body: item.body,
+                icon: 'icons/icon-192.png',
+                dir: 'rtl'
             });
-            const resData = await resp.json();
-            if (resData.success) {
-                console.log('[Reminders] تم إرسال الإشعار التجريبي بنجاح.');
-            } else {
-                alert('حدث خطأ أثناء إرسال الإشعار التجريبي: ' + (resData.error || ''));
+            if (window.showToast) {
+                window.showToast('تم إرسال الإشعار بنجاح إلى جهازك!', 'fa-solid fa-circle-check');
             }
         } catch (e) {
-            alert('تعذر الاتصال بالخادم لإرسال الإشعار: ' + e.message);
+            console.error('[Reminders] Notification error:', e);
         }
     }
 

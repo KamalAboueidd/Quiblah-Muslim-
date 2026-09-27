@@ -43,6 +43,11 @@
         await OneSignal.init({
           appId: "1927aef6-662e-4720-bc7b-99c243f78c8a",
         });
+        try {
+          if (!OneSignal.Notifications.permission) {
+            await OneSignal.Slidedown.promptPush();
+          }
+        } catch (e) {}
       });
     </script>
 </head>
@@ -621,7 +626,7 @@
     <!-- Core & Feature Scripts -->
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="core/reminders.js?v=33"></script>
+    <script src="core/reminders.js?v=34"></script>
     <script src="core/visitor-counter.js"></script>
     <script src="features/reminders/reminders-page.js?v=36"></script>
     <script src="features/radial-nav/radial-nav.js?v=8"></script>

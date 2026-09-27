@@ -48,6 +48,11 @@
         await OneSignal.init({
           appId: "1927aef6-662e-4720-bc7b-99c243f78c8a",
         });
+        try {
+          if (!OneSignal.Notifications.permission && window.top === window.self) {
+            await OneSignal.Slidedown.promptPush();
+          }
+        } catch (e) {}
       });
     </script>
 </head>

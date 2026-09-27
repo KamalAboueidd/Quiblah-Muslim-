@@ -50,6 +50,39 @@
         } catch (e) {}
       });
     </script>
+    <style id="onesignal-golden-theme-reminders">
+      #onesignal-slidedown-dialog, .onesignal-slidedown-dialog {
+        background: linear-gradient(145deg, #1d170f 0%, #110e08 100%) !important;
+        border: 1.5px solid rgba(212, 175, 55, 0.7) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 175, 55, 0.3) !important;
+        color: #f7eed7 !important;
+        font-family: 'Tajawal', sans-serif !important;
+      }
+      .onesignal-slidedown-body-message, #onesignal-slidedown-dialog p, .onesignal-slidedown-message {
+        color: #f7eed7 !important;
+        font-family: 'Tajawal', sans-serif !important;
+      }
+      #onesignal-slidedown-allow-button, .onesignal-slidedown-allow-button {
+        background: linear-gradient(135deg, #fde28e 0%, #d4af37 50%, #996515 100%) !important;
+        color: #120e06 !important;
+        font-weight: 800 !important;
+        border-radius: 12px !important;
+        border: 1px solid #ffe89e !important;
+      }
+      #onesignal-slidedown-cancel-button, .onesignal-slidedown-cancel-button {
+        background: rgba(212, 175, 55, 0.08) !important;
+        color: #e5c352 !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(212, 175, 55, 0.4) !important;
+      }
+      #onesignal-bell-container .onesignal-bell-launcher-button {
+        background: linear-gradient(135deg, #241c11 0%, #130f08 100%) !important;
+        border: 1.8px solid #d4af37 !important;
+      }
+      #onesignal-bell-container svg { fill: #d4af37 !important; stroke: #d4af37 !important; }
+    </style>
 </head>
 <body>
 
@@ -626,9 +659,9 @@
     <!-- Core & Feature Scripts -->
     <script src="core/toast.js"></script>
     <script src="core/pwa.js"></script>
-    <script src="core/reminders.js?v=34"></script>
+    <script src="core/reminders.js?v=35"></script>
     <script src="core/visitor-counter.js"></script>
-    <script src="features/reminders/reminders-page.js?v=36"></script>
+    <script src="features/reminders/reminders-page.js?v=37"></script>
     <script src="features/radial-nav/radial-nav.js?v=8"></script>
 </body>
 </html>

@@ -1101,15 +1101,18 @@
         // Test Push Button
         if (btnSendTest) {
             btnSendTest.addEventListener('click', async () => {
-                if (!window.IslamicReminders) return;
-                const settings = window.IslamicReminders.getSettings();
-                if (!settings.enabled) {
+                const remindersApi = window.IslamicReminders || (window.top && window.top.IslamicReminders);
+                if (remindersApi && remindersApi.sendTestNotification) {
+                    await remindersApi.sendTestNotification();
+                } else {
                     if (window.showToast) {
-                        window.showToast('يرجى تفعيل التذكيرات أولاً للاشتراك في الإشعارات.', 'fa-solid fa-triangle-exclamation');
+                        window.showToast('جاري إرسال إشعار الصلاة على النبي ﷺ...', 'fa-solid fa-bell');
                     }
-                    return;
+                    try {
+                        const audio = new Audio('assets/salawat.mp3');
+                        audio.play().catch(() => {});
+                    } catch (e) {}
                 }
-                await window.IslamicReminders.sendTestNotification();
             });
         }
 

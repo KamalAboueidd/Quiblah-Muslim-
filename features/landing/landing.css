@@ -927,3 +927,210 @@
                 transform: scale(1.15) !important;
             }
         }
+
+/* ==========================================================================
+   OneSignal Golden Islamic Luxury Theme (Prompt & Bell Widget)
+   ========================================================================== */
+
+#onesignal-slidedown-container,
+.onesignal-slidedown-container {
+    font-family: 'Tajawal', sans-serif !important;
+    direction: rtl !important;
+    z-index: 2147483647 !important;
+}
+
+#onesignal-slidedown-dialog,
+.onesignal-slidedown-dialog {
+    background: linear-gradient(145deg, #1d170f 0%, #110e08 100%) !important;
+    border: 1.5px solid rgba(212, 175, 55, 0.65) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 175, 55, 0.28) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    color: #f7eed7 !important;
+    font-family: 'Tajawal', sans-serif !important;
+    padding: 22px 24px !important;
+    animation: onesignalGoldGlow 4s ease-in-out infinite alternate !important;
+}
+
+@keyframes onesignalGoldGlow {
+    0% {
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(212, 175, 55, 0.2);
+        border-color: rgba(212, 175, 55, 0.55);
+    }
+    100% {
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 40px rgba(212, 175, 55, 0.45);
+        border-color: rgba(245, 215, 127, 0.85);
+    }
+}
+
+#onesignal-slidedown-body,
+.onesignal-slidedown-body {
+    background: transparent !important;
+    color: #f7eed7 !important;
+    font-family: 'Tajawal', sans-serif !important;
+    align-items: center !important;
+}
+
+.onesignal-slidedown-body-message,
+#onesignal-slidedown-dialog p,
+#onesignal-slidedown-dialog span,
+.onesignal-slidedown-message {
+    color: #f7eed7 !important;
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+    font-weight: 600 !important;
+    font-family: 'Tajawal', sans-serif !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Icon inside Slidedown */
+.onesignal-slidedown-body-icon,
+#onesignal-slidedown-dialog img,
+.onesignal-slidedown-dialog img {
+    border-radius: 14px !important;
+    border: 1.5px solid rgba(212, 175, 55, 0.6) !important;
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.35) !important;
+    background: rgba(212, 175, 55, 0.12) !important;
+    padding: 3px !important;
+}
+
+/* Footer / Actions */
+#onesignal-slidedown-footer,
+.onesignal-slidedown-footer,
+.onesignal-slidedown-actions {
+    background: transparent !important;
+    border-top: 1px solid rgba(212, 175, 55, 0.2) !important;
+    display: flex !important;
+    gap: 12px !important;
+    padding-top: 14px !important;
+    margin-top: 14px !important;
+}
+
+/* "تفعيل التنبيهات" Button - Pure Golden Gradient */
+#onesignal-slidedown-allow-button,
+.onesignal-slidedown-allow-button,
+button.onesignal-slidedown-allow-button {
+    background: linear-gradient(135deg, #fde28e 0%, #d4af37 50%, #996515 100%) !important;
+    color: #120e06 !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    font-family: 'Tajawal', sans-serif !important;
+    border-radius: 12px !important;
+    border: 1px solid #ffe89e !important;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.45) !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer !important;
+    padding: 9px 20px !important;
+}
+
+#onesignal-slidedown-allow-button:hover,
+.onesignal-slidedown-allow-button:hover {
+    background: linear-gradient(135deg, #fff3ba 0%, #e6c556 50%, #b8860b 100%) !important;
+    box-shadow: 0 6px 24px rgba(212, 175, 55, 0.75) !important;
+    transform: translateY(-1.5px) !important;
+}
+
+/* "لاحقاً" Button - Elegant Gold Outline */
+#onesignal-slidedown-cancel-button,
+.onesignal-slidedown-cancel-button,
+button.onesignal-slidedown-cancel-button {
+    background: rgba(212, 175, 55, 0.08) !important;
+    color: #e5c352 !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    font-family: 'Tajawal', sans-serif !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer !important;
+    padding: 9px 18px !important;
+}
+
+#onesignal-slidedown-cancel-button:hover,
+.onesignal-slidedown-cancel-button:hover {
+    background: rgba(212, 175, 55, 0.2) !important;
+    color: #ffffff !important;
+    border-color: #ffd978 !important;
+    box-shadow: 0 3px 12px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* ----------------------------------------------------
+   OneSignal Bell Launcher Widget (Golden Bell Theme)
+   ---------------------------------------------------- */
+#onesignal-bell-container,
+.onesignal-bell-container {
+    bottom: 24px !important;
+    left: 20px !important;
+    right: auto !important;
+    z-index: 2147483646 !important;
+}
+
+#onesignal-bell-container .onesignal-bell-launcher,
+.onesignal-bell-launcher {
+    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.45), 0 0 15px rgba(0, 0, 0, 0.6) !important;
+}
+
+#onesignal-bell-container .onesignal-bell-launcher-button,
+.onesignal-bell-launcher-button {
+    background: linear-gradient(135deg, #241c11 0%, #130f08 100%) !important;
+    border: 1.8px solid #d4af37 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5) !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+#onesignal-bell-container .onesignal-bell-launcher-button:hover,
+.onesignal-bell-launcher-button:hover {
+    transform: scale(1.1) !important;
+    border-color: #ffe594 !important;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.85) !important;
+}
+
+/* Bell SVG Icon fill: Pure Golden */
+#onesignal-bell-container svg,
+.onesignal-bell-svg,
+.onesignal-bell-launcher-button svg {
+    fill: #d4af37 !important;
+    stroke: #d4af37 !important;
+    filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.75)) !important;
+}
+
+#onesignal-bell-container .onesignal-bell-launcher-button:hover svg {
+    fill: #ffe594 !important;
+    stroke: #ffe594 !important;
+    filter: drop-shadow(0 0 10px rgba(245, 215, 127, 0.9)) !important;
+}
+
+/* Bell Badge */
+.onesignal-bell-launcher-badge {
+    background: linear-gradient(135deg, #ffe594 0%, #d4af37 100%) !important;
+    color: #120e06 !important;
+    font-weight: 800 !important;
+    border: 1px solid #fff2ba !important;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.6) !important;
+}
+
+/* Bell Dialog Tooltip / Menu */
+#onesignal-bell-container .onesignal-bell-launcher-dialog,
+.onesignal-bell-launcher-dialog {
+    background: linear-gradient(145deg, #1d170f 0%, #110e08 100%) !important;
+    border: 1.5px solid rgba(212, 175, 55, 0.6) !important;
+    border-radius: 16px !important;
+    color: #f7eed7 !important;
+    font-family: 'Tajawal', sans-serif !important;
+    direction: rtl !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(212, 175, 55, 0.3) !important;
+}
+
+#onesignal-bell-container .onesignal-bell-launcher-dialog button,
+.onesignal-bell-launcher-dialog button {
+    font-family: 'Tajawal', sans-serif !important;
+    background: linear-gradient(135deg, #fde28e 0%, #d4af37 100%) !important;
+    color: #120e06 !important;
+    font-weight: 800 !important;
+    border-radius: 10px !important;
+    border: 1px solid #ffe89e !important;
+    box-shadow: 0 3px 10px rgba(212, 175, 55, 0.4) !important;
+}
+

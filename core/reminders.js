@@ -134,11 +134,27 @@
         if (!('serviceWorker' in navigator)) return null;
 
         try {
-            swRegistration = await navigator.serviceWorker.ready;
+            const regs = await navigator.serviceWorker.getRegistrations();
+            if (regs && regs.length > 0) {
+                swRegistration = regs[0];
+                return swRegistration;
+            }
+        } catch (e) {}
+
+        try {
+            swRegistration = await Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise((_, reject) => setTimeout(() => reject('timeout'), 1200))
+            ]);
             return swRegistration;
         } catch (e) {
-            console.warn('[Reminders] تعذر الحصول على جاهزية السيرفس ووركر:', e);
-            return null;
+            try {
+                swRegistration = await navigator.serviceWorker.register('./service-worker.js');
+                return swRegistration;
+            } catch (err) {
+                console.warn('[Reminders] تعذر الحصول على جاهزية السيرفس ووركر:', err);
+                return null;
+            }
         }
     }
 
@@ -232,19 +248,8 @@
 
     // 9. إرسال إشعار تجريبي فوري حقيقي مع صوت الصلاة على النبي
     async function sendTestNotification() {
-        if (!('Notification' in window)) {
-            if (window.showToast) window.showToast('متصفحك لا يدعم الإشعارات', 'fa-solid fa-triangle-exclamation');
-            return;
-        }
-
-        let permission = Notification.permission;
-        if (permission !== 'granted') {
-            permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                if (window.showToast) window.showToast('يرجى السماح بالإشعارات من إعدادات المتصفح أولاً', 'fa-solid fa-bell-slash');
-                return;
-            }
-        }
+        // تشغيل صوت الصلاة على النبي دائماً عند الضغط
+        playSalawatAudio();
 
         const sampleMessages = [
             { title: "قبلة المسلم • الصلاة على النبي", body: "اللَّهُمَّ صَلِّ وَسَلِّمْ وَبَارِكْ عَلَى نَبِيِّنَا مُحَمَّدٍ ﷺ 🤍" },
@@ -255,12 +260,30 @@
 
         const item = sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
 
-        // تشغيل صوت الصلاة على النبي
-        playSalawatAudio();
+        const Notif = window.Notification || (window.top && window.top.Notification);
+        if (!Notif) {
+            if (window.showToast) window.showToast(item.body, 'fa-solid fa-moon');
+            return;
+        }
 
-        const registration = await getSWRegistration();
-        if (registration && registration.showNotification) {
+        let permission = Notif.permission;
+        if (permission !== 'granted') {
             try {
+                permission = await Notif.requestPermission();
+            } catch (e) {
+                console.warn('[Reminders] طلب الإذن:', e);
+            }
+            if (permission !== 'granted') {
+                if (window.showToast) window.showToast('يرجى السماح بالإشعارات من إعدادات المتصفح أولاً', 'fa-solid fa-bell-slash');
+                return;
+            }
+        }
+
+        // محاولة العرض عبر ServiceWorkerRegistration.showNotification
+        let displayed = false;
+        try {
+            const registration = await getSWRegistration();
+            if (registration && registration.showNotification) {
                 await registration.showNotification(item.title, {
                     body: item.body,
                     icon: 'icons/icon-192.png',
@@ -272,27 +295,28 @@
                     vibrate: [200, 100, 200],
                     data: { url: './reminders.html' }
                 });
-                if (window.showToast) {
-                    window.showToast('تم إرسال الإشعار بنجاح إلى شاشة جهازك!', 'fa-solid fa-circle-check');
-                }
-                return;
-            } catch (err) {
-                console.warn('[Reminders] SW Notification fallback:', err);
+                displayed = true;
+            }
+        } catch (err) {
+            console.warn('[Reminders] SW showNotification fallback:', err);
+        }
+
+        // محاولة بديلة عبر window.Notification المباشرة
+        if (!displayed) {
+            try {
+                new Notif(item.title, {
+                    body: item.body,
+                    icon: 'icons/icon-192.png',
+                    dir: 'rtl'
+                });
+                displayed = true;
+            } catch (e) {
+                console.warn('[Reminders] Direct notification fallback:', e);
             }
         }
 
-        // Fallback: window Notification
-        try {
-            new Notification(item.title, {
-                body: item.body,
-                icon: 'icons/icon-192.png',
-                dir: 'rtl'
-            });
-            if (window.showToast) {
-                window.showToast('تم إرسال الإشعار بنجاح إلى جهازك!', 'fa-solid fa-circle-check');
-            }
-        } catch (e) {
-            console.error('[Reminders] Notification error:', e);
+        if (window.showToast) {
+            window.showToast('تم إرسال إشعار التذكير بنجاح لشاشتك!', 'fa-solid fa-circle-check');
         }
     }
 
@@ -940,8 +964,13 @@
             if (backdrop) backdrop.classList.add('open');
         },
         getSettings: getSettings,
+        saveSettings: saveSettings,
         isSupported: isPushSupported,
-        playChime: playGentleReminderChime
+        playChime: playGentleReminderChime,
+        playSalawat: playSalawatAudio,
+        sendTestNotification: sendTestNotification,
+        subscribe: subscribeToPush,
+        unsubscribe: unsubscribeFromPush
     };
 
     // التهيئة عند تحميل الصفحة

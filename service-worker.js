@@ -1,5 +1,5 @@
 // service-worker.js - قبلة المسلم PWA Service Worker
-const CACHE_NAME = 'quiblah-muslim-v137';
+const CACHE_NAME = 'quiblah-muslim-v138';
 
 // OneSignal Web Push SDK Integration
 try {

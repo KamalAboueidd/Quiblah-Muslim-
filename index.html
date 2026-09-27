@@ -36,7 +36,7 @@
     <meta name="apple-mobile-web-app-title" content="قبلة المسلم">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="features/landing/landing.css?v=63">
+    <link rel="stylesheet" href="features/landing/landing.css?v=64">
 
     <!-- OneSignal Web Push SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -45,37 +45,6 @@
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "1927aef6-662e-4720-bc7b-99c243f78c8a",
-          notifyButton: {
-            enable: true,
-            position: 'bottom-left',
-            size: 'medium',
-            colors: {
-              'circle.background': '#1b160e',
-              'circle.foreground': '#d4af37',
-              'badge.background': '#d4af37',
-              'badge.foreground': '#120e06',
-              'badge.bordercolor': '#ffe89e',
-              'pulse.color': '#d4af37',
-              'dialog.button.background': '#d4af37',
-              'dialog.button.foreground': '#120e06',
-              'dialog.button.background.hovering': '#e6c556',
-              'dialog.button.background.active': '#aa801a'
-            },
-            text: {
-              'tip.state.unsubscribed': 'اشترك في تنبيهات الأذكار والأذان',
-              'tip.state.subscribed': "أنت مشترك في التنبيهات والأذكار",
-              'tip.state.blocked': "تم حظر الإشعارات من المتصفح",
-              'message.prenotify': 'اضغط لتفعيل تنبيهات الأذكار ومواقيت الصلاة',
-              'message.action.subscribed': "شكراً لاشتراكك في تنبيهات قبلة المسلم!",
-              'message.action.resubscribed': "تمت إعادة تفعيل التنبيهات",
-              'message.action.unsubscribed': "لن تستقبل تنبيهات بعد الآن",
-              'dialog.main.title': 'إدارة تنبيهات قبلة المسلم',
-              'dialog.main.button.subscribe': 'اشتراك',
-              'dialog.main.button.unsubscribe': 'إلغاء الاشتراك',
-              'dialog.blocked.title': 'إلغاء حظر التنبيهات',
-              'dialog.blocked.message': "اتبع تعليمات المتصفح للسماح بالإشعارات:"
-            }
-          },
           promptOptions: {
             slidedown: {
               prompts: [
@@ -202,47 +171,15 @@
         color: #ffffff !important;
         border-color: #ffd978 !important;
       }
+      /* Hide Bell Widget Completely */
       #onesignal-bell-container,
-      .onesignal-bell-container {
-        bottom: 24px !important;
-        left: 20px !important;
-        right: auto !important;
-        z-index: 2147483646 !important;
-      }
-      #onesignal-bell-container .onesignal-bell-launcher-button,
-      .onesignal-bell-launcher-button {
-        background: linear-gradient(135deg, #241c11 0%, #130f08 100%) !important;
-        border: 1.8px solid #d4af37 !important;
-        border-radius: 50% !important;
-        box-shadow: 0 0 20px rgba(212, 175, 55, 0.5) !important;
-      }
-      #onesignal-bell-container svg,
-      .onesignal-bell-svg,
-      .onesignal-bell-launcher-button svg {
-        fill: #d4af37 !important;
-        stroke: #d4af37 !important;
-        filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.75)) !important;
-      }
-      .onesignal-bell-launcher-badge {
-        background: linear-gradient(135deg, #ffe594 0%, #d4af37 100%) !important;
-        color: #120e06 !important;
-        font-weight: 800 !important;
-        border: 1px solid #fff2ba !important;
-      }
-      #onesignal-bell-container .onesignal-bell-launcher-dialog,
-      .onesignal-bell-launcher-dialog {
-        background: linear-gradient(145deg, #1d170f 0%, #110e08 100%) !important;
-        border: 1.5px solid rgba(212, 175, 55, 0.6) !important;
-        border-radius: 16px !important;
-        color: #f7eed7 !important;
-        direction: rtl !important;
-      }
-      #onesignal-bell-container .onesignal-bell-launcher-dialog button,
-      .onesignal-bell-launcher-dialog button {
-        background: linear-gradient(135deg, #fde28e 0%, #d4af37 100%) !important;
-        color: #120e06 !important;
-        font-weight: 800 !important;
-        border-radius: 10px !important;
+      .onesignal-bell-container,
+      #onesignal-bell-launcher,
+      .onesignal-bell-launcher {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
       }
     </style>
 </head>

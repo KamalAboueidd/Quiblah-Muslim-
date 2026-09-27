@@ -1056,81 +1056,15 @@ button.onesignal-slidedown-cancel-button {
 }
 
 /* ----------------------------------------------------
-   OneSignal Bell Launcher Widget (Golden Bell Theme)
+   OneSignal Bell Launcher Widget (Hidden)
    ---------------------------------------------------- */
 #onesignal-bell-container,
-.onesignal-bell-container {
-    bottom: 24px !important;
-    left: 20px !important;
-    right: auto !important;
-    z-index: 2147483646 !important;
-}
-
-#onesignal-bell-container .onesignal-bell-launcher,
+.onesignal-bell-container,
+#onesignal-bell-launcher,
 .onesignal-bell-launcher {
-    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.45), 0 0 15px rgba(0, 0, 0, 0.6) !important;
-}
-
-#onesignal-bell-container .onesignal-bell-launcher-button,
-.onesignal-bell-launcher-button {
-    background: linear-gradient(135deg, #241c11 0%, #130f08 100%) !important;
-    border: 1.8px solid #d4af37 !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5) !important;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-#onesignal-bell-container .onesignal-bell-launcher-button:hover,
-.onesignal-bell-launcher-button:hover {
-    transform: scale(1.1) !important;
-    border-color: #ffe594 !important;
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.85) !important;
-}
-
-/* Bell SVG Icon fill: Pure Golden */
-#onesignal-bell-container svg,
-.onesignal-bell-svg,
-.onesignal-bell-launcher-button svg {
-    fill: #d4af37 !important;
-    stroke: #d4af37 !important;
-    filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.75)) !important;
-}
-
-#onesignal-bell-container .onesignal-bell-launcher-button:hover svg {
-    fill: #ffe594 !important;
-    stroke: #ffe594 !important;
-    filter: drop-shadow(0 0 10px rgba(245, 215, 127, 0.9)) !important;
-}
-
-/* Bell Badge */
-.onesignal-bell-launcher-badge {
-    background: linear-gradient(135deg, #ffe594 0%, #d4af37 100%) !important;
-    color: #120e06 !important;
-    font-weight: 800 !important;
-    border: 1px solid #fff2ba !important;
-    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.6) !important;
-}
-
-/* Bell Dialog Tooltip / Menu */
-#onesignal-bell-container .onesignal-bell-launcher-dialog,
-.onesignal-bell-launcher-dialog {
-    background: linear-gradient(145deg, #1d170f 0%, #110e08 100%) !important;
-    border: 1.5px solid rgba(212, 175, 55, 0.6) !important;
-    border-radius: 16px !important;
-    color: #f7eed7 !important;
-    font-family: 'Tajawal', sans-serif !important;
-    direction: rtl !important;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(212, 175, 55, 0.3) !important;
-}
-
-#onesignal-bell-container .onesignal-bell-launcher-dialog button,
-.onesignal-bell-launcher-dialog button {
-    font-family: 'Tajawal', sans-serif !important;
-    background: linear-gradient(135deg, #fde28e 0%, #d4af37 100%) !important;
-    color: #120e06 !important;
-    font-weight: 800 !important;
-    border-radius: 10px !important;
-    border: 1px solid #ffe89e !important;
-    box-shadow: 0 3px 10px rgba(212, 175, 55, 0.4) !important;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 

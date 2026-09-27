@@ -955,6 +955,31 @@
         }
     }
 
+    // جدولة التذكيرات الدورية عند عمل التطبيق
+    let localReminderTimer = null;
+    function startLocalReminderLoop() {
+        stopLocalReminderLoop();
+        const settings = getSettings();
+        if (!settings.enabled) return;
+        const intervalMins = Math.max(1, parseInt(settings.interval, 10) || 15);
+        const intervalMs = intervalMins * 60 * 1000;
+        localReminderTimer = setInterval(() => {
+            const current = getSettings();
+            if (current.enabled) {
+                sendTestNotification();
+            } else {
+                stopLocalReminderLoop();
+            }
+        }, intervalMs);
+    }
+
+    function stopLocalReminderLoop() {
+        if (localReminderTimer) {
+            clearInterval(localReminderTimer);
+            localReminderTimer = null;
+        }
+    }
+
     // 13. الواجهة العامة (Public API)
     window.IslamicReminders = {
         openSettings: function () {
@@ -970,13 +995,42 @@
         playSalawat: playSalawatAudio,
         sendTestNotification: sendTestNotification,
         subscribe: subscribeToPush,
-        unsubscribe: unsubscribeFromPush
+        unsubscribe: unsubscribeFromPush,
+        enable: async function () {
+            try {
+                const Notif = window.Notification || (window.top && window.top.Notification);
+                if (Notif && Notif.permission !== 'granted') {
+                    const res = await Notif.requestPermission();
+                    if (res !== 'granted') {
+                        if (window.showToast) window.showToast('يرجى السماح بالإشعارات من إعدادات المتصفح أولاً', 'fa-solid fa-bell-slash');
+                        return false;
+                    }
+                }
+                saveSettings({ enabled: true });
+                startLocalReminderLoop();
+                if (window.showToast) window.showToast('تم تفعيل التذكيرات الإسلامية بنجاح 🤍', 'fa-solid fa-circle-check');
+                return true;
+            } catch (e) {
+                console.warn('enable error:', e);
+                return false;
+            }
+        },
+        disable: function () {
+            saveSettings({ enabled: false });
+            stopLocalReminderLoop();
+            if (window.showToast) window.showToast('تم إيقاف التذكيرات الدورية', 'fa-solid fa-circle-info');
+            return true;
+        }
     };
 
     // التهيئة عند تحميل الصفحة
     window.addEventListener('DOMContentLoaded', () => {
         injectStylesAndModal();
         syncUIFromSettings();
+        const settings = getSettings();
+        if (settings.enabled) {
+            startLocalReminderLoop();
+        }
     });
 
 })();

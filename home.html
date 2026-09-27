@@ -82,11 +82,12 @@
         border-radius: 12px !important;
         border: 1px solid rgba(212, 175, 55, 0.4) !important;
       }
-      #onesignal-bell-container .onesignal-bell-launcher-button {
-        background: linear-gradient(135deg, #241c11 0%, #130f08 100%) !important;
-        border: 1.8px solid #d4af37 !important;
+      #onesignal-bell-container, .onesignal-bell-container, #onesignal-bell-launcher, .onesignal-bell-launcher {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
       }
-      #onesignal-bell-container svg { fill: #d4af37 !important; stroke: #d4af37 !important; }
     </style>
 </head>
 <body>

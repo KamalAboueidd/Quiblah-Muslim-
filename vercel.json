@@ -5,5 +5,11 @@
       "source": "/api/push/(.*)",
       "destination": "/api/push.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-reminder",
+      "schedule": "0 4,7,10,13,16,19 * * *"
+    }
   ]
 }

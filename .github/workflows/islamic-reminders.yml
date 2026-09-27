@@ -1,0 +1,34 @@
+name: Islamic Reminders Scheduled Push
+
+on:
+  schedule:
+    # يعمل تلقائياً كل 3 ساعات في أوقات النهار والمساء (بتوقيت مصر ومكة: 7 ص، 10 ص، 1 ظ، 4 ع، 7 م، 10 م)
+    - cron: '0 4,7,10,13,16,19 * * *'
+  workflow_dispatch:
+    # يتيح لك إرسال إشعار فوري في أي لحظة بضغطة زر واحدة من GitHub Actions
+    inputs:
+      reminder_note:
+        description: 'ملاحظة تشغيل الإشعار'
+        required: false
+        default: 'إرسال يدوي فوري'
+
+permissions:
+  contents: read
+
+jobs:
+  send-push-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Send Islamic Reminder via OneSignal
+        run: node scripts/send-onesignal-reminder.js
+        env:
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID || '1927aef6-662e-4720-bc7b-99c243f78c8a' }}
+          ONESIGNAL_REST_KEY: ${{ secrets.ONESIGNAL_REST_KEY }}

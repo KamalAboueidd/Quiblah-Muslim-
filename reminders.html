@@ -34,6 +34,17 @@
 
     <link rel="stylesheet" href="features/reminders/reminders-page.css?v=53">
     <link rel="stylesheet" href="features/radial-nav/radial-nav.css?v=8">
+
+    <!-- OneSignal Web Push SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "1927aef6-662e-4720-bc7b-99c243f78c8a",
+        });
+      });
+    </script>
 </head>
 <body>
 

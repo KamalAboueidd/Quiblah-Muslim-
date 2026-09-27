@@ -37,6 +37,17 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
     <link rel="stylesheet" href="features/landing/landing.css?v=62">
+
+    <!-- OneSignal Web Push SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "1927aef6-662e-4720-bc7b-99c243f78c8a",
+        });
+      });
+    </script>
 </head>
 <body>
 

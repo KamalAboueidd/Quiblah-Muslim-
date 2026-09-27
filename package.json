@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
+    "build": "echo \"Build completed successfully\"",
     "test": "node -c server.js && node -c scripts/send-onesignal-reminder.js && node -c api/cron-reminder.js"
   },
   "author": "",

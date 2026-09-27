@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node -c server.js && node -c features/recite/recite.js && echo \"All checks passed\""
+    "test": "node -c server.js && node -c scripts/send-onesignal-reminder.js && node -c api/cron-reminder.js"
   },
   "author": "",
   "license": "ISC",

@@ -984,15 +984,26 @@
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
 }
 
-/* Icon inside Slidedown */
+/* Bell Icon - Remove border, background, and tint bell itself to gold */
 .onesignal-slidedown-body-icon,
+#onesignal-slidedown-dialog .onesignal-slidedown-body-icon,
 #onesignal-slidedown-dialog img,
 .onesignal-slidedown-dialog img {
-    border-radius: 14px !important;
-    border: 1.5px solid rgba(212, 175, 55, 0.6) !important;
-    box-shadow: 0 0 18px rgba(212, 175, 55, 0.35) !important;
-    background: rgba(212, 175, 55, 0.12) !important;
-    padding: 3px !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    filter: invert(72%) sepia(45%) saturate(550%) hue-rotate(5deg) brightness(95%) contrast(90%) !important;
+}
+
+#onesignal-slidedown-dialog svg,
+.onesignal-slidedown-dialog svg,
+.onesignal-slidedown-body-icon svg {
+    fill: #c5a859 !important;
+    stroke: #c5a859 !important;
+    color: #c5a859 !important;
 }
 
 /* Footer / Actions */
@@ -1007,52 +1018,56 @@
     margin-top: 14px !important;
 }
 
-/* "تفعيل التنبيهات" Button - Pure Golden Gradient */
+/* "تفعيل التنبيهات" Button - No change on hover */
 #onesignal-slidedown-allow-button,
 .onesignal-slidedown-allow-button,
-button.onesignal-slidedown-allow-button {
-    background: linear-gradient(135deg, #fde28e 0%, #d4af37 50%, #996515 100%) !important;
-    color: #120e06 !important;
+button#onesignal-slidedown-allow-button,
+#onesignal-slidedown-allow-button:hover,
+.onesignal-slidedown-allow-button:hover,
+button#onesignal-slidedown-allow-button:hover,
+#onesignal-slidedown-allow-button:focus,
+.onesignal-slidedown-allow-button:focus,
+#onesignal-slidedown-allow-button:active,
+.onesignal-slidedown-allow-button:active {
+    background: linear-gradient(135deg, #e4be57 0%, #c5a859 50%, #996515 100%) !important;
+    color: #ffffff !important;
     font-weight: 800 !important;
     font-size: 14px !important;
     font-family: 'Tajawal', sans-serif !important;
     border-radius: 12px !important;
-    border: 1px solid #ffe89e !important;
-    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.45) !important;
-    transition: all 0.25s ease !important;
+    border: none !important;
+    box-shadow: 0 4px 16px rgba(197, 168, 89, 0.45) !important;
     cursor: pointer !important;
     padding: 9px 20px !important;
+    transform: none !important;
+    transition: none !important;
 }
 
-#onesignal-slidedown-allow-button:hover,
-.onesignal-slidedown-allow-button:hover {
-    background: linear-gradient(135deg, #fff3ba 0%, #e6c556 50%, #b8860b 100%) !important;
-    box-shadow: 0 6px 24px rgba(212, 175, 55, 0.75) !important;
-    transform: translateY(-1.5px) !important;
-}
-
-/* "لاحقاً" Button - Elegant Gold Outline */
+/* "لاحقاً" Button - No border, golden text */
 #onesignal-slidedown-cancel-button,
 .onesignal-slidedown-cancel-button,
-button.onesignal-slidedown-cancel-button {
-    background: rgba(212, 175, 55, 0.08) !important;
-    color: #e5c352 !important;
+button#onesignal-slidedown-cancel-button,
+#onesignal-slidedown-dialog button.secondary,
+#onesignal-slidedown-dialog .pop-over-button.secondary,
+#onesignal-slidedown-cancel-button:hover,
+.onesignal-slidedown-cancel-button:hover,
+button#onesignal-slidedown-cancel-button:hover,
+#onesignal-slidedown-cancel-button:focus,
+.onesignal-slidedown-cancel-button:focus,
+#onesignal-slidedown-cancel-button:active,
+.onesignal-slidedown-cancel-button:active {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #c5a859 !important;
     font-weight: 700 !important;
-    font-size: 13.5px !important;
+    font-size: 14px !important;
     font-family: 'Tajawal', sans-serif !important;
-    border-radius: 12px !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-    transition: all 0.25s ease !important;
     cursor: pointer !important;
     padding: 9px 18px !important;
-}
-
-#onesignal-slidedown-cancel-button:hover,
-.onesignal-slidedown-cancel-button:hover {
-    background: rgba(212, 175, 55, 0.2) !important;
-    color: #ffffff !important;
-    border-color: #ffd978 !important;
-    box-shadow: 0 3px 12px rgba(212, 175, 55, 0.3) !important;
+    transform: none !important;
+    transition: none !important;
 }
 
 /* ----------------------------------------------------

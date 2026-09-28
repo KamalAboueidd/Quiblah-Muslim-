@@ -1226,14 +1226,14 @@ body {
 }
 
 .extra-inner-block {
-    background: linear-gradient(180deg, rgba(62, 62, 58, 0.72) 0%, rgba(47, 48, 50, 0.72) 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 18px !important;
-    padding: 22px 20px !important;
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
-    margin-bottom: 20px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 8px 4px !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
 }
 
 .extra-block-header {
@@ -1255,7 +1255,12 @@ body {
 }
 
 .extra-divider {
-    display: none;
+    display: block !important;
+    width: 100% !important;
+    height: 1px !important;
+    border: none !important;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12) !important;
+    margin: 22px 0 !important;
 }
 
 @keyframes fadeInSlide {
@@ -1588,12 +1593,13 @@ body {
     color: var(--text-muted);
 }
 
-/* Salawat Showcase (Borderless) */
+/* Salawat Showcase (Borderless & Seamless) */
 .salawat-showcase {
-    background: rgba(255, 255, 255, 0.04);
+    background: transparent !important;
     border: none !important;
-    border-radius: 16px;
-    padding: 20px 24px;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 10px 4px 4px 4px !important;
     text-align: center;
 }
 

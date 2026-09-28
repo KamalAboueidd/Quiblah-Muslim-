@@ -255,8 +255,10 @@ body.bot-body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(197, 168, 89, 0.08);
-    border: 1px solid rgba(197, 168, 89, 0.22);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
     color: var(--gold);
     padding: 7px 12px;
     border-radius: 12px;
@@ -264,14 +266,15 @@ body.bot-body {
     font-size: 13.5px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: color 0.2s ease, background 0.2s ease;
 }
 
 .bot-header-action-btn:hover {
-    background: rgba(197, 168, 89, 0.18);
-    border-color: var(--gold);
+    background: rgba(197, 168, 89, 0.12) !important;
+    border: none !important;
+    box-shadow: none !important;
     color: var(--gold-light);
-    transform: translateY(-1px);
+    transform: none !important;
 }
 
 .bot-header-action-btn i {
